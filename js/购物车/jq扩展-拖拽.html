@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+</head>
+<body>
+
+<div>喜欢就看见</div>
+<p>医疗卡时间</p>
+<span>kyhklljlk离开家</span>
+
+
+<script src="jquery-1.8.3.js"></script>
+<script>
+// jq扩展方法：
+// $.extend({}) 如果只有一个参数对象，那么这个对象被合并到jQuery这个类上，
+// $.extend({},{},{}) 如果有2个或以上的参数对象，将后面的对象合并到第一个对象上
+
+// $.fn.extend({}) 将参数对象合并到 jQuery.prototype 原型对象上
+
+
+// 需求：给jq对象扩展一个拖拽方法  $.fn === jQuery.prototype
+// jQuery.prototype.drag = function (){
+//     console.log(this);//指向jQuery的实例对象
+// }
+$.extend($.fn,{
+// $.fn.extend({
+    drag: function (){
+        $(this).css({
+            'position':'absolute',
+            'cursor':'move'
+        })
+        $(this).mousedown(function (e){
+            e.preventDefault();//阻止默认行为
+            var toLeft = e.clientX - $(this).offset().left;//点击位置到该元素左侧的距离
+            var toTop = e.clientY - $(this).offset().top;//点击位置到该元素上侧的距离
+            var $this = $(this);
+            $(document).bind('mousemove',function (e){
+                var left = e.clientX - toLeft;
+                var top = e.clientY - toTop;
+                $this.css({
+                    'left':left,
+                    'top':top
+                });
+            })
+            $(document).mouseup(function (){
+                $(this).unbind('mousemove');
+            });
+        })
+    }
+
+
+});
+
+$('div').drag();
+$('p').drag();
+$('span').drag();
+
+
+
+</script>
+
+</body>
+</html>

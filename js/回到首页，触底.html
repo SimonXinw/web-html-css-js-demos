@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="e1n">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      div {
+        height: 2000px;
+      }
+    </style>
+  </head>
+  <body>
+    <div></div>
+    <button>点击上拉</button>
+
+    <script>
+      var btn = document.querySelector("button");
+      var y = null;
+
+      btn.onclick = function() {
+        
+
+        var timer = setInterval(() => {
+
+            var scrollT = document.documentElement.scrollTop
+            if (scrollT>10) {
+                scrollT = scrollT - (scrollT/20);
+                document.documentElement.scrollTop = scrollT;
+            } else {
+                document.documentElement.scrollTop = 0;
+                clearInterval(timer);
+            }
+            
+
+        }, 10);
+        
+      };
+
+      document.onscroll = function() {
+        var html = document.documentElement;
+        var length = html.clientHeight;
+        var maxY = html.scrollHeight - length;
+        if (maxY <= html.scrollTop + 50 ) {
+          console.log('到底了')
+        }
+
+        console.log(html.scrollTop);
+
+      };
+    </script>
+  </body>
+</html>

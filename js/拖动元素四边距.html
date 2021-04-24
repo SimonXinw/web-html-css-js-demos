@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="e1n">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+        background: orange;
+        position: absolute;
+      }
+    </style>
+  </head>
+  <body>
+    <div></div>
+    <script>
+      document.body.onmousedown = function(e) {
+        var e = e || event;
+        var div = e.target
+        var offsetX = e.offsetX;
+        var offsetY = e.offsetY;
+        var maxY = document.documentElement.scrollHeight - div.offsetHeight;
+        var maxX = document.documentElement.scrollWidth - div.offsetWidth;
+        document.documentElement.onmousemove = function(e) {
+          var x = e.clientX;
+          var y = e.clientY;
+          var xs = x - offsetX;
+          var ys = y - offsetY;
+          console.log(xs)
+          //   左边距 右边距
+          if (xs <= 0) {
+            div.style.left = 0 + "px";
+          } else if (xs >= maxX) {
+            div.style.left = maxX + "px";
+          } else {
+            div.style.left = xs + "px";
+          }
+          //   上边距 下边距
+          if (y - offsetY <= 0) {
+            div.style.top = 0 + "px";
+          } else if (ys >= maxY) {
+            div.style.top = maxY + "px";
+          } else {
+            div.style.top = ys + "px";
+          }
+        
+
+          div.onmouseup = function() {
+            document.documentElement.onmousemove = null;
+          };
+        };
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,62 @@
+.wrap{
+    width: 900px;
+    margin: 0 auto;
+}
+.header{
+    height: 60px;
+    background-color: #eee;
+    position: relative;
+}
+.header a{
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    color: #666;
+}
+.header a:hover{
+    color: red;
+    border-color: red;
+}
+.link{
+    padding: 15px 0;
+}
+.content{
+    overflow: hidden;
+}
+.content .goods{
+    float: left;
+    width: 200px;
+    margin-left: 20px;
+    margin-bottom: 30px;
+    border: 1px solid #fff;
+}
+.content .goods:hover{
+    border-color: red;
+}
+.content .goods img{
+    width: 200px;
+    height: 200px;
+}
+.content .goods p{
+    font-size: 18px;
+    color: red;
+    padding-left: 10px;
+}
+.content .goods h3{
+    font-size: 14px;
+    color: #333;
+    padding: 0 10px;
+}
+.content .goods div{
+    font-size: 14px;
+    color: #666;
+    padding-left: 30px;
+    line-height: 30px;
+    width: 80px;
+    margin: 20px 0 10px 10px;
+    background: url(../imgs/cart.png) 4px 4px no-repeat;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}

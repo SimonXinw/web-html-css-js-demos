@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      p {
+        width: 80%;
+        height: 40px;
+        border-radius: 5px;
+        background-color: orange;
+        color: white;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <p>image<input type="file" accept="image/*" /></p>
+    <p>image+后置相机<input type="file" accept="image/*" capture="camera" /></p>
+    <p>image+前置相机<input type="file" accept="image/*" capture="user" /></p>
+    <p>image+多选<input id="fileId"  type="file" accept="image/*" multiple /></p>
+    <p>
+      video+后置相机<input type="file" accept="video/*" capture="environment" />
+    </p>
+    <p>video+前置相机<input type="file" accept="video/*" capture="user" /></p>
+    <p>audio+录音<input type="file" accept="audio/*" capture="user" /></p>
+    <p>
+      <button
+        type="submit"
+        name="btn"
+      
+        id="btnId"
+        onclick="check()"
+      >提交<button>
+    </p>
+
+    <script>
+      function check() {
+        var objFile = document.getElementById("fileId");
+        if (objFile.value == "") {
+          alert("不能为空空");
+          return false;
+        }
+
+        console.log(objFile.files[0].size); // 文件字节数
+
+        var files = objFile.files; //获取到文件列表
+        console.log(files[0])
+        var list = [];
+        for (var i = 0; i < files.length; i++ ) {
+            list.push(files[i])
+        }
+        console.log(list)
+        // if (files.length == 0) {
+        //   alert("请选择文件");
+        // } else {
+        //   var reader = new FileReader(); //新建一个FileReader
+        //   reader.readAsText(files[0], "UTF-8"); //读取文件
+        //   reader.onload = function (evt) {
+        //     //读取完文件之后会回来这里
+        //     var fileString = evt.target.result; // 读取文件内容
+        //     console.log(fileString);
+        //   };
+        // }
+      }
+    </script>
+  </body>
+</html>

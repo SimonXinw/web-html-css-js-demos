@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="e1n">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      li {
+        list-style: none;
+      }
+      .box {
+        width: 400px;
+        height: 200px;
+        position: relative;
+      }
+      .swiperbox {
+        width: 400px;
+        height: 200px;
+        background: #ffc0cb;
+        text-align: center;
+        line-height: 200px;
+      }
+      .swiperbox div {
+        width: 100%;
+        display: none;
+      }
+      .swiperbox .active {
+        display: block;
+      }
+      .btnbox {
+        position: absolute;
+        left: 50%;
+        bottom: 10px;
+        margin-left: -50px;
+        display: flex;
+        justify-content: space-between;
+        width: 100px;
+      }
+      .btnbox li {
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        line-height: 20px;
+        background-color: red;
+        border-radius: 50%;
+      }
+      .btnbox .active {
+        background-color: blue;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <div class="swiperbox">
+        <div class="active">1</div>
+        <div>2</div>
+        <div>3</div>
+        <div>4</div>
+      </div>
+      <ul class="btnbox">
+        <li class="active">1</li>
+        <li>2</li>
+        <li>3</li>
+        <li>4</li>
+      </ul>
+    </div>
+
+    <script>
+      var oDivs = document.querySelectorAll(".swiperbox div");
+      var oLis = document.querySelectorAll(".btnbox li");
+      // 开启计时器
+      function swiper(t) {
+        var num = 0;
+        timer = setInterval(() => {
+          num++;
+          if (num > 3) {
+            num = 0;
+          }
+          // 清除样式
+          qingchu();
+          // 给对应的图片，添加样式
+          tianjia(num);
+        }, t * 1000);
+        console.log(t);
+      }
+      swiper(1);
+
+      // 清除样式
+      function qingchu() {
+        for (var i = 0, len = oLis.length; i < len; i++) {
+          oLis[i].classList.remove("active");
+          oDivs[i].classList.remove("active");
+        }
+      }
+      // 添加样式
+      function tianjia(index) {
+        oLis[index].classList.add("active");
+        oDivs[index].classList.add("active");
+      }
+
+      for (var i = 0; i < 4; i++) {
+        oLis[i].index = i;
+        oLis[i].onmouseenter = function() {
+            clearInterval(timer)
+          qingchu();
+          tianjia(this.index);
+        };
+        oLis[i].onmouseleave = function () {
+            swiper(1)
+        }
+
+      }
+    </script>
+  </body>
+</html>

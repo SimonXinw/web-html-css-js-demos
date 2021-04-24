@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+</head>
+<body>
+
+    <div class="box">
+        账号: <input type="text" class="user"><br>
+        密码: <input type="text" class="pass"><br>
+        <button class="login">登录</button> &nbsp;&nbsp; <button class="add">注册</button>
+    </div>
+
+<script src="ajax.js"></script>
+<script>
+    
+var user = document.querySelector('.user');
+var pass = document.querySelector('.pass');
+var login = document.querySelector('.login');
+var add = document.querySelector('.add');
+
+login.onclick = function (){//登录
+    var username = user.value;
+    var userpass = pass.value;
+    if (!username || !userpass) {
+        alert('账号或密码不能为空！');
+        return;
+    }
+    ajax({
+        url: 'data/login2.php',
+        type: 'get',
+        data: 'act=login&user='+username+'&pass='+userpass,
+        success: function(data){
+            var json = JSON.parse(data);
+            alert(json.msg);
+        },
+        failed: function(code){
+            alert('错误代码'+code);
+        }
+    });
+}
+
+add.onclick = function (){//注册
+    var username = user.value;
+    var userpass = pass.value;
+    if (!username || !userpass) {
+        alert('账号或密码不能为空！');
+        return;
+    }
+    ajax({
+        url: 'data/login2.php',
+        type: 'get',
+        data: 'act=add&user='+username+'&pass='+userpass,
+        success: function(data){
+            var json = JSON.parse(data);
+            alert(json.msg);
+        },
+        failed: function(code){
+            alert('错误代码'+code);
+        }
+    });
+}
+    
+    
+</script>
+    
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<!-- <link rel="stylesheet" href=""> -->
+<style>
+*{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.wrap{
+    width: 500px;
+    margin: 50px auto 0;
+}
+.ipt{
+    width: 496px;
+    height: 30px;
+    font-size: 16px;
+}
+ul li{
+    line-height: 30px;
+    font-size: 16px;
+    background-color: #eee;
+    padding: 0 10px;
+}
+ul li:hover{
+    background-color: #ddd;
+}
+
+</style>
+</head>
+<body>
+<!-- <img src="http://pic39.nipic.com/20140307/13928177_195158772185_2.jpg" alt=""> -->
+
+<!-- <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script> -->
+
+
+<div class="wrap">
+    <input type="text" class="ipt">
+    <ul>
+        <!-- <li>12306</li> -->
+        <!-- <li>12315</li> -->
+    </ul>
+</div>
+
+<script>
+var ipt = document.querySelector('.ipt');
+var oul = document.querySelector('ul');
+var OScript = null;
+
+ipt.onkeyup = function (){
+    if (!this.value) {
+        oul.innerHTML = '';//清空
+        return;
+    }
+    if (OScript) {
+        document.body.removeChild(OScript);
+    }
+    OScript = document.createElement('script');//创建script标签
+    // OScript.src = json-url
+    OScript.src = 'http://suggestion.baidu.com/su?wd='+this.value+'&cb=myCallback';//把数据地址赋值给src
+    document.body.appendChild(OScript);//添加到页面
+    
+}
+
+// myCallback({q:"1",p:false,s:["1v7","1688","12123","118图库","12星座","131","12345","180231","139邮箱","11选五5开奖结果"]});
+function myCallback(json){//回调函数的作用是：接收数据，处理展示数据
+    // console.log(json);
+    oul.innerHTML = '';//清空
+    for (var i = 0, len = json.s.length; i < len; i++){
+        oul.innerHTML += '<li>'+json.s[i]+'</li>';
+    }
+}
+
+
+</script>
+</body>
+</html>

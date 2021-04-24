@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="e1n">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <p>用户要求：名字只能包含数字、字母，数字不可以开头，长度不低于6，不长于20 [0-9 a-z A-Z]</p>
+    <p>
+        <label for="user">用户名</label>
+        <input id="user" name="user" type="text">
+        <span id="user_span"></span>
+    </p>
+    <p>密码6-12位 不能包含特殊字符 (弱 z/1/A 中 包含两种 强 包含三种 )</p>
+    <p>
+        <label for="pwd">密码</label>
+        <input id="pwd" name="pwd" type="text">
+        <span id="pwd_span"></span>
+    </p>
+    <p>确认密码 两次输入相同</p>
+    <p>
+        <label for="repwd">确认密码</label>
+        <input id="repwd" name="repwd" type="text">
+        <span id="repwd_span"></span>
+    </p>
+    <p>随机4位验证码（点击切换验证码）</p>
+    <p>
+        <label for="code">验证码</label>
+        <input id="code" name="code" type="text">
+        <span id="random_code"></span>
+        <span id="code_span"></span>
+    </p>
+    <button id="btn">注册</button>
+
+
+
+
+    <!-- 引入js文件 -->
+    <script src="biaodan.js"></script>
+    <!-- 写js代码 -->
+    <script>
+        var oBtn = document.getElementById('btn');
+        var oUser = document.getElementById('user');
+        var oUserSpan = document.getElementById('user_span');
+        var oPwd = document.getElementById('pwd');
+        var oPwdSpan = document.getElementById('pwd_span');
+
+        var oRePwd = document.getElementById('repwd');
+        var oRePwdSpan = document.getElementById('repwd_span');
+        var oCode = document.getElementById('code');
+        var oRandomCode = document.getElementById('random_code');
+        var oCodeSpan = document.getElementById('code_span');
+
+
+        // 建立一个数字和字母的数组
+        var numArr = [];
+        for (var i = 0; i<=9; i++){
+            numArr.push(String(i));
+        }
+        // 增加大写字母
+        var bigArr = [];
+        for (var i = 65; i<=90; i++){
+            bigArr.push(String.fromCharCode(i));
+        }
+        // 增加小写字母
+        var smallArr = [];
+        for (var i = 97; i<=122; i++){
+            smallArr.push(String.fromCharCode(i));
+        }
+        var allArr = numArr.concat(smallArr,bigArr);
+        // console.log(allArr);
+
+
+
+        // 生成验证码
+        var code = randomCode(4);
+        tips(oRandomCode,code,'purple');
+
+        function randomCode(n){
+            var randomCode = '';
+            for (var i = 0 ; i<n; i++){
+                randomCode += allArr[parseInt(Math.random()*62)];
+            }
+            return randomCode;
+        }
+        // 再次生成验证码
+        oRandomCode.onclick = function(){
+            code = randomCode(4);
+            tips(oRandomCode,code,'purple');
+
+        }
+        // 注册点击
+        oBtn.onclick = function (){
+            var user = oUser.value;
+            var res = checkUser(user); //接收结果
+
+            function checkUser(user){ //检查用户名
+                if (user.length<6 || user.length>20){
+                return '用户名长度不符合';
+                }
+                if (user[0]>=0 && user[0]<=9){
+                    return '数字不可以开头';
+                }
+                for (var i = 0; i < user.length;i++){
+                    if (!allArr.includes(user[i])){
+                        return '只能包含数字字母';
+                    }
+                }
+                return '√';
+            }
+
+            if (res == '√'){ // 判断结果，赋值给容器
+             tips(oUserSpan,'√','green');
+            } else {
+                tips(oUserSpan,res,'red');
+            }
+
+            //判断密码
+            var pwd = oPwd.value;
+            var res = checkPassword(pwd);
+            var rePwd = oRePwd.value;
+
+            if (res == '√'){ //判断密码
+                var level = levelPassword(pwd);
+                tips(oPwdSpan,level,'green');
+
+                if (rePwd != pwd){  //判断两次密码一致
+                    tips(oRePwdSpan,'密码不一致','red');
+                } else {
+                    tips(oRePwdSpan,'√','green');
+                }
+            } else {
+                tips(oPwdSpan,res,'red');
+            }
+            
+            // 判断验证码
+            if (oCode.value != code){
+                tips(oCodeSpan,'验证码错误','red');
+            } else {
+                tips(oCodeSpan,'√','green');
+            }
+
+        }
+
+        // tips 提示展示
+        function tips(tag,text,color){
+            tag.innerText = text;
+            tag.style.color = color;
+        }
+    </script>
+</body>
+</html>

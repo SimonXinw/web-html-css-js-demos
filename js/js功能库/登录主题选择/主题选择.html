@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="e1n">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/layout.css">
+    <style>
+        .top_box {
+            width: 160px;
+        }
+
+        .top_box span {
+            font-size: 14px;
+        }
+
+        .form_box {
+            float: right;
+        }
+
+        .sub {
+            width: 50px;
+        }
+
+        /* 登录框 */
+        .denglu {
+            display: none;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -200px;
+            margin-top: -100px;
+            background: rgba(0, 0, 0, 0.3);
+            width: 400px;
+            height: 200px;
+        }
+
+        .denglu p {
+            text-align: center;
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .denglu p:nth-child(1) {
+            margin-top: 40px;
+        }
+
+        #btn {
+            width: 200px;
+            background: skyblue;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 点击登录 -->
+    <div class="top_box">
+        <span>主题：</span>
+        <select name="color" id="sel">
+            <option value="white">选择</option>
+            <option value="pink">粉色</option>
+            <option value="blue">蓝色</option>
+            <option value="purple">紫色</option>
+        </select>
+        <form class="form_box" action="#">
+            <input class="sub" type="button" value="登录">
+        </form>
+    </div>
+    <!-- 登录 -->
+    <div class="denglu" >
+        <p><label for="">账号:</label><input class="username" type="text" placeholder="请输入账号"></p>
+        <p><label for="">密码:</label><input class="password" type="password"></p>
+        <p><input class="checkbox" type="checkbox"><span>记住密码</span></p>
+        <p><input id="btn" type="submit" value="登录"></p>
+    </div>
+
+
+
+    <script>
+        var oSel = document.querySelector('select');
+        oSel.value = localStorage.getItem('color'); //加载页面就把cookie 赋值给 osel。value
+        document.body.style.background = oSel.value;
+        oSel.onchange = function () {
+            document.body.style.background = oSel.value;
+            localStorage.setItem('color', '' + oSel.value);
+        }
+
+        // 登录
+        var oSub = document.querySelector('.sub');
+
+        var oDengLu = document.querySelector('.denglu');
+        var oUserName = document.querySelector('.username');
+        var oPassword = document.querySelector('.password');
+        var oBtn = document.querySelector('#btn');
+        var oCheckBox = document.querySelector('.checkbox');
+        // console.log(oDengLu);
+
+
+        var userName = oUserName.value; //用户民
+        var passWord = oPassword.value;
+        oSub.onclick = function () {// 点击登录 显示登录框
+            oDengLu.style.display = 'block';
+            //判断是否存在cookie  赋值  默认勾选
+            if (localStorage.getItem('username')) {
+                oUserName.value = localStorage.getItem('username')
+                oPassword.value = localStorage.getItem('password')
+                oCheckBox.checked = true;
+                // console.log(666);
+            } else {
+                oUserName.value = '';
+            }
+        }
+        // 点击提交 
+        oBtn.onclick = function () {
+            var userName = oUserName.value; //重新取值
+            var passWord = oPassword.value;
+            var date = new Date();
+            // console.log(date);
+            if (userName == 123 && passWord == 123) { //判断账号密码是否正确
+
+                // 符合 账号密码
+                if (oCheckBox.checked == true) { //记住密码
+
+                    localStorage.setItem('username', '' + userName)
+                    localStorage.setItem('password', '' + passWord)
+                    localStorage.setItem('checked', 'true')
+                    localStorage.setItem('time1', date);
+
+                    // console.log(userName, passWord)
+                    location.href = 'http://localhost/test/10.14_Js_day24_php/login.html';
+
+                } else if (oCheckBox.checked === false) {//不记住密码
+
+                    localStorage.setItem('checked', 'false')
+                    localStorage.setItem('time1', date);
+
+                    location.href = 'http://localhost/test/10.14_Js_day24_php/login.html';
+
+                }
+
+                // 不符合
+            } else {
+                alert('账号密码错误！请重新输入！');
+            }
+        }
+
+
+
+
+    </script>
+</body>
+
+</html>

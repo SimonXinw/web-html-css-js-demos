@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<style>
+.wrap{
+    width: 1200px;
+    margin: 0 auto;
+}
+.wrap h3{
+    text-align: center;
+}
+.con img{
+    width: 590px;
+    height: 370px;
+    /* display: none; */
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+    <h3>图片展示</h3>
+    <div class="con">
+        <!-- <img src="images/001.jpg" alt="">
+        <img src="images/002.jpg" alt="">
+        <img src="images/003.jpg" alt="">
+        <img src="images/004.jpg" alt="">
+        <img src="images/005.jpg" alt="">
+        <img src="images/006.jpg" alt="">
+        <img src="images/007.jpg" alt="">
+        <img src="images/008.jpg" alt="">
+        <img src="images/009.jpg" alt="">
+        <img src="images/010.jpg" alt="">
+        <img src="images/011.jpg" alt="">
+        <img src="images/012.jpg" alt=""> -->
+        
+        <img data-src="images/001.jpg" alt="">
+        <img data-src="images/002.jpg" alt="">
+        <img data-src="images/003.jpg" alt="">
+        <img data-src="images/004.jpg" alt="">
+        <img data-src="images/005.jpg" alt="">
+        <img data-src="images/006.jpg" alt="">
+        <img data-src="images/007.jpg" alt="">
+        <img data-src="images/008.jpg" alt="">
+        <img data-src="images/009.jpg" alt="">
+        <img data-src="images/010.jpg" alt="">
+        <img data-src="images/011.jpg" alt="">
+        <img data-src="images/012.jpg" alt="">
+    </div>
+</div>
+
+
+<script>
+function offset(obj){
+    var l = 0;
+    var t = 0;
+    var bdl = obj.clientLeft;//目标元素的左边框宽度
+    var bdt = obj.clientTop;//目标元素的上边框宽度
+    while(obj){//循环累加目标元素到定位父级的距离
+        l = l + obj.offsetLeft+obj.clientLeft;
+        t = t + obj.offsetTop+obj.clientTop;
+        obj = obj.offsetParent;//每次循环之后指向离他最近的定位父级
+    }
+    return {left:l-bdl,top:t-bdt};
+}
+var imgs = document.querySelectorAll('.con img');
+
+function loadImg(){
+    var scrollT = document.documentElement.scrollTop || document.body.scrollTop;
+    var windowH = document.documentElement.clientHeight || document.body.clientHeight;
+
+    for (var i = 0, len = imgs.length; i < len; i++){
+        if ( offset(imgs[i]).top <= (scrollT + windowH + 100) ) {//图片进入可视区
+            imgs[i].src = imgs[i].getAttribute('data-src');//设置图片src
+        }
+    }
+}
+loadImg();
+window.onscroll = function (){
+    loadImg();
+}
+
+
+</script>
+</body>
+</html>

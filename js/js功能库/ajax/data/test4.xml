@@ -1,0 +1,27 @@
+<bookstore>
+	<book>
+		<title>大毛流浪记3</title>
+		<author>老猫1</author>
+		<year>2001</year>
+		<price>29.91</price>
+	</book>
+	<book>
+		<title>二毛流浪记3</title>
+		<author>老猫2</author>
+		<year>2002</year>
+		<price>29.92</price>
+	</book>
+	<book>
+		<title>三毛流浪记3</title>
+		<author>老猫3</author>
+		<year>2003</year>
+		<price>29.93</price>
+	</book>
+	<book>
+		<title>四毛流浪记3</title>
+		<author>老猫4</author>
+		<year>2004</year>
+		<price>29.94</price>
+	</book>
+</bookstore>
+

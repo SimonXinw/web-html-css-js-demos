@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="e1n">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+        background-color: gold;
+        position: absolute;
+      }
+      p{
+        width: 100px;
+        margin: auto;
+      }
+    </style>
+  </head>
+  <body>
+  
+    <div></div>
+    <p><a href="https://blog.csdn.net/qq_42877027/article/details/104959452">源码</a></p>
+
+    <script>
+      // 逻辑区
+      var div = document.querySelector("div");
+      function begin(v,target) {
+        timer = setInterval(() => {
+          var x = div.offsetLeft;  // 左边定位父元素距离
+          var y = div.offsetLeft;
+          var w = div.offsetWidth; // 自身宽度
+          var h = div.offsetHeight;
+          var s = target - w - x; // 移动的距离
+          var speed = s / 10;
+          if (v) {
+            speed = v;
+          }
+          if (speed > 0) {
+            speed = Math.ceil(speed);
+          } else {
+            speed = Math.floor(speed);
+          }
+          if (s > 0) {
+          // 移动
+            div.style.left = x + speed + "px";
+          }
+          console.log(x);
+          if (s <= 0) {
+            clearInterval(timer)
+          }
+        }, 1)
+
+      }
+      begin(1,1000);
+    </script>
+  </body>
+</html>

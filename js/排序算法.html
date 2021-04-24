@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>排序算法</title>
+    <link rel="stylesheet" href="./reset.css" />
+    <style>
+      input {
+        width: 500px;
+        height: 30px;
+        box-sizing: border-box;
+        padding-left: 8px;
+        border-radius: 4px;
+        border: 1px solid skyblue;
+      }
+      p {
+        margin: 10px 0;
+      }
+      .form-label {
+        display: inline-block;
+        width: 70px;
+        margin-right: 16px;
+      }
+      .page {
+        width: 100%;
+        height: 100%;
+        background-color: #eee;
+        overflow: hidden;
+      }
+      .box {
+        width: 1200px;
+        margin: 50px;
+      }
+      .arr-text {
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="box">
+        <p>
+          <span class="form-label"> 添加数字:</span
+          ><input
+            class="input-add-num"
+            type="text"
+            placeholder="请加入需要排序的数字"
+          />
+          <button class="add-btn">Add</button>
+          <button class="add-random">Random</button>
+        </p>
+        <p>
+          <span class="form-label">数组:</span
+          ><input class="arr-text" type="text" />
+          <button class="maopao-shen-btn">冒泡升序</button>
+          <button class="xuanze-shen-btn">选择升序</button>
+          <button class="charu-shen-btn">插入升序</button>
+          <button class="kuaisu-shen-btn">快速排序</button>
+        </p>
+        <p>
+          <span class="form-label">输出:</span
+          ><input class="new-arr-text" type="text" />
+        </p>
+      </div>
+    </div>
+
+    <script>
+      var arrText = "";
+      var newArrText = "";
+      // 快捷取 DOM
+      function $(name) {
+        return document.querySelector(name);
+      }
+      // 测试算法时间
+      function testCostTime(fn) {
+        var startTime = new Date().getTime();
+        fn();
+        var endTime = new Date().getTime();
+        var costTime = endTime - startTime;
+        console.log("耗费ms ---", costTime);
+      }
+
+      // 随机生成数组
+      function randomNum(number) {
+        let n = Math.ceil(Math.random() * 1 + 30000);
+        if (number) {
+          n = number;
+        }
+        let arr = [];
+        for (let i = 0; i < n; i++) {
+          let num = Math.ceil(Math.random() * 100);
+          arr.push(num);
+        }
+        return arr;
+      }
+
+      // 数组转字符串
+      function arrayToString(arr) {
+        var string = "";
+        for (let i = 0; i < arr.length; i++) {
+          if (string) {
+            string = string + ", " + arr[i];
+          } else {
+            string = arr[i];
+          }
+        }
+        return string;
+      }
+      // 字符串数组转数值数组
+      function stringToNumber(array) {
+        var newArr = [];
+        for (let index = 0; index < array.length; index++) {
+          newArr.push(Number(array[index]));
+        }
+        return newArr;
+      }
+      // 冒泡算法
+      function maoPao(arr) {
+        arr = stringToNumber(arr);
+        let t;
+        for (let i = 0; i < arr.length; i++) {
+          for (let j = 0; j < arr.length - i; j++) {
+            if (arr[j] > arr[j + 1]) {
+              t = arr[j];
+              arr[j] = arr[j + 1];
+              arr[j + 1] = t;
+            }
+          }
+        }
+        return arr;
+      }
+
+      // 选择排序
+      function xuanZe(array) {
+        array = stringToNumber(array);
+        let t;
+        let minIndex;
+        for (let i = 0; i < array.length; i++) {
+          minIndex = i;
+          for (let j = 0 + i + 1; j < array.length; j++) {
+            if (array[minIndex] > array[j]) {
+              minIndex = j;
+            }
+          }
+          t = array[minIndex];
+          array[minIndex] = array[i];
+          array[i] = t;
+        }
+
+        return array;
+      }
+
+      // 插入排序
+      function chaRu(array) {
+        array = stringToNumber(array);
+        var len = array.length, // 数组的长度
+          value, // 当前比较的值
+          i, // 未排序部分的当前位置
+          j; // 已排序部分的当前位置
+
+        for (i = 0; i < len; i++) {
+          // 储存当前位置的值
+          value = array[i];
+          // 未排序当前第一位 和 第一位前面一位已排序
+          // 当已排序部分的当前元素大于value，就将当前元素向后移一位，再将前一位与value比较
+          for (j = i - 1; j > -1 && array[j] > value; j--) {
+            array[j + 1] = array[j];
+          }
+
+          array[j + 1] = value;
+        }
+
+        return array;
+      }
+
+      // 快速排序
+
+      function kuaiSu(arr) {
+        // 停止条件
+        if (arr.length <= 1) return arr;
+
+        // 确定锚点元素
+        const index = parseInt(arr.length / 2);
+        const flagValue = arr[index];
+
+        const leftArr = [];
+        const rightArr = [];
+
+        // 获取左右子集合
+        for (let i = 0; i < arr.length; i++) {
+          const item = arr[i];
+          if (i === index) continue;
+          if (item <= flagValue) {
+            leftArr.push(item);
+          } else rightArr.push(item);
+        }
+
+        // 递归查询子集合
+        return [...kuaiSu(leftArr), flagValue, ...kuaiSu(rightArr)];
+      }
+
+      // 根据用户生成数组
+      $(".add-btn").onclick = () => {
+        var newNum = $(".input-add-num").value;
+        $(".input-add-num").value = "";
+        if (arrText) {
+          arrText = arrText + ", " + newNum;
+        } else {
+          arrText = newNum;
+        }
+        $(".arr-text").value = arrText;
+      };
+      // 生成随机数组字符串
+      $(".add-random").onclick = () => {
+        let arr = randomNum();
+
+        $(".arr-text").value = arrayToString(arr);
+      };
+      // 冒泡升序
+      $(".maopao-shen-btn").onclick = () => {
+        var arr = $(".arr-text").value.split(", ");
+        var newArr = [];
+        testCostTime(() => {
+          newArr = maoPao(arr);
+        });
+        $(".new-arr-text").value = arrayToString(newArr);
+      };
+      // 选择升序
+      $(".xuanze-shen-btn").onclick = () => {
+        var arr = $(".arr-text").value.split(", ");
+        var newArr = [];
+        testCostTime(() => {
+          newArr = xuanZe(arr);
+        });
+        $(".new-arr-text").value = arrayToString(newArr);
+      };
+      // 插入升序
+      $(".charu-shen-btn").onclick = () => {
+        var arr = $(".arr-text").value.split(", ");
+        var newArr = [];
+        testCostTime(() => {
+          newArr = chaRu(arr);
+        });
+        $(".new-arr-text").value = arrayToString(newArr);
+      };
+      // 快速升序
+      $(".kuaisu-shen-btn").onclick = () => {
+        var arr = $(".arr-text").value.split(", ");
+        var newArr = [];
+        testCostTime(() => {
+          newArr = kuaiSu(arr);
+        });
+        $(".new-arr-text").value = arrayToString(newArr);
+      };
+    </script>
+  </body>
+</html>

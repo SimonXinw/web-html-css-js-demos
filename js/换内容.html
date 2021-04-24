@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="e1n">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <li>3</li>
+    <li>4</li>
+    <li>5</li>
+    <li>1</li>
+    <li>2</li>
+
+
+    <script>
+        var oLis = document.querySelectorAll('li');
+        // console.log(oLis);
+        var list = [];
+        var i = 0;
+        oLis.forEach(function(){
+            list.push(oLis[i].innerText);
+            i++;
+        })
+
+        list.sort(function(a,b){
+            return a - b;
+        })
+        console.log(list);
+        var  i = 0;
+        list.forEach(function(){
+            oLis.push(list[i]);
+            i++;
+        })
+        // var i = 0;
+        // console.log(list);
+            // i = 0;
+        // list.forEach(function(){
+        //     list[i].innerText = list[i].innerText
+        //     i++;
+        // })
+        // console.log(list);
+        
+        // list.sort(function(a,b){
+        //     return a.innerText - b.innerText;
+        // })
+        // var i = 0;
+       
+        // console.log(list);
+
+    
+    </script>
+</body>
+</html>

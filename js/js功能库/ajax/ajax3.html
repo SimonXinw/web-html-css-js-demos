@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+<button class="btn">请求数据</button>
+<div class="con"></div>
+
+
+<script>
+
+document.cookie = 'user1=xiaoming';
+
+// var json1 = {'name':'xm'}
+// var json2 = {name:'xm'}
+// var json3 = {"name":"xm"};//严格json的格式
+
+var btn = document.querySelector('.btn');
+var con = document.querySelector('.con');
+
+btn.onclick = function (){
+
+// 1.创建XMLHttpRequest对象(数据交互对象)
+if (window.XMLHttpRequest) {
+    var xhr = new XMLHttpRequest();
+} else {
+    var xhr = ActiveXObject('Microsoft.XMLHTTP');//ie 5 6
+}
+
+// 2.打开与服务器的链接
+// xhr.open('get','./data/test1.txt',true);
+// xhr.open('get','http://localhost/test/www1914/10.16/data/test1.txt?_='+Math.random(),true);//解决缓存
+xhr.open('get','./data/test2.json?_='+new Date().getTime(),true);//解决缓存
+
+// 3.发送请求
+xhr.send(null);//get请求
+
+// 4.等待服务的响应
+xhr.onreadystatechange = function (){
+    // console.log(xhr.readyState);//2 3 4
+    if (xhr.readyState == 4) {//请求完成
+        if (xhr.status == 200) {//请求成功
+            // console.log('请求成功，可以拿到服务端返回的数据');
+            // console.log(typeof xhr.responseText);//string
+
+            var json = JSON.parse(xhr.responseText);
+
+            for (var i = 0, len = json.title.length; i < len; i++){
+                con.innerHTML += '<p>书名：'+json.title[i]+'，作者：'+json.author[i]+'，出版：'+json.year[i]+'，价格：'+json.price[i]+'</p>';
+            }
+        }else {
+            alert('请求失败，' + xhr.status);
+        }
+    }
+}
+
+
+}
+
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="e1n">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="div">
+        <b>1</b>
+        <p>2</p>
+    </div>
+
+
+
+    <script>
+        var oDiv = document.querySelector('.div')
+        var oB = document.querySelector('b')
+        setTimeout(() => {
+        oDiv.innerHTML = '123'
+            
+        }, 3000);
+        console.log(oB.parentNode)
+        console.log(oDiv.nodeName)
+
+        var newDiv = document.createElement('div')
+        newDiv.innerHTML = '我是创建的节点'
+        document.body.appendChild(newDiv,)
+        document.body.onclick = function () {
+            document.body.removeChild(newDiv)
+            console.log(66)
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="e1n">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        li{
+            width:50px;height:50px;
+            background: red;
+        }
+    </style>
+</head>
+<body>
+    <ul>
+        <li>1s</li>
+        <li>2s</li>
+        <li>3s</li>
+        <li>4s</li>
+        <li>5s</li>
+    </ul>
+</body>
+
+
+
+
+    <script>
+        var oLis = document.querySelectorAll('li')
+        // console.log(oLis);
+
+        for (var i = 0 ; i < oLis.length; i++){
+            oLis[i].index = i ;
+            oLis[i].onclick = function(){
+                
+                // console.log(this.index);
+                // console.log(this.innerText);
+
+            }
+        }
+        
+    </script>
+</html>

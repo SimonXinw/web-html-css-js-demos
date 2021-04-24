@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<style>
+*{
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.wrap{
+    overflow: hidden;
+    width: 1200px;
+    margin: 0 auto;
+}
+.wrap ul{
+    float: left;
+    width: 220px;
+    margin-right: 24px;
+}
+.wrap .no-right{
+    margin-right: 0;
+}
+.wrap ul li{
+    margin-bottom: 24px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.wrap ul li img{
+    width: 220px;
+    display: block;
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+    <ul>
+        <!-- <li><img src="images/1.png" alt=""></li>
+        <li><img src="images/2.png" alt=""></li>
+        <li><img src="images/3.png" alt=""></li>
+    </ul> -->
+    <ul>
+        <!-- <li><img src="images/4.png" alt=""></li>
+        <li><img src="images/5.png" alt=""></li>
+        <li><img src="images/6.png" alt=""></li> -->
+    </ul>
+    <ul>
+        <!-- <li><img src="images/7.png" alt=""></li>
+        <li><img src="images/8.png" alt=""></li>
+        <li><img src="images/9.png" alt=""></li> -->
+    </ul>
+    <ul>
+        <!-- <li><img src="images/10.png" alt=""></li>
+        <li><img src="images/11.png" alt=""></li>
+        <li><img src="images/12.png" alt=""></li> -->
+    </ul>
+    <ul class="no-right">
+        <!-- <li><img src="images/13.png" alt=""></li>
+        <li><img src="images/14.png" alt=""></li>
+        <li><img src="images/15.png" alt=""></li> -->
+    </ul>
+</div>
+
+<script>
+var uls = document.querySelectorAll('.wrap ul');
+window.onload = function (){
+    function loadImg(){
+        for (var v = 0; v < 20; v++){
+            // 每列的高度
+            var ul1 = uls[0].clientHeight;
+            var ul2 = uls[1].clientHeight;
+            var ul3 = uls[2].clientHeight;
+            var ul4 = uls[3].clientHeight;
+            var ul5 = uls[4].clientHeight;
+
+            var minHeight = Math.min(ul1,ul2,ul3,ul4,ul5);
+            var minUl = null;
+
+            for (var i = 0, len = uls.length; i < len; i++){
+                if (minHeight == uls[i].clientHeight) {
+                    minUl = uls[i];//高度最小的那一列
+                }
+            }
+
+            var num = Math.ceil(Math.random()*35);// 1-35
+            var newLi = document.createElement('li');
+            newLi.innerHTML = '<img src="images/'+num+'.png" alt="">';
+
+            minUl.appendChild(newLi);//添加图片
+        }
+    }
+
+    loadImg();//进入页面加载一批图片
+}
+
+</script>
+</body>
+</html>

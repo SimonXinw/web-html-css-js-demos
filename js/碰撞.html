@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="e1n">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+        text-align: center;
+        line-height: 100px;
+        position: absolute;
+      }
+      .box1 {
+        background-color: orange;
+      }
+      .box2 {
+        background-color: pink;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <div class="box1">1</div>
+      <div class="box2">2</div>
+    </div>
+
+    <script>
+      var box = document.querySelector(".box");
+      var box1 = document.querySelector(".box1");
+      var box2 = document.querySelector(".box2");
+      var divs = document.querySelectorAll(".box div");
+      box.onmousedown = function(e) {
+        var dom = e.target;
+        var offsetX = e.offsetX;
+        var offsetY = e.offsetY;
+        document.documentElement.onmousemove = function(e) {
+          var left = e.clientX - offsetX;
+          var top = e.clientY - offsetY;
+          dom.style.left = left + "px";
+          dom.style.top = top + "px";
+        //   松开鼠标 取消移动函数
+            document.documentElement.onmouseup = function () {
+                document.documentElement.onmousemove = null;
+            }
+          //获取box1各个方向的距离
+          var l1 = box1.offsetLeft;
+          var r1 = box1.offsetLeft + box1.offsetWidth;
+          var t1 = box1.offsetTop;
+          var b1 = box1.offsetTop + box1.offsetHeight;
+          //获取box2各个方向的距离
+          var l2 = box2.offsetLeft;
+          var r2 = box2.offsetLeft + box2.offsetWidth;
+          var t2 = box2.offsetTop;
+          var b2 = box2.offsetTop + box2.offsetHeight;
+
+          if (l1 > r2 || r1 < l2 || b1 < t2 || t1 > b2) {
+            // 没碰上
+            box2.style.background = "red";
+          } else {
+            // 碰上
+            box2.style.background = "yellow";
+          }
+        };
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>11事件委托(代理)</title>
+</head>
+
+<body>
+  <ul>
+    <li>1</li>
+    <li>2</li>
+    <li>3</li>
+    <li>4</li>
+  </ul>
+</body>
+<script>
+  // 在JavaScript中，添加到页面上的事件处理程序数量将直接关系到页面的整体运行性能
+  // 1.每个函数都是对象，都会占用内存。内存中的对象越多，性能就越差
+  // 2.必须事先指定所有事件处理程序而导致的DOM访问次数增多，会延迟整个页面的交互就绪时间
+
+
+  // var oLis = document.querySelectorAll('li');
+
+  // for (var i = 0; i < oLis.length; i++) {
+  //   oLis[i].onclick = function () {
+  //     console.log(this.innerText);
+  //   }
+  // }
+  // oLis[0].onclick = function() {
+  //   ..
+  // }
+  // oLis[1].onclick = function() {
+
+  // }
+
+  var oUl = document.querySelector('ul');
+  oUl.onclick = function (e) { // 事件向上绑定
+    // console.log(this);
+    var ev = event || e;
+    var target = ev.target || ev.srcElement; // 获取事件源
+    // console.log(target.innerText);
+    // 判断事件源
+    // console.log(target.nodeName)
+    if (target.nodeName == 'LI') {  // 判断li
+      console.log(target.innerText);
+    }
+
+    if (target.nodeName == "UL") {
+      console.log(6666);
+    }
+  }
+
+
+
+  var oLi = document.createElement('li');
+  oLi.innerText = '新增的';
+  oUl.appendChild(oLi);
+
+
+
+  // 对"事件处理程序过多"问题的解决方案就是事件委托。
+  // 1.可以对未生成的DOM绑定事件
+  // 2.事件委托利用了事件冒泡，只指定一个事件处理程序，就可以管理某一类型的所有事件
+
+
+
+</script>
+
+</html>

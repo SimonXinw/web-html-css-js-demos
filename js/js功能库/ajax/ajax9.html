@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+<input type="text" class="ipt">
+<button class="btn">查询</button>
+<div class="con"></div>
+
+
+<script src="ajax.js"></script>
+<script>
+
+
+// var json1 = {'name':'xm'}
+// var json2 = {name:'xm'}
+// var json3 = {"name":"xm"};//严格json的格式
+
+var ipt = document.querySelector('.ipt');
+var btn = document.querySelector('.btn');
+var con = document.querySelector('.con');
+
+btn.onclick = function (){
+
+    ajax({
+        url: './data/post.php',
+        type: 'post',
+        data: 'age='+ipt.value,
+        success: function (strObj){
+            var json = JSON.parse(strObj);
+            con.innerHTML = '姓名：'+json.name;
+        },
+        failed: function (status){
+            alert(status);
+        }
+    });
+
+}
+
+
+</script>
+</body>
+</html>

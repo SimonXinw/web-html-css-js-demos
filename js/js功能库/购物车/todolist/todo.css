@@ -1,0 +1,78 @@
+*{margin: 0; padding: 0; list-style: none;}
+.todo{
+    width: 705px;
+    background-color: #eee;
+    padding: 1px 20px;
+    margin: 0 auto;
+}
+.todo h1{
+    text-align: center;
+    margin: 20px 0;
+}
+.todo .ipt{
+    font-size: 18px;
+    line-height: 30px;
+    width: 600px;
+    padding: 0 8px;
+}
+.todo .add{
+    line-height: 30px;
+    font-size: 18px;
+    padding: 0 20px;
+}
+.todo .list{
+    padding: 10px;
+}
+.todo .list li{
+    line-height: 30px;
+    font-size: 18px;
+    background-color: #ccc;
+    margin-bottom: 10px;
+    padding: 4px 15px;
+}
+.todo .list .con{
+    padding: 0 2px;
+}
+.todo .list .repIpt{
+    font-size: 16px;
+    line-height: 26px;
+    width: 440px;
+}
+.todo .list .remove{
+    float: right;
+    font-size: 16px;
+    display: none;
+    color: red;
+    cursor: pointer;
+    margin: 0 20px;
+}
+.todo .list li:hover .remove{
+    display: block;
+}
+.todo .list .edit{
+    float: right;
+    font-size: 16px;
+    display: none;
+    color: red;
+    cursor: pointer;
+}
+.todo .list li:hover .edit{
+    display: block;
+}
+.selAll, .done, .removes{
+    margin: 0 20px;
+    cursor: pointer;
+    color: blue;
+}
+
+.doneList{
+    padding: 0 10px 10px;
+}
+.doneList li{
+    font-size: 16px;
+    color: #999;
+    line-height: 30px;
+    margin-bottom: 10px;
+    padding: 2px 10px;
+    background-color: #c2c2c2;
+}

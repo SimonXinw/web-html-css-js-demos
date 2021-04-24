@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="e1n">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            position: relative;
+            background: black;
+
+        }
+
+        div {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+</body>
+
+
+<script>
+    var num = 50;
+
+
+    for (var i = 0; i < num; i++) {
+        oDiv = document.createElement('div');
+        oDiv.innerHTML = i + 1;
+        document.body.appendChild(oDiv);
+    }
+    var oDivs = document.querySelectorAll('div');
+
+    document.onmousedown = function (e) {
+        document.onmousemove = function (e) {
+            var ev = event || e;
+            var clientX = ev.clientX;
+            var clientY = ev.clientY;
+
+            oDivs[0].style.left = clientX - oDiv.offsetWidth / 2 + 'px';
+            oDivs[0].style.top = clientY - oDiv.offsetHeight / 2 + 'px';
+
+            for (var i = oDivs.length - 1; i > 0; i--) {
+                oDivs[i].style.left = oDivs[i - 1].style.left;
+                oDivs[i].style.top = oDivs[i - 1].style.top;
+            }
+
+        }
+    }
+
+
+    setInterval(function () {
+
+        // 给所有小球颜色
+        for (var i = 0; i < 50; i++) {
+            // 每一个小球一个随机颜色
+            var arr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
+            var col = '#';
+            for (var j = 0; j < 6; j++) {
+                var num = Math.round(Math.random() * 15);
+                col += arr[num];
+            }
+            oDivs[i].style.background = col;
+        }
+    }, 10)
+
+</script>
+
+</html>

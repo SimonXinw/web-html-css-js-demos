@@ -1,0 +1,201 @@
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>大作业_简版日历</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    #box {
+      width: 280px;
+      height: 360px;
+      margin: 50px auto;
+      background-color: black;
+      color: aliceblue;
+      line-height: 40px;
+    }
+
+    #header {
+      height: 40px;
+      color: aliceblue;
+      line-height: 40px;
+    }
+
+    #header span {
+      float: left;
+      text-align: center;
+      margin-top: 10px;
+      line-height: 40px;
+    }
+
+    #prev,
+    #next {
+      width: 20%;
+      line-height: 40px;
+      cursor: pointer;
+    }
+
+    #current {
+      width: 60%;
+      line-height: 40px;
+    }
+
+    #week li {
+      width: 40px;
+      text-align: center;
+      float: left;
+      line-height: 40px;
+    }
+
+    #content li {
+      width: 40px;
+      text-align: center;
+      float: left;
+      line-height: 40px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="box">
+    <div id="header">
+      <span id="prev">上</span>
+      <span id="current"></span>
+      <span id="next">下</span>
+    </div>
+    <ul id="week">
+      <li>日</li>
+      <li>一</li>
+      <li>二</li>
+      <li>三</li>
+      <li>四</li>
+      <li>五</li>
+      <li>六</li>
+    </ul>
+    <ul id="content">
+
+    </ul>
+  </div>
+</body>
+<script>
+  var oContent = document.getElementById('content')
+  var oCurrent = document.getElementById('current')
+  var oPrev = document.getElementById('prev')
+  var oNext = document.getElementById('next')
+
+  var date = new Date()
+  var month = date.getMonth() + 1
+  var week = firstday(date)
+  var last
+  var day
+  if (week == 0) {
+    week = 8;
+  }
+  //week = 4
+  function getdate(date) {
+    var year = date.getFullYear()
+
+    day = date.getDate()
+
+    // console.log(week)
+    // console.log(date)
+    // console.log(day)
+
+    return year + '-' + month + '-' + day
+  }
+  function lastday(date) {
+    date.setDate(1);
+    date.setMonth(month + 1);
+    date.setDate(0);
+
+    last = date.getDate()
+    console.log(last)
+  }
+  oCurrent.innerText = getdate(date)
+  //console.log(getdate(date))
+  lastday(date)
+  function firstday(date) {
+    var date = new Date()
+    date.setDate(1);
+    week = date.getDay()
+    return week
+  }
+
+  console.log(month)
+  function rili(week, last) {
+    oContent.innerHTML = ' '
+    for (var i = 1; i < 43; i++) {
+
+      oContent.innerHTML += '<li class="dat">0</li>'
+      if (i >= week && i < week + last - 1) {
+        document.getElementsByClassName('dat')[i - 1].innerHTML = i - week + 1;
+        document.getElementsByClassName('dat')[i - 1].style.color = 'white'
+        if (i - week + 1 == day) {
+          document.getElementsByClassName('dat')[i - 1].style.color = 'yellow'
+        }
+      } else {
+        document.getElementsByClassName('dat')[i - 1].style.color = 'red';
+        document.getElementsByClassName('dat')[i - 1].innerHTML = 0;
+      }
+    }
+  }
+  rili(week, last)
+  //console.log(week+last)
+
+  oPrev.onclick = function () {
+    var newdate = new Date()
+    var newmonth
+    month--
+    function smonth() {
+      newdate.setDate(1);
+      newdate.setMonth(month);
+
+      newmonth = newdate.getMonth();
+      oCurrent.innerText = getdate(newdate)
+    }
+    smonth(newdate)
+    month = newmonth
+    //console.log(newmonth)
+    //console.log(month)
+    week = newdate.getDay()
+    if (week == 0) {
+      week = 8;
+    }
+    lastday(newdate)
+    console.log(week)
+    rili(week, last)
+  }
+  oNext.onclick = function () {
+    var newdate = new Date()
+    var newmonth
+    month++
+    function smonth() {
+      newdate.setDate(1);
+      newdate.setMonth(month);
+
+      newmonth = newdate.getMonth();
+      oCurrent.innerText = getdate(newdate)
+    }
+    smonth(newdate)
+    month = newmonth;
+
+    week = newdate.getDay()
+    if (week == 0) {
+      week = 8;
+    }
+    console.log(week)
+    lastday(newdate)
+    
+    console.log(week)
+    rili(week, last)
+  }
+</script>
+
+
+</html>

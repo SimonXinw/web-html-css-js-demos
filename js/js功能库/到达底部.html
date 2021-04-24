@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>13练习2_到达底部</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html,
+    body {
+      height: 3000px;
+    }
+
+    .content {
+      height: 298px;
+      border: 1px solid #000;
+      text-align: center;
+      line-height: 298px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="content">我是conetnt1</div>
+  <div class="content">我是conetnt2</div>
+  <div class="content">我是conetnt3</div>
+  <div class="content">我是conetnt4</div>
+  <div class="content">我是conetnt5</div>
+  <div class="content">我是conetnt6</div>
+  <div class="content">我是conetnt7</div>
+  <div class="content">我是conetnt8</div>
+  <div class="content">我是conetnt9</div>
+  <div class="content">我是conetnt10</div>
+</body>
+
+<script>
+  var html = document.documentElement || document.body;
+  
+  window.onscroll = function () {
+
+    var scrollTop = html.scrollTop;
+
+    console.log(scrollTop);
+
+    var maxTop = html.scrollHeight - html.clientHeight;
+
+    if (scrollTop >= maxTop) {
+      console.log('到底了');
+    }
+  }
+</script>
+
+</html>

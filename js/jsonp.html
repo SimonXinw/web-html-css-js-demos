@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="e1n">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <p><input type="text"></p>
+    <ul>
+        <li></li>
+    </ul>
+    <div><a href="https://blog.csdn.net/qq_42877027/article/details/104959397">源码</a></div>
+    <script>
+        //输入框
+        var oInp = document.getElementsByTagName('input')[0];
+        //得到的数据存在ul的li里
+        var oUl = document.getElementsByTagName('ul')[0];
+        //获取输入内容，查找百度对应的src
+        oInp.oninput = function () {
+            var value = this.value;
+            var oScript = document.createElement('script');
+            oScript.src = 'http://suggestion.baidu.com/su?wd=' + value + '&cb=doJosn';
+            document.body.appendChild(oScript);
+        }
+        //对传回的数据进行处理（回调函数）
+        function doJosn(data) {
+            var s = data.s;
+            var str = '';
+            console.log(data)
+            if (s.length > 0) {
+                s.forEach(function (item, index) {
+                    str += '<li><a href =http://suggestion.baidu.com/su?wd=' + item + '>' + item + '</a></li>';
+                })
+                oUl.innerHTML = str;
+                oUl.style.display = 'block';
+            } else {
+                oUl.style.display = 'none';
+            }
+     
+        }
+     
+    </script>
+</body>
+</html>

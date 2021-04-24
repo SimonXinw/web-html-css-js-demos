@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="e1n">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>作业_正则验证表单</title>
+</head>
+
+<body>
+  用户名:<input id="username"><span id="username_span">请输入由数字字母_$组成的长度6到10位不能以数字开头</span><br>
+  密码:<input id="userpwd1"><br>
+  确认:<input id="userpwd2"><span id="userpwd_span">请输入长度6到12位的数字和字母组成</span><br>
+  电话:<input id="usertel"><span id="usertel_span">请输入常用的手机号</span><br />
+  邮箱:<input id="useremail"><span id="useremail_span">请输入常见的邮箱</span><br>
+  昵称:<input id="nickname"><span id="nickname_span">2到4位的汉字</span><br>
+  <button id="btn">注册</button>
+</body>
+
+
+
+<script>
+  var oUser = document.querySelector('#username');
+  var oPwd1 = document.querySelector('#userpwd1');
+  var oPwd2 = document.querySelector('#userpwd2');
+  var oTel = document.querySelector('#usertel');
+  var oEmail = document.querySelector('#useremail');
+  var oNick = document.querySelector('#nickname');
+  var oBtn = document.querySelector('#btn');
+  // console.log(oUser,oPwd1,oPwd2,oTel,oEmail,oNick,oBtn)
+  var oUserSpan = document.querySelector('#username_span');
+  var oPwdSpan = document.querySelector('#userpwd_span');
+  var oTelSpan = document.querySelector('#usertel_span');
+  var oEmailSpan = document.querySelector('#useremail_span');
+  var oNickSpan = document.querySelector('#nickname_span');
+
+
+  // console.log(66)
+  // 点击判断
+  oBtn.onclick = function () {
+    var user = oUser.value;
+    var res = checkUser(user);
+
+    // 用户名  返回结果，渲染颜色
+    if (res == '√') {
+      renderSpan(oUserSpan, res, 'green')
+    } else {
+      renderSpan(oUserSpan, res, 'red')
+    }
+    // console.log(user);
+
+    var pwd1 = oPwd1.value;
+    var pwd2 = oPwd2.value;
+    var res = checkPwd1(pwd1);
+
+    // 密码   返回结果，渲染颜色
+    if (res == '√') {
+      if (pwd1 == pwd2){
+        renderSpan(oPwdSpan, res, 'green')
+      } else {
+        renderSpan(oPwdSpan, '密码不一致', 'red')
+      }
+      
+    } else {
+      renderSpan(oPwdSpan, res, 'red')
+    }
+
+    var tel = oTel.value;
+    var res = checkTel(tel);
+
+    // 手机号   返回结果，渲染颜色
+    if (res == '√') {
+      renderSpan(oTelSpan, res, 'green')
+    } else {
+      renderSpan(oTelSpan, res, 'red')
+    }
+
+
+    // 邮箱   返回结果，渲染颜色
+    var email = oEmail.value;
+    var res = checkEmail(email);
+
+    if (res == '√') {
+      renderSpan(oEmailSpan, res, 'green')
+    } else {
+      renderSpan(oEmailSpan, res, 'red')
+    }
+
+    // 昵称   返回结果，渲染颜色
+    var nick = oNick.value;
+    console.log(nick);
+    var res = checkNick(nick);
+
+    if (res == '√') {
+      renderSpan(oNickSpan, res, 'green')
+    } else {
+      renderSpan(oNickSpan, res, 'red')
+    }
+
+  }
+
+  
+
+  // 检查用户名
+  function checkUser(value) {
+    var reg = /^[a-zA-Z_$][\w$]{5,9}$/ig
+    var res = reg.test(value);
+    if (res) {
+      return '√';
+    } else {
+      return '请输入由数字字母_$组成的长度6到10位不能以数字开头';
+    }
+  }
+  //  检查密码
+  function checkPwd1(value) {
+    var reg = /^[0-9a-zA-Z]{6,12}$/ig
+    var res = reg.test(value);
+    if (res) {
+      return '√';
+    } else {
+      return '请输入长度6到12位的数字和字母组成';
+    }
+  }
+  // 检查电话
+  function checkTel(value) {
+    var reg = /^[1][0-9]{10}$/ig
+    var res = reg.test(value);
+    if (res) {
+      return '√';
+    } else {
+      return '请输入常用的手机号';
+    }
+  }
+  // 检查邮箱
+  function checkEmail(value) {
+    var reg = /^\w+@\w+(\.\w+)+$/
+    var res = reg.test(value);
+    if (res) {
+      return '√';
+    } else {
+      return '请输入常见的邮箱';
+    }
+  }
+
+  //检查昵称
+  function checkNick(value) {
+    var reg = /[\u4e00-\u9fa5]{2,4}/
+    var res = reg.test(value);
+    if (res) {
+      return '√';
+    } else {
+      return '2到4位的汉字';
+    }
+  }
+
+
+
+  function renderSpan(span, text, color) {
+    span.innerText = text;
+    span.style.color = color;
+  }
+</script>
+
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en1">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+    <div>a</div>
+    <script>
+      // 以一个对象的形式传入，key：value 配置参数
+      ajax({
+        method: "GET",
+        url: "./txt.txt",
+        async: true
+      });
+
+      function ajax(obj) {
+        // 1. 创建 xhr 对象
+        if (window.XMLHttpRequest) {
+          // 非IE5 IE6
+          var xhr = new XMLHttpRequest();
+        } else {
+          // IE5 IE6
+          var xhr = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        // 2.链接服务器
+        xhr.open(obj.method, obj.url, obj.async);
+        // 3.将请求发送到服务器
+        xhr.send(null);
+        //4. 判断是否成功传递
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState == 4) {
+            // 请求完成
+            if (xhr.status == 200) {
+              //ok 成功
+              console.log(xhr.responseText); // 得到响应结果
+            } else {
+              console.log(xhr.status); // 弹出失败的状态码
+            }
+          }
+        };
+      }
+    </script>
+  </body>
+</html>

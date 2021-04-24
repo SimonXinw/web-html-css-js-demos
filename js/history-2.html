@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="e1n">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <button class="btn" >去1</button>
+    <button class="btn1" >go1</button>
+    
+
+
+    <script>
+        var btn = document.querySelector('.btn')
+        var btn1 = document.querySelector('.btn1')
+        btn.onclick = function() {
+            window.history.back()
+            console.log(66)
+        }
+        btn1.onclick = function() {
+            window.history.go(-1)
+            console.log(66)
+        }
+        setTimeout(()=>{
+            window.history.back()
+        },5000)
+    </script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="e1n">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: black;
+        }
+
+        div {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: black;
+            color: red;
+            line-height: 120px;
+            text-align: center;
+            font-size: 12x;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="" id="div">XW！nb！</div>
+
+</body>
+
+<script>
+    var oDiv = document.querySelector('div');
+    var timer;
+    var speed = 8;
+    var color = '#';
+
+
+    document.onkeydown = function (e) {
+        // 事件源
+        var ev = event || e;
+        var keyCode = ev.keyCode || ev.which;
+        // 初始位置
+        var startTop = oDiv.offsetTop;
+        var startLeft = oDiv.offsetLeft;
+        // 清除上一个定时器
+        clearInterval(timer);
+        timer = setInterval(function () { // 计时器
+            oDiv.style.background = randomColor();
+            if (keyCode == 37) {
+                startLeft -= speed;
+                yidong();
+                if (startLeft <= 0) {
+                    keyCode = 38;
+                }
+            }
+            if (keyCode == 38) {
+                startTop -= speed;
+                yidong();
+                if (startTop <= 0) {
+                    keyCode = 39;
+                }
+            }
+            if (keyCode == 39) {
+                startLeft += speed;
+                yidong();
+                var maxLeft = document.documentElement.clientWidth - oDiv.offsetWidth;
+                if (startLeft >= maxLeft) {
+                    keyCode = 40;
+                }
+                console.log(startLeft);
+            }
+            if (keyCode == 40) {
+                startTop += speed;
+                yidong();
+                var maxTop = document.documentElement.clientHeight - oDiv.offsetHeight;
+                if (startTop >= maxTop) {
+                    keyCode = 37;
+                }
+            }
+        }, 1)
+
+        // 跑马灯
+        function randomColor() {
+            var arr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
+            var col = '#';
+            for (var i = 0; i < 6; i++) {
+                var num = Math.round(Math.random() * 15);
+                col += arr[num];
+            }
+            return col;
+        }
+        // 封装执行函数
+        function yidong() {
+            var maxLeft = document.documentElement.clientWidth - oDiv.offsetWidth;
+            var maxTop = document.documentElement.clientHeight - oDiv.offsetHeight;
+
+            // 赋值
+            oDiv.style.left = startLeft + 'px';
+            oDiv.style.top = startTop + 'px';
+        }
+
+    }
+
+</script>
+
+</html>

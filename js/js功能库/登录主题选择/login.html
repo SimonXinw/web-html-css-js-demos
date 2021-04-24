@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="e1n">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    
+
+
+
+    <script>
+        var date = new Date(); //获取当前时间对象
+
+        var username = localStorage.getItem('username');//获取用户 username的value值
+
+        if (username){ //判断是否存在用户名key
+
+            document.write(`辛望  欢迎回家！这是属于你的世界！<br>`)
+            document.write('上次登录时间为:' + localStorage.getItem('time1'));
+        }
+        // 判断是否记住密码
+        var checked = localStorage.getItem('checked');
+
+        if (checked == 'false'){// 清除用户名密码
+
+            localStorage.removeItem('username');
+            localStorage.removeItem('password');
+        }
+    
+    </script>
+</body>
+</html>

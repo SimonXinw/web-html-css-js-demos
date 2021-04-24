@@ -1,0 +1,77 @@
+
+天气预报接口（一周天气信息）
+url地址:https://www.tianqiapi.com/api/
+
+-----请求参数-----
+   city       城市名称，不要带市和区
+   callback   回调函数
+
+-----返回数据-----
+json对象
+
+
+jsonp接口
+
+百度关键词：
+url地址:http://suggestion.baidu.com/su
+
+-----请求参数-----
+   cb      回调函数
+   wd      关键词
+
+-----返回数据-----
+JSON返回示例：
+{
+   q: "123",
+   p: false,
+   s: [
+      0: "12306"
+      1: "12306铁路客户服务中心"
+      2: "12306火车票网上订票官网"
+      3: "12333"
+      4: "12333社保查询网"
+      5: "12306验证码识别"
+      6: "123网址之家"
+      7: "12345"
+      8: "123456hd"
+      9: "12308"
+   ]
+}
+
+
+
+电话号码查询：
+url地址:http://tcc.taobao.com/cc/json/mobile_tel_segment.htm
+
+-----请求参数-----
+ callback    回调函数
+   tel       电话号码
+
+-----返回数据-----
+JSON返回示例：
+ {
+    mts:'1352055',
+    province:'北京',
+    catName:'中国移动',
+    telString:'13520559717',
+	areaVid:'29400',
+	ispVid:'3236139',
+	carrier:'北京移动'
+ }
+
+
+
+
+图灵智能机器人聊天接口
+
+接口地址：http://www.tuling123.com/openapi/api
+
+请求方式：get
+
+-----请求参数-----
+key        你的apiKey
+userid     随便给的名字
+info       你发送的文字
+
+-----返回数据-----
+'{"code":100000,"text":"哎哟反正我不是妹子"}'

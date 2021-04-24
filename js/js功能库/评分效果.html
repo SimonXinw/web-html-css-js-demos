@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>31练习_评分效果</title>
+  <style>
+    #ul {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      display: inline-block;
+      vertical-align: middle;
+      height: 28px;
+    }
+
+    #div {
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+
+    #ul li {
+      float: left;
+      background: url("source/star.gif") no-repeat 0 0;
+      width: 27px;
+      height: 28px;
+    }
+
+    #ul li.active {
+      background: url("source/star.gif") no-repeat 0 -29px;
+    }
+  </style>
+</head>
+
+<body>
+  <ul id="ul" data-index="0">
+    <li data-index="0" id="0">1</li>
+    <li>2</li>
+    <li>3</li>
+    <li>4</li>
+    <li>5</li>
+  </ul>
+  <div id="div"></div>
+</body>
+<script>
+  var oLis = document.querySelectorAll('#ul li');
+  var oDiv = document.querySelector('#div');
+  var list = ['很差', '差', '一般', '好', '很好']
+
+
+  var num = -1;
+  // 绑定下标
+  for (var i = 0; i < oLis.length; i++) {
+    oLis[i].index = i; //绑定
+
+    // 鼠标移入
+    oLis[i].onmouseenter = function () {
+      index = this.index;
+      // console.log(index);
+      for (var i = 0; i <= index; i++) {
+        // console.log(oLis[i])
+        oLis[i].classList.add('active');
+      }
+    }
+    // 鼠标移出
+    oLis[i].onmouseleave = function () {
+
+      index = this.index;
+      // 移出时全部取消active
+      for (var i = num + 1; i <= index; i++) {
+        oLis[i].classList.remove('active');
+      }
+    }
+
+    // 鼠标点击
+    oLis[i].onclick = function () {
+      // 先判断下标有没有比之前点亮的星星下标大，不大不赋值div;
+      if (this.index > num) {
+        oDiv.innerText = list[this.index];
+      }
+      num = this.index; //点击时给移出函数设定清除起始值；让他无法清除之前的值
+
+      for (var i = 0; i <= this.index; i++) {
+        oLis[this.index].onmouseleave = false;
+
+      }
+    }
+  }
+</script>
+
+</html>

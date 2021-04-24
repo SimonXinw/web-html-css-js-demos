@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<link rel="stylesheet" href="todo.css">
+</head>
+
+<body>
+<div class="todo">
+    <h1>待办任务列表</h1>
+    <input type="text" class="ipt">
+    <button class="add">添加</button>
+    <ul class="list">
+        <li>
+            <input type="checkbox">
+            <span class="con">任务1</span>
+            <span class="remove">删除</span>
+            <span class="edit">编辑</span>
+        </li>
+        <li>
+            <input type="checkbox">
+            <span class="con">任务2</span>
+            <span class="remove">删除</span>
+            <span class="edit">编辑</span>
+        </li>
+        <li>
+            <input type="checkbox">
+            <span class="con">任务3</span>
+            <span class="remove">删除</span>
+            <span class="edit">编辑</span>
+        </li>
+    </ul>
+    <span class="selAll">
+        <input type="checkbox" id="all"> 选择全部
+    </span>
+    <span class="done">已处理</span>
+    <span class="removes">删除</span>
+    <br>
+    <br>
+    <br>
+    <h1>已处理任务列表</h1>
+    <ul class="doneList">
+        <!-- <li>任务1</li> -->
+        <!-- <li>任务2</li> -->
+    </ul>
+</div>
+<script src="jquery-2.1.4.min.js"></script>
+<script src="todo.js"></script>
+</body>
+</html>

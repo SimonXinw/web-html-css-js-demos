@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+
+<input type="text" class="ipt">
+<button class="btn">查询</button>
+<div class="con"></div>
+
+
+<script>
+
+document.cookie = 'user1=xiaoming';
+
+// var json1 = {'name':'xm'}
+// var json2 = {name:'xm'}
+// var json3 = {"name":"xm"};//严格json的格式
+
+var ipt = document.querySelector('.ipt');
+var btn = document.querySelector('.btn');
+var con = document.querySelector('.con');
+
+btn.onclick = function (){
+
+// 1.创建XMLHttpRequest对象(数据交互对象)
+if (window.XMLHttpRequest) {
+    var xhr = new XMLHttpRequest();
+} else {
+    var xhr = ActiveXObject('Microsoft.XMLHTTP');//ie 5 6
+}
+
+// 2.打开与服务器的链接
+xhr.open('post','./data/post.php',true);//解决缓存 
+
+// 模拟表单form的post方式提交数据，在send之前设置
+xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+
+// 3.发送请求
+// xhr.send(null);//get请求
+xhr.send('age='+ipt.value);//post请求
+
+// 4.等待服务的响应
+xhr.onreadystatechange = function (){
+    // console.log(xhr.readyState);//2 3 4
+    if (xhr.readyState == 4) {//请求完成
+        if (xhr.status == 200) {//请求成功
+            var json = JSON.parse(xhr.responseText);//转成json对象
+            con.innerHTML = '<p>姓名：'+json.name+'，性别：'+json.sex+'</p>';
+        }else {
+            alert('请求失败，' + xhr.status);
+        }
+    }
+}
+
+
+}
+
+
+
+</script>
+</body>
+</html>

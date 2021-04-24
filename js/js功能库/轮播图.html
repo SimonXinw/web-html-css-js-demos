@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="e2n">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>30练习_简易轮播</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            list-style: none
+        }
+
+        .wrapBox {
+            width: 400px;
+            margin: 50px auto;
+            position: relative;
+        }
+
+        .swiperBox img {
+            width: 100%;
+            display: none;
+        }
+
+        .swiperBox .active {
+            display: block;
+        }
+
+        .nav {
+            position: absolute;
+            right: 20px;
+            bottom: 25px;
+        }
+
+        .nav li {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #000;
+            float: left;
+            margin: 0 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav .active {
+            background-color: red;
+            color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapBox">
+        <div class="swiperBox">
+            <img class="active" src="source/girlbig1.jpg" alt="">
+            <img src="source/girlbig2.jpg" alt="">
+            <img src="source/girlbig3.jpg" alt="">
+            <img src="source/girlbig4.jpg" alt="">
+        </div>
+        <ul class="nav">
+            <li class="active">1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+        </ul>
+    </div>
+</body>
+
+<script>
+    var oLis = document.querySelectorAll('.nav li');
+    var oImgs = document.querySelectorAll('.swiperBox img');
+    var num = 0;
+    var timer;
+    jsq();
+
+    function jsq() {   //计时器
+        timer = setInterval(function () {
+            num++; //确定效果数字
+            // 清除效果
+            qingchu();
+            // 判断循环条件
+            if (num > 3) {
+                num = 0;
+            }
+            jihuo(num);
+            // console.log(oLis);
+
+        }, 1000)
+    }
+    function qingchu() { //清除效果
+        for (var i = 0; i < oLis.length; i++) {
+            oLis[i].classList.remove('active');
+            oImgs[i].classList.remove('active');
+        }
+    }
+    function jihuo(index) { // 开启激活
+
+        oLis[index].classList.add('active');
+        oImgs[index].classList.add('active');
+    }
+
+    for (var i = 0; i < oLis.length; i++) {
+        oLis[i].index = i;
+        oLis[i].onmouseenter = function () {
+            // console.log(666);
+            clearInterval(timer);
+            qingchu();
+            jihuo(this.index)
+        }
+        oLis[i].onmouseleave = function () {
+            // console.log(666);
+            jsq();
+        }
+    }
+</script>
+
+</html>

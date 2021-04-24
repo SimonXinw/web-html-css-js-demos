@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="e1n">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div id="div" onclick="fn(this)">我是内容</div>
+
+
+    <script>
+        var oDiv = document.querySelector('div');
+
+        // oDiv.onclick = function(){
+        //     console.log(event);
+        // }
+            // oDiv.onclick = function(e){
+            //     console.log(e);
+            // }
+        
+        // function fn(ele){
+        //     console.log(ele.innerText);
+        // }
+
+        // oDiv.onclick = function (){
+        //     console.log(666);
+        // }
+        // oDiv.addEventListener('click', function(){
+        //     console.log(777);
+        // })
+
+
+        // 事件绑定函数
+        function addEVent(els,type,fn){
+            if (ele.addEventListener){
+                els.addEventListener(type,fn);
+            } else {
+                ele.attachEvent('on' + type, fn);
+            }
+        }
+
+        addEvent(oDiv,'click', function(){
+            console.log(555);
+        })
+    </script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="e1n">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/layout.css">
+    <style>
+
+        .box {
+            width: 460px;
+            background: #efefef;
+            border: 1px solid #ccc;
+            padding: 0 20px;
+        }
+
+        .box p {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 15px 0;
+
+        }
+
+        /* 待处理 */
+        .toDo form {
+            width: 460px;
+            margin: 0 auto;
+        }
+
+        .toDo_txt {
+            float: left;
+            height: 24px;
+            width: 400px;
+        }
+
+        .toDo_btn {
+            float: left;
+            height: 28px;
+            width: 50px;
+            margin-left: 6px;
+        }
+
+        /* 待处理列表 */
+        .toDo_ul li {
+            height: 26px;
+            width: 460px;
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 26px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .toDo_ul li input {
+            float: left;
+            height: 26px;
+            margin-right: 10px;
+            margin-left: 6px;
+        }
+        .toDo_ul li i input{
+            height:26px;
+            margin-right: 0px;
+            margin-left: 0px;
+            border:0;
+        }
+        .toDo_ul li div {
+            float: right;
+        }
+        
+
+        /* 编辑删除 */
+        .ul_btn {
+            color: red;
+            font-size: 12px;
+            padding-right: 10px;
+            display: none;
+        }
+
+        .edit {
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .del {
+            cursor: pointer;
+        }
+
+        /* 批量处理按钮 */
+        .piliang {
+            height: 26px;
+            width: 460px;
+            margin: 5px 0;
+            font-size: 12px;
+            line-height: 26px;
+            color: blue;
+        }
+
+        .piliang input {
+            float: left;
+            height: 26px;
+            margin-right: 10px;
+            margin-left: 6px;
+        }
+
+        .piliang label {
+            float: left;
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        .piliang span {
+            float: left;
+            margin-right: 20px;
+            cursor: pointer;
+        }
+
+        /* 已处理 */
+        .down {
+            padding-bottom: 10px;
+        }
+
+        .down_ul li {
+            height: 26px;
+            width: 450px;
+            margin: 5px 0;
+            font-size: 14px;
+            color: rgba(0, 0, 0, 0.3);
+            line-height: 26px;
+            background: rgba(0, 0, 0, 0.15);
+            padding-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <p>待办任务列表</p>
+        <div class="toDo">
+
+            <!-- 表单 -->
+            <form action="" class="clearfix">
+                <input class="toDo_txt" type="text">
+                <input class="toDo_btn" type="button" value="添加">
+            </form>
+
+            <!-- 待处理 -->
+            <ul class="toDo_ul">
+                <li>
+                    <input type="checkbox" class="checkOne"><i class="i_value"> 任务1</i>
+                    <div class="ul_btn"><span class="edit">编辑</span><span class="del">删除</span></div>
+                </li>
+            </ul>
+
+            <!-- 批量处理按钮 -->
+            <div class="piliang clearfix">
+                <input id="allCheck" type="checkbox"><label for="allCheck">选择全部</label>
+                <!-- 已处理 -->
+                <span class="piliang_down">已处理</span>
+                <!-- 删除 -->
+                <span class="piliang_del">删除</span>
+            </div>
+        </div>
+        <p>已处理任务列表</p>
+
+        <div class="down">
+            <!-- 已处理列表 -->
+            <ul class="down_ul">
+                <!-- <li>任务1</li> -->
+            </ul>
+        </div>
+    </div>
+
+
+
+
+
+
+    <script>
+        var oTxt = document.querySelector('.toDo_txt');
+        var oBtn = document.querySelector('.toDo_btn');
+        var oToDoUl = document.querySelector('.toDo_ul');
+        var oDownUl = document.querySelector('.down_ul');
+
+        // console.log(oIValue.innerHTML)
+        // 批量处理  删除
+        var oPiliangDown = document.querySelector('.piliang_down');
+        var oPiliangDel = document.querySelector('.piliang_del');
+        // console.log(oTxt,oToDoUl);
+        oBtn.onclick = function () { //添加    点击事件  
+            //调用 创建li 函数
+            newLi('<input type="checkbox" class="checkOne"><i class="i_value">' + oTxt.value +
+                '</i><div class="ul_btn"><span class="edit">编辑</span><span class="del">删除</span></div>', oToDoUl, true);
+            oCheckOne = document.querySelectorAll('.checkOne');
+            bangDingCheckOne()
+        }
+
+        // 点击 已处理
+        oPiliangDown.onclick = function () {
+
+            var oIValues = document.querySelectorAll('.i_value');
+
+            // console.log(oIValues[0]);
+            for (var i = 0; i < oCheckOne.length; i++) {
+
+                oCheckOne[i].index = i; //绑定下标
+                if (oCheckOne[i].checked === true) {
+                    newLi(oIValues[i].innerText +
+                        '<div class="ul_btn"><span class="edit">编辑</span><span class="del">删除</span></div>', oDownUl, false) //添加到已处理
+                    // newLi(oCheckOne[i].parentNode.innerHTML, oDownUl , false) //添加到已处理
+                    oCheckOne[i].parentNode.remove(); //删除待办父节点
+
+                }
+            }
+        }
+
+        //点击  删除
+        oPiliangDel.onclick = function () {
+
+            for (var i = 0; i < oCheckOne.length; i++) {
+
+                oCheckOne[i].index = i; //绑定下标
+                if (oCheckOne[i].checked === true) {
+                    oCheckOne[i].parentNode.remove(); //删除待办父节点
+                }
+            }
+        }
+
+        // 创造节点
+        function newLi(text, dom, bool) {
+
+            var oLi = document.createElement('li')
+            // 赋值 
+            if (bool) {
+                // 待办区
+                oLi.innerHTML = text;
+                dom.appendChild(oLi);
+                oTxt.value = '';
+
+            } else {
+                // 已处理区
+                oLi.innerHTML = text;
+                dom.appendChild(oLi);
+            }
+
+
+
+        }
+
+
+
+        oToDoUl.onmouseenter = function (e) { //鼠标移入//向上绑定
+
+            // 鼠标移入时开始取li标签数
+            var oLis = document.querySelectorAll('.toDo_ul li');
+            var oUlBtns = document.querySelectorAll('.ul_btn');
+            console.log(oLis);
+
+            //绑定循环事件  显示 编辑 删除
+            for (var i = 0; i < oLis.length; i++) {
+
+                oLis[i].index = i;
+
+                oLis[i].onmouseenter = function () { //移入 Li
+
+                    oUlBtns[this.index].style.display = 'block'; //显示 按钮
+
+                    var oDels = document.querySelectorAll('.del');
+                    var oEdits = document.querySelectorAll('.edit');
+                    // console.log(oEdit);
+                    // 点击 单个删除
+                    oDels[this.index].onclick = function () {
+                        this.remove();
+                    }.bind(this)
+
+                    // 点击 编辑
+                    oEdits[this.index].onclick = function () {
+
+                        var oIValues = document.querySelectorAll('.i_value');
+
+                        var newInput = document.createElement('input');
+                        
+                        newInput.value = oIValues[this.index].innerHTML;
+                        
+                        oIValues[this.index].innerHTML = '';
+                        oIValues[this.index].appendChild(newInput);
+                        
+                        newInput.focus(); //聚焦
+                        // newInput.onclick = function (e) { // 点击
+                        //     var ev = event || e;
+                        //     ev.stopPropagation();
+                        //     ev.cancelBubble = true;
+                        // }
+                        var self = this;  //保存oLis 下标
+
+                        newInput.onblur = function () { //失去焦点
+                        // console.log(oIValues[self.index]);
+                            oIValues[self.index].innerHTML = this.value;
+        
+                            newInput.remove();
+                        }
+
+                    }.bind(this)
+
+                }
+
+                oLis[i].onmouseleave = function () { // 移出
+                    oUlBtns[this.index].style.display = 'none';
+
+                }
+            }
+        }
+
+
+        //拿选择
+        var oAllCheck = document.getElementById('allCheck');
+        var oCheckOne = document.querySelectorAll('.checkOne');
+
+        // console.log(oAllCheck,oCheckOne)
+
+        oAllCheck.onclick = function () {
+            for (var i = 0; i < oCheckOne.length; i++)
+                oCheckOne[i].checked = this.checked;
+            // console.log(666);
+        }
+
+        // 单选每个单选都要被单独绑定事件才有效
+        function bangDingCheckOne() {
+            for (var i = 0; i < oCheckOne.length; i++) {
+                oCheckOne[i].onclick = function () {
+
+                    for (var i = 0; i < oCheckOne.length; i++) {
+                        if (oCheckOne[i].checked == false) { //只要有一个选框没被选中
+                            break;
+                        }
+                    }
+
+                    //开关条件成立
+                    if (oCheckOne.length == i) {
+                        oAllCheck.checked = true;
+                        // console.log(666);
+                    } else {
+                        oAllCheck.checked = false;
+                    }
+                }
+            }
+        }
+
+
+
+
+    </script>
+</body>
+
+</html>

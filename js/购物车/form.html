@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Document</title>
+<style>
+input.error{
+    border-color: red;
+}
+label.error{
+    color: red;
+}
+
+</style>
+</head>
+<body>
+
+<form action="https://www.baidu.com/">
+    <p>账号：<input type="text" class="user" name="user" required="true" rangelength="6,12"></p>
+    <p>密码：<input type="text" class="pass" name="pass" required="true"rangelength="6,8"></p>
+    <p>邮箱：<input type="text" class="email" name="email" required="true" email="true"></p>
+    <p>手机：<input type="text" class="phone" name="phone" required="true" digits="true" rangelength="11,12"></p>
+    <p><input type="submit" value="提交"></p>
+</form>
+
+
+<script src="jquery-1.8.3.js"></script>
+<script src="jquery.validate.js"></script>
+<script src="jquery.validate.messages_zh.js"></script>
+<script>
+$('form').validate();
+// $.extend($.validator.messages,{
+// 	required: "亲，这是必填项！",
+// 	email: "请输入正确的邮箱地址！"
+// })
+
+</script>
+</body>
+</html>
