@@ -36,6 +36,12 @@
       .arr-text {
         border: 0;
       }
+      .time-text{
+        width: 500px;
+        height: 30px;
+        color: red;
+        font-size: 14px;
+      }
     </style>
   </head>
   <body>
@@ -63,6 +69,10 @@
           <span class="form-label">输出:</span
           ><input class="new-arr-text" type="text" />
         </p>
+        <p>
+          <span class="form-label">耗时:</span
+          ><span class="time-text">xxx</span>
+        </p>
       </div>
     </div>
 
@@ -79,7 +89,7 @@
         fn();
         var endTime = new Date().getTime();
         var costTime = endTime - startTime;
-        console.log("耗费ms ---", costTime);
+        $(".time-text").innerText = costTime + ' ms'
       }
 
       // 随机生成数组
