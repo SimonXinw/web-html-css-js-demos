@@ -1,34 +1,63 @@
+<!--
+ * @Author: your name
+ * @Date: 2021-04-25 10:08:22
+ * @LastEditTime: 2021-04-25 10:45:19
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \web-js-demo\js\cookies.html
+-->
 <!DOCTYPE html>
 <html lang="e1n">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
-    <select name="" id="sel">
+    <style>
+      .container {
+        width: 375px;
+        margin: 16px auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <select name="" id="sel">
         <option value="red">红色</option>
-        <option value="blue">绿色</option>
+        <option value="orange">橙色</option>
+        <option value="yellow">黄色</option>
+        <option value="green">绿色</option>
+        <option value="blue">蓝色</option>
+        <option value="purple">紫色</option>
         <option value="pink">粉色</option>
-    </select>
-    <p><a href="https://blog.csdn.net/qq_42877027/article/details/104959349">源码</a></p>
+        <option value="gray">灰色</option>
+        <option value="black">黑色</option>
+      </select>
+      <p>
+        <a href="https://blog.csdn.net/qq_42877027/article/details/104959349"
+          >源码</a
+        >
+      </p>
+    </div>
+
     <script>
-        // 取 dom 节点
-        var sel = document.querySelector('#sel')
-        sel.onchange = function () { // input 输入改变
-            var pageColor = sel.value // 取值
-            document.body.style.backgroundColor = pageColor
-            // 存到 cookies
-            document.cookie = 'color=' + pageColor
-            console.log(document.cookie)
-        }
-        window.onload = function () { //页面加载判断 cookies
-            var pageColor = document.cookie
-            // 取出 字符串形式 cookies
-            var pageColor = pageColor.split('=')[1]
-            document.body.style.backgroundColor = pageColor
-            console.log(pageColor)
-        }
+      // 取 dom 节点
+      var sel = document.querySelector("#sel");
+      sel.onchange = function () {
+        // input 输入改变
+        var pageColor = sel.value; // 取值
+        document.body.style.backgroundColor = pageColor;
+        // 存到 cookies
+        document.cookie = "color=" + pageColor;
+        console.log(document.cookie);
+      };
+      window.onload = function () {
+        //页面加载判断 cookies
+        var pageColor = document.cookie;
+        // 取出 字符串形式 cookies
+        var pageColor = pageColor.split("=")[1];
+        document.body.style.backgroundColor = pageColor;
+        console.log(pageColor);
+      };
     </script>
-</body>
+  </body>
 </html>

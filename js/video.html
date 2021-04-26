@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .box {
+        width: 800px;
+        margin: auto;
+        background-color: #eee;
+      }
+      .video-controls {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: 48px;
+      }
+      i {
+        display: inline-block;
+        width: 55px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box">
+      <video
+        src="./video/风水.mp4"
+        width="800"
+        height="450"
+        controls
+        preload="auto"
+      ></video>
+      <div class="video-controls">
+        <button onclick="play()">播放</button>
+        <button onclick="stop()">暂停</button>
+        <button onclick="quickly()">快进10S</button>
+        <button onclick="back()">后退10S</button>
+        <button onclick="kuasu()">快速播放</button>
+        <button onclick="mansu()">慢速播放</button>
+        <button onclick="zhengchang()">正常播放</button>
+        <button onclick="jiada()">加大音量</button>
+        <button onclick="jianxiao()">减小音量</button>
+        <button onclick="jingyin()">静音</button>
+        <button onclick="quanping()">全屏</button>
+      </div>
+      <div class="caculate">
+        <div class="row">
+          <i>年利率</i><input class="yearRate" type="text" />
+        </div>
+        <div class="row"><i>年</i><input class="year" type="text" /></div>
+        <div class="row"><button onclick="caculate()">计算</button></div>
+      </div>
+    </div>
+
+    <script>
+      var video = document.querySelector("video");
+      var yearRate = document.querySelector(".yearRate");
+      var year = document.querySelector(".year");
+
+      function caculate() {
+        console.log(yearRate.value, year);
+      }
+      function play() {
+        video.play();
+      }
+      function stop() {
+        video.pause();
+      }
+      function quickly() {
+        video.currentTime = video.currentTime + 10;
+      }
+      function back() {
+        video.currentTime = video.currentTime - 10;
+      }
+      function kuasu() {
+        video.playbackRate = 2;
+      }
+      function mansu() {
+        video.playbackRate = 0.5;
+      }
+      function zhengchang() {
+        video.playbackRate = 1;
+      }
+      function jiada() {
+        var a = video.volume + 0.2;
+        if (a > 1) {
+          video.volume = 1;
+        } else {
+          video.volume = a;
+        }
+      }
+      function jianxiao() {
+        var a = video.volume - 0.2;
+        if (a < 0) {
+          video.volume = 0;
+        } else {
+          video.volume = a;
+        }
+      }
+      function jingyin() {
+        if (video.muted) {
+          video.volume = false;
+        } else {
+          video.muted = true;
+        }
+      }
+      function quanping() {
+        video.webkitRequestFullscreen();
+      }
+    </script>
+  </body>
+</html>
