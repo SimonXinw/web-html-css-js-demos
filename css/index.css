@@ -1,7 +1,6 @@
 /* ================ 分割线 ================== */
 
-.page-comtent {
-  padding-bottom: 180px;
+.page {
 }
 h1 {
   text-align: center;
@@ -28,10 +27,12 @@ p a {
 /* 二维码 */
 .ewm {
   position: absolute;
-  bottom: 88px;
-  right: 0px;
+  right: 0;
+  width: 66px;
+  height: 66px;
+  bottom: 66px;
 }
 .ewm img {
-  width: 100px;
-  height: 100px;
+  width: 66px;
+  height: 66px;
 }

@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
+      html {
+        font-size: 100px;
+      }
+      body {
+        font-size: 12px;
+      }
       .box {
-        width: 800px;
+        width: 3.75rem;
         margin: auto;
         background-color: #eee;
       }
@@ -14,20 +20,15 @@
         display: flex;
         justify-content: space-around;
         align-items: center;
-        height: 48px;
-      }
-      i {
-        display: inline-block;
-        width: 55px;
       }
     </style>
   </head>
   <body>
     <div class="box">
       <video
-        src="./video/风水.mp4"
-        width="800"
-        height="450"
+        src="./../video/工作的一天.mp4"
+        width="375"
+        height="250"
         controls
         preload="auto"
       ></video>
@@ -42,14 +43,8 @@
         <button onclick="jiada()">加大音量</button>
         <button onclick="jianxiao()">减小音量</button>
         <button onclick="jingyin()">静音</button>
-        <button onclick="quanping()">全屏</button>
-      </div>
-      <div class="caculate">
-        <div class="row">
-          <i>年利率</i><input class="yearRate" type="text" />
-        </div>
-        <div class="row"><i>年</i><input class="year" type="text" /></div>
-        <div class="row"><button onclick="caculate()">计算</button></div>
+        <button onclick="quanping()">竖屏</button>
+        <button onclick="hengping()">横屏</button>
       </div>
     </div>
 
@@ -100,12 +95,16 @@
       }
       function jingyin() {
         if (video.muted) {
-          video.volume = false;
+          video.muted = false;
         } else {
           video.muted = true;
         }
       }
       function quanping() {
+        video.webkitRequestFullscreen();
+      }
+      function hengping() {
+        screen.orientation.lock("landscape-primary");
         video.webkitRequestFullscreen();
       }
     </script>
