@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>复利计算</title>
     <link rel="stylesheet" href="./reset.css" />
-
     <style>
       html {
         width: 100%;
@@ -37,7 +36,7 @@
       .page {
         width: 100%;
         height: 100%;
-        background-color: #eee;
+        background-color: #ddd;
         overflow: hidden;
       }
       .box {
@@ -120,34 +119,84 @@
         <div class="tips"></div>
       </div>
     </div>
+    <script></script>
+    <script>
+      window.onload = function () {
+        getRem(375, 100);
+      };
+      window.onresize = function () {
+        getRem(375, 100);
+      };
+      function getRem(pwidth, prem) {
+        var html = document.getElementsByTagName("html")[0];
+        var oWidth =
+          document.body.clientWidth || document.documentElement.clientWidth;
+        html.style.fontSize = (oWidth / pwidth) * prem + "px";
+      }
+      // 快捷取 DOM
+      function $(name) {
+        return document.querySelector(name);
+      }
+      // 测试算法时间
+      function testCostTime(fn) {
+        var startTime = new Date().getTime();
+        fn();
+        var endTime = new Date().getTime();
+        var costTime = endTime - startTime;
+        $(".annualized-yield-positive").innerText = costTime + "%";
+      }
 
-    <scrip>
-      // 快捷取 DOM function $(name) { return document.querySelector(name); } //
-      测试算法时间 function testCostTime(fn) { var startTime = new
-      Date().getTime(); fn(); var endTime = new Date().getTime(); var costTime =
-      endTime - startTime; $(".annualized-yield-positive").innerText = costTime
-      + "%"; } // 获取各个金额计算 $(".caculate-btn").onclick = () => { var
-      currentAmount = parseInt($(".input-current-amount").value); var pastAmount
-      = parseInt($(".input-past-amount").value); var year =
-      parseInt($(".input-year").value); var rate = 1; var isRise = currentAmount
-      >= pastAmount; var precision = isRise ? 0.01 : -0.01; // js 精度问题
-      扩大基数 if ( (currentAmount < 100 && currentAmount > -100) || (pastAmount
-      < 100 && pastAmount > -100) ) { currentAmount = currentAmount * 100;
-      pastAmount = pastAmount * 100; } var totalNum = pastAmount; // 涨了 if
-      (isRise) { while (totalNum < currentAmount) { rate = parseFloat((rate +
-      precision).toFixed(2)); totalNum = pastAmount; for (let i = 0; i < year;
-      i++) { totalNum = parseInt(totalNum * rate); } }
-      $(".annualized-yield-positive").innerText = (rate.toFixed(2) - 1) * 100 +
-      "%"; $(".tips").style.opacity = "1"; $(".tips").style.fontSize = "36px";
-      $(".tips").innerText = "您难道就是巴菲特!"; } else { // 跌了
-      左边过去的金额大 while (totalNum > currentAmount) { rate = rate +
-      precision; totalNum = pastAmount; for (let i = 0; i < year; i++) {
-      totalNum = parseInt(totalNum * rate); } }
-      $(".annualized-yield-positive").classList.add( "annualized-yield-negative"
-      ); $(".tips").classList.add("tips-negative");
-      $(".annualized-yield-positive").innerText = (rate - 1).toFixed(2) * 100 +
-      "%"; $(".tips").style.opacity = "1"; $(".tips").style.fontSize = "36px";
-      $(".tips").innerText = "多和朋友交流一下!"; } };
-    </scrip>
+      // 获取各个金额计算
+      $(".caculate-btn").onclick = () => {
+        var currentAmount = parseInt($(".input-current-amount").value);
+        var pastAmount = parseInt($(".input-past-amount").value);
+        var year = parseInt($(".input-year").value);
+        var rate = 1;
+        var isRise = currentAmount >= pastAmount;
+        var precision = isRise ? 0.01 : -0.01;
+        // js 精度问题 扩大基数
+        if (
+          (currentAmount < 100 && currentAmount > -100) ||
+          (pastAmount < 100 && pastAmount > -100)
+        ) {
+          currentAmount = currentAmount * 100;
+          pastAmount = pastAmount * 100;
+        }
+        var totalNum = pastAmount;
+        // 涨了
+        if (isRise) {
+          while (totalNum < currentAmount) {
+            rate = parseFloat((rate + precision).toFixed(2));
+            totalNum = pastAmount;
+            for (let i = 0; i < year; i++) {
+              totalNum = parseInt(totalNum * rate);
+            }
+          }
+          $(".annualized-yield-positive").innerText =
+            (rate.toFixed(2) - 1) * 100 + "%";
+          $(".tips").style.opacity = "1";
+          $(".tips").style.fontSize = "36px";
+          $(".tips").innerText = "您难道就是巴菲特!";
+        } else {
+          // 跌了 左边过去的金额大
+          while (totalNum > currentAmount) {
+            rate = rate + precision;
+            totalNum = pastAmount;
+            for (let i = 0; i < year; i++) {
+              totalNum = parseInt(totalNum * rate);
+            }
+          }
+          $(".annualized-yield-positive").classList.add(
+            "annualized-yield-negative"
+          );
+          $(".tips").classList.add("tips-negative");
+          $(".annualized-yield-positive").innerText =
+            (rate - 1).toFixed(2) * 100 + "%";
+          $(".tips").style.opacity = "1";
+          $(".tips").style.fontSize = "36px";
+          $(".tips").innerText = "多和朋友交流一下!";
+        }
+      };
+    </script>
   </body>
 </html>
