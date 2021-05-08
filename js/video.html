@@ -26,6 +26,7 @@
   <body>
     <div class="box">
       <video
+        id="video"
         src="./../video/工作的一天.mp4"
         width="375"
         height="250"
@@ -104,7 +105,7 @@
         video.webkitRequestFullscreen();
       }
       function hengping() {
-        screen.orientation.lock("landscape-primary");
+        screen.orientation.lock("landscape");
         video.webkitRequestFullscreen();
       }
     </script>

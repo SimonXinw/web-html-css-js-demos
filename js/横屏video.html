@@ -1,0 +1,85 @@
+<!--
+ * @Author: your name
+ * @Date: 2021-05-08 11:28:05
+ * @LastEditTime: 2021-05-08 11:31:04
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \web-js-demo\js\横屏video.html
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>视频播放</title>
+  </head>
+
+  <body>
+    <div class="video">
+      <video id="video" controls="controls" preload="auto" height="100%">
+        <source src="./../video/工作的一天.mp4" />
+        <source src="./../video/工作的一天.mp4" type="video/mp4" />
+        <!-- <source
+          src="http://download.dcloud.net.cn/FastAndroid-mini.webm"
+          type="video/webm"
+        />
+        <source
+          src="http://download.dcloud.net.cn/FastAndroid-mini.ogv"
+          type="video/ogg"
+        /> -->
+      </video>
+    </div>
+    <script type="text/javascript">
+      /**
+       * 视频全屏播放旋转目前的逻辑
+       * 视频全屏，即锁定屏幕为横屏。
+       * 视频恢复，则解除屏幕方向的锁定。
+       * 具体的切换，根据自己的实际业务做相应的操作。
+       */
+      // Android平台的视频全屏旋转
+      var fullScreenOfAndroid = function () {
+        if (true) {
+          // 最新5+API的支持
+          var self = plus.webview.currentWebview();
+          self.setStyle({
+            videoFullscreen: "landscape",
+          });
+        } else {
+          // 如果暂未更新sdk，可以先使用差量升级等方式，做出兼容处理；
+          // 旧版本下的兼容处理
+          document.addEventListener("webkitfullscreenchange", function () {
+            var el = document.webkitFullscreenElement; //获取全屏元素
+            if (el) {
+              plus.screen.lockOrientation("landscape"); //锁死屏幕方向为横屏
+            } else {
+              plus.screen.unlockOrientation(); //解除屏幕方向的锁定
+            }
+          });
+        }
+      };
+      // iOS平台的视频全屏旋转
+      var fullScreenOfIos = function (videoElem) {
+        // 监听的事件与Android平台有很大区别
+        videoElem.addEventListener("webkitbeginfullscreen", function () {
+          plus.screen.lockOrientation("landscape"); //锁死屏幕方向为横屏
+        });
+        videoElem.addEventListener("webkitendfullscreen", function () {
+          plus.screen.unlockOrientation(); //解除屏幕方向的锁定
+        });
+      };
+      // 涉及到5+API的内容，均在plusready事件后调用；
+      document.addEventListener("plusready", function () {
+        var osName = plus.os.name;
+        if (osName === "Android") {
+          fullScreenOfAndroid();
+        } else if (osName === "iOS") {
+          var videoElem = document.getElementById("video");
+          fullScreenOfIos(videoElem);
+        }
+      });
+    </script>
+  </body>
+</html>
