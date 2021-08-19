@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>排序算法</title>
+    <link rel="stylesheet" href="./reset.css" />
+    <style>
+      input {
+        width: 500px;
+        height: 30px;
+        box-sizing: border-box;
+        padding-left: 8px;
+        border-radius: 4px;
+        border: 1px solid skyblue;
+      }
+      p {
+        display: flex;
+        margin: 10px 0;
+      }
+      .form-label {
+        display: inline-block;
+        width: 90px;
+        margin-right: 16px;
+      }
+
+
+      .page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        background-color: #eee;
+        overflow: hidden;
+      }
+      .box {
+        width: 660px;
+      }
+      .arr-text {
+        border: 0;
+      }
+      .current-vw{
+        border: none;
+      }
+      .time-text {
+        width: 500px;
+        height: 30px;
+        color: red;
+        font-size: 14px;
+      }
+      .dialog-wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: all 0.5s;
+        width: 150px;
+        position: fixed;
+        top: 0;
+        left: 50%;
+        margin-left: -50px;
+        border-radius: 4px;
+        background-color: greenyellow;
+        box-shadow: 1px 1px 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="box">
+        <p>
+          <span class="form-label"> 基准像素:</span
+          ><input
+            class="base-px"
+            type="text"
+            placeholder="请加入需要排序的数字"
+          />
+        </p>
+        <p>
+          <span class="form-label">模板 Width:</span
+          ><input class="template-px" type="text" />
+        </p>
+        <p>
+          <span class="form-label">开发像素:</span
+          ><input class="current-px" type="text" />
+        </p>
+        <p>
+          <span class="form-label">VW/H 比例:</span
+          ><input readonly class="current-vw" type="text" />
+        </p>
+        <p>
+          <span class="form-label">耗时:</span
+          ><span class="time-text">xxx</span>
+          <button class="caculate-btn">计算</button>
+        </p>
+      </div>
+      <div class="dialog-wrap">已复制到剪切板</div>
+    </div>
+
+    <script>
+      var arrText = "";
+      var newArrText = "";
+      // 快捷取 DOM
+      function $(name) {
+        return document.querySelector(name);
+      }
+      // 测试算法时间
+      function testCostTime(fn) {
+        var startTime = new Date().getTime();
+        fn();
+        var endTime = new Date().getTime();
+        var costTime = endTime - startTime;
+        $(".time-text").innerText = costTime + " ms";
+      }
+      $(".base-px").value = 750;
+      $(".template-px").value = 375;
+
+      // 快速升序
+      $(".caculate-btn").onclick = () => {
+        const animate = (className) => {
+          $(className).style.opacity = "0.8";
+          $(className).style.top = "100px";
+          setTimeout(() => {
+            $(className).style.opacity = "0";
+          }, 1000);
+        };
+        const textTimes = () => {
+          var basePx = parseInt($(".base-px").value);
+          var templatePx = parseInt($(".template-px").value);
+          var currentPx = parseInt($(".current-px").value);
+          var multiple = parseInt((basePx / templatePx).toFixed(2));
+          var newArr = [];
+
+          $(".current-vw").value = (currentPx / basePx) * 100 + "vw";
+          $(".current-vw").select();
+          document.execCommand("copy");
+          animate(".dialog-wrap");
+        };
+        testCostTime(textTimes);
+      };
+    </script>
+  </body>
+</html>
