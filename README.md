@@ -1,12 +1,3 @@
-<!--
- * @Author: your name
- * @Date: 2021-04-25 10:08:22
- * @LastEditTime: 2021-04-25 17:12:43
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \web-js-demo\README.md
--->
-
 # web-js-demo
 
 这是用 原生 js 写的一些可供练习的逻辑的 demo
@@ -38,7 +29,7 @@ $ ssh root@ip地址
 7. 配置环境变量，使 node 、npm、npx 命令在服务器中全局可用
    a. 编辑 /etc/profile 文件。使用命令 vim /etc/profile，
    b. 按下键盘的 [i]
-   c. 按下方向键 [Down] 移动到最后一行，复制 export PATH=$PATH:/usr/local/node/bin
+   c. 按下方向键 [Down] 移动到最后一行，复制 export PATH=\$PATH:/usr/local/node/bin
    d. 按下键盘的 [Esc]
    e. 输入键盘的 :wq (英文字符)
    f. 按下[Enter]
