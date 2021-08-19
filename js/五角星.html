@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="esn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        background-color: black;
+      }
+      .wrap {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        width: 800px;
+        height: 600px;
+        margin: 20px auto;
+        background-color: pink;
+      }
+      .star {
+        position: relative;
+        height: 0px;
+        width: 0px;
+        border-right: 100px solid transparent;
+        border-left: 100px solid transparent;
+        border-bottom: 70px solid red;
+        transform: rotate(35deg);
+      }
+      .star:before {
+        content: "";
+        display: block;
+        position: absolute;
+        left: -100px;
+        top: 0px;
+        height: 0;
+        width: 0; 
+        
+        border-right: 100px solid transparent;
+        border-left: 100px solid transparent;
+        border-bottom: 70px solid red;
+        transform: rotate(72deg);
+      }
+      .star:after {
+        content: "";
+        display: block;
+        position: absolute;
+        left: -100px;
+        top: 0px;
+        height: 0;
+        width: 0;
+        border-right: 100px solid transparent;
+        border-left: 100px solid transparent;
+        border-bottom: 70px solid red;
+        transform: rotate(-70deg);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="star"></div>
+    </div>
+  </body>
+</html>
