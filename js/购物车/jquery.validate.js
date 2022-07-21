@@ -1,8 +1,7 @@
 /*!
  * jQuery Validation Plugin 1.11.1
  *
- * http://bassistance.de/jquery-plugins/jquery-plugin-validation/
- * http://docs.jquery.com/Plugins/Validation
+
  *
  * Copyright 2013 Jörn Zaefferer
  * Released under the MIT license:
@@ -1216,7 +1215,6 @@ $.format = $.validator.format;
 }(jQuery));
 
 // provides delegate(type: String, delegate: Selector, handler: Callback) plugin for easier event delegation
-// handler is only called when $(event.target).is(delegate), in the scope of the jquery-object for event.target
 (function($) {
 	$.extend($.fn, {
 		validateDelegate: function( delegate, type, handler ) {
