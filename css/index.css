@@ -9,6 +9,32 @@ ul {
   width: 200px;
   margin: auto;
 }
+
+ul li {
+  list-style: none;
+}
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.links a {
+  margin-bottom: 2px;
+  color: #666;
+  text-decoration: none;
+}
+
+.links a:hover {
+  color: #333;
+  text-decoration: underline;
+}
 /* bottom */
 p {
   position: absolute;
