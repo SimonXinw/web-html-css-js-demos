@@ -18,11 +18,12 @@
 
     <script>
       var div = document.querySelector("div");
-      function begin() {
+      function begin({ speedX = 10, speedY = 10, times = 10 }) {
         var maxY = document.documentElement.scrollHeight - div.offsetHeight;
         var maxX = document.documentElement.scrollWidth - div.offsetWidth;
-        var speedY = 4;
-        var speedX = (maxX - div.offsetLeft) / 10;
+        var speedY = 6;
+        var speedX = (maxX - div.offsetLeft) / 50;
+        const times = 50;
         //  时刻判断
         timer = setInterval(() => {
           var x = div.offsetLeft;
@@ -42,7 +43,7 @@
           if (x <= 0) {
             speedX = maxX / 10;
           } else if (x >= maxX) {
-            speedX = -x/10;
+            speedX = -x / 10;
           }
 
           //   上边距 下边距
@@ -60,10 +61,10 @@
           if (y <= 0) {
             speedY = maxY / 10;
           } else if (y >= maxY) {
-            speedY = -y/10;
+            speedY = -y / 10;
           }
           console.log(speedY);
-          
+
           //  赋值 最终应该是多少的距离，位置
           div.style.left = x + speedX + "px";
           div.style.top = y + speedY + "px";
