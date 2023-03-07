@@ -12,37 +12,48 @@
         position: absolute;
       }
     </style>
+    <script src="./js功能库/utils.js"></script>
   </head>
   <body>
     <div></div>
 
     <script>
-      var div = document.querySelector("div");
-      function begin({ speedX = 10, speedY = 10, times = 10 }) {
+      function begin(config) {
+        let { speedX = 10, speedY = 10, timesX = 50, timesY = 50 } = config;
+
         var maxY = document.documentElement.scrollHeight - div.offsetHeight;
+
         var maxX = document.documentElement.scrollWidth - div.offsetWidth;
-        var speedY = 6;
-        var speedX = (maxX - div.offsetLeft) / 50;
-        const times = 50;
+
         //  时刻判断
         timer = setInterval(() => {
+          var div = document.querySelector("div");
+
           var x = div.offsetLeft;
+
           var y = div.offsetTop;
+
           //   左边距 右边距 决定初始速度方向
           if (speedX > 0) {
             speedX = (maxX - x) / 10;
           } else {
             speedX = -x / 10;
           }
+
           if (speedX > 0) {
             speedX = Math.ceil(speedX);
           } else {
             speedX = Math.floor(speedX);
           }
-          //   判断边距，重新决定速度
+
+          // 判断边距，重新决定速度
           if (x <= 0) {
+            div.style.backgroundColor = randomColor();
+
             speedX = maxX / 10;
           } else if (x >= maxX) {
+            div.style.backgroundColor = randomColor();
+
             speedX = -x / 10;
           }
 
@@ -52,25 +63,38 @@
           } else {
             speedY = -y / 10;
           }
+
           if (speedY > 0) {
             speedY = Math.ceil(speedY);
           } else {
             speedY = Math.floor(speedY);
           }
+
           // 判断边距，重新决定速度
           if (y <= 0) {
+            div.style.backgroundColor = randomColor();
+
             speedY = maxY / 10;
           } else if (y >= maxY) {
+            div.style.backgroundColor = randomColor();
+            console.log(">>>>>");
+
             speedY = -y / 10;
           }
-          console.log(speedY);
 
           //  赋值 最终应该是多少的距离，位置
           div.style.left = x + speedX + "px";
           div.style.top = y + speedY + "px";
         }, 40);
       }
-      begin();
+
+      // 启动
+      begin({
+        speedX: 10,
+        speedY: 10,
+        timesX: 50,
+        timesY: 20,
+      });
     </script>
   </body>
 </html>
