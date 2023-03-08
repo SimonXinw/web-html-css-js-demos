@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+
+    <style>
+      .container {
+        width: 800px;
+        margin: 20px auto;
+        background-color: #eee;
+      }
+      .row {
+        margin: 4px;
+      }
+      .label {
+        display: inline-block;
+        width: 120px;
+      }
+      .timeResult {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <span class="label">測試 CDN 链接:</span
+        ><input type="text" class="url" />
+        <button class="addBtn">Add</button>
+      </div>
+      <!-- <div class="row">
+        <span class="label">Times:</span><span class="timeResult">xxxx ms</span>
+      </div> -->
+    </div>
+
+    <script>
+       // 插入时间，增加一条新的行
+      const addRow = (time) => {
+        const newDom = `
+          <div class="row">
+            <span class="label">Times:</span>
+            <span class="time_${time} timeResult">${time} ms</span>
+          </div>
+        `;
+
+        $('.container').append(newDom);
+      };
+
+
+      // 计算时间
+      const calcTiming = (url) => {
+        var headDom = document.querySelector('head');
+
+        var newDom = document.createElement('script');
+
+        newDom.src = url;
+
+        headDom.appendChild(newDom);
+
+        const preTime = new Date().getTime();
+
+        newDom.onload = function () {
+          const gapTime = new Date().getTime() - preTime;
+
+         
+          addRow(gapTime);
+
+          $(`.time_${gapTime}`).html(`${gapTime}ms`);
+        };
+      };
+
+      // 点击事件
+      $('.addBtn').click(() => {
+        const url = $('.url').val() || '';
+
+        calcTiming(url);
+      });
+    </script>
+  </body>
+</html>
