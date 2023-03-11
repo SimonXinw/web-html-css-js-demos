@@ -21,13 +21,13 @@
       function begin(config) {
         let { speedX = 10, speedY = 10, timesX = 50, timesY = 50 } = config;
 
-        var maxY = document.documentElement.scrollHeight - div.offsetHeight;
-
-        var maxX = document.documentElement.scrollWidth - div.offsetWidth;
-
         //  时刻判断
-        timer = setInterval(() => {
+        const timer = setInterval(() => {
           var div = document.querySelector("div");
+
+          var maxY = document.documentElement.scrollHeight - div.offsetHeight;
+
+          var maxX = document.documentElement.scrollWidth - div.offsetWidth;
 
           var x = div.offsetLeft;
 
@@ -35,9 +35,9 @@
 
           //   左边距 右边距 决定初始速度方向
           if (speedX > 0) {
-            speedX = (maxX - x) / 10;
+            speedX = (maxX - x) / timesX;
           } else {
-            speedX = -x / 10;
+            speedX = -x / timesX;
           }
 
           if (speedX > 0) {
@@ -59,9 +59,9 @@
 
           //   上边距 下边距
           if (speedY > 0) {
-            speedY = (maxY - y) / 10;
+            speedY = (maxY - y) / timesY;
           } else {
-            speedY = -y / 10;
+            speedY = -y / timesY;
           }
 
           if (speedY > 0) {
@@ -85,15 +85,15 @@
           //  赋值 最终应该是多少的距离，位置
           div.style.left = x + speedX + "px";
           div.style.top = y + speedY + "px";
-        }, 40);
+        }, 10);
       }
 
       // 启动
       begin({
         speedX: 10,
         speedY: 10,
-        timesX: 50,
-        timesY: 20,
+        timesX: 100,
+        timesY: 50,
       });
     </script>
   </body>
