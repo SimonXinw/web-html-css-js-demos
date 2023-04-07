@@ -18,82 +18,186 @@
     <div></div>
 
     <script>
-      function begin(config) {
-        let { speedX = 10, speedY = 10, timesX = 50, timesY = 50 } = config;
+      /**
+       * @线性运动
+       */
+      function linearMotion(config) {
+        let { speedX = 10, speedY = 10, ms = 1, className = "" } = config;
 
-        var maxY = document.documentElement.scrollHeight - div.offsetHeight;
-
-        var maxX = document.documentElement.scrollWidth - div.offsetWidth;
+        var div = document.querySelector(className);
 
         //  时刻判断
-        timer = setInterval(() => {
-          var div = document.querySelector("div");
+        const timer = setInterval(() => {
+          var maxY = document.documentElement.clientHeight - div.offsetHeight;
+
+          var maxX = document.documentElement.clientWidth - div.offsetWidth;
 
           var x = div.offsetLeft;
 
           var y = div.offsetTop;
 
-          //   左边距 右边距 决定初始速度方向
-          if (speedX > 0) {
-            speedX = (maxX - x) / 10;
-          } else {
-            speedX = -x / 10;
-          }
-
-          if (speedX > 0) {
-            speedX = Math.ceil(speedX);
-          } else {
-            speedX = Math.floor(speedX);
-          }
-
-          // 判断边距，重新决定速度
+          // 碰撞 - 左
           if (x <= 0) {
-            div.style.backgroundColor = randomColor();
+            div.style.backgroundColor = Utils.randomColor();
 
-            speedX = maxX / 10;
-          } else if (x >= maxX) {
-            div.style.backgroundColor = randomColor();
+            speedY = Utils.randomPositiveOrNegative(speedY);
 
-            speedX = -x / 10;
+            speedX = Math.abs(speedX);
           }
 
-          //   上边距 下边距
-          if (speedY > 0) {
-            speedY = (maxY - y) / 10;
-          } else {
-            speedY = -y / 10;
+          // 碰撞 - 右
+          if (x >= maxX) {
+            div.style.backgroundColor = Utils.randomColor();
+
+            speedY = Utils.randomPositiveOrNegative(speedY);
+
+            speedX = -Math.abs(speedX);
           }
 
-          if (speedY > 0) {
-            speedY = Math.ceil(speedY);
-          } else {
-            speedY = Math.floor(speedY);
-          }
-
-          // 判断边距，重新决定速度
+          // 碰撞 - 上
           if (y <= 0) {
-            div.style.backgroundColor = randomColor();
+            div.style.backgroundColor = Utils.randomColor();
 
-            speedY = maxY / 10;
+            speedX = Utils.randomPositiveOrNegative(speedX);
+
+            speedY = Math.abs(speedY);
+          }
+
+          // 碰撞 - 下
+          if (y >= maxY) {
+            div.style.backgroundColor = Utils.randomColor();
+
+            speedX = Utils.randomPositiveOrNegative(speedX);
+
+            speedY = -Math.abs(speedY);
+          }
+
+          //  赋值 最终应该是多少的距离，位置
+          div.style.left = x + speedX + "px";
+
+          div.style.top = y + speedY + "px";
+        }, ms);
+
+        // END
+      }
+
+      /**
+       * @缓冲运动
+       */
+      function bufferMove(config) {
+        let {
+          speedX = 10,
+          speedY = 10,
+          timesX = 20,
+          timesY = 20,
+          isSpeedChange,
+          ms = 1,
+          className = "div",
+        } = config;
+
+        // 取整
+        const intNumber = (speed) => {
+          let num = speed;
+          if (num > 0) {
+            num = Math.ceil(num);
+          } else {
+            num = Math.floor(num);
+          }
+
+          return num;
+        };
+
+        var div = document.querySelector(className);
+
+        //  时刻判断
+        const timer = setInterval(() => {
+          var maxY = document.documentElement.clientHeight - div.offsetHeight;
+
+          var maxX = document.documentElement.clientWidth - div.offsetWidth;
+
+          var x = div.offsetLeft;
+
+          var y = div.offsetTop;
+
+          // 速度再计算
+          if (speedX > 0 && isSpeedChange) {
+            speedX = (maxX - x) / timesX;
+          }
+
+          if (!(speedX > 0) && isSpeedChange) {
+            speedX = -x / timesX;
+          }
+
+          speedX = intNumber(speedX);
+
+          // 判断上边距，下边距
+          if (x <= 0) {
+            div.style.backgroundColor = Utils.randomColor();
+
+            speedY = Utils.randomPositiveOrNegative(speedY);
+
+            // 缓冲运动才有
+            if (isSpeedChange) speedX = maxX / 10;
+            if (!isSpeedChange) speedX = Math.abs(speedX);
+          } else if (x >= maxX) {
+            div.style.backgroundColor = Utils.randomColor();
+
+            speedY = Utils.randomPositiveOrNegative(speedY);
+
+            // 缓冲运动才有
+            if (isSpeedChange) speedX = -x / 10;
+            if (!isSpeedChange) speedX = -Math.abs(speedX);
+          }
+
+          // 速度再计算
+          if (speedY > 0 && isSpeedChange) {
+            speedY = (maxY - y) / timesY;
+          }
+
+          if (!(speedY > 0) && isSpeedChange) {
+            speedY = -y / timesY;
+          }
+
+          speedY = intNumber(speedY);
+
+          // 判断上边距，判断下边距，重新决定速度
+          if (y <= 0) {
+            div.style.backgroundColor = Utils.randomColor();
+
+            speedX = Utils.randomPositiveOrNegative(speedX);
+
+            if (isSpeedChange) speedY = maxY / 10;
+            if (!isSpeedChange) speedY = Math.abs(speedY);
           } else if (y >= maxY) {
-            div.style.backgroundColor = randomColor();
-            console.log(">>>>>");
+            div.style.backgroundColor = Utils.randomColor();
 
-            speedY = -y / 10;
+            speedX = Utils.randomPositiveOrNegative(speedX);
+
+            if (isSpeedChange) speedY = -y / 10;
+            if (!isSpeedChange) speedY = -Math.abs(speedY);
           }
 
           //  赋值 最终应该是多少的距离，位置
           div.style.left = x + speedX + "px";
           div.style.top = y + speedY + "px";
-        }, 40);
+        }, ms);
       }
 
       // 启动
-      begin({
-        speedX: 10,
-        speedY: 10,
-        timesX: 50,
-        timesY: 20,
+      // bufferMove({
+      //   speedX: 2,
+      //   speedY: 2,
+      //   ms: 20,
+      //   isSpeedChange: false,
+      //   className: "div",
+      // });
+
+      // 启动
+      linearMotion({
+        speedX: 2,
+        speedY: 2,
+        ms: 20,
+        className: "div",
       });
     </script>
   </body>
