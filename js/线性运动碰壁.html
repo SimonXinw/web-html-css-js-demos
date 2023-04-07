@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="e1n">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      div {
+        width: 100px;
+        height: 100px;
+        background-color: red;
+        position: absolute;
+      }
+    </style>
+    <script src="./js功能库/utils.js"></script>
+  </head>
+  <body>
+    <div></div>
+
+    <script>
+      linearMotion({
+        speedX: 1,
+        speedY: 1,
+        ms: 20,
+        className: 'div',
+      });
+
+      /**
+       * @线性运动
+       */
+      function linearMotion(config) {
+        let { speedX = 1, speedY = 1, ms = 10, className = '' } = config;
+
+        let dom = document.querySelector(className);
+
+        clearInterval(dom.linearMotionTimer);
+
+        // Move in 设置
+        dom.onmouseover = null;
+
+        // Move in
+        dom.onmouseover = () => {
+          clearInterval(dom.linearMotionTimer);
+        };
+
+        // Move out 清除
+        dom.onmouseout = null;
+
+        // Move out
+        dom.onmouseout = () => {
+          dom.linearMotionTimer = setInterval(() => {
+            handleMotion();
+          }, ms);
+        };
+
+        dom.linearMotionTimer = setInterval(() => {
+          handleMotion();
+        }, ms);
+
+        const handleMotion = () => {
+          var maxY = document.documentElement.clientHeight - dom.offsetHeight;
+
+          var maxX = document.documentElement.clientWidth - dom.offsetWidth;
+
+          var x = dom.offsetLeft;
+
+          var y = dom.offsetTop;
+
+          // 碰撞 - 左
+          if (x < 0) {
+            speedX = Math.abs(speedX);
+          }
+
+          // 碰撞 - 右
+          if (x > maxX) {
+            speedX = -Math.abs(speedX);
+          }
+
+          // 碰撞 - 上
+          if (y < 0) {
+            speedY = Math.abs(speedY);
+          }
+
+          // 碰撞 - 下
+          if (y > maxY) {
+            speedY = -Math.abs(speedY);
+          }
+
+          //  赋值 最终应该是多少的距离，位置
+          dom.style.left = x + speedX + 'px';
+
+          dom.style.top = y + speedY + 'px';
+        };
+
+        // END
+      }
+    </script>
+  </body>
+</html>
