@@ -15,22 +15,43 @@
       content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
     />
     <title>视频播放</title>
+
+    <style>
+      .wrap {
+        display: flex;
+        justify-content: space-around;
+      }
+      .box {
+        width: 400px;
+      }
+      .box:nth-child(2) {
+        width: 1080px;
+      }
+      #video1 {
+        width: 100%;
+        height: 100%;
+      }
+      #video2 {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
   </head>
 
   <body>
-    <div class="video">
-      <video id="video" controls="controls" preload="auto" height="100%">
-        <source src="./../video/工作的一天.mp4" />
-        <source src="./../video/工作的一天.mp4" type="video/mp4" />
-        <!-- <source
-          src="http://download.dcloud.net.cn/FastAndroid-mini.webm"
-          type="video/webm"
-        />
-        <source
-          src="http://download.dcloud.net.cn/FastAndroid-mini.ogv"
-          type="video/ogg"
-        /> -->
-      </video>
+    <div class="wrap">
+      <div class="box">
+        <video id="video1" controls="controls" preload="auto" height="100%">
+          <source src="./../video/工作的一天.mp4" />
+          <source src="./../video/工作的一天.mp4" type="video/mp4" />
+        </video>
+      </div>
+      <div class="box">
+        <video id="video2" controls="controls" preload="auto" height="100%">
+          <source src="http://rsqk3u3i8.hn-bkt.clouddn.com/girl_beach.mp4" />
+          <source src="http://rsqk3u3i8.hn-bkt.clouddn.com/girl_beach.mp4" type="video/mp4" />
+        </video>
+      </div>
     </div>
     <script type="text/javascript">
       /**
@@ -45,15 +66,15 @@
           // 最新5+API的支持
           var self = plus.webview.currentWebview();
           self.setStyle({
-            videoFullscreen: "landscape",
+            videoFullscreen: 'landscape',
           });
         } else {
           // 如果暂未更新sdk，可以先使用差量升级等方式，做出兼容处理；
           // 旧版本下的兼容处理
-          document.addEventListener("webkitfullscreenchange", function () {
+          document.addEventListener('webkitfullscreenchange', function () {
             var el = document.webkitFullscreenElement; //获取全屏元素
             if (el) {
-              plus.screen.lockOrientation("landscape"); //锁死屏幕方向为横屏
+              plus.screen.lockOrientation('landscape'); //锁死屏幕方向为横屏
             } else {
               plus.screen.unlockOrientation(); //解除屏幕方向的锁定
             }
@@ -63,20 +84,20 @@
       // iOS平台的视频全屏旋转
       var fullScreenOfIos = function (videoElem) {
         // 监听的事件与Android平台有很大区别
-        videoElem.addEventListener("webkitbeginfullscreen", function () {
-          plus.screen.lockOrientation("landscape"); //锁死屏幕方向为横屏
+        videoElem.addEventListener('webkitbeginfullscreen', function () {
+          plus.screen.lockOrientation('landscape'); //锁死屏幕方向为横屏
         });
-        videoElem.addEventListener("webkitendfullscreen", function () {
+        videoElem.addEventListener('webkitendfullscreen', function () {
           plus.screen.unlockOrientation(); //解除屏幕方向的锁定
         });
       };
       // 涉及到5+API的内容，均在plusready事件后调用；
-      document.addEventListener("plusready", function () {
+      document.addEventListener('plusready', function () {
         var osName = plus.os.name;
-        if (osName === "Android") {
+        if (osName === 'Android') {
           fullScreenOfAndroid();
-        } else if (osName === "iOS") {
-          var videoElem = document.getElementById("video");
+        } else if (osName === 'iOS') {
+          var videoElem = document.getElementById('video1');
           fullScreenOfIos(videoElem);
         }
       });
