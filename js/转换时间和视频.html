@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+
+    <style>
+      .time-s,
+      .num {
+        color: #43a047;
+      }
+      .container {
+        width: 400px;
+        height: 100%;
+        margin: 0 auto;
+      }
+      .row {
+        margin: 20px;
+      }
+      .time-wrap {
+        margin: 20px 0;
+      }
+      .result-wrap {
+        width: 720px;
+      }
+      .result-wrap img {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="video">
+        <div class="time-wrap">
+          <span>视频时间</span> <span class="num">0</span>
+          <span class="time-s">ms</span>
+        </div>
+        <div class="result-wrap">
+          <img src="" alt="" class="result" />
+        </div>
+      </div>
+      <div class="img">
+        <div class="time-wrap">
+          <span>图片时间</span> <span class="num">0</span>
+          <span class="time-s">ms</span>
+        </div>
+        <div class="result-wrap">
+          <img src="" alt="" class="result" />
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 计算时间工具 - 异步
+      const getLoadTime = async ({ fn, params }) => {
+        const startTime = new Date().getTime();
+        let endTime = 0;
+        let loadTime = 0;
+
+        let res = {};
+        try {
+          await fn(params);
+
+          endTime = new Date().getTime();
+
+          loadTime = endTime - startTime;
+        } catch (err) {
+          console.error('计算错误>>>>>>>', err);
+
+          loadTime;
+        }
+
+        console.log('计算时间>>>>>>>', loadTime);
+
+        return loadTime;
+      };
+
+      // 计算视频
+      const getVideoBase64 = (url) => {
+        return new Promise(function (resolve, reject) {
+          let dataURL = '';
+          let video = document.createElement('video');
+          video.setAttribute('crossOrigin', 'anonymous'); //处理跨域
+          video.setAttribute('src', url);
+          video.setAttribute('width', 400);
+          video.setAttribute('height', 240);
+          video.setAttribute('preload', 'auto');
+          video.addEventListener('loadeddata', function () {
+            let canvas = document.createElement('canvas'),
+              width = video.width, //canvas的尺寸和图片一样
+              height = video.height;
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(video, 0, 0, width, height); //绘制canvas
+            dataURL = canvas.toDataURL('image/jpeg'); //转换为base64
+            resolve(dataURL);
+          });
+        });
+      };
+
+      //  图片
+      const getImgBase64 = (url) => {
+        return new Promise(function (resolve, reject) {
+          let Img = new Image();
+          let dataURL = '';
+          Img.src = url;
+          Img.onload = function () {
+            //确保图片完整获取
+            var canvas = document.createElement('canvas'), //创建canvas元素
+              width = Img.width, //canvas的尺寸和图片一样
+              height = Img.height;
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(Img, 0, 0, width, height); //绘制canvas
+            const imgType = url.split('.').pop(); // 取视频格式
+            dataURL = canvas.toDataURL(`image/${imgType}`); //转换为base64
+            resolve(dataURL);
+          };
+        });
+      };
+
+      const handleVideo = async () => {
+        const videoTime = await getLoadTime({
+          fn: getVideoBase64,
+          params: '../videos/video_bg_girl_beach.mp4',
+        });
+
+        $('.video .num').text(videoTime);
+
+        const imgUrl = await getVideoBase64(
+          '../videos/video_bg_girl_beach.mp4'
+        );
+
+        $('.video .result').attr('src', imgUrl);
+      };
+
+      handleVideo();
+
+      const handleImg = async () => {
+        const imgTime = await getLoadTime({
+          fn: getImgBase64,
+          params: '../img/美女_1.jpeg',
+        });
+
+        $('.img .num').text(imgTime);
+
+        const imgUrl = await getImgBase64('../img/美女_1.jpeg');
+
+        $('.img .result').attr('src', imgUrl);
+      };
+
+      handleImg();
+    </script>
+  </body>
+</html>
