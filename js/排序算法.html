@@ -36,7 +36,7 @@
       .arr-text {
         border: 0;
       }
-      .time-text{
+      .time-text {
         width: 500px;
         height: 30px;
         color: red;
@@ -89,7 +89,16 @@
         fn();
         var endTime = new Date().getTime();
         var costTime = endTime - startTime;
-        $(".time-text").innerText = costTime + ' ms'
+        $(".time-text").innerText = costTime + " ms";
+      }
+
+      // 字符串数组转数值数组
+      function stringToNumber(array) {
+        var newArr = [];
+        for (let index = 0; index < array.length; index++) {
+          newArr.push(Number(array[index]));
+        }
+        return newArr;
       }
 
       // 随机生成数组
@@ -118,14 +127,7 @@
         }
         return string;
       }
-      // 字符串数组转数值数组
-      function stringToNumber(array) {
-        var newArr = [];
-        for (let index = 0; index < array.length; index++) {
-          newArr.push(Number(array[index]));
-        }
-        return newArr;
-      }
+
       // 冒泡算法
       function maoPao(arr) {
         arr = stringToNumber(arr);
