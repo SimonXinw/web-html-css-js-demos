@@ -119,10 +119,11 @@
       function arrayToString(arr) {
         var string = "";
         for (let i = 0; i < arr.length; i++) {
-          if (string) {
-            string = string + ", " + arr[i];
-          } else {
+          // 数组只有一个数字，直接赋值
+          if (i == 0) {
             string = arr[i];
+          } else {
+            string = string + ", " + arr[i];
           }
         }
         return string;
@@ -131,9 +132,12 @@
       // 冒泡算法
       function maoPao(arr) {
         arr = stringToNumber(arr);
+        debugger;
         let t;
+
         for (let i = 0; i < arr.length; i++) {
-          for (let j = 0; j < arr.length - i; j++) {
+          // 将最大的数放到后面，一直对比最后放到最后面
+          for (let j = 0; j < arr.length - i - 1; j++) {
             if (arr[j] > arr[j + 1]) {
               t = arr[j];
               arr[j] = arr[j + 1];
@@ -150,12 +154,16 @@
         let t;
         let minIndex;
         for (let i = 0; i < array.length; i++) {
+          // 默认第一个数是最小的
           minIndex = i;
-          for (let j = 0 + i + 1; j < array.length; j++) {
+
+          for (let j = i + 1; j < array.length; j++) {
+            // 找到最小的第一个数，然后坐标替换
             if (array[minIndex] > array[j]) {
               minIndex = j;
             }
           }
+          // 最小的数进行交换
           t = array[minIndex];
           array[minIndex] = array[i];
           array[i] = t;
@@ -224,30 +232,39 @@
         }
         $(".arr-text").value = arrText;
       };
+
       // 生成随机数组字符串
       $(".add-random").onclick = () => {
         let arr = randomNum();
 
         $(".arr-text").value = arrayToString(arr);
       };
+
       // 冒泡升序
       $(".maopao-shen-btn").onclick = () => {
-        var arr = $(".arr-text").value.split(", ");
+        var arr = $(".arr-text").value.replace(/\s/g, "").split(",");
         var newArr = [];
+
         testCostTime(() => {
           newArr = maoPao(arr);
         });
+
         $(".new-arr-text").value = arrayToString(newArr);
       };
+
       // 选择升序
       $(".xuanze-shen-btn").onclick = () => {
-        var arr = $(".arr-text").value.split(", ");
+        var arr = $(".arr-text").value.split(",");
+
         var newArr = [];
+
         testCostTime(() => {
           newArr = xuanZe(arr);
         });
+
         $(".new-arr-text").value = arrayToString(newArr);
       };
+
       // 插入升序
       $(".charu-shen-btn").onclick = () => {
         var arr = $(".arr-text").value.split(", ");
