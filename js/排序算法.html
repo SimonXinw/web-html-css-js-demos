@@ -195,30 +195,38 @@
         return array;
       }
 
-      // 快速排序
-
+      /**
+       * @快速排序
+       */
       function kuaiSu(arr) {
         // 停止条件
         if (arr.length <= 1) return arr;
 
         // 确定锚点元素
-        const index = parseInt(arr.length / 2);
-        const flagValue = arr[index];
+
+        const flagValue = arr[0];
 
         const leftArr = [];
+        const middle = [];
         const rightArr = [];
 
         // 获取左右子集合
         for (let i = 0; i < arr.length; i++) {
           const item = arr[i];
+
           if (i === index) continue;
-          if (item <= flagValue) {
+
+          if (item < flagValue) {
             leftArr.push(item);
-          } else rightArr.push(item);
+          } else if (item === flagValue) {
+            middle.push(item);
+          } else {
+            rightArr.push(item);
+          }
         }
 
         // 递归查询子集合
-        return [...kuaiSu(leftArr), flagValue, ...kuaiSu(rightArr)];
+        return kuaiSu(leftArr).concat(middle, kuaiSu(rightArr));
       }
 
       // 根据用户生成数组
@@ -274,13 +282,17 @@
         });
         $(".new-arr-text").value = arrayToString(newArr);
       };
+
       // 快速升序
       $(".kuaisu-shen-btn").onclick = () => {
-        var arr = $(".arr-text").value.split(", ");
+        var arr = $(".arr-text").value.replace(/\s/g, "").split(",");
+
         var newArr = [];
+
         testCostTime(() => {
           newArr = kuaiSu(arr);
         });
+
         $(".new-arr-text").value = arrayToString(newArr);
       };
     </script>
