@@ -83,6 +83,7 @@
       function $(name) {
         return document.querySelector(name);
       }
+
       // 测试算法时间
       function testCostTime(fn) {
         var startTime = new Date().getTime();
@@ -132,7 +133,6 @@
       // 冒泡算法
       function maoPao(arr) {
         arr = stringToNumber(arr);
-        debugger;
         let t;
 
         for (let i = 0; i < arr.length; i++) {
