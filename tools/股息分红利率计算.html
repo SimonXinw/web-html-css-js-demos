@@ -143,7 +143,7 @@
     <script>
       function init() {
         // 设置默认值
-        const initialAmount = 5600;
+        const initialAmount = 10000;
         const startDate = "2022-06-20";
 
         document.getElementById("initialAmount").value = initialAmount;
@@ -201,17 +201,17 @@
               0;
             cumulativeAmount += dividend; // 更新累加金额
 
-            const interestRate = (dividend / previousCumulativeAmount) * 100; // 计算每年的利率
+            const originalRate = (dividend / initialAmount) * 100; // 计算原始资金利率
+            const interestRate = (dividend / previousCumulativeAmount) * 100; // 计算当年复利
 
             // 记录当前的累加金额作为上一年的原始资金
             resultsBody.innerHTML += `<tr><td>${previousCumulativeAmount.toFixed(
               2
             )}</td><td>${cumulativeAmount.toFixed(
               2
-            )}</td><td>${interestRate.toFixed(2)}</td><td>${(
-              (dividend / cumulativeAmount) *
-              100
-            ).toFixed(2)}</td></tr>`;
+            )}</td><td>${originalRate.toFixed(
+              2
+            )}</td><td>${interestRate.toFixed(2)}</td></tr>`;
 
             // 更新上一年原始资金
             previousCumulativeAmount = cumulativeAmount;
