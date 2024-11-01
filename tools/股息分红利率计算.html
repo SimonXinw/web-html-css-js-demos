@@ -61,6 +61,29 @@
         padding: 8px;
         text-align: center;
       }
+
+      #results th {
+        background-color: #f0f0f0;
+      }
+
+      #results tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+
+      #results tr:nth-child(odd) {
+        background-color: #ffffff;
+      }
+
+      /* 使年份和利率列对齐 */
+      #results th:nth-child(1),
+      #results td:nth-child(1) {
+        width: 50%; /* 年份列宽度 */
+      }
+
+      #results th:nth-child(2),
+      #results td:nth-child(2) {
+        width: 50%; /* 利率列宽度 */
+      }
     </style>
   </head>
   <body>
@@ -87,6 +110,18 @@
     <div id="results"></div>
 
     <script>
+      function init() {
+        // 设置默认值
+        const initialAmount = 5600;
+        const startDate = "2022-06-20";
+
+        document.getElementById("initialAmount").value = initialAmount;
+        document.getElementById("startDate").value = startDate;
+
+        // 触发 change 事件以生成分红输入框
+        document.getElementById("startDate").dispatchEvent(new Event("change"));
+      }
+
       document
         .getElementById("startDate")
         .addEventListener("change", function () {
@@ -140,6 +175,9 @@
 
           resultsDiv.innerHTML += "</table>";
         });
+
+      // 页面加载时执行初始化
+      window.onload = init;
     </script>
   </body>
 </html>
