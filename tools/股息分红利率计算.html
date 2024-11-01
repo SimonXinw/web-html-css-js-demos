@@ -74,25 +74,25 @@
         background-color: #ffffff;
       }
 
-      /* 使年份、利率、累加金额和环比列对齐 */
+      /* 使年份、原始资金、累加金额和实际利率列对齐 */
       #results th:nth-child(1),
       #results td:nth-child(1) {
-        width: 25%; /* 年份列宽度 */
+        width: 25%; /* 上一年原始资金列宽度 */
       }
 
       #results th:nth-child(2),
       #results td:nth-child(2) {
-        width: 25%; /* 利率列宽度 */
+        width: 25%; /* 累加金额列宽度 */
       }
 
       #results th:nth-child(3),
       #results td:nth-child(3) {
-        width: 25%; /* 累加金额列宽度 */
+        width: 25%; /* 原始利率列宽度 */
       }
 
       #results th:nth-child(4),
       #results td:nth-child(4) {
-        width: 25%; /* 环比列宽度 */
+        width: 25%; /* 实际利率列宽度 */
       }
     </style>
   </head>
@@ -122,11 +122,10 @@
       <table>
         <thead>
           <tr>
-            <th>年份</th>
-            <th>利率 %</th>
-            <th>累加金额</th>
-            <th>环比 %</th>
-            <!-- 新增环比列 -->
+            <th>上一年原始资金</th>
+            <th>当年累加金额</th>
+            <th>原始资金利率(%)</th>
+            <th>当年复利(%)</th>
           </tr>
         </thead>
         <tbody id="resultsBody"></tbody>
@@ -187,33 +186,28 @@
           resultsBody.innerHTML = ""; // 清空旧的结果
 
           let cumulativeAmount = initialAmount; // 初始化累加金额为原始金额
+          let previousCumulativeAmount = initialAmount; // 初始化上一年原始资金为原始金额
 
           for (let i = 1; i <= yearsDifference; i++) {
             const dividend =
               parseFloat(document.getElementById(`dividendYear${i}`).value) ||
               0;
             cumulativeAmount += dividend; // 更新累加金额
-            const interestRate = (dividend / initialAmount) * 100; // 计算每年的利率
 
-            let monthOverMonthRate = 0; // 初始化环比
-            if (i === 1) {
-              // 第一年的环比
-              monthOverMonthRate =
-                ((cumulativeAmount - initialAmount) / initialAmount) * 100;
-            } else {
-              // 第二年及以后的环比
-              const previousCumulativeAmount = cumulativeAmount - dividend; // 获取前一年的累加金额
-              monthOverMonthRate =
-                ((cumulativeAmount - previousCumulativeAmount) /
-                  previousCumulativeAmount) *
-                100;
-            }
+            const interestRate = (dividend / previousCumulativeAmount) * 100; // 计算每年的利率
 
-            resultsBody.innerHTML += `<tr><td>${i} 年</td><td>${interestRate.toFixed(
+            // 记录当前的累加金额作为上一年的原始资金
+            resultsBody.innerHTML += `<tr><td>${previousCumulativeAmount.toFixed(
               2
-            )}%</td><td>${cumulativeAmount.toFixed(
+            )}</td><td>${cumulativeAmount.toFixed(
               2
-            )}</td><td>${monthOverMonthRate.toFixed(2)}</td></tr>`; // 添加环比列
+            )}</td><td>${interestRate.toFixed(2)}</td><td>${(
+              (dividend / cumulativeAmount) *
+              100
+            ).toFixed(2)}</td></tr>`;
+
+            // 更新上一年原始资金
+            previousCumulativeAmount = cumulativeAmount;
           }
         });
 
