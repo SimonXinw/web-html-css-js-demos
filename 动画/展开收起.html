@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>可展开文本</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        background-color: #f0f0f0;
+      }
+
+      /* 容器样式 */
+      .text-container {
+        width: 80%;
+        max-width: 600px;
+        background-color: #000;
+        color: #fff;
+        padding: 20px;
+        overflow: hidden;
+        position: relative;
+        height: 300px; /* 初始高度 */
+        transition: height 0.5s ease;
+      }
+
+      /* 默认行的透明度 */
+      .text-line {
+        transition: opacity 0.5s ease;
+        opacity: 0; /* 初始为完全透明 */
+      }
+
+      /* 显示按钮样式 */
+      .show-button {
+        margin-top: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #333;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 文本容器 -->
+    <div class="text-container" id="textContainer">
+      <!-- 多行文本内容 -->
+      <div id="textContent">
+        <!-- 多行文本，示例中为重复内容，可替换为真实内容 -->
+        <div class="text-line">这是第 1 行文本。</div>
+        <div class="text-line">这是第 2 行文本。</div>
+        <div class="text-line">这是第 3 行文本。</div>
+        <div class="text-line">这是第 4 行文本。</div>
+        <div class="text-line">这是第 5 行文本。</div>
+        <div class="text-line">这是第 6 行文本。</div>
+        <div class="text-line">这是第 7 行文本。</div>
+        <div class="text-line">这是第 8 行文本。</div>
+        <div class="text-line">这是第 9 行文本。</div>
+        <div class="text-line">这是第 10 行文本。</div>
+        <div class="text-line">这是第 1 行文本。</div>
+        <div class="text-line">这是第 2 行文本。</div>
+        <div class="text-line">这是第 3 行文本。</div>
+        <div class="text-line">这是第 4 行文本。</div>
+        <div class="text-line">这是第 5 行文本。</div>
+        <div class="text-line">这是第 6 行文本。</div>
+        <div class="text-line">这是第 7 行文本。</div>
+        <div class="text-line">这是第 8 行文本。</div>
+        <div class="text-line">这是第 9 行文本。</div>
+        <div class="text-line">这是第 10 行文本。</div>
+        <div class="text-line">这是第 1 行文本。</div>
+        <div class="text-line">这是第 2 行文本。</div>
+        <div class="text-line">这是第 3 行文本。</div>
+        <div class="text-line">这是第 4 行文本。</div>
+        <div class="text-line">这是第 5 行文本。</div>
+        <div class="text-line">这是第 6 行文本。</div>
+        <div class="text-line">这是第 7 行文本。</div>
+        <div class="text-line">这是第 8 行文本。</div>
+        <div class="text-line">这是第 9 行文本。</div>
+        <div class="text-line">这是第 10 行文本。</div>
+      </div>
+    </div>
+
+    <!-- 展开按钮 -->
+    <button class="show-button" onclick="toggleExpand()">显示更多</button>
+
+    <script>
+      // 初始化状态
+      let isExpanded = false;
+      const textContainer = document.getElementById("textContainer");
+      const textLines = document.querySelectorAll(".text-line");
+
+      // 设置初始透明度
+      function setInitialOpacity() {
+        const totalLines = textLines.length;
+        textLines.forEach((line, index) => {
+          line.style.opacity = (totalLines - index) / totalLines; // 初始设置为逐行透明度
+        });
+      }
+
+      function toggleExpand() {
+        if (!isExpanded) {
+          // 展开容器高度
+          const contentHeight = calculateContentHeight(); // 计算内容的总高度
+          textContainer.style.height = `${contentHeight}px`;
+          // 展开时，逐行变亮
+          gradualOpacityChange(true);
+          document.querySelector(".show-button").textContent = "收起";
+        } else {
+          // 收起容器高度
+          textContainer.style.height = "300px";
+
+          // 收起时，逐行变暗
+          gradualOpacityChange(false);
+          document.querySelector(".show-button").textContent = "显示更多";
+        }
+        isExpanded = !isExpanded;
+      }
+
+      // 逐行变亮或变暗
+      function gradualOpacityChange(isExpanding) {
+        const totalLines = textLines.length;
+        textLines.forEach((line, index) => {
+          setTimeout(() => {
+            const opacity = isExpanding ? 1 : (totalLines - index) / totalLines; // 展开时完全可见，收起时逐行变暗
+            line.style.opacity = opacity; // 设置透明度
+          }, index * 32); // 每行之间延迟 50 毫秒
+        });
+      }
+
+      // 计算内容的总高度
+      function calculateContentHeight() {
+        const content = document.getElementById("textContent");
+        return content.scrollHeight; // 返回内容的总高度
+      }
+
+      // 设置初始透明度
+      setInitialOpacity();
+    </script>
+  </body>
+</html>
