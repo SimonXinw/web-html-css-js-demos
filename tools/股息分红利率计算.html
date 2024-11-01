@@ -107,7 +107,19 @@
 
     <button id="calculateBtn">计算</button>
 
-    <div id="results"></div>
+    <div id="results">
+      <h2>计算结果:</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>年份</th>
+            <th>利率 %</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+        <!-- 使用 tbody 进行结果存放 -->
+      </table>
+    </div>
 
     <script>
       function init() {
@@ -159,21 +171,18 @@
             currentDate.getFullYear() - startDate.getFullYear()
           );
 
-          const resultsDiv = document.getElementById("results");
-          resultsDiv.innerHTML =
-            "<h2>计算结果:</h2><table><tr><th>年份</th><th>利率 %</th></tr>";
+          const resultsBody = document.getElementById("resultsBody");
+          resultsBody.innerHTML = ""; // 清空旧的结果
 
           for (let i = 1; i <= yearsDifference; i++) {
             const dividend =
               parseFloat(document.getElementById(`dividendYear${i}`).value) ||
               0;
             const interestRate = (dividend / initialAmount) * 100; // 计算每年的利率
-            resultsDiv.innerHTML += `<tr><td>${i} 年</td><td>${interestRate.toFixed(
+            resultsBody.innerHTML += `<tr><td>${i} 年</td><td>${interestRate.toFixed(
               2
             )}%</td></tr>`;
           }
-
-          resultsDiv.innerHTML += "</table>";
         });
 
       // 页面加载时执行初始化
