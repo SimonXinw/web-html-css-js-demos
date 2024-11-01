@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style>
+      .youtube {
+        width: 384px;
+        height: 216px;
+        /* 这个属性控制视频全屏 */
+        padding-bottom: 0%;
+        position: relative;
+      }
+
+      .youtube-video-iframe {
+        max-width: 100%;
+        width: 100%;
+        border: none;
+        position: absolute;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="youtube">
+      <iframe
+        width="100%"
+        class="youtube-video-iframe"
+        src="https://www.youtube.com/embed/PKpVN3kskEg?si=0b5n1iTG8gad4oUd"
+        title="YouTube video player"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen
+      >
+      </iframe>
+    </div>
+  </body>
+</html>
