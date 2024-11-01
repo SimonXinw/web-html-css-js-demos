@@ -94,6 +94,12 @@
       #results td:nth-child(4) {
         width: 25%; /* 实际利率列宽度 */
       }
+
+      #totalRate {
+        margin-top: 20px;
+        font-size: 18px;
+        text-align: center;
+      }
     </style>
   </head>
   <body>
@@ -131,6 +137,8 @@
         <tbody id="resultsBody"></tbody>
       </table>
     </div>
+
+    <div id="totalRate"></div>
 
     <script>
       function init() {
@@ -184,7 +192,7 @@
 
           const resultsBody = document.getElementById("resultsBody");
           resultsBody.innerHTML = ""; // 清空旧的结果
-
+          let totalDividends = 0; // 总分红
           let cumulativeAmount = initialAmount; // 初始化累加金额为原始金额
           let previousCumulativeAmount = initialAmount; // 初始化上一年原始资金为原始金额
 
@@ -193,6 +201,7 @@
               parseFloat(document.getElementById(`dividendYear${i}`).value) ||
               0;
             cumulativeAmount += dividend; // 更新累加金额
+            totalDividends += dividend; // 更新总分红
 
             const interestRate = (dividend / previousCumulativeAmount) * 100; // 计算每年的利率
 
@@ -209,6 +218,16 @@
             // 更新上一年原始资金
             previousCumulativeAmount = cumulativeAmount;
           }
+
+          // 计算年化利率
+          let annualizedRate = 0;
+          if (yearsDifference > 0) {
+            annualizedRate =
+              ((totalDividends / initialAmount) * 100) / yearsDifference;
+          }
+          document.getElementById(
+            "totalRate"
+          ).innerText = `年化利率: ${annualizedRate.toFixed(2)}%`;
         });
 
       // 页面加载时执行初始化
