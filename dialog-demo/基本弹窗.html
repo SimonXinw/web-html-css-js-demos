@@ -3,23 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>右上角自定义关闭按钮的弹窗</title>
+    <title>多弹窗示例</title>
     <style>
-      /* 蒙层样式 */
-      .overlay {
+      /* 公用的蒙层样式 */
+      .modal-overlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
-        background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色 */
-        display: none; /* 默认隐藏 */
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
         justify-content: center;
         align-items: center;
       }
 
-      /* 弹窗容器样式 */
-      .modal {
+      /* 公用的弹窗容器样式 */
+      .modal-container {
         background-color: #fff;
         width: 300px;
         padding: 0;
@@ -49,36 +49,55 @@
         color: #333;
         cursor: pointer;
       }
+
       .close-btn:hover {
         color: #f44336;
       }
     </style>
   </head>
   <body>
-    <!-- 触发弹窗的按钮 -->
-    <button onclick="openModal()">打开弹窗</button>
+    <!-- 按钮触发不同弹窗 -->
+    <button onclick="openModal('modal1')">打开弹窗 1</button>
+    <button onclick="openModal('modal2')">打开弹窗 2</button>
 
-    <!-- 蒙层和弹窗 -->
-    <div class="overlay" id="overlay" onclick="closeModal()">
-      <div class="modal" onclick="event.stopPropagation()">
-        <!-- 自定义的关闭按钮 -->
-        <button class="close-btn" onclick="closeModal()">×</button>
+    <!-- 第一个弹窗结构 -->
+    <div class="modal-overlay modal1-overlay" onclick="closeModal('modal1')">
+      <div class="modal-container" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="closeModal('modal1')">×</button>
         <div class="modal-content">
-          <h2 style="margin: 0">弹窗标题</h2>
-          <p style="margin: 10px 0">这是一个带有自定义关闭按钮的弹窗示例。</p>
+          <h2 style="margin: 0">弹窗 1</h2>
+          <p style="margin: 10px 0">这是第一个弹窗示例。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第二个弹窗结构 -->
+    <div class="modal-overlay modal2-overlay" onclick="closeModal('modal2')">
+      <div class="modal-container" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="closeModal('modal2')">×</button>
+        <div class="modal-content">
+          <h2 style="margin: 0">弹窗 2</h2>
+          <p style="margin: 10px 0">这是第二个弹窗示例。</p>
         </div>
       </div>
     </div>
 
     <script>
-      // 打开弹窗函数
-      function openModal() {
-        document.getElementById("overlay").style.display = "flex";
+      // 页面加载时将所有弹窗结构移动到 body 最后
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".modal-overlay").forEach((overlay) => {
+          document.body.appendChild(overlay);
+        });
+      });
+
+      // 打开指定弹窗
+      function openModal(modalClass) {
+        document.querySelector(`.${modalClass}-overlay`).style.display = "flex";
       }
 
-      // 关闭弹窗函数
-      function closeModal() {
-        document.getElementById("overlay").style.display = "none";
+      // 关闭指定弹窗
+      function closeModal(modalClass) {
+        document.querySelector(`.${modalClass}-overlay`).style.display = "none";
       }
     </script>
   </body>
