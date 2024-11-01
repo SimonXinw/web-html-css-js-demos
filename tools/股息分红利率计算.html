@@ -187,7 +187,6 @@
           resultsBody.innerHTML = ""; // 清空旧的结果
 
           let cumulativeAmount = initialAmount; // 初始化累加金额为原始金额
-          let previousCumulativeAmount = cumulativeAmount; // 用于计算环比
 
           for (let i = 1; i <= yearsDifference; i++) {
             const dividend =
@@ -195,16 +194,26 @@
               0;
             cumulativeAmount += dividend; // 更新累加金额
             const interestRate = (dividend / initialAmount) * 100; // 计算每年的利率
-            
+
             let monthOverMonthRate = 0; // 初始化环比
-            if (i > 1) {
-              monthOverMonthRate = ((cumulativeAmount - previousCumulativeAmount) / previousCumulativeAmount) * 100; // 计算环比
+            if (i === 1) {
+              // 第一年的环比
+              monthOverMonthRate =
+                ((cumulativeAmount - initialAmount) / initialAmount) * 100;
+            } else {
+              // 第二年及以后的环比
+              const previousCumulativeAmount = cumulativeAmount - dividend; // 获取前一年的累加金额
+              monthOverMonthRate =
+                ((cumulativeAmount - previousCumulativeAmount) /
+                  previousCumulativeAmount) *
+                100;
             }
-            
+
             resultsBody.innerHTML += `<tr><td>${i} 年</td><td>${interestRate.toFixed(
               2
-            )}%</td><td>${cumulativeAmount.toFixed(2)}</td><td>${monthOverMonthRate.toFixed(2)}</td></tr>`; // 添加环比列
-            previousCumulativeAmount = cumulativeAmount; // 更新前一年的累加金额
+            )}%</td><td>${cumulativeAmount.toFixed(
+              2
+            )}</td><td>${monthOverMonthRate.toFixed(2)}</td></tr>`; // 添加环比列
           }
         });
 
