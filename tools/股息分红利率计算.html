@@ -192,7 +192,6 @@
 
           const resultsBody = document.getElementById("resultsBody");
           resultsBody.innerHTML = ""; // 清空旧的结果
-          let totalDividends = 0; // 总分红
           let cumulativeAmount = initialAmount; // 初始化累加金额为原始金额
           let previousCumulativeAmount = initialAmount; // 初始化上一年原始资金为原始金额
 
@@ -201,7 +200,6 @@
               parseFloat(document.getElementById(`dividendYear${i}`).value) ||
               0;
             cumulativeAmount += dividend; // 更新累加金额
-            totalDividends += dividend; // 更新总分红
 
             const interestRate = (dividend / previousCumulativeAmount) * 100; // 计算每年的利率
 
@@ -223,7 +221,9 @@
           let annualizedRate = 0;
           if (yearsDifference > 0) {
             annualizedRate =
-              ((totalDividends / initialAmount) * 100) / yearsDifference;
+              Math.pow(cumulativeAmount / initialAmount, 1 / yearsDifference) -
+              1;
+            annualizedRate *= 100; // 转换为百分比
           }
           document.getElementById(
             "totalRate"
