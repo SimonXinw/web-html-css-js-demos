@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>投资分红计算器</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        padding: 20px;
+        max-width: 600px;
+        margin: auto;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background: white;
+      }
+
+      h1 {
+        text-align: center;
+      }
+
+      .input-group {
+        margin-bottom: 15px;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      .input-group .dividends {
+        margin-top: 10px;
+        padding: 10px;
+        background: #e9e9e9;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      #results {
+        margin-top: 20px;
+        border-top: 2px solid #ccc;
+        padding-top: 10px;
+      }
+
+      #results table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      #results th,
+      #results td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>投资分红计算器</h1>
+    <div class="input-group">
+      <label for="initialAmount">原始金额:</label>
+      <input
+        type="number"
+        id="initialAmount"
+        placeholder="输入原始金额"
+        required
+      />
+    </div>
+
+    <div class="input-group">
+      <label for="startDate">投资开始日期:</label>
+      <input type="date" id="startDate" required />
+    </div>
+
+    <div id="dividendInputs" class="input-group"></div>
+
+    <button id="calculateBtn">计算</button>
+
+    <div id="results"></div>
+
+    <script>
+      document
+        .getElementById("startDate")
+        .addEventListener("change", function () {
+          const startDate = new Date(this.value);
+          const currentDate = new Date();
+          const yearsDifference = Math.floor(
+            currentDate.getFullYear() - startDate.getFullYear()
+          );
+
+          const dividendInputs = document.getElementById("dividendInputs");
+          dividendInputs.innerHTML = ""; // 清空旧的输入框
+
+          for (let i = 1; i <= yearsDifference; i++) {
+            const inputDiv = document.createElement("div");
+            inputDiv.classList.add("dividends");
+            inputDiv.innerHTML = `
+                    <label for="dividendYear${i}">第 ${i} 年分红:</label>
+                    <input type="number" id="dividendYear${i}" placeholder="输入第 ${i} 年的分红" />
+                `;
+            dividendInputs.appendChild(inputDiv);
+          }
+        });
+
+      document
+        .getElementById("calculateBtn")
+        .addEventListener("click", function () {
+          const initialAmount = parseFloat(
+            document.getElementById("initialAmount").value
+          );
+          const startDate = new Date(
+            document.getElementById("startDate").value
+          );
+          const currentDate = new Date();
+          const yearsDifference = Math.floor(
+            currentDate.getFullYear() - startDate.getFullYear()
+          );
+
+          const resultsDiv = document.getElementById("results");
+          resultsDiv.innerHTML =
+            "<h2>计算结果:</h2><table><tr><th>年份</th><th>利率 %</th></tr>";
+
+          for (let i = 1; i <= yearsDifference; i++) {
+            const dividend =
+              parseFloat(document.getElementById(`dividendYear${i}`).value) ||
+              0;
+            const interestRate = (dividend / initialAmount) * 100; // 计算每年的利率
+            resultsDiv.innerHTML += `<tr><td>${i} 年</td><td>${interestRate.toFixed(
+              2
+            )}%</td></tr>`;
+          }
+
+          resultsDiv.innerHTML += "</table>";
+        });
+    </script>
+  </body>
+</html>
