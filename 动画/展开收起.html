@@ -22,8 +22,16 @@
         padding: 20px;
         overflow: hidden;
         position: relative;
-        height: 300px; /* 初始高度 */
+        height: 300px; /* 默认高度 */
         transition: height 0.5s ease;
+      }
+
+      .collapsed {
+        height: 300px; /* 初始高度类 */
+      }
+
+      .expanded {
+        height: auto; /* 展开时高度自动 */
       }
 
       /* 默认行的透明度 */
@@ -47,10 +55,9 @@
   </head>
   <body>
     <!-- 文本容器 -->
-    <div class="text-container" id="textContainer">
+    <div class="text-container collapsed" id="textContainer">
       <!-- 多行文本内容 -->
       <div id="textContent">
-        <!-- 多行文本，示例中为重复内容，可替换为真实内容 -->
         <div class="text-line">这是第 1 行文本。</div>
         <div class="text-line">这是第 2 行文本。</div>
         <div class="text-line">这是第 3 行文本。</div>
@@ -103,15 +110,17 @@
 
       function toggleExpand() {
         if (!isExpanded) {
-          // 展开容器高度
-          const contentHeight = calculateContentHeight(); // 计算内容的总高度
-          textContainer.style.height = `${contentHeight}px`;
+          // 展开容器
+          textContainer.classList.remove("collapsed");
+          textContainer.classList.add("expanded");
           // 展开时，逐行变亮
           gradualOpacityChange(true);
+
           document.querySelector(".show-button").textContent = "收起";
         } else {
-          // 收起容器高度
-          textContainer.style.height = "300px";
+          // 收起容器
+          textContainer.classList.remove("expanded");
+          textContainer.classList.add("collapsed");
           // 收起时，逐行变暗
           gradualOpacityChange(false);
           document.querySelector(".show-button").textContent = "显示更多";
@@ -137,12 +146,6 @@
             }, (totalLines - 1 - i) * 32); // 从下往上延迟
           }
         }
-      }
-
-      // 计算内容的总高度
-      function calculateContentHeight() {
-        const content = document.getElementById("textContent");
-        return content.scrollHeight; // 返回内容的总高度
       }
 
       // 设置初始透明度
