@@ -74,15 +74,25 @@
         background-color: #ffffff;
       }
 
-      /* 使年份和利率列对齐 */
+      /* 使年份、利率、累加金额和环比列对齐 */
       #results th:nth-child(1),
       #results td:nth-child(1) {
-        width: 50%; /* 年份列宽度 */
+        width: 25%; /* 年份列宽度 */
       }
 
       #results th:nth-child(2),
       #results td:nth-child(2) {
-        width: 50%; /* 利率列宽度 */
+        width: 25%; /* 利率列宽度 */
+      }
+
+      #results th:nth-child(3),
+      #results td:nth-child(3) {
+        width: 25%; /* 累加金额列宽度 */
+      }
+
+      #results th:nth-child(4),
+      #results td:nth-child(4) {
+        width: 25%; /* 环比列宽度 */
       }
     </style>
   </head>
@@ -114,10 +124,12 @@
           <tr>
             <th>年份</th>
             <th>利率 %</th>
+            <th>累加金额</th>
+            <th>环比 %</th>
+            <!-- 新增环比列 -->
           </tr>
         </thead>
         <tbody id="resultsBody"></tbody>
-        <!-- 使用 tbody 进行结果存放 -->
       </table>
     </div>
 
@@ -149,7 +161,7 @@
           for (let i = 1; i <= yearsDifference; i++) {
             const inputDiv = document.createElement("div");
             inputDiv.classList.add("dividends");
-            inputDiv.innerHTML = `
+            inputDiv.innerHTML = ` 
                     <label for="dividendYear${i}">第 ${i} 年分红:</label>
                     <input type="number" id="dividendYear${i}" placeholder="输入第 ${i} 年的分红" />
                 `;
@@ -174,19 +186,30 @@
           const resultsBody = document.getElementById("resultsBody");
           resultsBody.innerHTML = ""; // 清空旧的结果
 
+          let cumulativeAmount = initialAmount; // 初始化累加金额为原始金额
+          let previousCumulativeAmount = cumulativeAmount; // 用于计算环比
+
           for (let i = 1; i <= yearsDifference; i++) {
             const dividend =
               parseFloat(document.getElementById(`dividendYear${i}`).value) ||
               0;
+            cumulativeAmount += dividend; // 更新累加金额
             const interestRate = (dividend / initialAmount) * 100; // 计算每年的利率
+            
+            let monthOverMonthRate = 0; // 初始化环比
+            if (i > 1) {
+              monthOverMonthRate = ((cumulativeAmount - previousCumulativeAmount) / previousCumulativeAmount) * 100; // 计算环比
+            }
+            
             resultsBody.innerHTML += `<tr><td>${i} 年</td><td>${interestRate.toFixed(
               2
-            )}%</td></tr>`;
+            )}%</td><td>${cumulativeAmount.toFixed(2)}</td><td>${monthOverMonthRate.toFixed(2)}</td></tr>`; // 添加环比列
+            previousCumulativeAmount = cumulativeAmount; // 更新前一年的累加金额
           }
         });
 
       // 页面加载时执行初始化
-      window.onload = init;
+      init();
     </script>
   </body>
 </html>
