@@ -112,7 +112,6 @@
         } else {
           // 收起容器高度
           textContainer.style.height = "300px";
-
           // 收起时，逐行变暗
           gradualOpacityChange(false);
           document.querySelector(".show-button").textContent = "显示更多";
@@ -123,12 +122,21 @@
       // 逐行变亮或变暗
       function gradualOpacityChange(isExpanding) {
         const totalLines = textLines.length;
-        textLines.forEach((line, index) => {
-          setTimeout(() => {
-            const opacity = isExpanding ? 1 : (totalLines - index) / totalLines; // 展开时完全可见，收起时逐行变暗
-            line.style.opacity = opacity; // 设置透明度
-          }, index * 32); // 每行之间延迟 50 毫秒
-        });
+        if (isExpanding) {
+          // 展开时逐行变亮
+          textLines.forEach((line, index) => {
+            setTimeout(() => {
+              line.style.opacity = 1; // 设置为完全可见
+            }, index * 32); // 每行之间延迟 32 毫秒
+          });
+        } else {
+          // 收起时逐行变暗，从下往上
+          for (let i = totalLines - 1; i >= 0; i--) {
+            setTimeout(() => {
+              textLines[i].style.opacity = (totalLines - i) / totalLines; // 根据行号逐行变暗
+            }, (totalLines - 1 - i) * 32); // 从下往上延迟
+          }
+        }
       }
 
       // 计算内容的总高度
