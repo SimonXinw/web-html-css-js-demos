@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>原生弹窗示例</title>
+    <style>
+      /* 蒙层样式 */
+      .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色 */
+        display: none; /* 默认隐藏 */
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* 弹窗容器样式 */
+      .modal {
+        background-color: #fff;
+        width: 300px;
+        padding: 0;
+        margin: 0;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* 弹窗内容样式 */
+      .modal-content {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        text-align: center;
+      }
+
+      /* 关闭按钮样式 */
+      .close-btn {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background-color: #f44336;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 0;
+      }
+      .close-btn:hover {
+        background-color: #d32f2f;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 触发弹窗的按钮 -->
+    <button onclick="openModal()">打开弹窗</button>
+
+    <!-- 蒙层和弹窗 -->
+    <div class="overlay" id="overlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <div class="modal-content">
+          <h2 style="padding: 0; margin: 0">弹窗标题</h2>
+          <p style="padding: 0; margin: 0">这是一个带有蒙层的弹窗示例。</p>
+        </div>
+        <button class="close-btn" onclick="closeModal()">关闭</button>
+      </div>
+    </div>
+
+    <script>
+      // 打开弹窗函数
+      function openModal() {
+        document.getElementById("overlay").style.display = "flex";
+      }
+
+      // 关闭弹窗函数
+      function closeModal() {
+        document.getElementById("overlay").style.display = "none";
+      }
+    </script>
+  </body>
+</html>
