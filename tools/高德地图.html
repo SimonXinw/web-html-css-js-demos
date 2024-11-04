@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>高德地图搜索示例</title>
+    <link
+      rel="stylesheet"
+      href="https://webapi.amap.com/ui/1.0/main.css?v=1.0.11"
+    />
+    <style>
+      #container {
+        width: 300px;
+        height: 180px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <input type="text" id="searchInput" />
+    <button onclick="searchLocation()">搜索</button>
+    <div id="container"></div>
+    <script
+      type="text/javascript"
+      src="https://webapi.amap.com/maps?v=2.0&key=cc72a40aca7fc24f9cb0a8e1eb708caa"
+    ></script>
+    <script type="text/javascript">
+      var map = new AMap.Map("container");
+      map.setZoom(12);
+      map.setCenter([112.549248, 37.852135]);
+    </script>
+  </body>
+</html>
