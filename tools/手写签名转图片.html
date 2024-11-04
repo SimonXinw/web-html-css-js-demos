@@ -30,11 +30,13 @@
   <body>
     <canvas id="canvas"></canvas>
     <div class="controls">
-      <button id="savePng">保存为 PNG</button>
-      <button id="saveJpg">保存为 JPG</button>
-      <button id="savePdf">保存为 PDF</button>
-      <button id="clear">清除画布</button>
-      <button id="eraser">橡皮擦</button>
+      <label for="saveFormat">保存为:</label>
+      <select id="saveFormat">
+        <option value="">选择格式</option>
+        <option value="png">PNG</option>
+        <option value="jpg">JPG</option>
+        <option value="pdf">PDF</option>
+      </select>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
@@ -116,30 +118,30 @@
       canvas.addEventListener("touchmove", draw);
       canvas.addEventListener("touchend", stopDrawing);
 
-      // 保存为 PNG
-      document.getElementById("savePng").addEventListener("click", () => {
-        const link = document.createElement("a");
-        link.download = "handwriting.png";
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      });
-
-      // 保存为 JPG
-      document.getElementById("saveJpg").addEventListener("click", () => {
-        const link = document.createElement("a");
-        link.download = "handwriting.jpg";
-        link.href = canvas.toDataURL("image/jpeg");
-        link.click();
-      });
-
-      // 保存为 PDF
-      document.getElementById("savePdf").addEventListener("click", () => {
-        html2canvas(canvas).then((canvas) => {
-          const pdf = new jsPDF();
-          pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0);
-          pdf.save("handwriting.pdf");
+      // 保存文件
+      document
+        .getElementById("saveFormat")
+        .addEventListener("change", (event) => {
+          const format = event.target.value;
+          if (format === "png") {
+            const link = document.createElement("a");
+            link.download = "handwriting.png";
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+          } else if (format === "jpg") {
+            const link = document.createElement("a");
+            link.download = "handwriting.jpg";
+            link.href = canvas.toDataURL("image/jpeg");
+            link.click();
+          } else if (format === "pdf") {
+            html2canvas(canvas).then((canvas) => {
+              const pdf = new jsPDF();
+              pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0);
+              pdf.save("handwriting.pdf");
+            });
+          }
+          event.target.value = ""; // 重置选择框
         });
-      });
 
       // 清除画布
       document.getElementById("clear").addEventListener("click", () => {
