@@ -74,27 +74,6 @@
         background-color: #ffffff;
       }
 
-      /* 使年份、原始资金、累加金额和实际利率列对齐 */
-      #results th:nth-child(1),
-      #results td:nth-child(1) {
-        width: 25%; /* 上一年原始资金列宽度 */
-      }
-
-      #results th:nth-child(2),
-      #results td:nth-child(2) {
-        width: 25%; /* 累加金额列宽度 */
-      }
-
-      #results th:nth-child(3),
-      #results td:nth-child(3) {
-        width: 25%; /* 原始利率列宽度 */
-      }
-
-      #results th:nth-child(4),
-      #results td:nth-child(4) {
-        width: 25%; /* 实际利率列宽度 */
-      }
-
       #totalRate {
         margin-top: 20px;
         font-size: 18px;
@@ -111,6 +90,15 @@
         id="initialAmount"
         placeholder="输入原始金额"
         required
+      />
+    </div>
+
+    <div class="input-group">
+      <label for="currentAmount">当前金额:</label>
+      <input
+        type="number"
+        id="currentAmount"
+        placeholder="输入当前金额 (可选)"
       />
     </div>
 
@@ -142,14 +130,12 @@
 
     <script>
       function init() {
-        // 设置默认值
         const initialAmount = 10000;
         const startDate = "2022-06-20";
 
         document.getElementById("initialAmount").value = initialAmount;
         document.getElementById("startDate").value = startDate;
 
-        // 触发 change 事件以生成分红输入框
         document.getElementById("startDate").dispatchEvent(new Event("change"));
       }
 
@@ -168,10 +154,10 @@
           for (let i = 1; i <= yearsDifference; i++) {
             const inputDiv = document.createElement("div");
             inputDiv.classList.add("dividends");
-            inputDiv.innerHTML = ` 
-                    <label for="dividendYear${i}">第 ${i} 年分红:</label>
-                    <input type="number" id="dividendYear${i}" placeholder="输入第 ${i} 年的分红" />
-                `;
+            inputDiv.innerHTML = `
+                        <label for="dividendYear${i}">第 ${i} 年分红:</label>
+                        <input type="number" id="dividendYear${i}" placeholder="输入第 ${i} 年的分红" />
+                    `;
             dividendInputs.appendChild(inputDiv);
           }
         });
@@ -181,6 +167,9 @@
         .addEventListener("click", function () {
           const initialAmount = parseFloat(
             document.getElementById("initialAmount").value
+          );
+          const currentAmount = parseFloat(
+            document.getElementById("currentAmount").value
           );
           const startDate = new Date(
             document.getElementById("startDate").value
@@ -219,12 +208,23 @@
 
           // 计算年化利率
           let annualizedRate = 0;
+
           if (yearsDifference > 0) {
-            annualizedRate =
-              Math.pow(cumulativeAmount / initialAmount, 1 / yearsDifference) -
-              1;
-            annualizedRate *= 100; // 转换为百分比
+            if (Number(currentAmount) > 0) {
+              annualizedRate =
+                Math.pow(currentAmount / initialAmount, 1 / yearsDifference) -
+                1;
+              annualizedRate *= 100; // 转换为百分比
+            } else {
+              annualizedRate =
+                Math.pow(
+                  cumulativeAmount / initialAmount,
+                  1 / yearsDifference
+                ) - 1;
+              annualizedRate *= 100; // 转换为百分比
+            }
           }
+
           document.getElementById(
             "totalRate"
           ).innerText = `年化利率: ${annualizedRate.toFixed(2)}%`;
