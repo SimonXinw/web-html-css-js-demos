@@ -19,8 +19,7 @@
         border: 1px solid #ccc;
         background-color: white;
         cursor: crosshair;
-        max-width: 100%; /* 限制画布最大宽度 */
-        max-height: 100%; /* 限制画布最大高度 */
+        max-width: 90%; /* 限制画布最大宽度 */
       }
       .controls {
         text-align: center;
@@ -48,14 +47,14 @@
       let erasing = false;
 
       function adjustCanvasSize() {
-        const isLandscape = window.innerWidth > window.innerHeight;
-        const width = isLandscape
-          ? 400
-          : window.innerWidth > 300
-          ? 300
-          : window.innerWidth;
+        const aspectRatio = 16 / 9; // 16:9比例
+        let width = window.innerWidth > 400 ? 400 : window.innerWidth;
+        let height = width / aspectRatio; // 根据宽度计算高度
 
-        const height = window.innerWidth <= 1024 ? 300 : 400; // 移动端时最大300px，横屏400px
+        if (height > window.innerHeight) {
+          height = window.innerHeight; // 确保不超出视口高度
+          width = height * aspectRatio; // 重新计算宽度
+        }
 
         canvas.width = width;
         canvas.height = height;
