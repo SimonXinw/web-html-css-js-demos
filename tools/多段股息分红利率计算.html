@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>年化利率计算器</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        padding: 20px;
+        max-width: 600px;
+        margin: auto;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background: white;
+      }
+
+      input,
+      select,
+      button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      button {
+        cursor: pointer;
+        background-color: #4caf50;
+        color: white;
+      }
+
+      button:hover {
+        opacity: 0.8;
+      }
+
+      #results {
+        margin-top: 20px;
+        border-top: 2px solid #ccc;
+        padding-top: 10px;
+      }
+
+      .investment-item {
+        margin-bottom: 10px;
+      }
+
+      .negative-return {
+        color: green;
+      }
+
+      .positive-return {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>年化利率计算器</h1>
+
+    <div>
+      <label for="initialAmount">原始金额:</label>
+      <input type="number" id="initialAmount" value="10000" required />
+    </div>
+
+    <div>
+      <label for="initialDate">投资开始日期:</label>
+      <input type="date" id="initialDate" value="2022-07-01" required />
+    </div>
+
+    <div>
+      <label for="currentAmount">当前金额:</label>
+      <input type="number" id="currentAmount" value="20000" required />
+    </div>
+
+    <div>
+      <label for="currentDate">当前时间:</label>
+      <input type="date" id="currentDate" value="" required />
+    </div>
+
+    <button id="addInvestment">添加投资项</button>
+    <div id="investmentsContainer"></div>
+
+    <button id="calculateBtn">计算</button>
+
+    <div id="results">
+      <h2>计算结果:</h2>
+      <p id="annualizedRate"></p>
+    </div>
+
+    <script>
+      document.getElementById("currentDate").value = new Date()
+        .toISOString()
+        .split("T")[0];
+
+      document
+        .getElementById("addInvestment")
+        .addEventListener("click", function () {
+          const container = document.getElementById("investmentsContainer");
+          const newItem = document.createElement("div");
+          newItem.className = "investment-item";
+          newItem.innerHTML = `
+        <div>
+          <label for="investmentAmount">投资金额:</label>
+          <input type="number" id="investmentAmount" required />
+        </div>
+        <div>
+          <label for="investmentDate">投资时间:</label>
+          <input type="date" id="investmentDate" required />
+        </div>
+        <button type="button" onclick="this.parentNode.remove()">删除</button>
+      `;
+          container.appendChild(newItem);
+        });
+
+      document
+        .getElementById("calculateBtn")
+        .addEventListener("click", function () {
+          const initialAmount = parseFloat(
+            document.getElementById("initialAmount").value
+          );
+          const finalAmount = parseFloat(
+            document.getElementById("currentAmount").value
+          );
+          const initialDate = new Date(
+            document.getElementById("initialDate").value
+          );
+          const finalDate = new Date(
+            document.getElementById("currentDate").value
+          );
+          const timeDiff = (finalDate - initialDate) / (1000 * 60 * 60 * 24); // days
+          const yearsDiff = timeDiff / 365;
+
+          let totalInvestment = initialAmount;
+          let totalReturn = finalAmount - initialAmount;
+
+          const investments = document.querySelectorAll(".investment-item");
+          investments.forEach((item) => {
+            const amount = parseFloat(
+              item.querySelector("#investmentAmount").value
+            );
+            const date = new Date(item.querySelector("#investmentDate").value);
+            const timeDiff = (finalDate - date) / (1000 * 60 * 60 * 24); // days
+            const yearsDiff = timeDiff / 365;
+            totalInvestment += amount;
+            totalReturn += amount * Math.pow(1 + yearsDiff, 2); // Simple interest calculation
+          });
+
+          const annualizedRate =
+            (totalReturn / totalInvestment - 1) / yearsDiff;
+          const ratePercentage = (annualizedRate * 100).toFixed(2);
+
+          document.getElementById(
+            "annualizedRate"
+          ).innerText = `年化利率: ${ratePercentage}%`;
+          document.getElementById("annualizedRate").className =
+            annualizedRate > 0 ? "positive-return" : "negative-return";
+        });
+    </script>
+  </body>
+</html>
