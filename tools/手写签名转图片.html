@@ -35,7 +35,6 @@
       <button id="savePdf">保存为 PDF</button>
       <button id="clear">清除画布</button>
       <button id="eraser">橡皮擦</button>
-      <button id="toggleOrientation">翻转布局</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
@@ -66,6 +65,7 @@
 
       // 开始绘图
       const startDrawing = (event) => {
+        event.preventDefault(); // 阻止默认行为
         drawing = true;
         ctx.beginPath();
         const { offsetX, offsetY } = getEventCoordinates(event);
@@ -74,6 +74,7 @@
 
       // 绘制或擦除
       const draw = (event) => {
+        event.preventDefault(); // 阻止默认行为
         if (!drawing) return;
         const { offsetX, offsetY } = getEventCoordinates(event);
         ctx.lineWidth = erasing ? 32 : 2; // 橡皮擦宽度为32（半径为16），画笔为2
@@ -89,7 +90,8 @@
       };
 
       // 停止绘图
-      const stopDrawing = () => {
+      const stopDrawing = (event) => {
+        event.preventDefault(); // 阻止默认行为
         drawing = false;
         ctx.closePath();
       };
@@ -156,19 +158,6 @@
           drawing = false; // 切换到橡皮擦时停止绘图
         }
       });
-
-      // 翻转布局
-      document
-        .getElementById("toggleOrientation")
-        .addEventListener("click", () => {
-          const isLandscape = window.innerWidth > window.innerHeight;
-          if (isLandscape) {
-            document.body.style.flexDirection = "column";
-          } else {
-            document.body.style.flexDirection = "row";
-          }
-          adjustCanvasSize(); // 调整画布大小
-        });
     </script>
   </body>
 </html>
