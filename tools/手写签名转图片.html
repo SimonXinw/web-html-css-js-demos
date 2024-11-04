@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手写板</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        #canvas {
+            border: 1px solid #ccc;
+            background-color: white;
+            cursor: crosshair;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="canvas" width="600" height="400"></canvas>
+<div class="controls">
+    <button id="savePng">保存为 PNG</button>
+    <button id="saveJpg">保存为 JPG</button>
+    <button id="savePdf">保存为 PDF</button>
+    <button id="clear">清除画布</button>
+    <button id="eraser">橡皮擦</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    let erasing = false;
+
+    // 开始绘图
+    canvas.addEventListener('mousedown', () => {
+        drawing = true;
+        ctx.beginPath();
+    });
+
+    // 绘制或擦除
+    canvas.addEventListener('mousemove', (event) => {
+        if (!drawing) return;
+        ctx.lineWidth = erasing ? 32 : 2; // 橡皮擦宽度为32（半径为16），画笔为2
+        ctx.lineCap = 'round';
+        
+        if (erasing) {
+            ctx.clearRect(event.offsetX - 16, event.offsetY - 16, 32, 32); // 使用圆形橡皮擦
+        } else {
+            ctx.strokeStyle = 'black'; // 画笔颜色
+            ctx.lineTo(event.offsetX, event.offsetY);
+            ctx.stroke();
+        }
+    });
+
+    // 停止绘图
+    canvas.addEventListener('mouseup', () => {
+        drawing = false;
+        ctx.closePath();
+    });
+
+    // 保存为 PNG
+    document.getElementById('savePng').addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = 'handwriting.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+
+    // 保存为 JPG
+    document.getElementById('saveJpg').addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = 'handwriting.jpg';
+        link.href = canvas.toDataURL('image/jpeg');
+        link.click();
+    });
+
+    // 保存为 PDF
+    document.getElementById('savePdf').addEventListener('click', () => {
+        html2canvas(canvas).then(canvas => {
+            const pdf = new jsPDF();
+            pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0);
+            pdf.save('handwriting.pdf');
+        });
+    });
+
+    // 清除画布
+    document.getElementById('clear').addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        erasing = false; // 清除时取消橡皮擦状态
+        document.getElementById('eraser').textContent = '橡皮擦'; // 恢复按钮文本
+    });
+
+    // 切换到橡皮擦模式
+    document.getElementById('eraser').addEventListener('click', () => {
+        erasing = !erasing; // 切换橡皮擦状态
+        document.getElementById('eraser').textContent = erasing ? '画笔' : '橡皮擦'; // 切换按钮文本
+        if (erasing) {
+            drawing = false; // 切换到橡皮擦时停止绘图
+        }
+    });
+
+</script>
+
+</body>
+</html>
