@@ -194,13 +194,16 @@
             const interestRate = (dividend / previousCumulativeAmount) * 100; // 计算当年复利
 
             // 记录当前的累加金额作为上一年的原始资金
-            resultsBody.innerHTML += `<tr><td>${previousCumulativeAmount.toFixed(
-              2
-            )}</td><td>${cumulativeAmount.toFixed(
-              2
-            )}</td><td>${originalRate.toFixed(
-              2
-            )}</td><td>${interestRate.toFixed(2)}</td></tr>`;
+            resultsBody.innerHTML += `<tr>
+              <td>${previousCumulativeAmount.toFixed(2)}</td>
+              <td>${cumulativeAmount.toFixed(2)}</td>
+              <td style="color: ${
+                originalRate >= 0 ? "red" : "green"
+              }">${originalRate.toFixed(2)}%</td>
+              <td style="color: ${
+                interestRate >= 0 ? "red" : "green"
+              }">${interestRate.toFixed(2)}%</td>
+            </tr>`;
 
             // 更新上一年原始资金
             previousCumulativeAmount = cumulativeAmount;
@@ -227,7 +230,9 @@
 
           document.getElementById(
             "totalRate"
-          ).innerText = `年化利率: ${annualizedRate.toFixed(2)}%`;
+          ).innerHTML = `年化利率: <span style="color: ${
+            annualizedRate >= 0 ? "red" : "green"
+          }">${annualizedRate.toFixed(2)}%</span>`;
         });
 
       // 页面加载时执行初始化
