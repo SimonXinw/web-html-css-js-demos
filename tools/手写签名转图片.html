@@ -13,17 +13,22 @@
         height: 100vh;
         margin: 0;
         background-color: #f4f4f4;
-        overflow: hidden; /* 禁止滚动条 */
+        overflow: hidden;
       }
       #canvas {
         border: 1px solid #ccc;
         background-color: white;
         cursor: crosshair;
-        max-width: 90%; /* 限制画布最大宽度 */
+        max-width: 90%;
       }
       .controls {
         text-align: center;
         margin-top: 20px;
+      }
+      .toolbox {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
       }
     </style>
   </head>
@@ -35,6 +40,19 @@
       <button id="savePdf">保存为 PDF</button>
       <button id="clear">清除画布</button>
       <button id="eraser">橡皮擦</button>
+      <div class="toolbox">
+        <label
+          >画笔大小：<input
+            id="brushSize"
+            type="number"
+            min="1"
+            max="50"
+            value="2"
+        /></label>
+        <label
+          >画笔颜色：<input id="brushColor" type="color" value="#000000"
+        /></label>
+      </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
@@ -44,59 +62,65 @@
       const ctx = canvas.getContext("2d");
       let drawing = false;
       let erasing = false;
+      let brushSize = 2;
+      let brushColor = "#000000";
 
       function adjustCanvasSize() {
-        const aspectRatio = 16 / 9; // 16:9比例
+        const aspectRatio = 16 / 9;
         let width = window.innerWidth > 400 ? 400 : window.innerWidth;
-        let height = width / aspectRatio; // 根据宽度计算高度
+        let height = width / aspectRatio;
 
         if (height > window.innerHeight) {
-          height = window.innerHeight; // 确保不超出视口高度
-          width = height * aspectRatio; // 重新计算宽度
+          height = window.innerHeight;
+          width = height * aspectRatio;
         }
 
         canvas.width = width;
         canvas.height = height;
       }
 
-      // 调整画布大小
       adjustCanvasSize();
       window.addEventListener("resize", adjustCanvasSize);
 
-      // 开始绘图
+      // 获取画笔大小和颜色的输入值
+      document.getElementById("brushSize").addEventListener("input", (e) => {
+        brushSize = parseInt(e.target.value);
+      });
+
+      document.getElementById("brushColor").addEventListener("input", (e) => {
+        brushColor = e.target.value;
+      });
+
       const startDrawing = (event) => {
-        event.preventDefault(); // 阻止默认行为
+        event.preventDefault();
         drawing = true;
         ctx.beginPath();
         const { offsetX, offsetY } = getEventCoordinates(event);
         ctx.moveTo(offsetX, offsetY);
       };
 
-      // 绘制或擦除
       const draw = (event) => {
-        event.preventDefault(); // 阻止默认行为
+        event.preventDefault();
         if (!drawing) return;
         const { offsetX, offsetY } = getEventCoordinates(event);
-        ctx.lineWidth = erasing ? 32 : 2; // 橡皮擦宽度为32（半径为16），画笔为2
+        ctx.lineWidth = erasing ? 32 : brushSize;
         ctx.lineCap = "round";
 
         if (erasing) {
-          ctx.clearRect(offsetX - 16, offsetY - 16, 32, 32); // 使用圆形橡皮擦
+          ctx.clearRect(offsetX - 16, offsetY - 16, 32, 32);
         } else {
-          ctx.strokeStyle = "black"; // 画笔颜色
+          ctx.strokeStyle = brushColor;
           ctx.lineTo(offsetX, offsetY);
           ctx.stroke();
         }
       };
 
-      // 停止绘图
       const stopDrawing = (event) => {
-        event.preventDefault(); // 阻止默认行为
+        event.preventDefault();
         drawing = false;
         ctx.closePath();
       };
 
-      // 获取事件坐标
       const getEventCoordinates = (event) => {
         const rect = canvas.getBoundingClientRect();
         const x = event.touches
@@ -108,7 +132,6 @@
         return { offsetX: x, offsetY: y };
       };
 
-      // 添加事件监听器
       canvas.addEventListener("mousedown", startDrawing);
       canvas.addEventListener("mousemove", draw);
       canvas.addEventListener("mouseup", stopDrawing);
@@ -116,7 +139,6 @@
       canvas.addEventListener("touchmove", draw);
       canvas.addEventListener("touchend", stopDrawing);
 
-      // 保存为 PNG
       document.getElementById("savePng").addEventListener("click", () => {
         const link = document.createElement("a");
         link.download = "handwriting.png";
@@ -124,7 +146,6 @@
         link.click();
       });
 
-      // 保存为 JPG
       document.getElementById("saveJpg").addEventListener("click", () => {
         const link = document.createElement("a");
         link.download = "handwriting.jpg";
@@ -132,7 +153,6 @@
         link.click();
       });
 
-      // 保存为 PDF
       document.getElementById("savePdf").addEventListener("click", () => {
         html2canvas(canvas).then((canvas) => {
           const pdf = new jsPDF();
@@ -141,21 +161,19 @@
         });
       });
 
-      // 清除画布
       document.getElementById("clear").addEventListener("click", () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        erasing = false; // 清除时取消橡皮擦状态
-        document.getElementById("eraser").textContent = "橡皮擦"; // 恢复按钮文本
+        erasing = false;
+        document.getElementById("eraser").textContent = "橡皮擦";
       });
 
-      // 切换到橡皮擦模式
       document.getElementById("eraser").addEventListener("click", () => {
-        erasing = !erasing; // 切换橡皮擦状态
+        erasing = !erasing;
         document.getElementById("eraser").textContent = erasing
           ? "画笔"
-          : "橡皮擦"; // 切换按钮文本
+          : "橡皮擦";
         if (erasing) {
-          drawing = false; // 切换到橡皮擦时停止绘图
+          drawing = false;
         }
       });
     </script>
