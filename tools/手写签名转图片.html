@@ -18,8 +18,8 @@
       #canvas {
         border: 1px solid #ccc;
         background-color: white;
-        cursor: crosshair;
         max-width: 90%;
+        cursor: none; /* 隐藏默认指针 */
       }
       .controls {
         text-align: center;
@@ -29,6 +29,23 @@
         display: flex;
         gap: 10px;
         margin-top: 10px;
+      }
+      /* 创建自定义画笔和橡皮擦指针 */
+      .pen-cursor {
+        width: 16px;
+        height: 16px;
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 21h21v2H2zM6.494 18.436l3.079-3.08-6.936-6.936-2.153 7.2c-.022.077-.029.154-.036.229 0 .01-.004.021-.004.031 0 .018.007.035.007.053 0 .069.014.136.025.204.008.04.018.079.03.118.012.04.026.078.041.116.02.048.043.094.068.14.02.037.041.072.065.107.026.04.055.078.086.115.03.037.061.073.094.108.038.041.078.08.119.117.021.02.042.039.065.057.043.037.088.071.135.103.024.016.048.032.072.047.038.025.076.047.116.068.027.013.053.026.08.038.048.02.096.037.146.051.023.006.046.014.07.018.08.013.159.021.239.022.016.001.031.003.047.003.076 0 .151-.007.226-.018l7.199-2.153-6.936-6.936-3.08 3.08 5.283 5.283zM12 0l5.828 5.828-2.828 2.828L9.172 2.828 12 0z"/></svg>');
+        background-size: contain;
+        pointer-events: none;
+        position: absolute;
+        transform: translate(-50%, -50%);
+      }
+      .eraser-cursor {
+        border-radius: 50%;
+        background-color: rgba(0, 0, 0, 0.1);
+        pointer-events: none;
+        position: absolute;
+        transform: translate(-50%, -50%);
       }
     </style>
   </head>
@@ -55,11 +72,16 @@
       </div>
     </div>
 
+    <div id="customCursor" class="pen-cursor"></div>
+    <!-- 自定义指针 -->
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.2/jspdf.debug.js"></script>
     <script>
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
+      const customCursor = document.getElementById("customCursor");
+
       let drawing = false;
       let erasing = false;
       let brushSize = 2;
@@ -82,14 +104,26 @@
       adjustCanvasSize();
       window.addEventListener("resize", adjustCanvasSize);
 
-      // 获取画笔大小和颜色的输入值
       document.getElementById("brushSize").addEventListener("input", (e) => {
         brushSize = parseInt(e.target.value);
+        updateCursor();
       });
 
       document.getElementById("brushColor").addEventListener("input", (e) => {
         brushColor = e.target.value;
       });
+
+      const updateCursor = () => {
+        if (erasing) {
+          customCursor.className = "eraser-cursor";
+          customCursor.style.width = `${brushSize * 4}px`;
+          customCursor.style.height = `${brushSize * 4}px`;
+        } else {
+          customCursor.className = "pen-cursor";
+          customCursor.style.width = "16px";
+          customCursor.style.height = "16px";
+        }
+      };
 
       const startDrawing = (event) => {
         event.preventDefault();
@@ -103,11 +137,16 @@
         event.preventDefault();
         if (!drawing) return;
         const { offsetX, offsetY } = getEventCoordinates(event);
-        ctx.lineWidth = erasing ? 32 : brushSize;
+        ctx.lineWidth = erasing ? brushSize * 4 : brushSize;
         ctx.lineCap = "round";
 
         if (erasing) {
-          ctx.clearRect(offsetX - 16, offsetY - 16, 32, 32);
+          ctx.clearRect(
+            offsetX - brushSize * 2,
+            offsetY - brushSize * 2,
+            brushSize * 4,
+            brushSize * 4
+          );
         } else {
           ctx.strokeStyle = brushColor;
           ctx.lineTo(offsetX, offsetY);
@@ -139,6 +178,11 @@
       canvas.addEventListener("touchmove", draw);
       canvas.addEventListener("touchend", stopDrawing);
 
+      canvas.addEventListener("mousemove", (e) => {
+        customCursor.style.left = `${e.pageX}px`;
+        customCursor.style.top = `${e.pageY}px`;
+      });
+
       document.getElementById("savePng").addEventListener("click", () => {
         const link = document.createElement("a");
         link.download = "handwriting.png";
@@ -165,6 +209,7 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         erasing = false;
         document.getElementById("eraser").textContent = "橡皮擦";
+        updateCursor();
       });
 
       document.getElementById("eraser").addEventListener("click", () => {
@@ -172,9 +217,7 @@
         document.getElementById("eraser").textContent = erasing
           ? "画笔"
           : "橡皮擦";
-        if (erasing) {
-          drawing = false;
-        }
+        updateCursor();
       });
     </script>
   </body>
