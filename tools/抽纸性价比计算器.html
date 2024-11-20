@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>抽纸计算器</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .calculator-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+      }
+      .calculator {
+        border: 1px solid #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        width: 300px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+      }
+      input {
+        padding: 5px;
+        margin-top: 5px;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      .result {
+        margin-top: 20px;
+        font-weight: bold;
+        color: #333;
+      }
+      .error {
+        color: red;
+      }
+      .add-calculator-btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .add-calculator-btn:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>抽纸计算器</h1>
+    <div class="calculator-container" id="calculatorContainer"></div>
+    <button class="add-calculator-btn" id="addCalculator">新增计算器</button>
+
+    <script>
+      const calculatorContainer = document.getElementById(
+        "calculatorContainer"
+      );
+      const addCalculatorButton = document.getElementById("addCalculator");
+
+      // 生成唯一 ID 的函数
+      function generateId(prefix) {
+        return `${prefix}-${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(2, 9)}`;
+      }
+
+      // 创建新的计算器
+      function createCalculator() {
+        const calculatorId = generateId("calculator");
+        const calculatorHtml = `
+          <div class="calculator" id="${calculatorId}">
+            <form>
+              <label>
+                总价 (元):
+                <input type="number" value="33.4" class="totalPrice" step="0.01" placeholder="例如：50" />
+              </label>
+              <label>
+                包数:
+                <input type="number"  value="22"  class="packages" placeholder="例如：5" />
+              </label>
+              <label>
+                每包的抽数:
+                <input type="number"  value="100"  class="drawsPerPackage" placeholder="例如：100" />
+              </label>
+              <label>
+                每张纸的长度 (mm):
+                <input type="number"  value="195"  class="sheetLength" placeholder="例如：200" />
+              </label>
+              <label>
+                每张纸的宽度 (mm):
+                <input type="number"  value="133"  class="sheetWidth" placeholder="例如：150" />
+              </label>
+            </form>
+            <div class="result"></div>
+          </div>
+        `;
+        calculatorContainer.insertAdjacentHTML("beforeend", calculatorHtml);
+        attachCalculatorLogic(document.getElementById(calculatorId));
+      }
+
+      // 绑定单个计算器的逻辑
+      function attachCalculatorLogic(calculatorElement) {
+        const inputs = calculatorElement.querySelectorAll("input");
+        const resultsDiv = calculatorElement.querySelector(".result");
+
+        inputs.forEach((input) => {
+          input.addEventListener("input", () => calculate(calculatorElement));
+        });
+
+        // 初次计算
+        calculate(calculatorElement);
+      }
+
+      // 计算逻辑
+      function calculate(calculatorElement) {
+        const totalPrice =
+          parseFloat(calculatorElement.querySelector(".totalPrice").value) || 0;
+        const packages =
+          parseInt(calculatorElement.querySelector(".packages").value, 10) || 0;
+        const drawsPerPackage =
+          parseInt(
+            calculatorElement.querySelector(".drawsPerPackage").value,
+            10
+          ) || 0;
+        const sheetLength =
+          parseFloat(calculatorElement.querySelector(".sheetLength").value) ||
+          0;
+        const sheetWidth =
+          parseFloat(calculatorElement.querySelector(".sheetWidth").value) || 0;
+
+        const resultsDiv = calculatorElement.querySelector(".result");
+
+        if (
+          totalPrice === 0 ||
+          packages === 0 ||
+          drawsPerPackage === 0 ||
+          sheetLength === 0 ||
+          sheetWidth === 0
+        ) {
+          resultsDiv.innerHTML =
+            '<p class="error">请确保所有字段都有有效值。</p>';
+          return;
+        }
+
+        const totalDraws = packages * drawsPerPackage;
+        const pricePerDraw = totalPrice / totalDraws;
+
+        const areaPerSheet = (sheetLength / 1000) * (sheetWidth / 1000);
+        const pricePerSquareMeter = totalPrice / (areaPerSheet * totalDraws);
+
+        resultsDiv.innerHTML = `
+          每抽单价: ¥${pricePerDraw.toFixed(4)}<br>
+          每平方米单价: ¥${pricePerSquareMeter.toFixed(3)}
+        `;
+      }
+
+      // 初始加载一个计算器
+      createCalculator();
+
+      // 新增计算器按钮逻辑
+      addCalculatorButton.addEventListener("click", createCalculator);
+    </script>
+  </body>
+</html>
