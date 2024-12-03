@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Two Column Layout with Custom Scroll</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        overflow-x: hidden;
+      }
+      .container {
+        display: flex;
+        height: 2000px; /* Adjust the height as needed */
+      }
+      .left-column {
+        width: 400px;
+        height: 400px;
+        background-color: red;
+        position: sticky;
+        top: 0; /* Fixed distance from the top */
+      }
+      .right-column {
+        flex-grow: 1;
+        background-color: blue;
+        overflow-y: scroll;
+        height: 2000px; /* Adjust the height as needed */
+      }
+      .content {
+        height: 1000px; /* Adjust the height as needed */
+      }
+      .others {
+        height: 2000px;
+        background-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="left-column">Left Column (400px)</div>
+      <div class="right-column">
+        <div class="content">Right Column (1000px)</div>
+        <!-- Generate some more content -->
+        <div style="height: 1000px">More Content</div>
+        <div style="height: 1000px">Even More Content</div>
+      </div>
+    </div>
+    <div class="others"></div>
+
+    <script>
+      // JavaScript to handle custom scroll behavior
+      document.addEventListener("DOMContentLoaded", function () {
+        const rightColumn = document.querySelector(".right-column");
+        const content = document.querySelector(".content");
+        let isRightColumnAtTop = true;
+
+        window.addEventListener("scroll", function () {
+          const scrollY = window.scrollY;
+          const rightColumnScrollHeight = rightColumn.scrollHeight;
+          const rightColumnOffsetTop = rightColumn.offsetTop;
+
+          if (
+            scrollY >= rightColumnOffsetTop &&
+            scrollY <=
+              rightColumnOffsetTop +
+                rightColumnScrollHeight -
+                window.innerHeight
+          ) {
+            isRightColumnAtTop = false;
+          } else if (scrollY < rightColumnOffsetTop) {
+            isRightColumnAtTop = true;
+          }
+
+          if (!isRightColumnAtTop) {
+            rightColumn.scrollTop = scrollY - rightColumnOffsetTop;
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
