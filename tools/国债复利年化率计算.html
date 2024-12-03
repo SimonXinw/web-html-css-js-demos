@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>存款收益计算器</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .container {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .result {
+        margin-top: 16px;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border: 1px solid #eee;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>存款收益计算器</h1>
+      <form id="calculator">
+        <label for="principal">本金 (元):</label>
+        <input
+          type="number"
+          id="principal"
+          value="10000"
+          placeholder="请输入本金"
+          required
+        />
+
+        <label for="rate">年利率 (%):</label>
+        <input
+          type="number"
+          id="rate"
+          value="1.725"
+          placeholder="请输入年利率"
+          step="0.001"
+          required
+        />
+
+        <label for="days">存款天数:</label>
+        <input
+          type="number"
+          id="days"
+          value="365"
+          placeholder="请输入存款天数"
+          required
+        />
+
+        <button type="button" onclick="calculate()">计算</button>
+      </form>
+
+      <div id="results" class="result" style="display: none">
+        <p>到期金额: <span id="finalAmount"></span> 元</p>
+        <p>到期收益: <span id="profit"></span> 元</p>
+        <p>实际年利率: <span id="actualRate"></span> %</p>
+      </div>
+    </div>
+
+    <script>
+      function calculate() {
+        const principal = parseFloat(
+          document.getElementById("principal").value
+        );
+        const rate = parseFloat(document.getElementById("rate").value);
+        const days = parseInt(document.getElementById("days").value);
+
+        if (isNaN(principal) || isNaN(rate) || isNaN(days)) {
+          alert("请输入所有必填项!");
+          return;
+        }
+
+        const dailyRate = rate / 100 / 365; // 每日利率
+        const finalAmount = principal * Math.pow(1 + dailyRate, days); // 复利计算到期金额
+        const profit = finalAmount - principal; // 到期收益
+        const actualRate = ((finalAmount / principal - 1) / (days / 365)) * 100; // 实际年利率
+
+        // 更新结果
+        document.getElementById("finalAmount").textContent =
+          finalAmount.toFixed(2);
+        document.getElementById("profit").textContent = profit.toFixed(2);
+        document.getElementById("actualRate").textContent =
+          actualRate.toFixed(2);
+
+        document.getElementById("results").style.display = "block";
+      }
+    </script>
+  </body>
+</html>
