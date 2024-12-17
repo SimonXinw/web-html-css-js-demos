@@ -45,8 +45,14 @@
         padding: 10px;
       }
 
+      /* 修改后的五列 section 布局 */
+      .section-container {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr); /* 五列布局 */
+        gap: 20px; /* 每列间距 */
+      }
+
       section {
-        margin: 20px 0;
         background-color: #fff;
         padding: 20px;
         border-radius: 8px;
@@ -62,7 +68,7 @@
 
       .links a {
         display: inline-block;
-        padding: 10px 15px; /* 按钮内边距，根据文本长度适配 */
+        padding: 10px 15px;
         text-align: center;
         text-decoration: none;
         background-color: #007bff;
@@ -70,7 +76,7 @@
         border-radius: 5px;
         transition: all 0.3s ease;
         box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-        white-space: nowrap; /* 防止文本折行 */
+        white-space: nowrap;
       }
 
       .links a:hover {
@@ -117,68 +123,45 @@
       </h1>
 
       <!-- 基础功能模块 -->
-      <section data-aos="fade-up">
-        <h2>基础功能演示</h2>
-        <div class="links">
-          <a href="./js/缓冲运动.html">缓冲运动</a>
-          <a href="./js/缓冲运动碰壁.html">缓冲运动碰壁</a>
-          <a href="./js/回到首页，触底.html">回到首页，触底</a>
-          <a href="./js/轮播图.html">轮播图</a>
-          <a href="./js/碰撞.html">碰撞</a>
-          <a href="./js/拖动元素四边距.html">拖动元素四边距</a>
-          <a href="./js/cookies.html">cookies 更换主题颜色</a>
-          <a href="./js/jsonp.html">jsonp 实现百度联想搜索</a>
-        </div>
-      </section>
+      <div class="section-container">
+        <section data-aos="fade-up">
+          <h2>基础功能演示</h2>
+          <div class="links">
+            <a href="./js/缓冲运动.html">缓冲运动</a>
+            <a href="./js/缓冲运动碰壁.html">缓冲运动碰壁</a>
+          </div>
+        </section>
 
-      <!-- 工具类项目 -->
-      <section data-aos="fade-up">
-        <h2>工具类项目</h2>
-        <div class="links">
-          <a href="./tools/国债复利年化率计算.html">国债复利年化率计算</a>
-          <a href="./tools/多段股息分红利率计算.html">多段股息分红利率计算</a>
-          <a href="./tools/图片压缩转换工具.html">图片压缩转换工具</a>
-          <a href="./tools/手写签名转图片.html">手写签名转图片</a>
-          <a href="./tools/抽纸性价比计算器.html">抽纸性价比计算器</a>
-          <a href="./tools/股息分红利率计算.html">股息分红利率计算</a>
-          <a href="./tools/高德地图.html">高德地图</a>
-          <a href="./tools/CDN测速.html">CDN 测速</a>
-        </div>
-      </section>
+        <section data-aos="fade-up">
+          <h2>工具类项目</h2>
+          <div class="links">
+            <a href="./tools/国债复利年化率计算.html">国债复利年化率计算</a>
+            <a href="./tools/图片压缩转换工具.html">图片压缩转换工具</a>
+          </div>
+        </section>
 
-      <!-- 动画与视觉模块 -->
-      <section data-aos="fade-up">
-        <h2>动画与视觉效果</h2>
-        <div class="links">
-          <a href="./动画/3D立方体.html">3D 立方体</a>
-          <a href="./动画/展开收起.html">展开收起</a>
-          <a href="./动画/左右不一致-粘性定位.html">左右不一致</a>
-          <a href="./动画/滚动文本滑块Swiper.html">滚动文本滑块</a>
-          <a href="./js/懒加载瀑布流/图片懒加载.html">图片懒加载</a>
-          <a href="./js/懒加载瀑布流/瀑布流.html">瀑布流</a>
-        </div>
-      </section>
+        <section data-aos="fade-up">
+          <h2>动画与视觉效果</h2>
+          <div class="links">
+            <a href="./动画/3D立方体.html">3D 立方体</a>
+            <a href="./动画/展开收起.html">展开收起</a>
+          </div>
+        </section>
 
-      <!-- 视频与多媒体 -->
-      <section data-aos="fade-up">
-        <h2>视频与多媒体</h2>
-        <div class="links">
-          <a href="./js/video.html">视频播放</a>
-          <a href="./js/横屏video.html">横屏视频</a>
-        </div>
-      </section>
+        <section data-aos="fade-up">
+          <h2>视频与多媒体</h2>
+          <div class="links">
+            <a href="./js/video.html">视频播放</a>
+          </div>
+        </section>
 
-      <!-- 算法与逻辑 -->
-      <section data-aos="fade-up">
-        <h2>算法与逻辑</h2>
-        <div class="links">
-          <a href="./js/排序算法.html">排序算法</a>
-          <a href="./js/复利计算.html">复利计算</a>
-          <a href="./js/评分效果.html">评分效果</a>
-          <a href="./js/日历.html">日历</a>
-          <a href="./js/滚动.html">滚动</a>
-        </div>
-      </section>
+        <section data-aos="fade-up">
+          <h2>算法与逻辑</h2>
+          <div class="links">
+            <a href="./js/排序算法.html">排序算法</a>
+          </div>
+        </section>
+      </div>
 
       <!-- 二维码 -->
       <aside class="ewm">
