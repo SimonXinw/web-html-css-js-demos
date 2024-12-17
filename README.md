@@ -1,6 +1,6 @@
 # web-js-demo
 
-这是用 原生 js 写的一些可供练习的逻辑的 demo
+这是用 原生 js 写的一些可供练习的逻辑的 demo， 部署在 githubp pages 静态资源服务器，自动部署
 
 # 服务器上线
 
