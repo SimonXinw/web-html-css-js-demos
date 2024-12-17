@@ -6,40 +6,144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-
+    <link
+      href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css"
+      rel="stylesheet"
+    />
     <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f7f7f7;
+        padding: 20px;
+        margin: 0;
+      }
+
       .container {
-        width: 800px;
-        margin: 20px auto;
-        background-color: #eee;
+        width: 80%;
+        max-width: 900px;
+        margin: 0 auto;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        text-align: center;
       }
+
+      .container h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
       .row {
-        margin: 4px;
+        margin: 15px 0;
+        padding: 10px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.3s ease;
       }
+
+      .row:hover {
+        background-color: #f0f0f0;
+        transform: scale(1.03);
+      }
+
       .label {
         display: inline-block;
         width: 120px;
+        font-weight: bold;
+        color: #333;
+        text-align: left;
       }
+
+      .input-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .url {
+        padding: 10px;
+        width: 60%;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+
+      .addBtn {
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .addBtn:hover {
+        background-color: #0056b3;
+      }
+
       .timeResult {
+        text-align: left;
+        font-size: 16px;
         color: green;
+        font-weight: bold;
       }
+
       .error {
+        font-size: 16px;
         color: red;
+        font-weight: bold;
       }
+
       img {
         max-width: 100%;
         max-height: 300px;
-        display: block;
-        margin: 10px 0;
+        margin: 20px 0;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      a {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      /* Add animation for rows */
+      .animated-row {
+        animation: fadeInUp 0.6s ease-out;
+      }
+
+      @keyframes fadeInUp {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <div class="row">
-        <span class="label">測試 CDN 链接:</span>
-        <input type="text" class="url" />
+      <h1>測試 CDN 链接</h1>
+      <div class="input-container">
+        <input type="text" class="url" placeholder="Enter URL" />
         <button class="addBtn">Add</button>
+      </div>
+
+      <div class="row" id="result-row">
+        <!-- Results will appear here -->
       </div>
     </div>
 
@@ -47,12 +151,12 @@
       // 插入时间，增加一条新的行
       const addRow = (message, className) => {
         const newDom = `
-          <div class="row">
+          <div class="row animated-row">
             <span class="label">Result:</span>
             <span class="${className} timeResult">${message}</span>
           </div>
         `;
-        $(".container").append(newDom);
+        $("#result-row").append(newDom);
       };
 
       // 判断文件类型
@@ -113,7 +217,10 @@
           imgElement.onload = () => {
             const endTime = new Date().getTime(); // 记录结束时间
             const loadTime = endTime - startTime; // 计算耗时
-            addRow(`Image loaded in ${loadTime}ms: ${url}`, "timeResult");
+            addRow(
+              `Image loaded in ${loadTime} ms <br/> URL: ${url}`,
+              "timeResult"
+            );
           };
           imgElement.onerror = () => {
             const endTime = new Date().getTime();
