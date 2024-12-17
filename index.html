@@ -1,74 +1,211 @@
-<!--
- * @Author: your name
- * @Date: 2021-04-25 10:08:22
- * @LastEditTime: 2021-05-10 16:19:19
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \web-js-demo\index.html
--->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="这里辛望学习前端开发工程师过程的学习经验总结。">
-    <meta name="keywords" content="辛望,xinwang,博客,网站,js,html,css,前端,前端工程师,web,web开发,h5,移动端,安卓,IOS,学习,学习经验,学习总结,学习代码,源码">
-    <meta name="renderer" content="webkit">
-    <meta name="author" content="辛望">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="这里辛望学习前端开发工程师过程的学习经验总结。"
+    />
+    <meta
+      name="keywords"
+      content="辛望,xinwang,博客,网站,js,html,css,前端,前端工程师,web,web开发,h5,移动端,安卓,IOS,学习,学习经验,学习总结,学习代码,源码"
+    />
+    <meta name="renderer" content="webkit" />
+    <meta name="author" content="辛望" />
     <title>辛望的轮子空间</title>
-    <link rel="apple-touch-icon" href="//static.hdslb.com/mobile/img/512.png">
-    <link rel="shortcut icon" href="//static.hdslb.com/images/favicon.ico">
-    <link rel="stylesheet" href="./css/index.css">
-<body>
-    <!-- /usr/share/nginx/html -->
-    <div class="page">
-        <!-- content -->
-        <div class="content" >           
-            <h2>欢迎，来到辛望的轮子贮藏间</h2>
-            <div class="links">
-                <a href="./js/缓冲运动.html">缓冲运动</a> 
-                <a href="./js/缓冲运动碰壁.html">缓冲运动碰壁</a>
-                <a href="./js/回到首页，触底.html">回到首页，触底</a>
-                <a href="./js/轮播图.html">轮播图</a>
-                <a href="./js/碰撞.html">碰撞</a>
-                <a href="./js/拖动元素四边距.html">拖动元素四边距</a>
-                <a href="https://blog.csdn.net/qq_42877027/article/details/104959320">面向对象封装原生ajax</a>
-                <a href="./js/cookies.html">cookies 更换主题颜色</a>
-                <a href="./js/jsonp.html">jsonp实现百度联想搜索</a>
-                <a href="./js/Magnifier/放大镜.html">京东放大镜效果</a>
-                <a href="https://blog.csdn.net/qq_42877027/article/details/104959936">node.js开启http服务</a>
-                <a href="./js/购物车/tododivst/todo.html">tododivst</a> 
-                <a href="./js/懒加载瀑布流/图片懒加载.html">懒加载</a>
-                <a href="./js/日历.html">日历</a>
-                <a href="./js/评分效果.html">评分效果</a>
-                <a href="./js/懒加载瀑布流/瀑布流.html">瀑布流</a>
-                <a href="./js/mobileApi.html">mobileApi</a>
-                <a href="./js/排序算法.html">排序算法</a>
-                <a href="./js/双飞翼布局.html">双飞翼布局</a>
-                <a href="./js/复利计算.html">复利计算</a>
-                <a href="./js/滚动.html">滚动</a>
-                <a href="./js/video.html">video</a>
-                <a href="./js/横屏video.html">横屏video</a>
-                <a href="./动画/3D立方体.html">3D立方体</a>
-                <a href="./动画/展开收起.html">展开收起</a>
-                <a href="./动画/左右不一致-粘性定位.html">左右不一致-粘性定位</a>
-                <a href="./动画/滚动文本滑块Swiper.html">滚动文本滑块Swiper</a>
-                <a href="./dialog-demo/基本弹窗.html">基本弹窗</a>
-                <a href="./tools/国债复利年化率计算.html">国债复利年化率计算</a>
-                <a href="./tools/图片压缩转换工具.html">图片压缩转换工具</a>
-                <a href="./tools/多段股息分红利率计算.html">多段股息分红利率计算</a>
-                <a href="./tools/手写签名转图片.html">手写签名转图片</a>
-                <a href="./tools/抽纸性价比计算器.html">抽纸性价比计算器</a>
-                <a href="./tools/股息分红利率计算.html">股息分红利率计算</a>
-                <a href="./tools/高德地图.html">高德地图</a>
-                <a href="./tools/CDN测速.html">CDN测速</a>
-            </div>
+    <!-- 引入动画库 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        color: #333;
+      }
 
+      h1,
+      h2 {
+        text-align: center;
+        margin: 20px 0;
+        color: #333;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 10px;
+      }
+
+      section {
+        margin: 20px 0;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .links a {
+        display: inline-block;
+        padding: 10px 15px; /* 按钮内边距，根据文本长度适配 */
+        text-align: center;
+        text-decoration: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        white-space: nowrap; /* 防止文本折行 */
+      }
+
+      .links a:hover {
+        background-color: #0056b3;
+        transform: translateY(-5px) scale(1.05);
+      }
+
+      .ewm {
+        text-align: center;
+        margin: 20px 0;
+      }
+
+      .ewm img {
+        width: 120px;
+        transition: transform 0.3s ease;
+      }
+
+      .ewm img:hover {
+        transform: scale(1.1);
+      }
+
+      footer {
+        text-align: center;
+        padding: 10px;
+        background-color: #343a40;
+        color: #fff;
+      }
+
+      footer a {
+        color: #17a2b8;
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- 页面标题 -->
+      <h1 class="animate__animated animate__fadeInDown">
+        欢迎，来到辛望的轮子贮藏间
+      </h1>
+
+      <!-- 基础功能模块 -->
+      <section data-aos="fade-up">
+        <h2>基础功能演示</h2>
+        <div class="links">
+          <a href="./js/缓冲运动.html">缓冲运动</a>
+          <a href="./js/缓冲运动碰壁.html">缓冲运动碰壁</a>
+          <a href="./js/回到首页，触底.html">回到首页，触底</a>
+          <a href="./js/轮播图.html">轮播图</a>
+          <a href="./js/碰撞.html">碰撞</a>
+          <a href="./js/拖动元素四边距.html">拖动元素四边距</a>
+          <a href="./js/cookies.html">cookies 更换主题颜色</a>
+          <a href="./js/jsonp.html">jsonp 实现百度联想搜索</a>
         </div>
-        <!-- 二维码 -->
-        <div class="ewm" ><img  src="./img/logo.png" /></div>
-        <!-- bottom -->
-        <p class="page-bottom"><a href="http://beian.miit.gov.cn">赣ICP备20003496号</a></p>
+      </section>
+
+      <!-- 工具类项目 -->
+      <section data-aos="fade-up">
+        <h2>工具类项目</h2>
+        <div class="links">
+          <a href="./tools/国债复利年化率计算.html">国债复利年化率计算</a>
+          <a href="./tools/多段股息分红利率计算.html">多段股息分红利率计算</a>
+          <a href="./tools/图片压缩转换工具.html">图片压缩转换工具</a>
+          <a href="./tools/手写签名转图片.html">手写签名转图片</a>
+          <a href="./tools/抽纸性价比计算器.html">抽纸性价比计算器</a>
+          <a href="./tools/股息分红利率计算.html">股息分红利率计算</a>
+          <a href="./tools/高德地图.html">高德地图</a>
+          <a href="./tools/CDN测速.html">CDN 测速</a>
+        </div>
+      </section>
+
+      <!-- 动画与视觉模块 -->
+      <section data-aos="fade-up">
+        <h2>动画与视觉效果</h2>
+        <div class="links">
+          <a href="./动画/3D立方体.html">3D 立方体</a>
+          <a href="./动画/展开收起.html">展开收起</a>
+          <a href="./动画/左右不一致-粘性定位.html">左右不一致</a>
+          <a href="./动画/滚动文本滑块Swiper.html">滚动文本滑块</a>
+          <a href="./js/懒加载瀑布流/图片懒加载.html">图片懒加载</a>
+          <a href="./js/懒加载瀑布流/瀑布流.html">瀑布流</a>
+        </div>
+      </section>
+
+      <!-- 视频与多媒体 -->
+      <section data-aos="fade-up">
+        <h2>视频与多媒体</h2>
+        <div class="links">
+          <a href="./js/video.html">视频播放</a>
+          <a href="./js/横屏video.html">横屏视频</a>
+        </div>
+      </section>
+
+      <!-- 算法与逻辑 -->
+      <section data-aos="fade-up">
+        <h2>算法与逻辑</h2>
+        <div class="links">
+          <a href="./js/排序算法.html">排序算法</a>
+          <a href="./js/复利计算.html">复利计算</a>
+          <a href="./js/评分效果.html">评分效果</a>
+          <a href="./js/日历.html">日历</a>
+          <a href="./js/滚动.html">滚动</a>
+        </div>
+      </section>
+
+      <!-- 二维码 -->
+      <aside class="ewm">
+        <img src="./img/logo.png" alt="二维码" />
+      </aside>
+
+      <!-- 页脚 -->
+      <footer>
+        <p>
+          <a
+            href="http://beian.miit.gov.cn"
+            target="_blank"
+            rel="noopener noreferrer"
+            >备案号</a
+          >
+        </p>
+      </footer>
     </div>
-</body>
+
+    <!-- 引入 AOS 脚本 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+      AOS.init({
+        duration: 800, // 动画持续时间
+        easing: "ease-in-out", // 动画缓动
+        once: true, // 滚动触发一次
+      });
+    </script>
+  </body>
 </html>
