@@ -104,16 +104,21 @@
         }
 
         const fileType = getFileType(url);
+        const startTime = new Date().getTime(); // 记录开始时间
 
         if (fileType === "image") {
           // 如果是图片，下载或展示图片
           const imgElement = document.createElement("img");
           imgElement.src = url;
           imgElement.onload = () => {
-            addRow(`Image loaded: ${url}`, "timeResult");
+            const endTime = new Date().getTime(); // 记录结束时间
+            const loadTime = endTime - startTime; // 计算耗时
+            addRow(`Image loaded in ${loadTime}ms: ${url}`, "timeResult");
           };
           imgElement.onerror = () => {
-            addRow("Failed to load image", "error");
+            const endTime = new Date().getTime();
+            const loadTime = endTime - startTime;
+            addRow(`Failed to load image in ${loadTime}ms`, "error");
           };
           document.body.appendChild(imgElement); // 显示图片
         } else if (fileType === "file") {
@@ -126,6 +131,10 @@
           addRow(`File available: ${fileName}`, "timeResult");
           document.body.appendChild(fileLink); // 展示下载链接
           fileLink.click(); // 触发下载
+
+          const endTime = new Date().getTime();
+          const loadTime = endTime - startTime;
+          addRow(`File download triggered in ${loadTime}ms`, "timeResult");
         } else {
           addRow("Unknown file type", "error");
         }
