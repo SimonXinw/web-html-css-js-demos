@@ -23,60 +23,117 @@
       .timeResult {
         color: green;
       }
+      .error {
+        color: red;
+      }
+      img {
+        max-width: 100%;
+        max-height: 300px;
+        display: block;
+        margin: 10px 0;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="row">
-        <span class="label">測試 CDN 链接:</span
-        ><input type="text" class="url" />
+        <span class="label">測試 CDN 链接:</span>
+        <input type="text" class="url" />
         <button class="addBtn">Add</button>
       </div>
-      <!-- <div class="row">
-        <span class="label">Times:</span><span class="timeResult">xxxx ms</span>
-      </div> -->
     </div>
 
     <script>
-       // 插入时间，增加一条新的行
-      const addRow = (time) => {
+      // 插入时间，增加一条新的行
+      const addRow = (message, className) => {
         const newDom = `
           <div class="row">
-            <span class="label">Times:</span>
-            <span class="time_${time} timeResult">${time} ms</span>
+            <span class="label">Result:</span>
+            <span class="${className} timeResult">${message}</span>
           </div>
         `;
-
-        $('.container').append(newDom);
+        $(".container").append(newDom);
       };
 
+      // 判断文件类型
+      const getFileType = (url) => {
+        // 移除查询参数
+        const cleanUrl = url.split("?")[0];
+
+        const imgExtensions = [
+          ".jpg",
+          ".jpeg",
+          ".png",
+          ".gif",
+          ".bmp",
+          ".svg",
+          ".webp",
+        ];
+        const fileExtensions = [
+          ".pdf",
+          ".doc",
+          ".docx",
+          ".xls",
+          ".xlsx",
+          ".zip",
+          ".rar",
+          ".txt",
+        ];
+
+        // 判断文件扩展名
+        for (let ext of imgExtensions) {
+          if (cleanUrl.toLowerCase().endsWith(ext)) {
+            return "image";
+          }
+        }
+
+        for (let ext of fileExtensions) {
+          if (cleanUrl.toLowerCase().endsWith(ext)) {
+            return "file";
+          }
+        }
+
+        return "unknown"; // 未知文件类型
+      };
 
       // 计算时间
       const calcTiming = (url) => {
-        var headDom = document.querySelector('head');
+        if (!url) {
+          addRow("Please enter a valid URL", "error");
+          return;
+        }
 
-        var newDom = document.createElement('script');
+        const fileType = getFileType(url);
 
-        newDom.src = url;
-
-        headDom.appendChild(newDom);
-
-        const preTime = new Date().getTime();
-
-        newDom.onload = function () {
-          const gapTime = new Date().getTime() - preTime;
-
-         
-          addRow(gapTime);
-
-          $(`.time_${gapTime}`).html(`${gapTime}ms`);
-        };
+        if (fileType === "image") {
+          // 如果是图片，下载或展示图片
+          const imgElement = document.createElement("img");
+          imgElement.src = url;
+          imgElement.onload = () => {
+            addRow(`Image loaded: ${url}`, "timeResult");
+          };
+          imgElement.onerror = () => {
+            addRow("Failed to load image", "error");
+          };
+          document.body.appendChild(imgElement); // 显示图片
+        } else if (fileType === "file") {
+          // 如果是文件，展示文件名并触发下载
+          const fileName = url.split("/").pop(); // 获取文件名
+          const fileLink = document.createElement("a");
+          fileLink.href = url;
+          fileLink.download = fileName; // 设定下载文件名
+          fileLink.textContent = `Click here to download: ${fileName}`;
+          addRow(`File available: ${fileName}`, "timeResult");
+          document.body.appendChild(fileLink); // 展示下载链接
+          fileLink.click(); // 触发下载
+        } else {
+          addRow("Unknown file type", "error");
+        }
       };
 
       // 点击事件
-      $('.addBtn').click(() => {
-        const url = $('.url').val() || '';
-
+      $(".addBtn").click(() => {
+        const url = $(".url").val() || "";
         calcTiming(url);
       });
     </script>
