@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>日历提醒事件</title>
+  </head>
+  <body>
+    <h1>添加日历提醒</h1>
+    <button id="add-calendar">点击添加到日历</button>
+
+    <script>
+      document.getElementById("add-calendar").addEventListener("click", () => {
+        // 定义事件的 .ics 数据
+        const icsData = `
+BEGIN:VCALENDAR
+VERSION:2.0
+CALSCALE:GREGORIAN
+PRODID:-//Your Organization//NONSGML v1.0//EN
+BEGIN:VEVENT
+UID:${new Date().toISOString()}@example.com
+DTSTAMP:${formatDate(new Date())}
+DTSTART:20241224T090000Z
+DTEND:20241224T100000Z
+SUMMARY:圣诞前夜提醒
+DESCRIPTION:别忘了为圣诞节做准备！
+LOCATION:家里
+STATUS:CONFIRMED
+SEQUENCE:0
+BEGIN:VALARM
+TRIGGER:-PT15M
+ACTION:DISPLAY
+DESCRIPTION:提醒事件即将开始
+END:VALARM
+END:VEVENT
+END:VCALENDAR
+      `.trim();
+
+        // 创建 Blob 并触发下载
+        const blob = new Blob([icsData], {
+          type: "text/calendar;charset=utf-8",
+        });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "event.ics"; // 文件名
+        a.click();
+
+        URL.revokeObjectURL(url);
+      });
+
+      // 格式化日期为 ICS 标准格式
+      function formatDate(date) {
+        const pad = (num) => String(num).padStart(2, "0");
+        return `${date.getUTCFullYear()}${pad(date.getUTCMonth() + 1)}${pad(
+          date.getUTCDate()
+        )}T${pad(date.getUTCHours())}${pad(date.getUTCMinutes())}${pad(
+          date.getUTCSeconds()
+        )}Z`;
+      }
+    </script>
+  </body>
+</html>
