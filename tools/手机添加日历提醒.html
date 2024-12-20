@@ -10,20 +10,82 @@
         gap: 20px;
       }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/web-intents@1.0.0/lib/web-intents.min.js"></script>
   </head>
   <body>
-    <a
-      href="https://www.google.com/calendar/render?action=TEMPLATE&text=日历提醒事件&dates=20241224T090000Z/20241224T100000Z&details=这是一个示例日历提醒&location=示例地点&sf=true&output=xml"
-      target="_blank"
-    >
-      添加到 Google 日历
-    </a>
-
     <a
       href="data:text/calendar;charset=utf8,BEGIN:VCALENDAR%0D%0AVERSION:2.0%0D%0ABEGIN:VEVENT%0D%0AUID:uid1@example.com%0D%0ADTSTAMP:20241224T090000Z%0D%0ADTSTART:20241224T090000Z%0D%0ADTEND:20241224T100000Z%0D%0ASUMMARY:valerion提醒日历%0D%0ADESCRIPTION:这是一个示例日历提醒%0D%0ALOCATION:示例地点%0D%0AEND:VEVENT%0D%0AEND:VCALENDAR"
       download="event.ics"
     >
       添加到 Apple 日历
     </a>
+
+    <button id="addIcsButton">添加到日历</button>
+
+    <script>
+      document.getElementById("addIcsButton").addEventListener("click", addIcs);
+
+      function addIcs() {
+        // 生成并打开 .ics 文件
+        const icsContent = tests();
+        const blob = new Blob([icsContent], {
+          type: "text/calendar;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+
+        // 创建下载链接
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "event.ics";
+        link.click();
+
+        // 清理 URL
+        URL.revokeObjectURL(url);
+      }
+
+      function tests() {
+        const startDateTime = "20241224T090000"; // 开始时间
+        const endDateTime = "20241224T100000"; // 结束时间
+        const datetime = "Tuesday, 24th December 2024, 9am";
+        const location = "示例地点";
+
+        const icsMSG =
+          "BEGIN:VCALENDAR\n" +
+          "PRODID:-//Microsoft Corporation//Outlook 16.0 MIMEDIR//EN\n" +
+          "VERSION:2.0\n" +
+          "METHOD:REQUEST\n" +
+          "X-MS-OLK-FORCEINSPECTOROPEN:TRUE\n" +
+          "BEGIN:VEVENT\n" +
+          "DESCRIPTION:When: " +
+          datetime +
+          ";Where: " +
+          location +
+          "\n" +
+          'DTSTART;TZID="China/Beijing":' +
+          startDateTime +
+          "\n" +
+          'DTEND;TZID="China/Beijing":' +
+          endDateTime +
+          "\n" +
+          "LOCATION:" +
+          location +
+          "\n" +
+          "SUMMARY;LANGUAGE=en-sg:日历提醒事件\n" +
+          "X-MICROSOFT-CDO-BUSYSTATUS:TENTATIVE\n" +
+          "X-MICROSOFT-CDO-IMPORTANCE:1\n" +
+          "X-MICROSOFT-CDO-INTENDEDSTATUS:BUSY\n" +
+          "X-MICROSOFT-DISALLOW-COUNTER:FALSE\n" +
+          "X-MS-OLK-CONFTYPE:0\n" +
+          "BEGIN:VALARM\n" +
+          "TRIGGER:-PT15M\n" +
+          "ACTION:DISPLAY\n" +
+          "DESCRIPTION:Reminder\n" +
+          "END:VALARM\n" +
+          "END:VEVENT\n" +
+          "END:VCALENDAR\n";
+
+        return icsMSG;
+      }
+    </script>
   </body>
 </html>
