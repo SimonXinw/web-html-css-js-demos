@@ -2,6 +2,41 @@
 
 这是用 原生 js 写的一些可供练习的逻辑的 demo， 部署在 githubp pages 静态资源服务器，自动部署
 
+# 内网穿透
+
+## git proxy
+
+### clash
+
+git config --global http.proxy http://127.0.0.1:7890
+git config --global https.proxy https://127.0.0.7890
+
+### veee
+
+git config --global http.proxy http://127.0.0.1:15236
+git config --global https.proxy https://127.0.0.1:15236
+
+# 清除
+
+git config --global --unset http.proxy
+git config --global --unset https.proxy
+
+> git config --global -l
+
+# add github or vercel preview branch.
+
+dev or staging evolement.
+
+# debugger
+
+choco install ngrok
+
+ngrok config add-authtoken xxxxxxxxx
+
+ngrok http http://localhost:5001
+
+then use the ngrok domain url to accesse website now.
+
 # 服务器上线
 
 ## 1.登录服务器
