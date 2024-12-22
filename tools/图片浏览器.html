@@ -36,6 +36,7 @@
         width: 100%;
         margin: 0;
         padding: 0;
+        height: 100%; /* 确保 body 占据 100% 高度 */
         overflow-x: hidden; /* 禁止横向滚动 */
       }
 
@@ -44,30 +45,36 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        height: 100vh;
+        height: 100%; /* 使 body 占据 100% 高度 */
         background-color: var(--bg-color);
         color: var(--text-color);
       }
 
       .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         width: 100%;
         padding: 10px 0;
-        text-align: center;
         background-color: var(--header-bg);
         color: var(--header-text);
         position: relative;
       }
 
       .header h1 {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%);
+        justify-self: center;
         margin: 0;
       }
 
+      .header .right {
+        display: flex;
+        align-items: center;
+      }
+
       .theme-toggle-btn {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        padding: 5px 10px;
         background-color: var(--primary-color);
         color: var(--header-text);
         border: none;
@@ -81,19 +88,20 @@
       }
 
       .upload-container {
-        margin-top: 20px;
-        margin-bottom: 100px;
         text-align: center;
+        flex-shrink: 0; /* 避免上传区在视口缩小时被挤压 */
       }
 
       .upload-area {
         display: inline-block;
-        padding: 20px;
+        padding: 10px 15px;
+        margin-right: 15px;
         border: 2px dashed var(--upload-area-border);
         border-radius: 8px;
         cursor: pointer;
         color: var(--primary-color);
         font-size: 16px;
+        background-color: #fff;
       }
 
       .upload-area:hover {
@@ -101,8 +109,7 @@
       }
 
       .clear-cache-btn {
-        margin-top: 10px;
-        padding: 10px 20px;
+        height: fit-content;
         background-color: #ff4d4d;
         color: white;
         border: none;
@@ -120,11 +127,12 @@
         max-width: 1200px;
         position: relative;
         text-align: center;
+        flex-grow: 1; /* 使容器占据剩余的空间 */
       }
 
       .swiper-container {
         width: 100%;
-        height: 500px;
+        height: 100%; /* 确保 Swiper 容器高度占满父容器 */
         position: relative;
       }
 
@@ -145,17 +153,17 @@
       }
 
       .image-info {
-        margin-top: 100px;
+        padding-top: 30px;
         font-size: 16px;
         color: var(--text-color);
       }
 
       .button-container {
-        margin-top: 10px;
+        padding-top: 10px;
       }
 
       button {
-        padding: 10px 20px;
+        padding: 8px 15px;
         background-color: var(--primary-color);
         color: white;
         border: none;
@@ -190,25 +198,33 @@
   <body>
     <!-- Header with Folder Upload and Clear Cache -->
     <div class="header">
+      <div class="left"></div>
       <h1>图片浏览器</h1>
-      <button class="theme-toggle-btn" id="theme-toggle-btn">切换主题</button>
-    </div>
-
-    <!-- File Upload Area -->
-    <div class="upload-container">
-      <div class="upload-area" id="upload-area" onclick="triggerFileInput()">
-        拖拽图片文件夹到这里，或点击选择文件夹
+      <div class="right">
+        <div class="upload-container">
+          <!-- File Upload Area -->
+          <div
+            class="upload-area"
+            id="upload-area"
+            onclick="triggerFileInput()"
+          >
+            拖拽图片或选择文件夹
+          </div>
+          <input
+            type="file"
+            id="file-input"
+            multiple
+            webkitdirectory
+            mozdirectory
+            style="display: none"
+            onchange="handleFileSelect(event)"
+          />
+        </div>
+        <button class="clear-cache-btn" id="clear-cache-btn">
+          清除所有缓存
+        </button>
+        <button class="theme-toggle-btn" id="theme-toggle-btn">切换主题</button>
       </div>
-      <input
-        type="file"
-        id="file-input"
-        multiple
-        webkitdirectory
-        mozdirectory
-        style="display: none"
-        onchange="handleFileSelect(event)"
-      />
-      <button class="clear-cache-btn" id="clear-cache-btn">清除所有缓存</button>
     </div>
 
     <!-- Main Image Viewer -->
@@ -275,6 +291,7 @@
 
         swiper.update(); // 更新 Swiper 实例
         updateImageInfo();
+        updateSwiperHeight(); // 更新 Swiper 容器的高度
       }
 
       // 更新当前图片信息
@@ -288,68 +305,79 @@
         document.getElementById("image-path").innerText = `路径: ${filePath}`;
       }
 
+      function updateSwiperHeight() {
+        // 获取 header 和 upload-container 的高度
+        const header = document.querySelector(".header");
+        const imageInfo = document.querySelector(".image-info");
+        const buttonContainer = document.querySelector(".button-container");
+
+        // 获取元素的高度 + margin
+        const headerStyle = window.getComputedStyle(header);
+        const imageInfoStyle = window.getComputedStyle(imageInfo);
+        const buttonContainerStyle = window.getComputedStyle(buttonContainer);
+
+        const headerHeight =
+          header.offsetHeight +
+          parseInt(headerStyle.marginTop) +
+          parseInt(headerStyle.marginBottom);
+
+        const imageInfoHeight =
+          imageInfo.offsetHeight +
+          parseInt(imageInfoStyle.marginTop) +
+          parseInt(imageInfoStyle.marginBottom);
+        const buttonContainerHeight =
+          buttonContainer.offsetHeight +
+          parseInt(buttonContainerStyle.marginTop) +
+          parseInt(buttonContainerStyle.marginBottom);
+
+        // 计算可用的高度
+        const availableHeight =
+          window.innerHeight -
+          headerHeight -
+          imageInfoHeight -
+          buttonContainerHeight;
+
+        // 设置 swiper 容器的高度
+        const swiperContainer = document.querySelector(".swiper-container");
+        swiperContainer.style.height = `${availableHeight}px`;
+      }
+
+      window.addEventListener("resize", updateSwiperHeight);
+
       // 处理文件夹拖拽上传
-      function allowDrop(event) {
-        event.preventDefault();
-      }
-
-      function handleDrop(event) {
-        event.preventDefault();
-        const files = event.dataTransfer.files;
-        processFiles(files);
-      }
-
-      // 选择文件夹
       function handleFileSelect(event) {
         const files = event.target.files;
-        processFiles(files);
+        const imagePaths = Array.from(files)
+          .filter((file) => file.type.startsWith("image/"))
+          .map((file) => URL.createObjectURL(file));
+        loadImages(imagePaths);
       }
 
-      // 处理文件
-      function processFiles(files) {
-        const paths = [];
-        Array.from(files).forEach((file) => {
-          if (file.type.startsWith("image/")) {
-            // 只处理图片文件
-            paths.push(URL.createObjectURL(file));
-          }
-        });
-        loadImages(paths);
+      // 触发文件选择框
+      function triggerFileInput() {
+        document.getElementById("file-input").click();
       }
 
-      // 清除所有缓存
+      // 清除缓存
       document
         .getElementById("clear-cache-btn")
-        .addEventListener("click", function () {
+        .addEventListener("click", () => {
           imagePaths = [];
           loadImages([]);
-          alert("所有缓存已清除！");
-        });
-
-      // 绑定下载按钮
-      document
-        .getElementById("download-button")
-        .addEventListener("click", () => {
-          const activeSlide = swiper.slides[swiper.activeIndex];
-          const imageSrc = activeSlide.querySelector("img").src;
-          const link = document.createElement("a");
-          link.href = imageSrc;
-          link.download = imageSrc.split("/").pop();
-          link.click();
+          alert("缓存已清除！");
         });
 
       // 切换主题
       document
         .getElementById("theme-toggle-btn")
-        .addEventListener("click", function () {
-          document.body.dataset.theme =
-            document.body.dataset.theme === "dark" ? "light" : "dark";
+        .addEventListener("click", () => {
+          const currentTheme =
+            document.documentElement.getAttribute("data-theme");
+          const newTheme = currentTheme === "dark" ? "" : "dark";
+          document.documentElement.setAttribute("data-theme", newTheme);
         });
 
-      // 手动触发文件输入框
-      function triggerFileInput() {
-        document.getElementById("file-input").click();
-      }
+      updateSwiperHeight();
     </script>
   </body>
 </html>
