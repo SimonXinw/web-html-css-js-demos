@@ -9,6 +9,28 @@
       rel="stylesheet"
     />
     <style>
+      :root {
+        --primary-color: #007bff;
+        --secondary-color: #e6f7ff;
+        --bg-color: #f4f4f4;
+        --text-color: #333;
+        --button-hover-color: #0056b3;
+        --header-bg: #007bff;
+        --header-text: white;
+        --upload-area-border: #007bff;
+      }
+
+      [data-theme="dark"] {
+        --primary-color: #1e90ff;
+        --secondary-color: #2a2a2a;
+        --bg-color: #121212;
+        --text-color: #f4f4f4;
+        --button-hover-color: #0056b3;
+        --header-bg: #1a1a1a;
+        --header-text: #f4f4f4;
+        --upload-area-border: #1e90ff;
+      }
+
       body {
         font-family: Arial, sans-serif;
         margin: 0;
@@ -17,38 +39,60 @@
         flex-direction: column;
         align-items: center;
         height: 100vh;
-        background-color: #f4f4f4;
+        background-color: var(--bg-color);
+        color: var(--text-color);
       }
 
       .header {
         width: 100%;
         padding: 10px 0;
         text-align: center;
-        background-color: #007bff;
-        color: white;
+        background-color: var(--header-bg);
+        color: var(--header-text);
+        position: relative;
       }
 
       .header h1 {
         margin: 0;
       }
 
+      .theme-toggle-btn {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 5px 10px;
+        background-color: var(--primary-color);
+        color: var(--header-text);
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        border-radius: 5px;
+      }
+
+      .theme-toggle-btn:hover {
+        background-color: var(--button-hover-color);
+      }
+
       .upload-container {
         margin-top: 20px;
+        margin-bottom: 100px;
         text-align: center;
+
       }
 
       .upload-area {
         display: inline-block;
         padding: 20px;
-        border: 2px dashed #007bff;
+        border: 2px dashed var(--upload-area-border);
         border-radius: 8px;
         cursor: pointer;
-        color: #007bff;
+        color: var(--primary-color);
         font-size: 16px;
       }
 
       .upload-area:hover {
-        background-color: #e6f7ff;
+        background-color: var(--secondary-color);
       }
 
       .clear-cache-btn {
@@ -96,9 +140,9 @@
       }
 
       .image-info {
-        margin-top: 10px;
+        margin-top: 100px;
         font-size: 16px;
-        color: #333;
+        color: var(--text-color);
       }
 
       .button-container {
@@ -107,7 +151,7 @@
 
       button {
         padding: 10px 20px;
-        background-color: #007bff;
+        background-color: var(--primary-color);
         color: white;
         border: none;
         cursor: pointer;
@@ -116,7 +160,7 @@
       }
 
       button:hover {
-        background-color: #0056b3;
+        background-color: var(--button-hover-color);
       }
 
       .arrow-buttons {
@@ -125,7 +169,8 @@
         transform: translateY(-50%);
         z-index: 10;
         font-size: 30px;
-        color: white;
+        color: var(--text-color);
+        cursor: pointer;
       }
 
       .arrow-left {
@@ -141,6 +186,7 @@
     <!-- Header with Folder Upload and Clear Cache -->
     <div class="header">
       <h1>图片浏览器</h1>
+      <button class="theme-toggle-btn" id="theme-toggle-btn">切换主题</button>
     </div>
 
     <!-- File Upload Area -->
@@ -187,6 +233,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+
     <script>
       let imagePaths = [];
 
@@ -290,16 +337,17 @@
           link.click();
         });
 
-      // 支持键盘事件
-      document.addEventListener("keydown", function (event) {
-        if (event.key === "ArrowLeft") {
-          swiper.slidePrev();
-        } else if (event.key === "ArrowRight") {
-          swiper.slideNext();
-        }
-      });
+      // 切换主题
+      document
+        .getElementById("theme-toggle-btn")
+        .addEventListener("click", () => {
+          const currentTheme =
+            document.documentElement.getAttribute("data-theme");
+          const newTheme = currentTheme === "dark" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", newTheme);
+        });
 
-      // 点击上传区域时触发文件选择器
+      // 触发文件输入框
       function triggerFileInput() {
         document.getElementById("file-input").click();
       }
