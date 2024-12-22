@@ -31,10 +31,16 @@
         --upload-area-border: #1e90ff;
       }
 
+      html,
       body {
-        font-family: Arial, sans-serif;
+        width: 100%;
         margin: 0;
         padding: 0;
+        overflow-x: hidden; /* 禁止横向滚动 */
+      }
+
+      body {
+        font-family: Arial, sans-serif;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -78,7 +84,6 @@
         margin-top: 20px;
         margin-bottom: 100px;
         text-align: center;
-
       }
 
       .upload-area {
@@ -111,7 +116,7 @@
       }
 
       .container {
-        width: 80%;
+        width: 100%;
         max-width: 1200px;
         position: relative;
         text-align: center;
@@ -191,11 +196,7 @@
 
     <!-- File Upload Area -->
     <div class="upload-container">
-      <div
-        class="upload-area"
-        id="upload-area"
-        onclick="triggerFileInput()"
-      >
+      <div class="upload-area" id="upload-area" onclick="triggerFileInput()">
         拖拽图片文件夹到这里，或点击选择文件夹
       </div>
       <input
@@ -322,7 +323,7 @@
         .addEventListener("click", function () {
           imagePaths = [];
           loadImages([]);
-          alert("所有缓存已清除");
+          alert("所有缓存已清除！");
         });
 
       // 绑定下载按钮
@@ -340,14 +341,12 @@
       // 切换主题
       document
         .getElementById("theme-toggle-btn")
-        .addEventListener("click", () => {
-          const currentTheme =
-            document.documentElement.getAttribute("data-theme");
-          const newTheme = currentTheme === "dark" ? "light" : "dark";
-          document.documentElement.setAttribute("data-theme", newTheme);
+        .addEventListener("click", function () {
+          document.body.dataset.theme =
+            document.body.dataset.theme === "dark" ? "light" : "dark";
         });
 
-      // 触发文件输入框
+      // 手动触发文件输入框
       function triggerFileInput() {
         document.getElementById("file-input").click();
       }
