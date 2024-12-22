@@ -160,6 +160,7 @@
 
       .button-container {
         padding-top: 10px;
+        padding-bottom: 10px;
       }
 
       button {
@@ -181,9 +182,18 @@
         top: 50%;
         transform: translateY(-50%);
         z-index: 10;
-        font-size: 30px;
-        color: var(--text-color);
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 40px;
+        width: 40px;
+        font-size: 24px;
+        color: #fff;
         cursor: pointer;
+
+        border-radius: 50%;
+        background-color: #ff4d4d;
       }
 
       .arrow-left {
@@ -235,8 +245,8 @@
         </div>
 
         <!-- 左右箭头 -->
-        <div class="arrow-buttons arrow-left">&#8592;</div>
-        <div class="arrow-buttons arrow-right">&#8594;</div>
+        <div class="arrow-buttons arrow-left">&lt;</div>
+        <div class="arrow-buttons arrow-right">&gt;</div>
       </div>
 
       <!-- 图片信息和下载按钮 -->
