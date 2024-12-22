@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图片浏览器</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100vh;
+        background-color: #f4f4f4;
+      }
+
+      .header {
+        width: 100%;
+        padding: 10px 0;
+        text-align: center;
+        background-color: #007bff;
+        color: white;
+      }
+
+      .header h1 {
+        margin: 0;
+      }
+
+      .upload-container {
+        margin-top: 20px;
+        text-align: center;
+      }
+
+      .upload-area {
+        display: inline-block;
+        padding: 20px;
+        border: 2px dashed #007bff;
+        border-radius: 8px;
+        cursor: pointer;
+        color: #007bff;
+        font-size: 16px;
+      }
+
+      .upload-area:hover {
+        background-color: #e6f7ff;
+      }
+
+      .clear-cache-btn {
+        margin-top: 10px;
+        padding: 10px 20px;
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+      }
+
+      .clear-cache-btn:hover {
+        background-color: #cc0000;
+      }
+
+      .container {
+        width: 80%;
+        max-width: 1200px;
+        position: relative;
+        text-align: center;
+      }
+
+      .swiper-container {
+        width: 100%;
+        height: 500px;
+        position: relative;
+      }
+
+      .swiper-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 0.3s ease;
+      }
+
+      .swiper-slide-active img {
+        transform: scale(1.2);
+      }
+
+      .swiper-slide-prev img,
+      .swiper-slide-next img {
+        transform: scale(0.8);
+      }
+
+      .image-info {
+        margin-top: 10px;
+        font-size: 16px;
+        color: #333;
+      }
+
+      .button-container {
+        margin-top: 10px;
+      }
+
+      button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      .arrow-buttons {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        font-size: 30px;
+        color: white;
+      }
+
+      .arrow-left {
+        left: 10px;
+      }
+
+      .arrow-right {
+        right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header with Folder Upload and Clear Cache -->
+    <div class="header">
+      <h1>图片浏览器</h1>
+    </div>
+
+    <!-- File Upload Area -->
+    <div class="upload-container">
+      <div
+        class="upload-area"
+        id="upload-area"
+        onclick="triggerFileInput()"
+      >
+        拖拽图片文件夹到这里，或点击选择文件夹
+      </div>
+      <input
+        type="file"
+        id="file-input"
+        multiple
+        webkitdirectory
+        mozdirectory
+        style="display: none"
+        onchange="handleFileSelect(event)"
+      />
+      <button class="clear-cache-btn" id="clear-cache-btn">清除所有缓存</button>
+    </div>
+
+    <!-- Main Image Viewer -->
+    <div class="container">
+      <div class="swiper-container">
+        <div class="swiper-wrapper">
+          <!-- 图片列表通过 JavaScript 动态生成 -->
+        </div>
+
+        <!-- 左右箭头 -->
+        <div class="arrow-buttons arrow-left">&#8592;</div>
+        <div class="arrow-buttons arrow-right">&#8594;</div>
+      </div>
+
+      <!-- 图片信息和下载按钮 -->
+      <div class="image-info">
+        <div id="image-name">文件名:</div>
+        <div id="image-path">路径:</div>
+      </div>
+      <div class="button-container">
+        <button id="download-button">下载当前图片</button>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <script>
+      let imagePaths = [];
+
+      // 初始化 Swiper
+      const swiper = new Swiper(".swiper-container", {
+        slidesPerView: 3,
+        spaceBetween: 10,
+        centeredSlides: true,
+        loop: true,
+        navigation: {
+          nextEl: ".arrow-right",
+          prevEl: ".arrow-left",
+        },
+        slideToClickedSlide: true,
+        on: {
+          slideChange: function () {
+            updateImageInfo();
+          },
+        },
+      });
+
+      // 动态加载图片
+      function loadImages(paths) {
+        const swiperWrapper = document.querySelector(".swiper-wrapper");
+        swiperWrapper.innerHTML = ""; // 清空现有图片
+
+        imagePaths = paths; // 更新图片路径数组
+
+        paths.forEach((imagePath) => {
+          const slide = document.createElement("div");
+          slide.classList.add("swiper-slide");
+          const img = document.createElement("img");
+          img.src = imagePath;
+          img.alt = imagePath;
+          slide.appendChild(img);
+          swiperWrapper.appendChild(slide);
+        });
+
+        swiper.update(); // 更新 Swiper 实例
+        updateImageInfo();
+      }
+
+      // 更新当前图片信息
+      function updateImageInfo() {
+        const activeSlide = swiper.slides[swiper.activeIndex];
+        const imageSrc = activeSlide.querySelector("img").src;
+        const fileName = imageSrc.split("/").pop();
+        const filePath = imageSrc.split("/").slice(0, -1).join("/");
+
+        document.getElementById("image-name").innerText = `文件名: ${fileName}`;
+        document.getElementById("image-path").innerText = `路径: ${filePath}`;
+      }
+
+      // 处理文件夹拖拽上传
+      function allowDrop(event) {
+        event.preventDefault();
+      }
+
+      function handleDrop(event) {
+        event.preventDefault();
+        const files = event.dataTransfer.files;
+        processFiles(files);
+      }
+
+      // 选择文件夹
+      function handleFileSelect(event) {
+        const files = event.target.files;
+        processFiles(files);
+      }
+
+      // 处理文件
+      function processFiles(files) {
+        const paths = [];
+        Array.from(files).forEach((file) => {
+          if (file.type.startsWith("image/")) {
+            // 只处理图片文件
+            paths.push(URL.createObjectURL(file));
+          }
+        });
+        loadImages(paths);
+      }
+
+      // 清除所有缓存
+      document
+        .getElementById("clear-cache-btn")
+        .addEventListener("click", function () {
+          imagePaths = [];
+          loadImages([]);
+          alert("所有缓存已清除");
+        });
+
+      // 绑定下载按钮
+      document
+        .getElementById("download-button")
+        .addEventListener("click", () => {
+          const activeSlide = swiper.slides[swiper.activeIndex];
+          const imageSrc = activeSlide.querySelector("img").src;
+          const link = document.createElement("a");
+          link.href = imageSrc;
+          link.download = imageSrc.split("/").pop();
+          link.click();
+        });
+
+      // 支持键盘事件
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowLeft") {
+          swiper.slidePrev();
+        } else if (event.key === "ArrowRight") {
+          swiper.slideNext();
+        }
+      });
+
+      // 点击上传区域时触发文件选择器
+      function triggerFileInput() {
+        document.getElementById("file-input").click();
+      }
+    </script>
+  </body>
+</html>
