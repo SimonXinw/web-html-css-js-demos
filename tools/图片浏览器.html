@@ -291,21 +291,31 @@
         swiperWrapper.innerHTML = ""; // 清空现有图片
         imagePaths = paths; // 更新图片路径数组
 
-        paths.forEach((imagePath) => {
-          const slide = document.createElement("div");
-          slide.classList.add("swiper-slide");
+        const imageLoadPromises = paths.map((imagePath) => {
+          return new Promise((resolve) => {
+            const slide = document.createElement("div");
+            slide.classList.add("swiper-slide");
 
-          const img = document.createElement("img");
-          img.src = imagePath;
-          img.alt = imagePath;
+            const img = document.createElement("img");
+            img.src = imagePath;
+            img.alt = imagePath;
 
-          slide.appendChild(img);
-          swiperWrapper.appendChild(slide);
+            img.onload = () => resolve(); // 图片加载完成
+            slide.appendChild(img);
+            swiperWrapper.appendChild(slide);
+          });
         });
 
-        swiper.update();
-        updateImageInfo();
-        updateSwiperHeight();
+        // 等待所有图片加载完成后更新 Swiper
+        Promise.all(imageLoadPromises).then(() => {
+          swiper.update(); // 更新 Swiper
+          swiper.loopDestroy(); // 销毁并重新创建循环
+          swiper.loopCreate();
+          swiper.slideTo(0); // 滑动到第一个页面
+          swiper.emit("slideChange"); // 手动触发事件
+          updateImageInfo();
+          updateSwiperHeight();
+        });
       }
 
       // 处理拖放事件
