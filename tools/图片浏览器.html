@@ -285,26 +285,27 @@
         },
       });
 
+      const swiperWrapper = document.querySelector(".swiper-wrapper");
       // 动态加载图片
       function loadImages(paths) {
-        const swiperWrapper = document.querySelector(".swiper-wrapper");
         swiperWrapper.innerHTML = ""; // 清空现有图片
-
         imagePaths = paths; // 更新图片路径数组
 
         paths.forEach((imagePath) => {
           const slide = document.createElement("div");
           slide.classList.add("swiper-slide");
+
           const img = document.createElement("img");
           img.src = imagePath;
           img.alt = imagePath;
+
           slide.appendChild(img);
           swiperWrapper.appendChild(slide);
         });
 
-        swiper.update(); // 更新 Swiper 实例
+        swiper.update();
         updateImageInfo();
-        updateSwiperHeight(); // 更新 Swiper 容器的高度
+        updateSwiperHeight();
       }
 
       // 处理拖放事件
@@ -400,42 +401,33 @@
       }
 
       function updateSwiperHeight() {
-        // 获取 header 和 upload-container 的高度
         const header = document.querySelector(".header");
         const imageInfo = document.querySelector(".image-info");
         const buttonContainer = document.querySelector(".button-container");
 
-        // 获取元素的高度 + margin
-        const headerStyle = window.getComputedStyle(header);
-        const imageInfoStyle = window.getComputedStyle(imageInfo);
-        const buttonContainerStyle = window.getComputedStyle(buttonContainer);
+        const computeHeightWithMargin = (element) => {
+          const style = window.getComputedStyle(element);
+          return (
+            element.offsetHeight +
+            parseInt(style.marginTop, 10) +
+            parseInt(style.marginBottom, 10)
+          );
+        };
 
-        const headerHeight =
-          header.offsetHeight +
-          parseInt(headerStyle.marginTop) +
-          parseInt(headerStyle.marginBottom);
+        const headerHeight = computeHeightWithMargin(header);
+        const imageInfoHeight = computeHeightWithMargin(imageInfo);
+        const buttonContainerHeight = computeHeightWithMargin(buttonContainer);
 
-        const imageInfoHeight =
-          imageInfo.offsetHeight +
-          parseInt(imageInfoStyle.marginTop) +
-          parseInt(imageInfoStyle.marginBottom);
-        const buttonContainerHeight =
-          buttonContainer.offsetHeight +
-          parseInt(buttonContainerStyle.marginTop) +
-          parseInt(buttonContainerStyle.marginBottom);
-
-        // 计算可用的高度
         const availableHeight =
           window.innerHeight -
           headerHeight -
           imageInfoHeight -
           buttonContainerHeight;
 
-        // 设置 swiper 容器的高度
-        const swiperContainer = document.querySelector(".swiper-container");
-        swiperContainer.style.height = `${availableHeight}px`;
+        document.querySelector(
+          ".swiper-container"
+        ).style.height = `${availableHeight}px`;
       }
-
       window.addEventListener("resize", updateSwiperHeight);
 
       // 处理文件夹拖拽上传
