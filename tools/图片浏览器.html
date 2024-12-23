@@ -354,12 +354,12 @@
         try {
           if (item.isFile) {
             const filePath = await readFileAsPromise(item);
-            if (filePath) fileList.push(filePath); // 如果是图片文件，加入文件列表
+            if (filePath) fileList.push(filePath);
           } else if (item.isDirectory) {
             const entries = await readDirectoryAsPromise(item);
-            for (const entry of entries) {
-              await traverseFileTree(entry, fileList); // 递归处理子条目
-            }
+            await Promise.all(
+              entries.map((entry) => traverseFileTree(entry, fileList))
+            );
           }
         } catch (error) {
           console.error("遍历文件树时出错:", error);
