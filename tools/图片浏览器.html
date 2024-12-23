@@ -217,6 +217,8 @@
             class="upload-area"
             id="upload-area"
             onclick="triggerFileInput()"
+            ondrop="handleDrop(event)"
+            ondragover="handleDragOver(event)"
           >
             拖拽图片或选择文件夹
           </div>
@@ -303,6 +305,30 @@
         swiper.update(); // 更新 Swiper 实例
         updateImageInfo();
         updateSwiperHeight(); // 更新 Swiper 容器的高度
+      }
+
+      // 处理拖放事件
+      function handleDragOver(event) {
+        event.preventDefault(); // 阻止默认行为，防止文件被打开
+      }
+
+      function handleDrop(event) {
+
+        debugger
+        event.preventDefault(); // 阻止默认行为
+
+        const files = event.dataTransfer.items
+          ? Array.from(event.dataTransfer.items)
+              .filter((item) => item.kind === "file")
+              .map((item) => item.getAsFile())
+          : Array.from(event.dataTransfer.files);
+
+        // 如果包含文件夹，处理文件夹的图片
+        const imagePaths = files
+          .filter((file) => file.type.startsWith("image/"))
+          .map((file) => URL.createObjectURL(file));
+
+        loadImages(imagePaths);
       }
 
       // 更新当前图片信息
