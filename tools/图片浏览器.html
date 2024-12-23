@@ -315,26 +315,58 @@
         uploadArea.style.backgroundColor = "#e6f7ff"; // 提示用户可以拖放
       }
 
-      // 遍历文件夹的文件树
-      function traverseFileTree(item, fileList) {
-        if (item.isFile) {
-          // 如果是文件，读取文件路径
-          item.file((file) => {
-            if (file.type.startsWith("image/")) {
-              fileList.push(URL.createObjectURL(file)); // 仅保存图片文件的路径
+      // 将文件处理转换为 Promise
+      function readFileAsPromise(item) {
+        return new Promise((resolve, reject) => {
+          try {
+            if (item.isFile) {
+              item.file((file) => {
+                if (file.type.startsWith("image/")) {
+                  resolve(URL.createObjectURL(file)); // 返回图片文件的路径
+                } else {
+                  resolve(null); // 不是图片文件，返回 null
+                }
+              }, reject);
+            } else {
+              resolve(null); // 不是文件，返回 null
             }
-          });
-        } else if (item.isDirectory) {
-          // 如果是文件夹，递归遍历
-          const dirReader = item.createReader();
-          dirReader.readEntries((entries) => {
-            entries.forEach((entry) => traverseFileTree(entry, fileList));
-          });
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+
+      // 将目录读取转换为 Promise
+      function readDirectoryAsPromise(item) {
+        return new Promise((resolve, reject) => {
+          try {
+            const dirReader = item.createReader();
+            dirReader.readEntries((entries) => resolve(entries), reject);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+
+      // 遍历文件夹的文件树
+      async function traverseFileTree(item, fileList) {
+        try {
+          if (item.isFile) {
+            const filePath = await readFileAsPromise(item);
+            if (filePath) fileList.push(filePath); // 如果是图片文件，加入文件列表
+          } else if (item.isDirectory) {
+            const entries = await readDirectoryAsPromise(item);
+            for (const entry of entries) {
+              await traverseFileTree(entry, fileList); // 递归处理子条目
+            }
+          }
+        } catch (error) {
+          console.error("遍历文件树时出错:", error);
         }
       }
 
       // 处理拖拽的事件
-      function handleDrop(event) {
+      async function handleDrop(event) {
         event.preventDefault(); // 阻止默认行为
         event.stopPropagation();
         const uploadArea = document.querySelector(".upload-area");
@@ -347,15 +379,13 @@
           for (let i = 0; i < items.length; i++) {
             const item = items[i].webkitGetAsEntry();
             if (item) {
-              traverseFileTree(item, files);
+              await traverseFileTree(item, files);
             }
           }
         }
 
-        // 等待文件路径完全加载后更新图片
-        setTimeout(() => {
-          loadImages(files);
-        }, 500); // 给文件处理一定的时间
+        // 文件路径完全加载后更新图片
+        loadImages(files);
       }
 
       // 更新当前图片信息
