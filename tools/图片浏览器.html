@@ -309,26 +309,53 @@
 
       // 处理拖放事件
       function handleDragOver(event) {
-        event.preventDefault(); // 阻止默认行为，防止文件被打开
+        event.preventDefault(); // 阻止默认行为
+        event.stopPropagation();
+        const uploadArea = document.querySelector(".upload-area");
+        uploadArea.style.backgroundColor = "#e6f7ff"; // 提示用户可以拖放
       }
 
+      // 遍历文件夹的文件树
+      function traverseFileTree(item, fileList) {
+        if (item.isFile) {
+          // 如果是文件，读取文件路径
+          item.file((file) => {
+            if (file.type.startsWith("image/")) {
+              fileList.push(URL.createObjectURL(file)); // 仅保存图片文件的路径
+            }
+          });
+        } else if (item.isDirectory) {
+          // 如果是文件夹，递归遍历
+          const dirReader = item.createReader();
+          dirReader.readEntries((entries) => {
+            entries.forEach((entry) => traverseFileTree(entry, fileList));
+          });
+        }
+      }
+
+      // 处理拖拽的事件
       function handleDrop(event) {
-
-        debugger
         event.preventDefault(); // 阻止默认行为
+        event.stopPropagation();
+        const uploadArea = document.querySelector(".upload-area");
+        uploadArea.style.backgroundColor = "#fff"; // 恢复背景颜色
 
-        const files = event.dataTransfer.items
-          ? Array.from(event.dataTransfer.items)
-              .filter((item) => item.kind === "file")
-              .map((item) => item.getAsFile())
-          : Array.from(event.dataTransfer.files);
+        const items = event.dataTransfer.items;
+        const files = [];
 
-        // 如果包含文件夹，处理文件夹的图片
-        const imagePaths = files
-          .filter((file) => file.type.startsWith("image/"))
-          .map((file) => URL.createObjectURL(file));
+        if (items) {
+          for (let i = 0; i < items.length; i++) {
+            const item = items[i].webkitGetAsEntry();
+            if (item) {
+              traverseFileTree(item, files);
+            }
+          }
+        }
 
-        loadImages(imagePaths);
+        // 等待文件路径完全加载后更新图片
+        setTimeout(() => {
+          loadImages(files);
+        }, 500); // 给文件处理一定的时间
       }
 
       // 更新当前图片信息
