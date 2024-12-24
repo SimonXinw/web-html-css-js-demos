@@ -6,13 +6,14 @@
     <title>外汇价格比较工具</title>
     <style>
       body {
+        display: flex;
+        justify-content: center;
         font-family: Arial, sans-serif;
         margin: 20px;
         background-color: #f9f9f9;
       }
       .container {
-        max-width: 100%;
-        margin: 0 auto;
+        width: 1000px;
         padding: 20px;
         background: #fff;
         border-radius: 10px;
@@ -22,13 +23,18 @@
         text-align: center;
         color: #333;
       }
+
       .bank-groups {
         display: flex;
         gap: 20px;
-        overflow-x: auto;
+        width: fit-content;
+
         margin-bottom: 20px;
+
         padding: 10px 0;
+        box-sizing: border-box;
       }
+
       .bank-group {
         flex: 0 0 120px;
         border: 1px solid #ccc;
@@ -53,6 +59,12 @@
         border-radius: 5px;
         margin-top: 5px;
       }
+
+      .btn-row {
+        display: flex;
+        justify-content: center;
+        column-gap: 15px;
+      }
       button {
         padding: 10px 20px;
         font-size: 14px;
@@ -74,6 +86,8 @@
         background-color: #a71d2a;
       }
       .result {
+        width: 100%;
+        box-sizing: border-box;
         background-color: #f1f1f1;
         padding: 10px;
         border-radius: 5px;
@@ -98,8 +112,13 @@
     <div class="container">
       <h1>外汇价格比较工具</h1>
       <div class="bank-groups" id="bank-groups"></div>
-      <button class="add-btn" onclick="addBankGroup()">添加银行</button>
-      <button class="clear-btn" onclick="clearAllBanks()">清空所有银行</button>
+      <div class="btn-row">
+        <button class="add-btn" onclick="addBankGroup()">添加银行</button>
+        <button class="clear-btn" onclick="clearAllBanks()">
+          清空所有银行
+        </button>
+      </div>
+
       <div id="summary" class="result"></div>
     </div>
 
