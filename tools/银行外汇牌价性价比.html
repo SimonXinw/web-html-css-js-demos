@@ -6,35 +6,36 @@
     <title>外汇价格比较工具</title>
     <style>
       body {
+        width: 100%;
         display: flex;
         justify-content: center;
         font-family: Arial, sans-serif;
-        margin: 20px;
         background-color: #f9f9f9;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
       }
       .container {
-        width: 1000px;
+        width: 1000px; /* 初始宽度 */
+        box-sizing: border-box;
         padding: 20px;
         background: #fff;
         border-radius: 10px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transition: width 0.3s ease;
       }
       h1 {
         text-align: center;
         color: #333;
       }
-
       .bank-groups {
         display: flex;
         gap: 20px;
-        width: fit-content;
-
         margin-bottom: 20px;
-
         padding: 10px 0;
         box-sizing: border-box;
+        overflow-x: auto;
       }
-
       .bank-group {
         flex: 0 0 120px;
         border: 1px solid #ccc;
@@ -59,7 +60,6 @@
         border-radius: 5px;
         margin-top: 5px;
       }
-
       .btn-row {
         display: flex;
         justify-content: center;
@@ -96,20 +96,10 @@
       .result p {
         margin: 5px 0;
       }
-      .bank-groups::-webkit-scrollbar {
-        height: 8px;
-      }
-      .bank-groups::-webkit-scrollbar-thumb {
-        background-color: #007bff;
-        border-radius: 5px;
-      }
-      .bank-groups::-webkit-scrollbar-track {
-        background-color: #f1f1f1;
-      }
     </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container" id="container">
       <h1>外汇价格比较工具</h1>
       <div class="bank-groups" id="bank-groups"></div>
       <div class="btn-row">
@@ -118,7 +108,6 @@
           清空所有银行
         </button>
       </div>
-
       <div id="summary" class="result"></div>
     </div>
 
@@ -131,104 +120,66 @@
         const group = document.createElement("div");
         group.className = "bank-group";
         group.innerHTML = `
-        <label>
-          标题（银行名称）
-          <input type="text" name="bankName${bankGroupId}" placeholder="例如：中国银行">
-        </label>
-        <label>
-          币种
-          <select name="currency${bankGroupId}">
-            <option value="USD" selected>美元</option>
-            <option value="EUR">欧元</option>
-            <option value="JPY">日元</option>
-          </select>
-        </label>
-        <label>
-          现汇卖出价
-          <input type="number" name="sellPrice${bankGroupId}" placeholder="卖出价" step="0.01" oninput="updateCalculations()">
-        </label>
-        <label>
-          现汇买入价
-          <input type="number" name="buyPrice${bankGroupId}" placeholder="买入价" step="0.01" oninput="updateCalculations()">
-        </label>
-        <label>
-          差额
-          <input type="number" name="difference${bankGroupId}" placeholder="自动计算" readonly>
-        </label>
-      `;
+          <label>
+            标题（银行名称）
+            <input type="text" name="bankName${bankGroupId}" placeholder="例如：中国银行">
+          </label>
+          <label>
+            币种
+            <select name="currency${bankGroupId}">
+              <option value="USD" selected>美元</option>
+              <option value="EUR">欧元</option>
+              <option value="JPY">日元</option>
+            </select>
+          </label>
+          <label>
+            现汇卖出价
+            <input type="number" name="sellPrice${bankGroupId}" placeholder="卖出价" step="0.01" oninput="updateCalculations()">
+          </label>
+          <label>
+            现汇买入价
+            <input type="number" name="buyPrice${bankGroupId}" placeholder="买入价" step="0.01" oninput="updateCalculations()">
+          </label>
+          <label>
+            差额
+            <input type="number" name="difference${bankGroupId}" placeholder="自动计算" readonly>
+          </label>
+        `;
         container.appendChild(group);
+        updateContainerWidth();
         updateCalculations();
       }
 
       function clearAllBanks() {
-        const container = document.getElementById("bank-groups");
-        container.innerHTML = ""; // 清空所有银行
-        document.getElementById("summary").innerHTML = ""; // 清空汇总结果
+        document.getElementById("bank-groups").innerHTML = "";
+        document.getElementById("summary").innerHTML = "";
+        updateContainerWidth();
       }
 
-      function updateCalculations() {
-        const bankGroups = document.querySelectorAll(".bank-group");
-        const summary = document.getElementById("summary");
-        let lowestSell = { bank: "", value: Infinity };
-        let highestBuy = { bank: "", value: -Infinity };
-        let lowestDiff = { bank: "", value: Infinity };
-        let sellPrices = [];
-        let buyPrices = [];
+      function updateContainerWidth() {
+        const bankGroups = document.getElementById("bank-groups");
+        const container = document.getElementById("container");
 
-        bankGroups.forEach((group) => {
-          const bankName =
-            group.querySelector(`input[name^="bankName"]`).value || "未命名";
-          const sellPrice =
-            parseFloat(group.querySelector(`input[name^="sellPrice"]`).value) ||
-            0;
-          const buyPrice =
-            parseFloat(group.querySelector(`input[name^="buyPrice"]`).value) ||
-            0;
-          const diff = sellPrice && buyPrice ? sellPrice - buyPrice : 0;
+        if (!(bankGroups.scrollWidth > container.scrollWidth)) return;
 
-          if (sellPrice) sellPrices.push(sellPrice);
-          if (buyPrice) buyPrices.push(buyPrice);
+        const desiredWidth = Math.max(
+          1000, // 保持最小初始宽度
+          Math.min(bankGroups.scrollWidth + 80, window.innerWidth - 40)
+        );
 
-          group.querySelector(`input[name^="difference"]`).value =
-            diff.toFixed(2);
-
-          if (sellPrice && sellPrice < lowestSell.value)
-            lowestSell = { bank: bankName, value: sellPrice };
-          if (buyPrice && buyPrice > highestBuy.value)
-            highestBuy = { bank: bankName, value: buyPrice };
-          if (diff && diff < lowestDiff.value)
-            lowestDiff = { bank: bankName, value: diff };
-        });
-
-        const sellPercentage =
-          sellPrices.length > 1
-            ? (
-                (Math.max(...sellPrices) / Math.min(...sellPrices)) *
-                100
-              ).toFixed(2)
-            : "N/A";
-        const buyPercentage =
-          buyPrices.length > 1
-            ? ((Math.max(...buyPrices) / Math.min(...buyPrices)) * 100).toFixed(
-                2
-              )
-            : "N/A";
-
-        summary.innerHTML = `
-        <h2>汇总结果</h2>
-        <p>卖出价最低的银行：${lowestSell.bank}，价格：${
-          lowestSell.value.toFixed(2) || "N/A"
-        }</p>
-        <p>买入价最高的银行：${highestBuy.bank}，价格：${
-          highestBuy.value.toFixed(2) || "N/A"
-        }</p>
-        <p>卖出-买入差额最小的银行：${lowestDiff.bank}，差额：${
-          lowestDiff.value.toFixed(2) || "N/A"
-        }</p>
-        <p>卖出价最高/最低比例：${sellPercentage}%</p>
-        <p>买入价最高/最低比例：${buyPercentage}%</p>
-      `;
+        container.style.width = `${desiredWidth}px`;
       }
+
+      const bankGroups = document.getElementById("bank-groups");
+      const resizeObserver = new ResizeObserver(() => {
+        // 在内容变化时调整宽度
+        updateContainerWidth();
+      });
+
+      // 延迟启动 ResizeObserver，避免初始调整触发
+      window.addEventListener("DOMContentLoaded", () => {
+        resizeObserver.observe(bankGroups);
+      });
     </script>
   </body>
 </html>
