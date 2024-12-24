@@ -96,6 +96,23 @@
       .result p {
         margin: 5px 0;
       }
+
+      #message {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #4caf50;
+        color: white;
+        padding: 5px 20px;
+        font-size: 12px;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
     </style>
   </head>
   <body>
@@ -107,9 +124,11 @@
         <button class="clear-btn" onclick="clearAllBanks()">
           清空所有银行
         </button>
+        <button id="copyButton" class="add-btn">下载模板</button>
       </div>
       <div id="summary" class="result"></div>
     </div>
+    <div id="message">模板已复制到剪切板！</div>
 
     <script>
       let bankGroupId = 0;
@@ -127,37 +146,37 @@
         const buyPrice = bankData ? bankData.buyPrice : "";
 
         group.innerHTML = `
-          <label>
-            标题（银行名称）
-            <input type="text" name="bankName${bankGroupId}" placeholder="例如：中国银行" value="${bankName}">
-          </label>
-          <label>
-            币种
-            <select name="currency${bankGroupId}">
-              <option value="USD" ${
-                currency === "USD" ? "selected" : ""
-              }>美元</option>
-              <option value="EUR" ${
-                currency === "EUR" ? "selected" : ""
-              }>欧元</option>
-              <option value="JPY" ${
-                currency === "JPY" ? "selected" : ""
-              }>日元</option>
-            </select>
-          </label>
-          <label>
-            现汇卖出价
-            <input type="number" name="sellPrice${bankGroupId}" placeholder="卖出价" step="0.01" value="${sellPrice}" oninput="updateCalculations()">
-          </label>
-          <label>
-            现汇买入价
-            <input type="number" name="buyPrice${bankGroupId}" placeholder="买入价" step="0.01" value="${buyPrice}" oninput="updateCalculations()">
-          </label>
-          <label>
-            差额
-            <input type="number" name="difference${bankGroupId}" placeholder="自动计算" readonly>
-          </label>
-        `;
+              <label>
+                标题（银行名称）
+                <input type="text" name="bankName${bankGroupId}" placeholder="例如：中国银行" value="${bankName}">
+              </label>
+              <label>
+                币种
+                <select name="currency${bankGroupId}">
+                  <option value="USD" ${
+                    currency === "USD" ? "selected" : ""
+                  }>美元</option>
+                  <option value="EUR" ${
+                    currency === "EUR" ? "selected" : ""
+                  }>欧元</option>
+                  <option value="JPY" ${
+                    currency === "JPY" ? "selected" : ""
+                  }>日元</option>
+                </select>
+              </label>
+              <label>
+                现汇卖出价
+                <input type="number" name="sellPrice${bankGroupId}" placeholder="卖出价" step="0.01" value="${sellPrice}" oninput="updateCalculations()">
+              </label>
+              <label>
+                现汇买入价
+                <input type="number" name="buyPrice${bankGroupId}" placeholder="买入价" step="0.01" value="${buyPrice}" oninput="updateCalculations()">
+              </label>
+              <label>
+                差额
+                <input type="number" name="difference${bankGroupId}" placeholder="自动计算" readonly>
+              </label>
+            `;
         container.appendChild(group);
         updateContainerWidth();
         updateCalculations();
@@ -276,58 +295,64 @@
 
         // 更新汇总信息，确保显示对比的原价
         summary.innerHTML = `
-    <h2>汇总结果</h2>
-    <p>卖出价最低的银行：${renderSpan(
-      lowestSell.bank,
-      "red"
-    )}，价格：${renderSpan(lowestSell.value.toFixed(2) || "N/A", "red")}</p>
-    <p>卖出价最高的银行：${renderSpan(
-      highestSell.bank,
-      "green"
-    )}，价格：${renderSpan(highestSell.value.toFixed(2) || "N/A", "green")}</p>
-    <p>买入价最低的银行：${renderSpan(
-      lowestBuy.bank,
-      "green"
-    )}，价格：${renderSpan(lowestBuy.value.toFixed(2) || "N/A", "green")}</p>
-    <p>买入价最高的银行：${renderSpan(
-      highestBuy.bank,
-      "red"
-    )}，价格：${renderSpan(highestBuy.value.toFixed(2) || "N/A", "red")}</p>
-    <p>卖出-买入差额最小的银行：${renderSpan(
-      lowestDiff.bank,
-      "red"
-    )}，差额：${renderSpan(
+        <h2>汇总结果</h2>
+        <p>卖出价最低的银行：${renderSpan(
+          lowestSell.bank,
+          "red"
+        )}，价格：${renderSpan(lowestSell.value.toFixed(2) || "N/A", "red")}</p>
+        <p>卖出价最高的银行：${renderSpan(
+          highestSell.bank,
+          "green"
+        )}，价格：${renderSpan(
+          highestSell.value.toFixed(2) || "N/A",
+          "green"
+        )}</p>
+        <p>买入价最低的银行：${renderSpan(
+          lowestBuy.bank,
+          "green"
+        )}，价格：${renderSpan(
+          lowestBuy.value.toFixed(2) || "N/A",
+          "green"
+        )}</p>
+        <p>买入价最高的银行：${renderSpan(
+          highestBuy.bank,
+          "red"
+        )}，价格：${renderSpan(highestBuy.value.toFixed(2) || "N/A", "red")}</p>
+        <p>卖出-买入差额最小的银行：${renderSpan(
+          lowestDiff.bank,
+          "red"
+        )}，差额：${renderSpan(
           lowestDiff.value.toFixed(2) || "N/A",
           "red"
         )} ${renderSpan(
           `(${lowestDiffPercentage}%)`,
           getPercentageColor(lowestDiffPercentage)
         )}</p>
-    <p>最大差额的银行：${renderSpan(
-      highestDiff.bank,
-      "green"
-    )}，差额：${renderSpan(
+        <p>最大差额的银行：${renderSpan(
+          highestDiff.bank,
+          "green"
+        )}，差额：${renderSpan(
           highestDiff.value.toFixed(2) || "N/A",
           "green"
         )} ${renderSpan(
           `(${highestDiffPercentage}%)`,
           getPercentageColor(highestDiffPercentage)
         )}</p>
-    <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${renderSpan(
+        <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${renderSpan(
           highestSell.bank,
           "green"
         )} vs ${renderSpan(lowestSell.bank, "red")}（对比价格：${renderSpan(
           highestSell.value.toFixed(2),
           "green"
         )} vs ${renderSpan(lowestSell.value.toFixed(2), "red")}）</p>
-    <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${renderSpan(
+        <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${renderSpan(
           highestBuy.bank,
           "red"
         )} vs ${renderSpan(lowestBuy.bank, "green")}（对比价格：${renderSpan(
           highestBuy.value.toFixed(2),
           "red"
         )} vs ${renderSpan(lowestBuy.value.toFixed(2), "green")}）</p>
-  `;
+      `;
       }
 
       function updateContainerWidth() {
@@ -425,6 +450,39 @@
       ];
       // Initialize with default banks
       defaultBanks2.forEach((bankData) => addBankGroup(bankData));
+
+      document.getElementById("copyButton").addEventListener("click", () => {
+        const jsonString = JSON.stringify(defaultBanks, null, 2);
+
+        navigator.clipboard
+          .writeText(jsonString)
+          .then(() => {
+            const messageDiv = document.getElementById("message");
+            messageDiv.innerText = "模板已复制到剪切板！";
+            messageDiv.style.display = "block";
+            messageDiv.style.opacity = "1";
+
+            // 3秒后隐藏提示
+            setTimeout(() => {
+              messageDiv.style.display = "none";
+              messageDiv.style.opacity = "0";
+            }, 3000);
+          })
+          .catch((err) => {
+            console.error("复制失败：", err);
+            const messageDiv = document.getElementById("message");
+            messageDiv.innerText = "复制失败，请重试！";
+            messageDiv.style.backgroundColor = "red";
+            messageDiv.style.display = "block";
+            messageDiv.style.opacity = "1";
+
+            // 3秒后隐藏提示
+            setTimeout(() => {
+              messageDiv.style.display = "none";
+              messageDiv.style.opacity = "0";
+            }, 3000);
+          });
+      });
     </script>
   </body>
 </html>
