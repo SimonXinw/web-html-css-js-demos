@@ -179,6 +179,7 @@
         let lowestDiff = { bank: "", value: Infinity };
         let highestSell = { bank: "", value: -Infinity };
         let lowestBuy = { bank: "", value: Infinity };
+        let highestDiff = { bank: "", value: -Infinity }; // 新增：最大差额变量
 
         // 存储卖出价和买入价的数组
         let sellPrices = [];
@@ -227,6 +228,11 @@
           if (diff && diff < lowestDiff.value) {
             lowestDiff = { bank: bankName, value: diff };
           }
+
+          // 找出最大的差额
+          if (diff && diff > highestDiff.value) {
+            highestDiff = { bank: bankName, value: diff };
+          }
         });
 
         // 计算卖出价和买入价的百分比
@@ -266,6 +272,11 @@
   <p>卖出-买入差额最小的银行：<span style="color: red;">${
     lowestDiff.bank
   }</span>，差额：${lowestDiff.value.toFixed(2) || "N/A"}</p>
+  <p>最大差额的银行：<span style="color: green;">${
+    highestDiff.bank
+  }</span>，差额：<span style="color: green;">${
+          highestDiff.value.toFixed(2) || "N/A"
+        }</span></p> <!-- 新增最大差额 -->
   <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${
           highestSell.bank
         } vs <span style="color: red;">${lowestSell.bank}</span>（对比价格：${
