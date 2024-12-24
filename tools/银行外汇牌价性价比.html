@@ -177,6 +177,8 @@
         let lowestDiff = { bank: "", value: Infinity };
         let sellPrices = [];
         let buyPrices = [];
+        let lowestSellBank = "";
+        let highestBuyBank = "";
 
         bankGroups.forEach((group) => {
           const bankName =
@@ -195,10 +197,14 @@
           group.querySelector(`input[name^="difference"]`).value =
             diff.toFixed(2);
 
-          if (sellPrice && sellPrice < lowestSell.value)
+          if (sellPrice && sellPrice < lowestSell.value) {
             lowestSell = { bank: bankName, value: sellPrice };
-          if (buyPrice && buyPrice > highestBuy.value)
+            lowestSellBank = bankName;
+          }
+          if (buyPrice && buyPrice > highestBuy.value) {
             highestBuy = { bank: bankName, value: buyPrice };
+            highestBuyBank = bankName;
+          }
           if (diff && diff < lowestDiff.value)
             lowestDiff = { bank: bankName, value: diff };
         });
@@ -218,19 +224,23 @@
             : "N/A";
 
         summary.innerHTML = `
-        <h2>汇总结果</h2>
-        <p>卖出价最低的银行：${lowestSell.bank}，价格：${
+    <h2>汇总结果</h2>
+    <p>卖出价最低的银行：${lowestSell.bank}，价格：${
           lowestSell.value.toFixed(2) || "N/A"
         }</p>
-        <p>买入价最高的银行：${highestBuy.bank}，价格：${
+    <p>买入价最高的银行：${highestBuy.bank}，价格：${
           highestBuy.value.toFixed(2) || "N/A"
         }</p>
-        <p>卖出-买入差额最小的银行：${lowestDiff.bank}，差额：${
+    <p>卖出-买入差额最小的银行：${lowestDiff.bank}，差额：${
           lowestDiff.value.toFixed(2) || "N/A"
         }</p>
-        <p>卖出价最高/最低比例：${sellPercentage}%</p>
-        <p>买入价最高/最低比例：${buyPercentage}%</p>
-      `;
+    <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${
+          lowestSell.bank
+        } vs ${highestBuy.bank}</p>
+    <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${
+          lowestSell.bank
+        } vs ${highestBuy.bank}</p>
+  `;
       }
 
       function updateContainerWidth() {
@@ -254,13 +264,13 @@
         {
           name: "招商银行",
           currency: "USD",
-          sellPrice: 731.3,
-          buyPrice: 728.13,
+          sellPrice: 731.98,
+          buyPrice: 728.8,
         },
         {
           name: "中国工商银行",
           currency: "USD",
-          sellPrice: 731.80,
+          sellPrice: 731.8,
           buyPrice: 728.44,
         },
         {
@@ -268,12 +278,6 @@
           currency: "USD",
           sellPrice: 731.44,
           buyPrice: 728.66,
-        },
-        {
-          name: "杭州银行",
-          currency: "USD",
-          sellPrice: 731.69,
-          buyPrice: 728.75,
         },
         {
           name: "建设银行",
@@ -288,6 +292,7 @@
           buyPrice: 728.89,
         },
       ];
+
       const defaultBanks2 = [
         {
           name: "中国银行",
