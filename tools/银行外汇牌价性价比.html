@@ -250,6 +250,25 @@
               )
             : "N/A";
 
+        // 计算当前差额与对应银行的卖出价的百分比
+        const lowestDiffPercentage =
+          lowestSell.value && lowestDiff.value
+            ? ((lowestDiff.value / lowestSell.value) * 100).toFixed(2)
+            : "N/A";
+        const highestDiffPercentage =
+          highestSell.value && highestDiff.value
+            ? ((highestDiff.value / highestSell.value) * 100).toFixed(2)
+            : "N/A";
+
+        // 自定义百分比颜色
+        const getPercentageColor = (percentage) => {
+          if (percentage === "N/A") return "black"; // 默认黑色
+          const value = parseFloat(percentage);
+          if (value >= 100) return "green"; // 大于等于100%时为绿色
+          if (value >= 50) return "orange"; // 50%-99%时为橙色
+          return "red"; // 小于50%时为红色
+        };
+
         // 更新汇总信息，确保显示对比的原价
         summary.innerHTML = `
   <h2>汇总结果</h2>
@@ -271,12 +290,18 @@
         }</span></p>
   <p>卖出-买入差额最小的银行：<span style="color: red;">${
     lowestDiff.bank
-  }</span>，差额：${lowestDiff.value.toFixed(2) || "N/A"}</p>
+  }</span>，差额：${lowestDiff.value.toFixed(2) || "N/A"}
+  <span style="color: ${getPercentageColor(
+    lowestDiffPercentage
+  )};">(${lowestDiffPercentage}%)</span></p> <!-- 更新为差额/对应卖出价 -->
   <p>最大差额的银行：<span style="color: green;">${
     highestDiff.bank
   }</span>，差额：<span style="color: green;">${
           highestDiff.value.toFixed(2) || "N/A"
-        }</span></p> <!-- 新增最大差额 -->
+        }</span>
+  <span style="color: ${getPercentageColor(
+    highestDiffPercentage
+  )};">(${highestDiffPercentage}%)</span></p> <!-- 更新为差额/对应卖出价 -->
   <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${
           highestSell.bank
         } vs <span style="color: red;">${lowestSell.bank}</span>（对比价格：${
