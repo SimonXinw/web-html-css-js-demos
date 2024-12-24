@@ -281,19 +281,25 @@
       lowestSell.bank,
       "red"
     )}，价格：${renderSpan(lowestSell.value.toFixed(2) || "N/A", "red")}</p>
-    <p>卖出价最高的银行：${highestSell.bank}，价格：${
-          highestSell.value.toFixed(2) || "N/A"
-        }</p>
-    <p>买入价最低的银行：${lowestBuy.bank}，价格：${
-          lowestBuy.value.toFixed(2) || "N/A"
-        }</p>
+    <p>卖出价最高的银行：${renderSpan(
+      highestSell.bank,
+      "green"
+    )}，价格：${renderSpan(highestSell.value.toFixed(2) || "N/A", "green")}</p>
+    <p>买入价最低的银行：${renderSpan(
+      lowestBuy.bank,
+      "green"
+    )}，价格：${renderSpan(lowestBuy.value.toFixed(2) || "N/A", "green")}</p>
     <p>买入价最高的银行：${renderSpan(
       highestBuy.bank,
       "red"
     )}，价格：${renderSpan(highestBuy.value.toFixed(2) || "N/A", "red")}</p>
-    <p>卖出-买入差额最小的银行：${renderSpan(lowestDiff.bank, "red")}，差额：${
-          lowestDiff.value.toFixed(2) || "N/A"
-        } ${renderSpan(
+    <p>卖出-买入差额最小的银行：${renderSpan(
+      lowestDiff.bank,
+      "red"
+    )}，差额：${renderSpan(
+          lowestDiff.value.toFixed(2) || "N/A",
+          "red"
+        )} ${renderSpan(
           `(${lowestDiffPercentage}%)`,
           getPercentageColor(lowestDiffPercentage)
         )}</p>
@@ -310,15 +316,17 @@
     <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${renderSpan(
           highestSell.bank,
           "green"
-        )} vs ${renderSpan(lowestSell.bank, "red")}（对比价格：${
-          highestSell.value
-        } vs ${lowestSell.value}）</p>
+        )} vs ${renderSpan(lowestSell.bank, "red")}（对比价格：${renderSpan(
+          highestSell.value.toFixed(2),
+          "green"
+        )} vs ${renderSpan(lowestSell.value.toFixed(2), "red")}）</p>
     <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${renderSpan(
           highestBuy.bank,
           "red"
-        )} vs ${renderSpan(lowestBuy.bank, "green")}（对比价格：${
-          highestBuy.value
-        } vs ${lowestBuy.value}）</p>
+        )} vs ${renderSpan(lowestBuy.bank, "green")}（对比价格：${renderSpan(
+          highestBuy.value.toFixed(2),
+          "red"
+        )} vs ${renderSpan(lowestBuy.value.toFixed(2), "green")}）</p>
   `;
       }
 
