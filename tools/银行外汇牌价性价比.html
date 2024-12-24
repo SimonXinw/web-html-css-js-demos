@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>外汇价格比较工具</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #f9f9f9;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .row label {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        font-size: 14px;
+      }
+      input,
+      select {
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-top: 5px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 14px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      .result {
+        background-color: #f1f1f1;
+        padding: 10px;
+        border-radius: 5px;
+        margin-top: 20px;
+      }
+      .bank-group {
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>外汇价格比较工具</h1>
+      <div id="bank-groups"></div>
+      <button onclick="addBankGroup()">添加银行</button>
+      <button onclick="calculateSummary()">计算汇总</button>
+      <div id="summary" class="result"></div>
+    </div>
+
+    <script>
+      let bankGroupId = 0;
+
+      function addBankGroup() {
+        bankGroupId++;
+        const container = document.getElementById("bank-groups");
+        const group = document.createElement("div");
+        group.className = "bank-group";
+        group.innerHTML = `
+        <div class="row">
+          <label>
+            标题（银行名称）
+            <input type="text" name="bankName${bankGroupId}" placeholder="例如：中国银行">
+          </label>
+          <label>
+            币种
+            <select name="currency${bankGroupId}">
+              <option value="USD" selected>美元</option>
+              <option value="EUR">欧元</option>
+              <option value="JPY">日元</option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label>
+            现汇卖出价
+            <input type="number" name="sellPrice${bankGroupId}" placeholder="卖出价" step="0.01">
+          </label>
+          <label>
+            现汇买入价
+            <input type="number" name="buyPrice${bankGroupId}" placeholder="买入价" step="0.01">
+          </label>
+        </div>
+        <div class="row">
+          <label>
+            差额
+            <input type="number" name="difference${bankGroupId}" placeholder="自动计算" readonly>
+          </label>
+        </div>
+      `;
+        container.appendChild(group);
+      }
+
+      function calculateSummary() {
+        const bankGroups = document.querySelectorAll(".bank-group");
+        const summary = document.getElementById("summary");
+        let lowestSell = { bank: "", value: Infinity };
+        let highestBuy = { bank: "", value: -Infinity };
+        let lowestDiff = { bank: "", value: Infinity };
+        let sellPrices = [];
+        let buyPrices = [];
+
+        bankGroups.forEach((group) => {
+          const bankName =
+            group.querySelector(`input[name^="bankName"]`).value || "未命名";
+          const sellPrice =
+            parseFloat(group.querySelector(`input[name^="sellPrice"]`).value) ||
+            0;
+          const buyPrice =
+            parseFloat(group.querySelector(`input[name^="buyPrice"]`).value) ||
+            0;
+          const diff = sellPrice - buyPrice;
+
+          group.querySelector(`input[name^="difference"]`).value =
+            diff.toFixed(2);
+          sellPrices.push(sellPrice);
+          buyPrices.push(buyPrice);
+
+          if (sellPrice < lowestSell.value)
+            lowestSell = { bank: bankName, value: sellPrice };
+          if (buyPrice > highestBuy.value)
+            highestBuy = { bank: bankName, value: buyPrice };
+          if (diff < lowestDiff.value)
+            lowestDiff = { bank: bankName, value: diff };
+        });
+
+        const sellPercentage = (
+          (Math.max(...sellPrices) / Math.min(...sellPrices)) *
+          100
+        ).toFixed(2);
+        const buyPercentage = (
+          (Math.max(...buyPrices) / Math.min(...buyPrices)) *
+          100
+        ).toFixed(2);
+
+        summary.innerHTML = `
+        <h2>汇总结果</h2>
+        <p>卖出价最低的银行：${
+          lowestSell.bank
+        }，价格：${lowestSell.value.toFixed(2)}</p>
+        <p>买入价最高的银行：${
+          highestBuy.bank
+        }，价格：${highestBuy.value.toFixed(2)}</p>
+        <p>卖出-买入差额最小的银行：${
+          lowestDiff.bank
+        }，差额：${lowestDiff.value.toFixed(2)}</p>
+        <p>卖出价最高/最低比例：${sellPercentage}%</p>
+        <p>买入价最高/最低比例：${buyPercentage}%</p>
+      `;
+      }
+    </script>
+  </body>
+</html>
