@@ -172,13 +172,17 @@
       function updateCalculations() {
         const bankGroups = document.querySelectorAll(".bank-group");
         const summary = document.getElementById("summary");
+
+        // 初始化最小卖出价、最大买入价和最小差额的变量
         let lowestSell = { bank: "", value: Infinity };
         let highestBuy = { bank: "", value: -Infinity };
         let lowestDiff = { bank: "", value: Infinity };
+        let highestSell = { bank: "", value: -Infinity };
+        let lowestBuy = { bank: "", value: Infinity };
+
+        // 存储卖出价和买入价的数组
         let sellPrices = [];
         let buyPrices = [];
-        let lowestSellBank = "";
-        let highestBuyBank = "";
 
         bankGroups.forEach((group) => {
           const bankName =
@@ -191,24 +195,41 @@
             0;
           const diff = sellPrice && buyPrice ? sellPrice - buyPrice : 0;
 
+          // 记录卖出价和买入价
           if (sellPrice) sellPrices.push(sellPrice);
           if (buyPrice) buyPrices.push(buyPrice);
 
+          // 计算差额并显示
           group.querySelector(`input[name^="difference"]`).value =
             diff.toFixed(2);
 
+          // 找出最低的卖出价
           if (sellPrice && sellPrice < lowestSell.value) {
             lowestSell = { bank: bankName, value: sellPrice };
-            lowestSellBank = bankName;
           }
+
+          // 找出最高的卖出价
+          if (sellPrice && sellPrice > highestSell.value) {
+            highestSell = { bank: bankName, value: sellPrice };
+          }
+
+          // 找出最高的买入价
           if (buyPrice && buyPrice > highestBuy.value) {
             highestBuy = { bank: bankName, value: buyPrice };
-            highestBuyBank = bankName;
           }
-          if (diff && diff < lowestDiff.value)
+
+          // 找出最低的买入价
+          if (buyPrice && buyPrice < lowestBuy.value) {
+            lowestBuy = { bank: bankName, value: buyPrice };
+          }
+
+          // 找出最小的差额
+          if (diff && diff < lowestDiff.value) {
             lowestDiff = { bank: bankName, value: diff };
+          }
         });
 
+        // 计算卖出价和买入价的百分比
         const sellPercentage =
           sellPrices.length > 1
             ? (
@@ -223,10 +244,17 @@
               )
             : "N/A";
 
+        // 更新汇总信息，确保显示对比的原价
         summary.innerHTML = `
     <h2>汇总结果</h2>
     <p>卖出价最低的银行：${lowestSell.bank}，价格：${
           lowestSell.value.toFixed(2) || "N/A"
+        }</p>
+    <p>卖出价最高的银行：${highestSell.bank}，价格：${
+          highestSell.value.toFixed(2) || "N/A"
+        }</p>
+    <p>买入价最低的银行：${lowestBuy.bank}，价格：${
+          lowestBuy.value.toFixed(2) || "N/A"
         }</p>
     <p>买入价最高的银行：${highestBuy.bank}，价格：${
           highestBuy.value.toFixed(2) || "N/A"
@@ -236,10 +264,12 @@
         }</p>
     <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${
           lowestSell.bank
-        } vs ${highestBuy.bank}</p>
-    <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${
-          lowestSell.bank
-        } vs ${highestBuy.bank}</p>
+        } vs ${highestSell.bank}（对比价格：${lowestSell.value} vs ${
+          highestSell.value
+        }）</p>
+    <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${lowestBuy.bank} vs ${
+          highestBuy.bank
+        }（对比价格：${lowestBuy.value} vs ${highestBuy.value}）</p>
   `;
       }
 
