@@ -114,31 +114,56 @@
     <script>
       let bankGroupId = 0;
 
-      function addBankGroup() {
+      // Default banks data
+      const defaultBanks = [
+        { name: "中国银行", currency: "USD", sellPrice: 731.73, buyPrice: 728.66 },
+        { name: "招商银行", currency: "USD", sellPrice: 731.98, buyPrice: 728.80 },
+        {
+          name: "中国工商银行",
+          currency: "USD",
+          sellPrice: 731.60,
+          buyPrice: 728.24,
+        },
+      ];
+
+      function addBankGroup(bankData = null) {
         bankGroupId++;
         const container = document.getElementById("bank-groups");
         const group = document.createElement("div");
         group.className = "bank-group";
+
+        // If bank data is provided, use it, otherwise use empty default
+        const bankName = bankData ? bankData.name : "";
+        const currency = bankData ? bankData.currency : "USD";
+        const sellPrice = bankData ? bankData.sellPrice : "";
+        const buyPrice = bankData ? bankData.buyPrice : "";
+
         group.innerHTML = `
           <label>
             标题（银行名称）
-            <input type="text" name="bankName${bankGroupId}" placeholder="例如：中国银行">
+            <input type="text" name="bankName${bankGroupId}" placeholder="例如：中国银行" value="${bankName}">
           </label>
           <label>
             币种
             <select name="currency${bankGroupId}">
-              <option value="USD" selected>美元</option>
-              <option value="EUR">欧元</option>
-              <option value="JPY">日元</option>
+              <option value="USD" ${
+                currency === "USD" ? "selected" : ""
+              }>美元</option>
+              <option value="EUR" ${
+                currency === "EUR" ? "selected" : ""
+              }>欧元</option>
+              <option value="JPY" ${
+                currency === "JPY" ? "selected" : ""
+              }>日元</option>
             </select>
           </label>
           <label>
             现汇卖出价
-            <input type="number" name="sellPrice${bankGroupId}" placeholder="卖出价" step="0.01" oninput="updateCalculations()">
+            <input type="number" name="sellPrice${bankGroupId}" placeholder="卖出价" step="0.01" value="${sellPrice}" oninput="updateCalculations()">
           </label>
           <label>
             现汇买入价
-            <input type="number" name="buyPrice${bankGroupId}" placeholder="买入价" step="0.01" oninput="updateCalculations()">
+            <input type="number" name="buyPrice${bankGroupId}" placeholder="买入价" step="0.01" value="${buyPrice}" oninput="updateCalculations()">
           </label>
           <label>
             差额
@@ -204,7 +229,7 @@
               )
             : "N/A";
 
-        summary.innerHTML = `
+        summary.innerHTML = ` 
         <h2>汇总结果</h2>
         <p>卖出价最低的银行：${lowestSell.bank}，价格：${
           lowestSell.value.toFixed(2) || "N/A"
@@ -223,27 +248,15 @@
       function updateContainerWidth() {
         const bankGroups = document.getElementById("bank-groups");
         const container = document.getElementById("container");
-
-        if (!(bankGroups.scrollWidth > container.scrollWidth)) return;
-
-        const desiredWidth = Math.max(
-          1000, // 保持最小初始宽度
-          Math.min(bankGroups.scrollWidth + 80, window.innerWidth - 40)
-        );
-
-        container.style.width = `${desiredWidth}px`;
+        if (bankGroups.scrollWidth > container.clientWidth) {
+          container.style.width = bankGroups.scrollWidth + "px";
+        } else {
+          container.style.width = "1000px";
+        }
       }
 
-      const bankGroups = document.getElementById("bank-groups");
-      const resizeObserver = new ResizeObserver(() => {
-        // 在内容变化时调整宽度
-        updateContainerWidth();
-      });
-
-      // 延迟启动 ResizeObserver，避免初始调整触发
-      window.addEventListener("DOMContentLoaded", () => {
-        resizeObserver.observe(bankGroups);
-      });
+      // Initialize with default banks
+      defaultBanks.forEach((bankData) => addBankGroup(bankData));
     </script>
   </body>
 </html>
