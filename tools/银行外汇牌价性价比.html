@@ -246,31 +246,33 @@
 
         // 更新汇总信息，确保显示对比的原价
         summary.innerHTML = `
-    <h2>汇总结果</h2>
-    <p>卖出价最低的银行：${lowestSell.bank}，价格：${
+  <h2>汇总结果</h2>
+  <p>卖出价最低的银行：<span style="color: red;">${
+    lowestSell.bank
+  }</span>，价格：<span style="color: red;">${
           lowestSell.value.toFixed(2) || "N/A"
-        }</p>
-    <p>卖出价最高的银行：${highestSell.bank}，价格：${
+        }</span></p>
+  <p>卖出价最高的银行：${highestSell.bank}，价格：${
           highestSell.value.toFixed(2) || "N/A"
         }</p>
-    <p>买入价最低的银行：${lowestBuy.bank}，价格：${
+  <p>买入价最低的银行：${lowestBuy.bank}，价格：${
           lowestBuy.value.toFixed(2) || "N/A"
         }</p>
-    <p>买入价最高的银行：${highestBuy.bank}，价格：${
+  <p>买入价最高的银行：<span style="color: red;">${
+    highestBuy.bank
+  }</span>，价格：<span style="color: red;">${
           highestBuy.value.toFixed(2) || "N/A"
-        }</p>
-    <p>卖出-买入差额最小的银行：${lowestDiff.bank}，差额：${
+        }</span></p>
+  <p>卖出-买入差额最小的银行：${lowestDiff.bank}，差额：${
           lowestDiff.value.toFixed(2) || "N/A"
         }</p>
-    <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${
-          lowestSell.bank
-        } vs ${highestSell.bank}（对比价格：${lowestSell.value} vs ${
-          highestSell.value
-        }）</p>
-    <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${lowestBuy.bank} vs ${
+  <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${lowestSell.bank} vs ${
+          highestSell.bank
+        }（对比价格：${lowestSell.value} vs ${highestSell.value}）</p>
+  <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${lowestBuy.bank} vs ${
           highestBuy.bank
         }（对比价格：${lowestBuy.value} vs ${highestBuy.value}）</p>
-  `;
+`;
       }
 
       function updateContainerWidth() {
@@ -322,7 +324,6 @@
         },
       ];
 
-      
       const defaultBanks2 = [
         {
           name: "中国银行",
