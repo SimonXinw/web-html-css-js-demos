@@ -7,27 +7,16 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
+        margin: 20px;
         background-color: #f9f9f9;
       }
       .container {
-        width: 100%;
         max-width: 100%;
-        overflow-x: auto;
+        margin: 0 auto;
         padding: 20px;
         background: #fff;
+        border-radius: 10px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        display: flex;
-        justify-content: center;
-      }
-      .content {
-        width: 100%;
-        max-width: 1000px; /* 默认宽度居中 */
-        min-width: 1000px;
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
       }
       h1 {
         text-align: center;
@@ -36,9 +25,9 @@
       .bank-groups {
         display: flex;
         gap: 20px;
+        overflow-x: auto;
         margin-bottom: 20px;
         padding: 10px 0;
-        overflow-x: auto;
       }
       .bank-group {
         flex: 0 0 120px; /* 每列固定宽度为 120px */
@@ -100,12 +89,10 @@
   </head>
   <body>
     <div class="container">
-      <div class="content">
-        <h1>外汇价格比较工具</h1>
-        <div class="bank-groups" id="bank-groups"></div>
-        <button onclick="addBankGroup()">添加银行</button>
-        <div id="summary" class="result"></div>
-      </div>
+      <h1>外汇价格比较工具</h1>
+      <div class="bank-groups" id="bank-groups"></div>
+      <button onclick="addBankGroup()">添加银行</button>
+      <div id="summary" class="result"></div>
     </div>
 
     <script>
