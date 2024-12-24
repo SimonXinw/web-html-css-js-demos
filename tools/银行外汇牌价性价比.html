@@ -114,18 +114,6 @@
     <script>
       let bankGroupId = 0;
 
-      // Default banks data
-      const defaultBanks = [
-        { name: "中国银行", currency: "USD", sellPrice: 731.73, buyPrice: 728.66 },
-        { name: "招商银行", currency: "USD", sellPrice: 731.98, buyPrice: 728.80 },
-        {
-          name: "中国工商银行",
-          currency: "USD",
-          sellPrice: 731.60,
-          buyPrice: 728.24,
-        },
-      ];
-
       function addBankGroup(bankData = null) {
         bankGroupId++;
         const container = document.getElementById("bank-groups");
@@ -254,6 +242,28 @@
           container.style.width = "1000px";
         }
       }
+
+      // Default banks data
+      const defaultBanks = [
+        {
+          name: "中国银行",
+          currency: "USD",
+          sellPrice: 731.73,
+          buyPrice: 728.66,
+        },
+        {
+          name: "招商银行",
+          currency: "USD",
+          sellPrice: 731.98,
+          buyPrice: 728.8,
+        },
+        {
+          name: "中国工商银行",
+          currency: "USD",
+          sellPrice: 731.6,
+          buyPrice: 728.24,
+        },
+      ];
 
       // Initialize with default banks
       defaultBanks.forEach((bankData) => addBankGroup(bankData));
