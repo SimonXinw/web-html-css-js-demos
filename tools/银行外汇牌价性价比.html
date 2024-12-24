@@ -156,6 +156,70 @@
         updateContainerWidth();
       }
 
+      function updateCalculations() {
+        const bankGroups = document.querySelectorAll(".bank-group");
+        const summary = document.getElementById("summary");
+        let lowestSell = { bank: "", value: Infinity };
+        let highestBuy = { bank: "", value: -Infinity };
+        let lowestDiff = { bank: "", value: Infinity };
+        let sellPrices = [];
+        let buyPrices = [];
+
+        bankGroups.forEach((group) => {
+          const bankName =
+            group.querySelector(`input[name^="bankName"]`).value || "未命名";
+          const sellPrice =
+            parseFloat(group.querySelector(`input[name^="sellPrice"]`).value) ||
+            0;
+          const buyPrice =
+            parseFloat(group.querySelector(`input[name^="buyPrice"]`).value) ||
+            0;
+          const diff = sellPrice && buyPrice ? sellPrice - buyPrice : 0;
+
+          if (sellPrice) sellPrices.push(sellPrice);
+          if (buyPrice) buyPrices.push(buyPrice);
+
+          group.querySelector(`input[name^="difference"]`).value =
+            diff.toFixed(2);
+
+          if (sellPrice && sellPrice < lowestSell.value)
+            lowestSell = { bank: bankName, value: sellPrice };
+          if (buyPrice && buyPrice > highestBuy.value)
+            highestBuy = { bank: bankName, value: buyPrice };
+          if (diff && diff < lowestDiff.value)
+            lowestDiff = { bank: bankName, value: diff };
+        });
+
+        const sellPercentage =
+          sellPrices.length > 1
+            ? (
+                (Math.max(...sellPrices) / Math.min(...sellPrices)) *
+                100
+              ).toFixed(2)
+            : "N/A";
+        const buyPercentage =
+          buyPrices.length > 1
+            ? ((Math.max(...buyPrices) / Math.min(...buyPrices)) * 100).toFixed(
+                2
+              )
+            : "N/A";
+
+        summary.innerHTML = `
+        <h2>汇总结果</h2>
+        <p>卖出价最低的银行：${lowestSell.bank}，价格：${
+          lowestSell.value.toFixed(2) || "N/A"
+        }</p>
+        <p>买入价最高的银行：${highestBuy.bank}，价格：${
+          highestBuy.value.toFixed(2) || "N/A"
+        }</p>
+        <p>卖出-买入差额最小的银行：${lowestDiff.bank}，差额：${
+          lowestDiff.value.toFixed(2) || "N/A"
+        }</p>
+        <p>卖出价最高/最低比例：${sellPercentage}%</p>
+        <p>买入价最高/最低比例：${buyPercentage}%</p>
+      `;
+      }
+
       function updateContainerWidth() {
         const bankGroups = document.getElementById("bank-groups");
         const container = document.getElementById("container");
