@@ -263,15 +263,19 @@
   }</span>，价格：<span style="color: red;">${
           highestBuy.value.toFixed(2) || "N/A"
         }</span></p>
-  <p>卖出-买入差额最小的银行：${lowestDiff.bank}，差额：${
-          lowestDiff.value.toFixed(2) || "N/A"
-        }</p>
-  <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${lowestSell.bank} vs ${
+  <p>卖出-买入差额最小的银行：<span style="color: red;">${
+    lowestDiff.bank
+  }</span>，差额：${lowestDiff.value.toFixed(2) || "N/A"}</p>
+  <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${
           highestSell.bank
-        }（对比价格：${lowestSell.value} vs ${highestSell.value}）</p>
-  <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${lowestBuy.bank} vs ${
+        } vs <span style="color: red;">${lowestSell.bank}</span>（对比价格：${
+          highestSell.value
+        } vs ${lowestSell.value}）</p>
+  <p>买入价最高/最低比例：${buyPercentage}%，对比银行：<span style="color: red;">${
           highestBuy.bank
-        }（对比价格：${lowestBuy.value} vs ${highestBuy.value}）</p>
+        }</span> vs ${lowestBuy.bank}（对比价格：${highestBuy.value} vs ${
+          lowestBuy.value
+        }）</p>
 `;
       }
 
