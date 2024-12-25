@@ -24,6 +24,20 @@
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         transition: width 0.3s ease;
       }
+
+      @media (max-width: 1024px) {
+        body {
+          padding: 0 0px;
+        }
+        .container {
+          padding: 5px;
+          width: 300px; /* 初始宽度 */
+        }
+        .container h1 {
+          margin: 2px 0;
+        }
+      }
+
       h1 {
         text-align: center;
         color: #333;
@@ -31,11 +45,20 @@
       .bank-groups {
         display: flex;
         gap: 20px;
+        min-height: 250px;
         margin-bottom: 20px;
         padding: 10px 0;
         box-sizing: border-box;
         overflow-x: auto;
       }
+
+      @media (max-width: 1024px) {
+        .bank-groups {
+          gap: 5px;
+          margin-bottom: 0px;
+        }
+      }
+
       .bank-group {
         flex: 0 0 120px;
         border: 1px solid #ccc;
@@ -47,11 +70,19 @@
         gap: 10px;
         box-sizing: border-box;
       }
+
+      @media (max-width: 1024px) {
+        .bank-group {
+          max-width: 110px;
+        }
+      }
+
       label {
         font-size: 14px;
         display: flex;
         flex-direction: column;
       }
+
       input,
       select {
         padding: 6px;
@@ -63,7 +94,10 @@
       .btn-row {
         display: flex;
         justify-content: center;
+        align-items: center;
         column-gap: 15px;
+
+        padding: 4px;
       }
       button {
         padding: 10px 20px;
@@ -91,10 +125,16 @@
         background-color: #f1f1f1;
         padding: 10px;
         border-radius: 5px;
-        margin-top: 20px;
+        margin-top: 4px;
       }
       .result p {
         margin: 5px 0;
+      }
+
+      @media (max-width: 1024px) {
+        .result {
+          font-size: 12px;
+        }
       }
 
       #message {
@@ -120,17 +160,61 @@
       <h1>外汇价格比较工具</h1>
       <div class="bank-groups" id="bank-groups"></div>
       <div class="btn-row">
+        <a href="https://www.kylc.com/bank/rmbfx.html?ccy=usd" target="_blank"
+          >获取汇率数据</a
+        >
+        <a
+          href="https://www.investing.com/currencies/usd-cnh-converter"
+          target="_blank"
+          >离岸</a
+        >
+        <a
+          href="https://finance.sina.com.cn/money/forex/hq/USDCNY.shtml"
+          target="_blank"
+          >在岸</a
+        >
+        <input
+          style="width: 120px"
+          type="text"
+          id="jsonInput"
+          placeholder="输入模板格式数据"
+        />
+      </div>
+      <div class="btn-row">
         <button class="add-btn" onclick="addBankGroup()">添加银行</button>
         <button class="clear-btn" onclick="clearAllBanks()">
           清空所有银行
         </button>
+
         <button id="copyButton" class="add-btn">下载模板</button>
+        <button id="updateButton" class="add-btn" onclick="updateBankData()">
+          更新数据
+        </button>
       </div>
       <div id="summary" class="result"></div>
     </div>
     <div id="message">模板已复制到剪切板！</div>
 
     <script>
+      function isMobileDevice() {
+        // 判断屏幕宽度是否小于 1024px
+        const isNarrowScreen = window.innerWidth < 1024;
+
+        // 判断是否支持触摸屏（部分移动设备特性）
+        const isTouchDevice =
+          "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+        // 检查用户代理是否为常见的移动设备
+        const userAgent = navigator.userAgent.toLowerCase();
+        const isMobileUserAgent =
+          /iphone|ipad|ipod|android|mobile|blackberry|iemobile|opera mini/.test(
+            userAgent
+          );
+
+        // 综合判断是否为移动设备
+        return isNarrowScreen || isTouchDevice || isMobileUserAgent;
+      }
+
       let bankGroupId = 0;
 
       function addBankGroup(bankData = null) {
@@ -147,8 +231,8 @@
 
         group.innerHTML = `
               <label>
-                标题（银行名称）
-                <input type="text" name="bankName${bankGroupId}" placeholder="例如：中国银行" value="${bankName}">
+                银行名称
+                <input type="text" name="bankName${bankGroupId}" placeholder="例: 中国银行" value="${bankName}">
               </label>
               <label>
                 币种
@@ -358,11 +442,25 @@
       function updateContainerWidth() {
         const bankGroups = document.getElementById("bank-groups");
         const container = document.getElementById("container");
-        if (bankGroups.scrollWidth > container.clientWidth) {
-          container.style.width = bankGroups.scrollWidth + "px";
-        } else {
-          container.style.width = "1000px";
-        }
+
+        if (!(bankGroups.scrollWidth > container.scrollWidth)) return;
+
+        const initWidth = isMobileDevice() ? 300 : 1000;
+
+        const currentWidth = container.clientWidth;
+
+        const windowWidth = Math.min(
+          window.innerWidth,
+          document.documentElement.clientWidth,
+          window.screen.width
+        );
+
+        const desiredWidth = Math.max(
+          initWidth, // 保持最小初始宽度
+          Math.min(bankGroups.scrollWidth + 80, windowWidth - 40)
+        );
+
+        container.style.width = `${desiredWidth}px`;
       }
 
       const defaultBanks = [
@@ -404,52 +502,28 @@
         },
       ];
 
-      const defaultBanks2 = [
-        {
-          name: "广发银行",
-          currency: "HKD",
-          sellPrice: 94.14,
-          buyPrice: 93.81,
-        },
-        {
-          name: "招商银行",
-          currency: "HKD",
-          sellPrice: 94.18,
-          buyPrice: 93.8,
-        },
-        {
-          name: "兴业银行",
-          currency: "HKD",
-          sellPrice: 94.16,
-          buyPrice: 93.8,
-        },
-        {
-          name: "中国银行",
-          currency: "HKD",
-          sellPrice: 94.17,
-          buyPrice: 93.79,
-        },
-        {
-          name: "中国建设银行",
-          currency: "HKD",
-          sellPrice: 94.17,
-          buyPrice: 93.79,
-        },
-        {
-          name: "交通银行",
-          currency: "HKD",
-          sellPrice: 94.15,
-          buyPrice: 93.79,
-        },
-        {
-          name: "中国工商银行",
-          currency: "HKD",
-          sellPrice: 94.2,
-          buyPrice: 93.78,
-        },
-      ];
-      // Initialize with default banks
-      defaultBanks2.forEach((bankData) => addBankGroup(bankData));
+      function renderBanks(banks) {
+        banks.forEach((bank) => addBankGroup(bank));
+        updateContainerWidth();
+      }
+
+      function updateBankData() {
+        const jsonInput = document.getElementById("jsonInput");
+
+        const newBanks = JSON.parse(jsonInput.value);
+
+        clearAllBanks();
+
+        renderBanks(newBanks);
+      }
+
+      function init(banks) {
+        if (Array.isArray(banks)) {
+          return renderBanks(banks);
+        }
+
+        renderBanks(defaultBanks);
+      }
 
       document.getElementById("copyButton").addEventListener("click", () => {
         const jsonString = JSON.stringify(defaultBanks, null, 2);
@@ -483,6 +557,8 @@
             }, 3000);
           });
       });
+
+      init();
     </script>
   </body>
 </html>

@@ -1,9 +1,5 @@
 {
-  "cSpell.words": [
-    "speedx",
-    "xiaoming",
-    "XMLHTTP",
-    "xwnb"
-  ],
-  "liveServer.settings.port": 5501
+  "cSpell.words": ["speedx", "xiaoming", "XMLHTTP", "xwnb"],
+  "liveServer.settings.port": 5501,
+  "editor.cursorStyle": "line"
 }
