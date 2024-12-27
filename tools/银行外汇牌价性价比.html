@@ -579,7 +579,7 @@
         const prompt = `上面是数据，第二列买入，第四卖出 ，处理成我下面发给你的格式给我，注意直接给我返回 Json 数据格式，不是 json 字符串格式${jsonString}`;
 
         navigator.clipboard
-          .writeText(jsonString)
+          .writeText(prompt)
           .then(() => {
             const messageDiv = document.getElementById("message");
             messageDiv.innerText = "Prompt 已复制到剪切板！";
