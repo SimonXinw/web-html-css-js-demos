@@ -324,8 +324,9 @@
           if (buyPrice) buyPrices.push(buyPrice);
 
           // 计算差额并显示
-          group.querySelector(`input[name^="difference"]`).value =
-            diff.toFixed(5);
+          group.querySelector(`input[name^="difference"]`).value = parseFloat(
+            diff.toFixed(10)
+          );
 
           // 找出最低的卖出价
           if (sellPrice && sellPrice < lowestSell.value) {
@@ -361,12 +362,15 @@
         // 计算卖出价和买入价的百分比
         const sellPercentage =
           sellPrices.length > 1
-            ? (Math.max(...sellPrices) / Math.min(...sellPrices)) * 100
+            ? (
+                (Math.max(...sellPrices) / Math.min(...sellPrices)) *
+                100
+              ).toFixed(4)
             : "N/A";
         const buyPercentage =
           buyPrices.length > 1
             ? ((Math.max(...buyPrices) / Math.min(...buyPrices)) * 100).toFixed(
-                2
+                4
               )
             : "N/A";
 
@@ -417,7 +421,7 @@
           lowestDiff.bank,
           "red"
         )}，差额：${renderSpan(
-          lowestDiff.value.toFixed(2) || "N/A",
+          parseFloat(lowestDiff.value.toFixed(10)) || "N/A",
           "red"
         )} ${renderSpan(
           `(${lowestDiffPercentage}%)`,
@@ -427,7 +431,7 @@
           highestDiff.bank,
           "green"
         )}，差额：${renderSpan(
-          highestDiff.value.toFixed(2) || "N/A",
+          parseFloat(highestDiff.value.toFixed(10)) || "N/A",
           "green"
         )} ${renderSpan(
           `(${highestDiffPercentage}%)`,
