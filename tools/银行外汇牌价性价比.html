@@ -35,6 +35,7 @@
         }
         .container h1 {
           margin: 2px 0;
+          font-size: 24px;
         }
       }
 
@@ -93,12 +94,14 @@
       }
       .btn-row {
         display: flex;
+        flex-wrap: wrap;
         justify-content: center;
         align-items: center;
-        column-gap: 15px;
+        gap: 15px;
 
         padding: 4px;
       }
+
       button {
         padding: 10px 20px;
         font-size: 14px;
@@ -119,6 +122,22 @@
       button.clear-btn:hover {
         background-color: #a71d2a;
       }
+
+      @media (max-width: 1024px) {
+        .btn-row {
+          gap: 4px;
+        }
+
+        button {
+          padding: 5px 10px;
+          font-size: 12px;
+          border: none;
+          color: white;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+      }
+
       .result {
         width: 100%;
         box-sizing: border-box;
@@ -187,13 +206,14 @@
         </button>
 
         <button id="copyButton" class="add-btn">下载模板</button>
+        <button id="copyPrompt" class="add-btn">复制Prompt</button>
         <button id="updateButton" class="add-btn" onclick="updateBankData()">
           更新数据
         </button>
       </div>
       <div id="summary" class="result"></div>
     </div>
-    <div id="message">模板已复制到剪切板！</div>
+    <div id="message">数据已复制到剪切板！</div>
 
     <script>
       function isMobileDevice() {
@@ -305,7 +325,7 @@
 
           // 计算差额并显示
           group.querySelector(`input[name^="difference"]`).value =
-            diff.toFixed(2);
+            diff.toFixed(5);
 
           // 找出最低的卖出价
           if (sellPrice && sellPrice < lowestSell.value) {
@@ -341,10 +361,7 @@
         // 计算卖出价和买入价的百分比
         const sellPercentage =
           sellPrices.length > 1
-            ? (
-                (Math.max(...sellPrices) / Math.min(...sellPrices)) *
-                100
-              ).toFixed(2)
+            ? (Math.max(...sellPrices) / Math.min(...sellPrices)) * 100
             : "N/A";
         const buyPercentage =
           buyPrices.length > 1
@@ -383,25 +400,19 @@
         <p>卖出价最低的银行：${renderSpan(
           lowestSell.bank,
           "red"
-        )}，价格：${renderSpan(lowestSell.value.toFixed(2) || "N/A", "red")}</p>
+        )}，价格：${renderSpan(lowestSell.value || "N/A", "red")}</p>
         <p>卖出价最高的银行：${renderSpan(
           highestSell.bank,
           "green"
-        )}，价格：${renderSpan(
-          highestSell.value.toFixed(2) || "N/A",
-          "green"
-        )}</p>
+        )}，价格：${renderSpan(highestSell.value || "N/A", "green")}</p>
         <p>买入价最低的银行：${renderSpan(
           lowestBuy.bank,
           "green"
-        )}，价格：${renderSpan(
-          lowestBuy.value.toFixed(2) || "N/A",
-          "green"
-        )}</p>
+        )}，价格：${renderSpan(lowestBuy.value || "N/A", "green")}</p>
         <p>买入价最高的银行：${renderSpan(
           highestBuy.bank,
           "red"
-        )}，价格：${renderSpan(highestBuy.value.toFixed(2) || "N/A", "red")}</p>
+        )}，价格：${renderSpan(highestBuy.value || "N/A", "red")}</p>
         <p>卖出-买入差额最小的银行：${renderSpan(
           lowestDiff.bank,
           "red"
@@ -426,16 +437,16 @@
           highestSell.bank,
           "green"
         )} vs ${renderSpan(lowestSell.bank, "red")}（对比价格：${renderSpan(
-          highestSell.value.toFixed(2),
+          highestSell.value,
           "green"
-        )} vs ${renderSpan(lowestSell.value.toFixed(2), "red")}）</p>
+        )} vs ${renderSpan(lowestSell.value, "red")}）</p>
         <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${renderSpan(
           highestBuy.bank,
           "red"
         )} vs ${renderSpan(lowestBuy.bank, "green")}（对比价格：${renderSpan(
-          highestBuy.value.toFixed(2),
+          highestBuy.value,
           "red"
-        )} vs ${renderSpan(lowestBuy.value.toFixed(2), "green")}）</p>
+        )} vs ${renderSpan(lowestBuy.value, "green")}）</p>
       `;
       }
 
@@ -533,6 +544,41 @@
           .then(() => {
             const messageDiv = document.getElementById("message");
             messageDiv.innerText = "模板已复制到剪切板！";
+            messageDiv.style.display = "block";
+            messageDiv.style.opacity = "1";
+
+            // 3秒后隐藏提示
+            setTimeout(() => {
+              messageDiv.style.display = "none";
+              messageDiv.style.opacity = "0";
+            }, 3000);
+          })
+          .catch((err) => {
+            console.error("复制失败：", err);
+            const messageDiv = document.getElementById("message");
+            messageDiv.innerText = "复制失败，请重试！";
+            messageDiv.style.backgroundColor = "red";
+            messageDiv.style.display = "block";
+            messageDiv.style.opacity = "1";
+
+            // 3秒后隐藏提示
+            setTimeout(() => {
+              messageDiv.style.display = "none";
+              messageDiv.style.opacity = "0";
+            }, 3000);
+          });
+      });
+
+      document.getElementById("copyPrompt").addEventListener("click", () => {
+        const jsonString = JSON.stringify(defaultBanks, null, 2);
+
+        const prompt = `上面是数据，第二列买入，第四卖出 ，处理成我下面发给你的格式给我，注意直接给我返回 Json 数据格式，不是 json 字符串格式${jsonString}`;
+
+        navigator.clipboard
+          .writeText(jsonString)
+          .then(() => {
+            const messageDiv = document.getElementById("message");
+            messageDiv.innerText = "Prompt 已复制到剪切板！";
             messageDiv.style.display = "block";
             messageDiv.style.opacity = "1";
 
