@@ -46,7 +46,7 @@
         background-color: #fff;
       }
       button {
-        width: 100%; /* 自适应父容器宽度 */
+        width: 100%;
         padding: 10px;
         margin: 10px 0;
         font-size: 1em;
@@ -108,6 +108,7 @@
 
       <button onclick="calculateExchangeRate()">计算汇率</button>
       <button onclick="convertGoldPrice()">转换伦敦金至沪金</button>
+      <button onclick="convertNYGoldPrice()">转换纽约金至沪金</button>
 
       <div class="result-container">
         <div class="result-item">
@@ -122,93 +123,109 @@
           <label>伦敦沪金：</label>
           <span id="converted-gold-price">--</span>
         </div>
+        <div class="result-item">
+          <label>纽约金：</label>
+          <span id="ny-gold-price">--</span>
+        </div>
+        <div class="result-item">
+          <label>纽约沪金：</label>
+          <span id="converted-ny-gold-price">--</span>
+        </div>
       </div>
     </div>
 
     <script>
-      function calculateExchangeRate() {
-        const baseCurrency = document.getElementById("base-currency").value;
-        const compareCurrency =
-          document.getElementById("compare-currency").value;
+            function calculateExchangeRate() {
+              const baseCurrency = document.getElementById("base-currency").value;
+              const compareCurrency =
+                document.getElementById("compare-currency").value;
+              const url = `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/${baseCurrency}`;
 
-        const url = `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/${baseCurrency}`;
-
-        fetch(url)
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.result === "success") {
-              const rate = data.conversion_rates[compareCurrency];
-              if (rate) {
-                document.getElementById(
-                  "exchange-rate"
-                ).textContent = `1 ${baseCurrency} = ${rate} ${compareCurrency}`;
-              } else {
-                document.getElementById(
-                  "exchange-rate"
-                ).textContent = `未找到 ${compareCurrency} 的汇率信息。`;
-              }
-            } else {
-              document.getElementById("exchange-rate").textContent =
-                "无法获取汇率数据，请稍后再试。";
+              fetch(url)
+                .then((response) => response.json())
+                .then((data) => {
+                  if (data.result === "success") {
+                    const rate = data.conversion_rates[compareCurrency];
+                    document.getElementById(
+                      "exchange-rate"
+                    ).textContent = `1 ${baseCurrency} = ${rate} ${compareCurrency}`;
+                  } else {
+                    document.getElementById("exchange-rate").textContent =
+                      "无法获取汇率数据，请稍后再试。";
+                  }
+                })
+                .catch((error) => {
+                  document.getElementById("exchange-rate").textContent =
+                    "错误：" + error.message;
+                });
             }
-          })
-          .catch((error) => {
-            document.getElementById("exchange-rate").textContent =
-              "错误：" + error.message;
-          });
-      }
 
-      function convertGoldPrice() {
-        const baseCurrency = document.getElementById("base-currency").value;
-        const compareCurrency =
-          document.getElementById("compare-currency").value;
+            function convertGoldPrice() {
+              const goldApiUrl = "https://api.gold-api.com/price/XAU";
+              const compareCurrency =
+                document.getElementById("compare-currency").value;
 
-        // 7.33082
-        const new2url =
-          "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@2025-01-16/v1/currencies/usd.json";
-        // 7.3391
-        const exchangeRateUrl = `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/${baseCurrency}`;
-        // 伦敦金
-        const goldApiUrl = "https://api.gold-api.com/price/XAU";
+              fetch(goldApiUrl)
+                .then((response) => response.json())
+                .then((goldData) => {
+                  const goldPrice = goldData.price;
+                  const goldPricePerGram = goldPrice / 31.1034768;
 
-        Promise.all([
-          fetch(exchangeRateUrl).then((res) => res.json()),
-          fetch(goldApiUrl).then((res) => res.json()),
-        ])
-          .then(([exchangeData, goldData]) => {
-            if (exchangeData.result === "success" && goldData.price) {
-              const rate = exchangeData.conversion_rates[compareCurrency];
-              const goldPrice = goldData.price;
-              const goldPricePerGram = goldPrice / 31.1034768;
+                  document.getElementById(
+                    "gold-price"
+                  ).textContent = `$${goldPrice.toFixed(2)}`;
 
-              document.getElementById(
-                "gold-price"
-              ).textContent = `$${goldPrice.toFixed(2)}`;
+                  fetch(
+                    `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`
+                  )
+                    .then((response) => response.json())
+                    .then((exchangeData) => {
+                      const rate = exchangeData.conversion_rates[compareCurrency];
+                      const convertedPrice = (goldPricePerGram * rate).toFixed(2);
 
-              if (rate) {
-                const convertedPrice = (goldPricePerGram * rate).toFixed(2);
-                document.getElementById(
-                  "converted-gold-price"
-                ).textContent = `${convertedPrice} ${compareCurrency}/g`;
-              } else {
-                document.getElementById(
-                  "converted-gold-price"
-                ).textContent = `未找到 ${compareCurrency} 的汇率信息。`;
-              }
-            } else {
-              document.getElementById("gold-price").textContent =
-                "无法获取伦敦金数据。";
-              document.getElementById("converted-gold-price").textContent =
-                "无法获取沪金数据。";
+                      document.getElementById(
+                        "converted-gold-price"
+                      ).textContent = `${convertedPrice} ${compareCurrency}/g`;
+                    });
+                });
             }
-          })
-          .catch((error) => {
-            document.getElementById("gold-price").textContent =
-              "错误：" + error.message;
-            document.getElementById("converted-gold-price").textContent =
-              "错误：" + error.message;
-          });
-      }
+
+            function convertNYGoldPrice() {
+              const url = "https://api.api-ninjas.com/v1/goldprice";
+              const headers = {
+                "X-Api-Key": "MG3xOQorT/VQsbx4BP5Chg==5wwg01GbGKNGZlDj",
+              };
+
+              fetch(url, { headers })
+                .then((response) => response.json())
+                .then((result) => {
+                  const nyGoldPrice = result.price;
+                  const nyGoldPerGram = nyGoldPrice / 31.1034768;
+
+                  document.getElementById(
+                    "ny-gold-price"
+                  ).textContent = `$${nyGoldPrice.toFixed(2)}`;
+
+                  fetch(
+                    `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`
+                  )
+                    .then((response) => response.json())
+                    .then((exchangeData) => {
+                      const compareCurrency =
+                        document.getElementById("compare-currency").value;
+                      const rate = exchangeData.conversion_rates[compareCurrency];
+                      const convertedNYPrice = (nyGoldPerGram * rate).toFixed(2);
+
+                      document.getElementById(
+                        "converted-ny-gold-price"
+                      ).textContent = `${convertedNYPrice} ${compareCurrency}/g`;
+                    });
+                })
+                .catch((error) => {
+                  document.getElementById("ny-gold-price").textContent =
+                    "错误：" + error.message;
+                });
+            }
     </script>
   </body>
 </html>
