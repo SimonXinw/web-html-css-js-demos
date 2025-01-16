@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>年化借款利率计算器</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: auto;
+      }
+      label,
+      select,
+      input,
+      button,
+      p {
+        display: block;
+        margin-bottom: 15px;
+      }
+      input,
+      select {
+        padding: 8px;
+        width: 100%;
+      }
+      button {
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>年化借款利率计算器（单利）</h1>
+    <form id="loanForm">
+      <label for="repaymentMethod">还款方式：</label>
+      <select id="repaymentMethod">
+        <option value="1">到期一次性还本付息</option>
+        <option value="0.5">每月等额本息</option>
+      </select>
+
+      <label for="loanPrincipal">贷款本金（元）：</label>
+      <input type="number" id="loanPrincipal" placeholder="输入贷款本金" />
+
+      <label for="totalInterest">总利息（元）：</label>
+      <input type="number" id="totalInterest" placeholder="输入总利息" />
+
+      <label for="totalRepayment">贷款总额（元）：</label>
+      <input type="number" id="totalRepayment" placeholder="输入贷款总额" />
+
+      <label for="loanYears">贷款年限（年）：</label>
+      <input
+        type="number"
+        id="loanYears"
+        placeholder="输入贷款年限"
+        value="1.5"
+      />
+
+      <button type="button" onclick="calculate()">计算年化利率</button>
+    </form>
+
+    <h2>计算结果：</h2>
+    <p>贷款本金（元）：<span id="calculatedPrincipal">-</span></p>
+    <p>总利息（元）：<span id="calculatedInterest">-</span></p>
+    <p>贷款总额（元）：<span id="calculatedTotal">-</span></p>
+    <p>年化借款利率（%）：<span id="annualRate">-</span></p>
+
+    <script>
+      function calculate() {
+        const repaymentMethod = parseFloat(
+          document.getElementById("repaymentMethod").value
+        ); // 系数
+        const loanYears = parseFloat(
+          document.getElementById("loanYears").value
+        );
+
+        // 获取输入的值
+        let principal = parseFloat(
+          document.getElementById("loanPrincipal").value
+        );
+        let interest = parseFloat(
+          document.getElementById("totalInterest").value
+        );
+        let totalRepayment = parseFloat(
+          document.getElementById("totalRepayment").value
+        );
+
+        // 自动计算剩余值
+        if (!isNaN(principal) && !isNaN(interest)) {
+          totalRepayment = principal + interest;
+          document.getElementById("totalRepayment").value =
+            totalRepayment.toFixed(2);
+        } else if (!isNaN(principal) && !isNaN(totalRepayment)) {
+          interest = totalRepayment - principal;
+          document.getElementById("totalInterest").value = interest.toFixed(2);
+        } else if (!isNaN(interest) && !isNaN(totalRepayment)) {
+          principal = totalRepayment - interest;
+          document.getElementById("loanPrincipal").value = principal.toFixed(2);
+        }
+
+        // 确保所有值有效
+        if (
+          isNaN(principal) ||
+          isNaN(interest) ||
+          isNaN(totalRepayment) ||
+          isNaN(loanYears)
+        ) {
+          alert("请确保所有输入值有效！");
+          return;
+        }
+
+        // 计算年化利率
+        const factor = repaymentMethod * loanYears; // 系数 × 贷款年限
+        const annualRate = (interest / (principal * factor)) * 100;
+
+        // 显示结果
+        document.getElementById("calculatedPrincipal").textContent =
+          principal.toFixed(2);
+        document.getElementById("calculatedInterest").textContent =
+          interest.toFixed(2);
+        document.getElementById("calculatedTotal").textContent =
+          totalRepayment.toFixed(2);
+        document.getElementById("annualRate").textContent =
+          annualRate.toFixed(2);
+      }
+    </script>
+  </body>
+</html>
