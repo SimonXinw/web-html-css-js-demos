@@ -107,7 +107,7 @@
       </select>
 
       <button onclick="calculateExchangeRate()">计算汇率</button>
-      <button onclick="convertGoldPrice()">转换纽约金至沪金</button>
+      <button onclick="convertGoldPrice()">转换伦敦金至沪金</button>
 
       <div class="result-container">
         <div class="result-item">
@@ -115,7 +115,7 @@
           <span id="exchange-rate">--</span>
         </div>
         <div class="result-item">
-          <label>纽约金：</label>
+          <label>伦敦金：</label>
           <span id="gold-price">--</span>
         </div>
         <div class="result-item">
@@ -192,7 +192,7 @@
               }
             } else {
               document.getElementById("gold-price").textContent =
-                "无法获取纽约金数据。";
+                "无法获取伦敦金数据。";
               document.getElementById("converted-gold-price").textContent =
                 "无法获取沪金数据。";
             }
