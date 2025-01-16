@@ -163,7 +163,12 @@
         const compareCurrency =
           document.getElementById("compare-currency").value;
 
+        // 7.33082
+        const new2url =
+          "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@2025-01-16/v1/currencies/usd.json";
+        // 7.3391
         const exchangeRateUrl = `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/${baseCurrency}`;
+        // 伦敦金
         const goldApiUrl = "https://api.gold-api.com/price/XAU";
 
         Promise.all([
