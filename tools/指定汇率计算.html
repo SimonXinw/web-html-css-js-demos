@@ -31,14 +31,14 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
       label {
-        display: block;
-        margin: 10px 0 5px;
+        display: inline-block;
+        width: 130px; /* 固定 label 的宽度 */
         font-size: 1.1em;
         color: #555;
       }
       select,
       button {
-        width: 100%;
+        width: calc(100% - 140px); /* 避免 label 重叠 */
         padding: 10px;
         margin: 10px 0;
         font-size: 1em;
@@ -55,11 +55,22 @@
       button:hover {
         background-color: #0056b3;
       }
-      #result {
+      .result-container {
         margin-top: 20px;
         font-size: 1.2em;
         color: #333;
         font-weight: bold;
+      }
+      .result-item {
+        display: flex;
+        margin-bottom: 10px;
+      }
+      .result-item label {
+        width: 130px;
+        font-weight: bold;
+      }
+      .result-item span {
+        flex: 1;
       }
       @media (max-width: 600px) {
         .container {
@@ -96,7 +107,20 @@
       <button onclick="calculateExchangeRate()">计算汇率</button>
       <button onclick="convertGoldPrice()">转换纽约金至沪金</button>
 
-      <div id="result"></div>
+      <div class="result-container">
+        <div class="result-item">
+          <label>汇率：</label>
+          <span id="exchange-rate">--</span>
+        </div>
+        <div class="result-item">
+          <label>纽约金：</label>
+          <span id="gold-price">--</span>
+        </div>
+        <div class="result-item">
+          <label>沪金：</label>
+          <span id="converted-gold-price">--</span>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -113,21 +137,17 @@
             if (data.result === "success") {
               const rate = data.conversion_rates[compareCurrency];
               if (rate) {
-                document.getElementById(
-                  "result"
-                ).textContent = `1 ${baseCurrency} = ${rate} ${compareCurrency}`;
+                document.getElementById("exchange-rate").textContent = `1 ${baseCurrency} = ${rate} ${compareCurrency}`;
               } else {
-                document.getElementById(
-                  "result"
-                ).textContent = `未找到 ${compareCurrency} 的汇率信息。`;
+                document.getElementById("exchange-rate").textContent = `未找到 ${compareCurrency} 的汇率信息。`;
               }
             } else {
-              document.getElementById("result").textContent =
+              document.getElementById("exchange-rate").textContent =
                 "无法获取汇率数据，请稍后再试。";
             }
           })
           .catch((error) => {
-            document.getElementById("result").textContent =
+            document.getElementById("exchange-rate").textContent =
               "错误：" + error.message;
           });
       }
@@ -150,24 +170,23 @@
               const goldPrice = goldData.price;
               const goldPricePerGram = goldPrice / 31.1034768;
 
+              document.getElementById("gold-price").textContent = `$${goldPrice.toFixed(2)}`;
+
               if (rate) {
                 const convertedPrice = (goldPricePerGram * rate).toFixed(2);
-                document.getElementById(
-                  "result"
-                ).textContent = `纽约金转换为沪金：${convertedPrice} ${compareCurrency}/g`;
+                document.getElementById("converted-gold-price").textContent = `${convertedPrice} ${compareCurrency}/g`;
               } else {
-                document.getElementById(
-                  "result"
-                ).textContent = `未找到 ${compareCurrency} 的汇率信息。`;
+                document.getElementById("converted-gold-price").textContent = `未找到 ${compareCurrency} 的汇率信息。`;
               }
             } else {
-              document.getElementById("result").textContent =
-                "无法获取纽约金或汇率数据，请稍后再试。";
+              document.getElementById("gold-price").textContent = "无法获取纽约金数据。";
+              document.getElementById("converted-gold-price").textContent = "无法获取沪金数据。";
             }
           })
           .catch((error) => {
-            document.getElementById("result").textContent =
+            document.getElementById("gold-price").textContent =
               "错误：" + error.message;
+            document.getElementById("converted-gold-price").textContent = "错误：" + error.message;
           });
       }
     </script>
