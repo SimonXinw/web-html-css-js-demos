@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gold API Example</title>
+    <style>
+      #output {
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 95%;
+        height: 300px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+      }
+      #codeExample {
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 95%;
+        height: 300px;
+        overflow-y: auto;
+        background-color: #f0f8ff;
+      }
+      pre {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+    </style>
+    <script>
+      //  伦敦金
+      document.addEventListener("DOMContentLoaded", function () {
+        document
+          .getElementById("fetchData")
+          .addEventListener("click", fetchData);
+
+        function fetchData() {
+          var myHeaders = new Headers();
+          myHeaders.append("x-access-token", "goldapi-6drmsm5z1nd83-io");
+          myHeaders.append("Content-Type", "application/json");
+
+          var requestOptions = {
+            method: "GET",
+            headers: myHeaders,
+            redirect: "follow",
+          };
+
+          fetch("https://www.goldapi.io/api/XAU/USD", requestOptions)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(
+                  "Network response was not ok " + response.statusText
+                );
+              }
+              return response.json(); // 解析为 JSON 格式
+            })
+            .then((data) => displayData(data)) // 显示数据
+            .catch((error) =>
+              console.error(
+                "There has been a problem with your fetch operation:",
+                error
+              )
+            );
+        }
+
+        function displayData(data) {
+          var outputDiv = document.getElementById("output");
+          outputDiv.innerHTML =
+            "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Gold API Request Example</h1>
+    <button id="fetchData">Fetch Gold Data</button>
+
+    <h2>API Response:</h2>
+    <div id="output">
+      Click the button above to fetch and display gold data.
+    </div>
+
+    <h2>Function Code Example:</h2>
+    <div id="codeExample">
+      <pre>
+&lt;script&gt;
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('fetchData').addEventListener('click', fetchData);
+
+    function fetchData() {
+        var myHeaders = new Headers();
+        myHeaders.append("x-access-token", "goldapi-6drmsm5z1nd83-io");
+        myHeaders.append("Content-Type", "application/json");
+
+        var requestOptions = {
+            method: 'GET',
+            headers: myHeaders,
+            redirect: 'follow'
+        };
+
+        fetch("https://www.goldapi.io/api/XAU/USD", requestOptions)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json(); // 解析为 JSON 格式
+            })
+            .then(data => displayData(data)) // 显示数据
+            .catch(error => console.error('There has been a problem with your fetch operation:', error));
+    }
+
+    function displayData(data) {
+        var outputDiv = document.getElementById('output');
+        outputDiv.innerHTML = '&lt;pre&gt;' + JSON.stringify(data, null, 2) + '&lt;/pre&gt;';
+    }
+});
+&lt;/script&gt;
+        </pre
+      >
+    </div>
+  </body>
+</html>
