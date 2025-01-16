@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>货币转换器</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f7fc;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .container {
+        width: 100%;
+        max-width: 500px;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      label {
+        display: block;
+        margin: 10px 0 5px;
+        font-size: 1.1em;
+        color: #555;
+      }
+      select,
+      button {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        font-size: 1em;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #result {
+        margin-top: 20px;
+        font-size: 1.2em;
+        color: #333;
+        font-weight: bold;
+      }
+      @media (max-width: 600px) {
+        .container {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>货币转换器</h1>
+    <div class="container">
+      <label for="base-currency">选择基础货币：</label>
+      <select id="base-currency">
+        <option value="USD">美元 (USD)</option>
+        <option value="EUR">欧元 (EUR)</option>
+        <option value="CNY">人民币 (CNY)</option>
+        <option value="JPY">日元 (JPY)</option>
+        <option value="HKD">港币 (HKD)</option>
+        <option value="KRW">韩元 (KRW)</option>
+        <option value="GBP">英镑 (GBP)</option>
+        <!-- 可以根据需要添加更多货币 -->
+      </select>
+
+      <label for="compare-currency">选择目标货币：</label>
+      <select id="compare-currency">
+        <option value="CNY">人民币 (CNY)</option>
+        <option value="USD">美元 (USD)</option>
+        <option value="EUR">欧元 (EUR)</option>
+        <option value="JPY">日元 (JPY)</option>
+        <option value="HKD">港币 (HKD)</option>
+        <option value="KRW">韩元 (KRW)</option>
+        <option value="GBP">英镑 (GBP)</option>
+        <!-- 可以根据需要添加更多货币 -->
+      </select>
+
+      <button onclick="calculateExchangeRate()">计算汇率</button>
+
+      <div id="result"></div>
+    </div>
+
+    <script>
+      function calculateExchangeRate() {
+        const baseCurrency = document.getElementById("base-currency").value;
+        const compareCurrency =
+          document.getElementById("compare-currency").value;
+
+        const url = `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/${baseCurrency}`;
+
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.result === "success") {
+              const rate = data.conversion_rates[compareCurrency];
+              if (rate) {
+                document.getElementById(
+                  "result"
+                ).textContent = `1 ${baseCurrency} = ${rate} ${compareCurrency}`;
+              } else {
+                document.getElementById(
+                  "result"
+                ).textContent = `未找到 ${compareCurrency} 的汇率信息。`;
+              }
+            } else {
+              document.getElementById("result").textContent =
+                "无法获取汇率数据，请稍后再试。";
+            }
+          })
+          .catch((error) => {
+            document.getElementById("result").textContent =
+              "错误：" + error.message;
+          });
+      }
+    </script>
+  </body>
+</html>
