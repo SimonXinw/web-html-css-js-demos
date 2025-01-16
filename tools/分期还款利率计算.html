@@ -7,8 +7,11 @@
     <style>
       body {
         font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
         max-width: 600px;
         margin: auto;
+        box-sizing: border-box;
       }
       label,
       select,
@@ -16,22 +19,82 @@
       button,
       p {
         display: block;
-        margin-bottom: 15px;
+        margin-bottom: 12px; /* 缩小间距 */
+        font-size: 1em;
       }
       input,
       select {
-        padding: 8px;
+        padding: 10px; /* 缩小输入框高度 */
         width: 100%;
+        box-sizing: border-box;
+        font-size: 1em;
+        border: 1px solid #ccc;
+        border-radius: 5px;
       }
       button {
-        padding: 10px;
+        padding: 12px; /* 缩小按钮高度 */
         background-color: #4caf50;
         color: white;
         border: none;
+        border-radius: 5px;
         cursor: pointer;
+        font-size: 1em;
+        width: 100%;
+        box-sizing: border-box;
       }
       button:hover {
         background-color: #45a049;
+      }
+      h1 {
+        text-align: center;
+        font-size: 1.6em; /* 缩小标题字体 */
+        margin-bottom: 15px; /* 缩小标题底部间距 */
+      }
+      h2 {
+        font-size: 1.3em; /* 缩小副标题字体 */
+        margin-top: 15px;
+        margin-bottom: 8px;
+      }
+      p {
+        font-size: 1.1em;
+      }
+
+      /* Responsive design */
+      @media screen and (max-width: 768px) {
+        body {
+          padding: 8px;
+        }
+        h1 {
+          font-size: 1.5em;
+        }
+        h2 {
+          font-size: 1.2em;
+        }
+        input,
+        select,
+        button {
+          font-size: 1.1em;
+        }
+      }
+
+      @media screen and (max-width: 480px) {
+        body {
+          padding: 5px;
+        }
+        h1 {
+          font-size: 1.3em;
+        }
+        h2 {
+          font-size: 1.1em;
+        }
+        label {
+          font-size: 1em;
+        }
+        input,
+        select,
+        button {
+          font-size: 1.2em;
+        }
       }
     </style>
   </head>
