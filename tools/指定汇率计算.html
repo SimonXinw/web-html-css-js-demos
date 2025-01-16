@@ -80,7 +80,6 @@
         <option value="HKD">港币 (HKD)</option>
         <option value="KRW">韩元 (KRW)</option>
         <option value="GBP">英镑 (GBP)</option>
-        <!-- 可以根据需要添加更多货币 -->
       </select>
 
       <label for="compare-currency">选择目标货币：</label>
@@ -92,10 +91,10 @@
         <option value="HKD">港币 (HKD)</option>
         <option value="KRW">韩元 (KRW)</option>
         <option value="GBP">英镑 (GBP)</option>
-        <!-- 可以根据需要添加更多货币 -->
       </select>
 
       <button onclick="calculateExchangeRate()">计算汇率</button>
+      <button onclick="convertGoldPrice()">转换纽约金至沪金</button>
 
       <div id="result"></div>
     </div>
@@ -125,6 +124,45 @@
             } else {
               document.getElementById("result").textContent =
                 "无法获取汇率数据，请稍后再试。";
+            }
+          })
+          .catch((error) => {
+            document.getElementById("result").textContent =
+              "错误：" + error.message;
+          });
+      }
+
+      function convertGoldPrice() {
+        const baseCurrency = document.getElementById("base-currency").value;
+        const compareCurrency =
+          document.getElementById("compare-currency").value;
+
+        const exchangeRateUrl = `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/${baseCurrency}`;
+        const goldApiUrl = "https://api.gold-api.com/price/XAU";
+
+        Promise.all([
+          fetch(exchangeRateUrl).then((res) => res.json()),
+          fetch(goldApiUrl).then((res) => res.json()),
+        ])
+          .then(([exchangeData, goldData]) => {
+            if (exchangeData.result === "success" && goldData.price) {
+              const rate = exchangeData.conversion_rates[compareCurrency];
+              const goldPrice = goldData.price;
+              const goldPricePerGram = goldPrice / 31.1034768;
+
+              if (rate) {
+                const convertedPrice = (goldPricePerGram * rate).toFixed(2);
+                document.getElementById(
+                  "result"
+                ).textContent = `纽约金转换为沪金：${convertedPrice} ${compareCurrency}/g`;
+              } else {
+                document.getElementById(
+                  "result"
+                ).textContent = `未找到 ${compareCurrency} 的汇率信息。`;
+              }
+            } else {
+              document.getElementById("result").textContent =
+                "无法获取纽约金或汇率数据，请稍后再试。";
             }
           })
           .catch((error) => {
