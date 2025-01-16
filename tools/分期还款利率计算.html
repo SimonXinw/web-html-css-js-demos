@@ -53,12 +53,12 @@
       <label for="totalRepayment">贷款总额（元）：</label>
       <input type="number" id="totalRepayment" placeholder="输入贷款总额" />
 
-      <label for="loanYears">贷款年限（年）：</label>
+      <label for="loanMonths">贷款期限（个月）：</label>
       <input
         type="number"
-        id="loanYears"
-        placeholder="输入贷款年限"
-        value="1.5"
+        id="loanMonths"
+        placeholder="输入贷款期限（月）"
+        value="18"
       />
 
       <button type="button" onclick="calculate()">计算年化利率</button>
@@ -75,8 +75,8 @@
         const repaymentMethod = parseFloat(
           document.getElementById("repaymentMethod").value
         ); // 系数
-        const loanYears = parseFloat(
-          document.getElementById("loanYears").value
+        const loanMonths = parseFloat(
+          document.getElementById("loanMonths").value
         );
 
         // 获取输入的值
@@ -108,14 +108,14 @@
           isNaN(principal) ||
           isNaN(interest) ||
           isNaN(totalRepayment) ||
-          isNaN(loanYears)
+          isNaN(loanMonths)
         ) {
           alert("请确保所有输入值有效！");
           return;
         }
 
         // 计算年化利率
-        const factor = repaymentMethod * loanYears; // 系数 × 贷款年限
+        const factor = (repaymentMethod * loanMonths) / 12; // 系数 × (月份 / 12)
         const annualRate = (interest / (principal * factor)) * 100;
 
         // 显示结果
