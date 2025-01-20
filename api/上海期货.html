@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gold API Example</title>
+    <style>
+      #output {
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 95%;
+        height: 300px;
+        overflow-y: auto;
+        background-color: #f9f9f9;
+      }
+      #codeExample {
+        margin-top: 20px;
+        border: 1px solid #ccc;
+        padding: 10px;
+        width: 95%;
+        height: 300px;
+        overflow-y: auto;
+        background-color: #f0f8ff;
+      }
+      pre {
+        font-size: 14px;
+        line-height: 1.5;
+      }
+    </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document
+          .getElementById("fetchData")
+          .addEventListener("click", fetchData);
+
+        function fetchData() {
+          var requestOptions = {
+            method: "GET",
+            redirect: "follow",
+          };
+
+          fetch(
+            "http://web.juhe.cn/finance/gold/shfuture?key=05f857458519761c2ba067e15df499bd&v=1",
+            requestOptions
+          )
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(
+                  "Network response was not ok " + response.statusText
+                );
+              }
+              return response.json(); // 解析为 JSON 格式
+            })
+            .then((data) => displayData(data)) // 显示数据
+            .catch((error) =>
+              console.error(
+                "There has been a problem with your fetch operation:",
+                error
+              )
+            );
+        }
+
+        function displayData(data) {
+          var outputDiv = document.getElementById("output");
+
+          // 检查数据格式
+          if (data.resultcode === "200" && data.result) {
+            let resultHTML = "<h3>Gold and Silver Data:</h3><ul>";
+            data.result.forEach((item) => {
+              for (let key in item) {
+                resultHTML += `
+                  <li>
+                    <strong>${key}</strong>:
+                    <ul>
+                      <li><strong>Name:</strong> ${item[key].name}</li>
+                      <li><strong>Latest Price:</strong> ${item[key].latestpri}</li>
+                      <li><strong>Change:</strong> ${item[key].change}</li>
+                      <li><strong>Buy Price:</strong> ${item[key].buypri}</li>
+                      <li><strong>Sell Price:</strong> ${item[key].sellpri}</li>
+                      <li><strong>Time:</strong> ${item[key].time}</li>
+                    </ul>
+                  </li>
+                `;
+              }
+            });
+            resultHTML += "</ul>";
+            outputDiv.innerHTML = resultHTML;
+          } else {
+            outputDiv.innerHTML = "<p>Error: Invalid API response</p>";
+          }
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Gold API Request Example</h1>
+    <button id="fetchData">Fetch Gold Data</button>
+
+    <h2>API Response:</h2>
+    <div id="output">
+      Click the button above to fetch and display gold data.
+    </div>
+
+    <h2>Function Code Example:</h2>
+    <div id="codeExample">
+      <pre>
+&lt;script&gt;
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('fetchData').addEventListener('click', fetchData);
+
+    function fetchData() {
+        var requestOptions = {
+            method: 'GET',
+            redirect: 'follow'
+        };
+
+        fetch("http://web.juhe.cn/finance/gold/shfuture?key=05f857458519761c2ba067e15df499bd&v=1", requestOptions)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => displayData(data))
+            .catch(error => console.error('There has been a problem with your fetch operation:', error));
+    }
+
+    function displayData(data) {
+        var outputDiv = document.getElementById('output');
+        if (data.resultcode === "200" && data.result) {
+            let resultHTML = "&lt;h3&gt;Gold and Silver Data:&lt;/h3&gt;&lt;ul&gt;";
+            data.result.forEach(item => {
+                for (let key in item) {
+                    resultHTML += `
+                        &lt;li&gt;
+                            &lt;strong&gt;${key}&lt;/strong&gt;:
+                            &lt;ul&gt;
+                                &lt;li&gt;&lt;strong&gt;Name:&lt;/strong&gt; ${item[key].name}&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;Latest Price:&lt;/strong&gt; ${item[key].latestpri}&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;Change:&lt;/strong&gt; ${item[key].change}&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;Buy Price:&lt;/strong&gt; ${item[key].buypri}&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;Sell Price:&lt;/strong&gt; ${item[key].sellpri}&lt;/li&gt;
+                                &lt;li&gt;&lt;strong&gt;Time:&lt;/strong&gt; ${item[key].time}&lt;/li&gt;
+                            &lt;/ul&gt;
+                        &lt;/li&gt;
+                    `;
+                }
+            });
+            resultHTML += "&lt;/ul&gt;";
+            outputDiv.innerHTML = resultHTML;
+        } else {
+            outputDiv.innerHTML = "&lt;p&gt;Error: Invalid API response&lt;/p&gt;";
+        }
+    }
+});
+&lt;/script&gt;
+      </pre>
+    </div>
+  </body>
+</html>
