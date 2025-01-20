@@ -74,9 +74,23 @@
       .result-item label {
         font-weight: bold;
       }
+      footer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+        column-gap: 8px;
+        row-gap: 5px;
+      }
+
       @media (max-width: 600px) {
         .container {
           padding: 15px;
+        }
+
+        footer {
+          font-size: 13px;
         }
       }
     </style>
@@ -132,9 +146,39 @@
           <span id="converted-ny-gold-price">--</span>
         </div>
       </div>
+      <footer>
+        <a
+          href="http://web.juhe.cn/finance/gold/shgold?key=05f857458519761c2ba067e15df499bd&v=1"
+          >上海黄金</a
+        >
+        <a
+          href="http://web.juhe.cn/finance/gold/shfuture?key=05f857458519761c2ba067e15df499bd&v=1"
+          >上海期货</a
+        >
+        <a href="#" id="currencyExchangeRate">货币汇率查询</a>
+      </footer>
     </div>
 
     <script>
+      document
+        .querySelector("#currencyExchangeRate")
+        .addEventListener("click", function (event) {
+          // 阻止默认的跳转行为
+          event.preventDefault();
+
+          // 获取选择的货币
+          const baseCurrency = document.getElementById("base-currency").value;
+          const compareCurrency =
+            document.getElementById("compare-currency").value;
+
+          // 构建跳转 URL
+          const apiKey = "d27d17fff8b64117a78e0bb2622eb9b4"; // 替换为你的 API 密钥
+          const url = `http://op.juhe.cn/onebox/exchange/currency?from=${baseCurrency}&to=${compareCurrency}&version=2&key=${apiKey}`;
+
+          // 打开新页面，不改变当前页面的 URL
+          window.open(url, "_blank");
+        });
+
       function calculateExchangeRate() {
         const baseCurrency = document.getElementById("base-currency").value;
         const compareCurrency =
