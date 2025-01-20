@@ -135,97 +135,124 @@
     </div>
 
     <script>
-            function calculateExchangeRate() {
-              const baseCurrency = document.getElementById("base-currency").value;
-              const compareCurrency =
-                document.getElementById("compare-currency").value;
-              const url = `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/${baseCurrency}`;
+      function calculateExchangeRate() {
+        const baseCurrency = document.getElementById("base-currency").value;
+        const compareCurrency =
+          document.getElementById("compare-currency").value;
+        const url = `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/${baseCurrency}`;
 
-              fetch(url)
-                .then((response) => response.json())
-                .then((data) => {
-                  if (data.result === "success") {
-                    const rate = data.conversion_rates[compareCurrency];
-                    document.getElementById(
-                      "exchange-rate"
-                    ).textContent = `1 ${baseCurrency} = ${rate} ${compareCurrency}`;
-                  } else {
-                    document.getElementById("exchange-rate").textContent =
-                      "无法获取汇率数据，请稍后再试。";
-                  }
-                })
-                .catch((error) => {
-                  document.getElementById("exchange-rate").textContent =
-                    "错误：" + error.message;
-                });
+        fetch(url)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.result === "success") {
+              const rate = data.conversion_rates[compareCurrency];
+              document.getElementById(
+                "exchange-rate"
+              ).textContent = `1 ${baseCurrency} = ${rate} ${compareCurrency}`;
+            } else {
+              document.getElementById("exchange-rate").textContent =
+                "无法获取汇率数据，请稍后再试。";
             }
+          })
+          .catch((error) => {
+            document.getElementById("exchange-rate").textContent =
+              "错误：" + error.message;
+          });
+      }
 
-            function convertGoldPrice() {
-              const goldApiUrl = "https://api.gold-api.com/price/XAU";
-              const compareCurrency =
-                document.getElementById("compare-currency").value;
+      function convertGoldPrice() {
+        const goldApiUrl = "https://api.gold-api.com/price/XAU";
+        const compareCurrency =
+          document.getElementById("compare-currency").value;
 
-              fetch(goldApiUrl)
-                .then((response) => response.json())
-                .then((goldData) => {
-                  const goldPrice = goldData.price;
-                  const goldPricePerGram = goldPrice / 31.1034768;
+        fetch(goldApiUrl)
+          .then((response) => response.json())
+          .then((goldData) => {
+            const goldPrice = goldData.price;
+            const goldPricePerGram = goldPrice / 31.1034768;
 
-                  document.getElementById(
-                    "gold-price"
-                  ).textContent = `$${goldPrice.toFixed(2)}`;
+            document.getElementById(
+              "gold-price"
+            ).textContent = `$${goldPrice.toFixed(2)}`;
 
-                  fetch(
-                    `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`
-                  )
-                    .then((response) => response.json())
-                    .then((exchangeData) => {
-                      const rate = exchangeData.conversion_rates[compareCurrency];
-                      const convertedPrice = (goldPricePerGram * rate).toFixed(2);
+            fetch(
+              `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`
+            )
+              .then((response) => response.json())
+              .then((exchangeData) => {
+                const rate = exchangeData.conversion_rates[compareCurrency];
+                const convertedPrice = (goldPricePerGram * rate).toFixed(2);
 
-                      document.getElementById(
-                        "converted-gold-price"
-                      ).textContent = `${convertedPrice} ${compareCurrency}/g`;
-                    });
-                });
-            }
+                document.getElementById(
+                  "converted-gold-price"
+                ).textContent = `${convertedPrice} ${compareCurrency}/g`;
+              });
+          });
+      }
 
-            function convertNYGoldPrice() {
-              const url = "https://api.api-ninjas.com/v1/goldprice";
-              const headers = {
-                "X-Api-Key": "MG3xOQorT/VQsbx4BP5Chg==5wwg01GbGKNGZlDj",
-              };
+      function convertNYGoldPrice() {
+        const url = "https://api.api-ninjas.com/v1/goldprice";
+        const headers = {
+          "X-Api-Key": "MG3xOQorT/VQsbx4BP5Chg==5wwg01GbGKNGZlDj",
+        };
 
-              fetch(url, { headers })
-                .then((response) => response.json())
-                .then((result) => {
-                  const nyGoldPrice = result.price;
-                  const nyGoldPerGram = nyGoldPrice / 31.1034768;
+        fetch(url, { headers })
+          .then((response) => response.json())
+          .then((result) => {
+            const nyGoldPrice = result.price;
+            const nyGoldPerGram = nyGoldPrice / 31.1034768;
 
-                  document.getElementById(
-                    "ny-gold-price"
-                  ).textContent = `$${nyGoldPrice.toFixed(2)}`;
+            document.getElementById(
+              "ny-gold-price"
+            ).textContent = `$${nyGoldPrice.toFixed(2)}`;
 
-                  fetch(
-                    `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`
-                  )
-                    .then((response) => response.json())
-                    .then((exchangeData) => {
-                      const compareCurrency =
-                        document.getElementById("compare-currency").value;
-                      const rate = exchangeData.conversion_rates[compareCurrency];
-                      const convertedNYPrice = (nyGoldPerGram * rate).toFixed(2);
+            fetch(
+              `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`
+            )
+              .then((response) => response.json())
+              .then((exchangeData) => {
+                const compareCurrency =
+                  document.getElementById("compare-currency").value;
+                const rate = exchangeData.conversion_rates[compareCurrency];
+                const convertedNYPrice = (nyGoldPerGram * rate).toFixed(2);
 
-                      document.getElementById(
-                        "converted-ny-gold-price"
-                      ).textContent = `${convertedNYPrice} ${compareCurrency}/g`;
-                    });
-                })
-                .catch((error) => {
-                  document.getElementById("ny-gold-price").textContent =
-                    "错误：" + error.message;
-                });
-            }
+                document.getElementById(
+                  "converted-ny-gold-price"
+                ).textContent = `${convertedNYPrice} ${compareCurrency}/g`;
+              });
+          })
+          .catch((error) => {
+            document.getElementById("ny-gold-price").textContent =
+              "错误：" + error.message;
+          });
+      }
+
+      // 包装为异步任务
+      function runAsAsync(task) {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            task();
+            resolve();
+          }, 0); // 使用 0ms 延迟模拟异步
+        });
+      }
+
+      // 并发执行
+      async function executeAll() {
+        try {
+          await Promise.all([
+            runAsAsync(calculateExchangeRate),
+            runAsAsync(convertGoldPrice),
+            runAsAsync(convertNYGoldPrice),
+          ]);
+          console.log("All functions executed successfully.");
+        } catch (error) {
+          console.error("An error occurred:", error);
+        }
+      }
+
+      // 调用主函数
+      executeAll();
     </script>
   </body>
 </html>
