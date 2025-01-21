@@ -384,6 +384,12 @@
             ? ((highestDiff.value / highestSell.value) * 100).toFixed(2)
             : "N/A";
 
+        const diffBankLowestGapPercentage =
+          (
+            ((lowestSell.value - highestBuy.value) / lowestSell.value) *
+            100
+          ).toFixed(2) || "N/A";
+
         // 自定义百分比颜色
         const getPercentageColor = (percentage) => {
           if (percentage === "N/A") return "black"; // 默认黑色
@@ -401,33 +407,30 @@
         // 更新汇总信息，确保显示对比的原价
         summary.innerHTML = `
         <h2>汇总结果</h2>
-        <p>卖出价最低的银行：${renderSpan(
+        <p>购汇最低的银行：${renderSpan(
           lowestSell.bank,
           "red"
         )}，价格：${renderSpan(lowestSell.value || "N/A", "red")}</p>
-        <p>卖出价最高的银行：${renderSpan(
+        <p>购汇最高的银行：${renderSpan(
           highestSell.bank,
           "green"
         )}，价格：${renderSpan(highestSell.value || "N/A", "green")}</p>
-        <p>买入价最低的银行：${renderSpan(
+        <p>结汇最低的银行：${renderSpan(
           lowestBuy.bank,
           "green"
         )}，价格：${renderSpan(lowestBuy.value || "N/A", "green")}</p>
-        <p>买入价最高的银行：${renderSpan(
+        <p>结汇最高的银行：${renderSpan(
           highestBuy.bank,
           "red"
         )}，价格：${renderSpan(highestBuy.value || "N/A", "red")}</p>
-        <p>卖出-买入差额最小的银行：${renderSpan(
+        <p>购结汇差额最小的银行：${renderSpan(
           lowestDiff.bank,
           "red"
         )}，差额：${renderSpan(
           parseFloat(lowestDiff.value.toFixed(10)) || "N/A",
           "red"
-        )} ${renderSpan(
-          `(${lowestDiffPercentage}%)`,
-          getPercentageColor(lowestDiffPercentage)
-        )}</p>
-        <p>最大差额的银行：${renderSpan(
+        )} ${renderSpan(`(${lowestDiffPercentage}%)`, "red")}</p>
+        <p>购结汇最大差额的银行：${renderSpan(
           highestDiff.bank,
           "green"
         )}，差额：${renderSpan(
@@ -435,16 +438,25 @@
           "green"
         )} ${renderSpan(
           `(${highestDiffPercentage}%)`,
-          getPercentageColor(highestDiffPercentage)
-        )}</p>
-        <p>卖出价最高/最低比例：${sellPercentage}%，对比银行：${renderSpan(
+          'green'
+        )}
+        </p>
+        <p>购结汇最小差额对比银行：${renderSpan(
+          lowestSell.bank + " - " + highestBuy.bank,
+          "red"
+        )}，差额：${renderSpan(
+          (lowestSell.value - highestBuy.value).toFixed(2) || "N/A",
+          "red"
+        )} ${renderSpan(`(${diffBankLowestGapPercentage}%)`, "red")}
+        </p>
+        <p>购汇最高/最低比例：${sellPercentage}%，对比银行：${renderSpan(
           highestSell.bank,
           "green"
         )} vs ${renderSpan(lowestSell.bank, "red")}（对比价格：${renderSpan(
           highestSell.value,
           "green"
         )} vs ${renderSpan(lowestSell.value, "red")}）</p>
-        <p>买入价最高/最低比例：${buyPercentage}%，对比银行：${renderSpan(
+        <p>结汇最高/最低比例：${buyPercentage}%，对比银行：${renderSpan(
           highestBuy.bank,
           "red"
         )} vs ${renderSpan(lowestBuy.bank, "green")}（对比价格：${renderSpan(
