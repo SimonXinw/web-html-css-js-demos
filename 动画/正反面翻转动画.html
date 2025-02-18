@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+      integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <style>
+      body {
+        background: #ccc;
+      }
+      #js-flip-1 {
+        display: block !important;
+      }
+      .flip {
+        -webkit-perspective: 800;
+        width: 400px;
+        height: 200px;
+        position: relative;
+        margin: 50px auto;
+      }
+      .flip .card.flipped {
+        -webkit-transform: rotatex(-180deg);
+      }
+      .flip .card {
+        width: 100%;
+        height: 100%;
+        -webkit-transform-style: preserve-3d;
+        -webkit-transition: 0.5s;
+      }
+      .flip .card .face {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        -webkit-backface-visibility: hidden;
+        z-index: 2;
+        font-family: Georgia;
+        font-size: 3em;
+        text-align: center;
+        line-height: 200px;
+      }
+      .flip .card .front {
+        position: absolute;
+        z-index: 1;
+        background: black;
+        color: white;
+        cursor: pointer;
+      }
+      .flip .card .back {
+        -webkit-transform: rotatex(-180deg);
+        background: white;
+        color: black;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="js-flip-1" class="flip">
+      <div class="card">
+        <div class="face front">Front</div>
+        <div class="face back">Back</div>
+      </div>
+    </div>
+
+    <div id="js-flip-2" class="flip">
+      <div class="card">
+        <div class="face front">Front</div>
+        <div class="face back">Back</div>
+      </div>
+    </div>
+
+    <div id="js-flip-3" class="flip">
+      <div class="card">
+        <div class="face front">Front</div>
+        <div class="face back">Back</div>
+      </div>
+    </div>
+
+    <script>
+      $("#js-flip-1").toggle(
+        function () {
+          $("#js-flip-1 .card").addClass("flipped");
+        },
+        function () {
+          $("#js-flip-1 .card").removeClass("flipped");
+        }
+      );
+
+      $("#js-flip-2").bind("click mouseleave", function () {
+        $("#js-flip-2 .card").toggleClass("flipped");
+      });
+
+      $("#js-flip-3").bind({
+        click: function () {
+          $("#js-flip-3 .card").toggleClass("flipped");
+        },
+        mouseleave: function () {
+          $("#js-flip-3 .card").toggleClass("flipped");
+        },
+      });
+    </script>
+  </body>
+</html>
