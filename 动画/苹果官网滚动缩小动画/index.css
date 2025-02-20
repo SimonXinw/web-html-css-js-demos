@@ -1,0 +1,284 @@
+* {
+  padding: 0;
+  margin: 0;
+  border: none;
+  list-style: none;
+}
+@font-face {
+  font-family: "Manrope";
+  src: url("https://cdn.shopify.com/s/files/1/0554/7445/4576/files/Manrope.woff2?v=1718257995")
+    format("woff2-variations");
+  font-weight: 200 800;
+}
+:root {
+  --r-globalnav-height: 56PX;
+  --tv4k-hardware-height: 161px;
+}
+
+.section-hero {
+  width: 100%;
+  --tv4k-hardware-height: 161px;
+  background-color: #f5f5f7;
+  --inline-media-playpause-icon-color: rgba(0, 0, 0, 0.56);
+  --inline-media-playpause-icon-color-hover: rgba(0, 0, 0, 0.64);
+  --inline-media-playpause-scrim-color: rgba(210, 210, 215, 0.64);
+  --inline-media-playpause-scrim-color-hover: rgba(223, 223, 227, 0.6976);
+  --inline-media-playpause-scrim-color-active: rgba(193, 193, 198, 0.6544);
+}
+
+.section-hero .scroll-container {
+  height: 175vh;
+}
+
+.section-hero .sticky-item {
+  height: 100vh;
+  width: 100%;
+  position: sticky;
+  top: var(--r-globalnav-height);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 706px;
+}
+
+.section-hero .scaling-container.startframe-loaded {
+  opacity: 1;
+}
+
+.section-hero .scaling-container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.section-hero .hardware-container {
+  position: relative;
+  margin-top: 10vh;
+}
+
+.overview-hero-hero-tv-hw {
+  display: block;
+  width: var(--p-width);
+  height: var(--p-height);
+  --p-width: 938px;
+  --p-height: 534px;
+}
+
+.section-hero .video-container {
+  position: absolute;
+  height: 516px;
+  width: 918px;
+  top: 8px;
+  left: 10px;
+}
+
+.section-hero .video-container .inline-video-media {
+  display: flex;
+  justify-content: center;
+}
+
+.section-hero .inline-video-media {
+  height: 100.15%;
+  width: 100.15%;
+}
+
+.section-hero .video-container .inline-video-media video {
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+  object-fit: cover;
+  object-position: 50% 0%;
+  position: relative;
+  vertical-align: middle;
+  transition: opacity 0.8s ease;
+}
+
+.section-hero .video-container .inline-video-media .start-frame {
+  background-position: 50% 0%;
+}
+
+.section-hero .video-container .inline-video-media .inline-video-frame-start {
+  opacity: 1;
+  pointer-events: all;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  pointer-events: none;
+}
+
+.section-hero .video-container .inline-video-media .inline-video-frame-start {
+  background-size: 1440px 900px;
+  background-repeat: no-repeat;
+  background-image: url(./files/hero_startframe__e3rt3d14xoq6_large.jpg);
+  background-position: bottom;
+}
+
+.section-hero .video-container .inline-video-media .inline-video-frame-end {
+  opacity: 0;
+  pointer-events: all;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  pointer-events: none;
+}
+
+.section-hero .video-container .inline-video-media .inline-video-frame-end {
+  background-size: 1440px 900px;
+  background-repeat: no-repeat;
+  background-image: url(./files/hero_endframe__ckbczbu91dci_large.jpg);
+  background-position: bottom;
+}
+
+.section-hero .video-container .inline-video-media .inline-video-frame-static {
+  opacity: 0;
+  pointer-events: all;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  pointer-events: none;
+}
+
+.section-hero .video-container .inline-video-media .inline-video-frame-static {
+  background-size: 918px 516px;
+  background-repeat: no-repeat;
+  background-image: url(./files/hero_staticframe__fc291ipcri2y_large.jpg);
+  background-position: bottom;
+}
+
+.section-hero .tv4k-hardware {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  position: relative;
+}
+
+.section-hero .shadow.no-blur {
+  filter: blur(0px);
+}
+
+.section-hero .shadow {
+  position: absolute;
+  z-index: -2;
+  filter: blur(12px);
+  transition: filter 2s ease-out;
+  top: -1px;
+  opacity: 0;
+}
+
+.overview-hero-hero-tv-shadow-color {
+  display: block;
+  width: var(--p-width);
+  height: var(--p-height);
+  --p-width: 1192px;
+  --p-height: 108px;
+}
+
+.section-hero .overview-hero-hero-tv-remote {
+  text-align: center;
+  transform-origin: top;
+  margin-top: 48px;
+}
+.overview-hero-hero-tv-remote {
+  display: block;
+  width: var(--p-width);
+  height: var(--p-height);
+  --p-width: 664px;
+  --p-height: 252px;
+}
+
+.section-hero .intro-copy {
+  margin-top: -100px;
+  padding-bottom: 120px;
+}
+
+.section-hero .intro-copy .section-content {
+  max-width: 800px;
+  text-align: center;
+  display: flex;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Manrope', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 0;
+  color: #86868b;
+  transition: opacity 0.5s ease-in, transform 0.5s ease-in;
+  transform: translateY(0px);
+}
+
+.section-entertainment {
+  margin-top: 120px;
+  background-color: #fff;
+}
+
+.section-content {
+  margin-left: auto;
+  margin-right: auto;
+  width: 980px;
+}
+
+.section-content .section-header {
+  text-align: center;
+}
+
+
+.section-content .section-header .section-header_subtitle {
+  font-size: 24px;
+  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  margin-bottom: .4em;
+}
+
+.section-content .section-header .section-header_title {
+  font-size: 80px;
+  font-weight: 700;
+  color: #1d1d1f;
+  letter-spacing: 0em;
+  line-height: 120%;
+  font-family: 'Manrope', sans-serif;
+  margin-bottom: .4em;
+}
+
+.section-content .section-header .section-header_desc {
+  font-size: 22px;
+  line-height: 1.1904761905;
+  font-weight: 600;
+  letter-spacing: .005em;
+  margin-top: .8em;
+  color: #86868b;
+}
+
+@media screen and (max-width: 1920px) {
+  .section-hero .scaling-container {
+    transform: matrix(2.07298, 0, 0, 2.07298, 0, 198.73); opacity: 1;
+  }
+}
+@media screen and (max-width: 1660px) {
+  .section-hero .hardware-container {
+    margin-top: 8vh;
+  }
+  .section-hero .scaling-container {
+    transform: matrix(1.7655, 0, 0, 1.7655, 0, 198.73); opacity: 1;
+  }
+}
+@media screen and (max-width: 1024px) {
+  .section-hero .scaling-container {
+    transform: matrix(2.54469, 0, 0, 2.54469, 0, 213.4); opacity: 1;
+  }
+}
+@media screen and (max-width: 1000px) {
+  .section-hero .scaling-container {
+    display: none;
+  }
+}
