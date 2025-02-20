@@ -11,7 +11,7 @@
   font-weight: 200 800;
 }
 :root {
-  --r-globalnav-height: 56PX;
+  --r-globalnav-height: 56px;
   --tv4k-hardware-height: 161px;
 }
 
@@ -33,9 +33,11 @@
 .section-hero .sticky-item {
   height: 100vh;
   width: 100%;
+  position: -webkit-sticky; /* Safari */
   position: sticky;
   top: var(--r-globalnav-height);
   overflow: hidden;
+  display: -webkit-flex; /* Safari */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -47,6 +49,7 @@
 }
 
 .section-hero .scaling-container {
+  display: -webkit-flex; /* Safari */
   display: flex;
   justify-content: center;
   flex-direction: column;
@@ -74,6 +77,7 @@
 }
 
 .section-hero .video-container .inline-video-media {
+  display: -webkit-flex; /* Safari */
   display: flex;
   justify-content: center;
 }
@@ -156,6 +160,7 @@
 }
 
 .section-hero .tv4k-hardware {
+  display: -webkit-flex; /* Safari */
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -204,11 +209,12 @@
 .section-hero .intro-copy .section-content {
   max-width: 800px;
   text-align: center;
+  display: -webkit-flex; /* Safari */
   display: flex;
   margin: 0 auto;
   justify-content: center;
   align-items: center;
-  font-family: 'Manrope', sans-serif;
+  font-family: "Manrope", sans-serif;
   font-size: 24px;
   font-weight: 700;
   opacity: 0;
@@ -232,12 +238,11 @@
   text-align: center;
 }
 
-
 .section-content .section-header .section-header_subtitle {
   font-size: 24px;
   font-weight: 600;
-  font-family: 'Manrope', sans-serif;
-  margin-bottom: .4em;
+  font-family: "Manrope", sans-serif;
+  margin-bottom: 0.4em;
 }
 
 .section-content .section-header .section-header_title {
@@ -246,22 +251,23 @@
   color: #1d1d1f;
   letter-spacing: 0em;
   line-height: 120%;
-  font-family: 'Manrope', sans-serif;
-  margin-bottom: .4em;
+  font-family: "Manrope", sans-serif;
+  margin-bottom: 0.4em;
 }
 
 .section-content .section-header .section-header_desc {
   font-size: 22px;
   line-height: 1.1904761905;
   font-weight: 600;
-  letter-spacing: .005em;
-  margin-top: .8em;
+  letter-spacing: 0.005em;
+  margin-top: 0.8em;
   color: #86868b;
 }
 
 @media screen and (max-width: 1920px) {
   .section-hero .scaling-container {
-    transform: matrix(2.07298, 0, 0, 2.07298, 0, 198.73); opacity: 1;
+    transform: matrix(2.07298, 0, 0, 2.07298, 0, 198.73);
+    opacity: 1;
   }
 }
 @media screen and (max-width: 1660px) {
@@ -269,12 +275,14 @@
     margin-top: 8vh;
   }
   .section-hero .scaling-container {
-    transform: matrix(1.7655, 0, 0, 1.7655, 0, 198.73); opacity: 1;
+    transform: matrix(1.7655, 0, 0, 1.7655, 0, 198.73);
+    opacity: 1;
   }
 }
 @media screen and (max-width: 1024px) {
   .section-hero .scaling-container {
-    transform: matrix(2.54469, 0, 0, 2.54469, 0, 213.4); opacity: 1;
+    transform: matrix(2.54469, 0, 0, 2.54469, 0, 213.4);
+    opacity: 1;
   }
 }
 @media screen and (max-width: 1000px) {
