@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D 翻转卡片</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+        margin: 0;
+      }
+      .card-container {
+        width: 200px;
+        height: 300px;
+        perspective: 1000px;
+      }
+      .card {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.8s ease-in-out;
+      }
+      .card .side {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        backface-visibility: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 10px;
+        background: black;
+        color: transparent;
+        overflow: hidden;
+      }
+      .side div {
+        font-size: 48px;
+        font-weight: bold;
+        text-transform: uppercase;
+        position: relative;
+      }
+      .front div {
+        background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .back div {
+        background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .back {
+        transform: rotateX(180deg);
+      }
+      .flipped {
+        transform: rotateX(180deg);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card-container" onclick="flipCard()">
+      <div class="card" id="card">
+        <div class="side front"><div>前面</div></div>
+        <div class="side back"><div>后面</div></div>
+      </div>
+    </div>
+    <script>
+      function flipCard() {
+        document.getElementById("card").classList.toggle("flipped");
+      }
+    </script>
+  </body>
+</html>
