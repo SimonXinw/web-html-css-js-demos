@@ -34,9 +34,15 @@
         justify-content: center;
         align-items: center;
         border-radius: 10px;
-        background: black;
         color: transparent;
         overflow: hidden;
+      }
+      .front {
+        background: #ffcccc;
+      }
+      .back {
+        background: #ccffcc;
+        transform: rotateX(180deg);
       }
       .side div {
         font-size: 48px;
@@ -55,9 +61,6 @@
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
-      }
-      .back {
-        transform: rotateX(180deg);
       }
       .flipped {
         transform: rotateX(180deg);
