@@ -12,6 +12,7 @@
         background-color: #f4f4f4;
       }
       .container {
+        position: relative;
         margin: 0 auto;
         width: fit-content;
         background: white;
@@ -25,15 +26,16 @@
         align-items: center;
       }
       .total-score {
-        position: fixed;
-        top: 20px;
-        right: 20px;
+        position: absolute;
+        top: 0px;
+        right: -20px;
         background: #ff5722;
         color: white;
         padding: 10px 20px;
         font-size: 20px;
         font-weight: bold;
         border-radius: 5px;
+        transform: translate(100%, 0);
       }
       .section {
         margin-bottom: 20px;
@@ -77,8 +79,8 @@
     </style>
   </head>
   <body>
-    <div class="total-score">总分: <span id="total">0</span></div>
     <div class="container">
+      <div class="total-score">总分: <span id="total">0</span></div>
       <h2>测试评分表</h2>
       <form id="score-form">
         <div class="section">
