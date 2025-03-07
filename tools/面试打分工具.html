@@ -13,11 +13,16 @@
       }
       .container {
         margin: 0 auto;
-        max-width: 800px;
+        width: fit-content;
         background: white;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+      .container > h2 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
       .total-score {
         position: fixed;
@@ -41,6 +46,7 @@
         display: flex;
         align-items: center;
         margin-bottom: 10px;
+        column-gap: 60px;
       }
       .item label {
         flex: 1;
@@ -57,6 +63,8 @@
         padding: 5px 10px;
         background: #ddd;
         border-radius: 4px;
+        width: 40px; /* 确保宽度一致 */
+        text-align: center;
       }
       .score-container input[type="radio"]:checked + label {
         background: #ff5722;
@@ -105,18 +113,16 @@
             <div class="score-container">
               <input type="radio" name="score2" value="0" id="s2-0" checked />
               <label for="s2-0">0</label>
-              <input type="radio" name="score2" value="0.5" id="s2-1" />
-              <label for="s2-1">0.5</label>
-              <input type="radio" name="score2" value="1" id="s2-2" />
-              <label for="s2-2">1</label>
-              <input type="radio" name="score2" value="1.5" id="s2-3" />
-              <label for="s2-3">1.5</label>
-              <input type="radio" name="score2" value="2" id="s2-4" />
-              <label for="s2-4">2</label>
-              <input type="radio" name="score2" value="2.5" id="s2-5" />
-              <label for="s2-5">2.5</label>
-              <input type="radio" name="score2" value="3" id="s2-6" />
-              <label for="s2-6">3</label>
+              <input type="radio" name="score2" value="0.6" id="s2-1" />
+              <label for="s2-1">0.6</label>
+              <input type="radio" name="score2" value="1.2" id="s2-2" />
+              <label for="s2-2">1.2</label>
+              <input type="radio" name="score2" value="1.8" id="s2-3" />
+              <label for="s2-3">1.8</label>
+              <input type="radio" name="score2" value="2.4" id="s2-4" />
+              <label for="s2-4">2.4</label>
+              <input type="radio" name="score2" value="3" id="s2-5" />
+              <label for="s2-5">3</label>
               <input
                 type="number"
                 name="score2"
@@ -165,6 +171,11 @@
           });
           $(".score-container input[type='number']").each(function () {
             let val = parseFloat($(this).val());
+            let maxVal = parseFloat($(this).attr("max"));
+            if (val > maxVal) {
+              $(this).val(maxVal);
+              val = maxVal;
+            }
             if (val > 0) {
               total += val;
             }
