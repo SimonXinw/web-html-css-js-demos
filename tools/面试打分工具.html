@@ -28,16 +28,15 @@
         align-items: center;
       }
       .total-score {
-        position: absolute;
-        top: 0px;
-        right: -20px;
+        position: fixed;
+        top: 30px;
+        right: 400px;
         background: #ff5722;
         color: white;
         padding: 10px 20px;
         font-size: 20px;
         font-weight: bold;
         border-radius: 5px;
-        transform: translate(100%, 0);
       }
       .section {
         margin-bottom: 20px;
@@ -47,6 +46,7 @@
         color: #333;
       }
       .subcategory {
+        margin-left: 24px;
         margin-bottom: 15px;
       }
       .subcategory h4 {
@@ -54,6 +54,8 @@
         color: #555;
       }
       .item {
+        margin-left: 48px;
+
         display: flex;
         align-items: center;
         margin-bottom: 10px;
@@ -319,18 +321,22 @@
 
       function renderForm(data) {
         const form = $("#score-form");
-        data.forEach((category) => {
+        data.forEach((category, index_1) => {
           const section = $(
-            `<div class="section"><h3>${category.category}（${category.score} 分）</h3></div>`
+            `<div class="section"><h3>${index_1 + 1}、${category.category}（${
+              category.score
+            } 分）</h3></div>`
           );
-          category.subcategories.forEach((subcategory) => {
+          category.subcategories.forEach((subcategory, index_2) => {
             const subcategoryDiv = $(
-              `<div class="subcategory"><h4>${subcategory.name}（${subcategory.score} 分）</h4></div>`
+              `<div class="subcategory"><h4>${index_2 + 1}、${
+                subcategory.name
+              }（${subcategory.score} 分）</h4></div>`
             );
-            subcategory.items.forEach((item) => {
+            subcategory.items.forEach((item, index_3) => {
               const itemDiv = $(`
                 <div class="item">
-                  <label>${item.name}（${item.score} 分）</label>
+                  <label>${index_3 + 1}.${item.name}（${item.score} 分）</label>
                   <div class="score-container">
                     ${Array.from({ length: 5 }, (_, i) => {
                       const value = (item.score / 5) * i;
