@@ -14,6 +14,8 @@
       .container {
         position: relative;
         margin: 0 auto;
+        min-width: 800px;
+        min-height: 800px;
         width: fit-content;
         background: white;
         padding: 20px;
@@ -82,90 +84,271 @@
     <div class="container">
       <div class="total-score">总分: <span id="total">0</span></div>
       <h2>测试评分表</h2>
-      <form id="score-form">
-        <div class="section">
-          <h3>测试流程（8 分）</h3>
-          <div class="item">
-            <label>是否熟悉完整的测试生命周期（2.5 分）</label>
-            <div class="score-container">
-              <input type="radio" name="score1" value="0" id="s1-0" checked />
-              <label for="s1-0">0</label>
-              <input type="radio" name="score1" value="0.5" id="s1-1" />
-              <label for="s1-1">0.5</label>
-              <input type="radio" name="score1" value="1" id="s1-2" />
-              <label for="s1-2">1</label>
-              <input type="radio" name="score1" value="1.5" id="s1-3" />
-              <label for="s1-3">1.5</label>
-              <input type="radio" name="score1" value="2" id="s1-4" />
-              <label for="s1-4">2</label>
-              <input type="radio" name="score1" value="2.5" id="s1-5" />
-              <label for="s1-5">2.5</label>
-              <input
-                type="number"
-                name="score1"
-                min="0"
-                max="2.5"
-                step="0.1"
-                value="0"
-              />
-            </div>
-          </div>
-          <div class="item">
-            <label>是否能清晰阐述自己在测试流程中的实际经验（3 分）</label>
-            <div class="score-container">
-              <input type="radio" name="score2" value="0" id="s2-0" checked />
-              <label for="s2-0">0</label>
-              <input type="radio" name="score2" value="0.6" id="s2-1" />
-              <label for="s2-1">0.6</label>
-              <input type="radio" name="score2" value="1.2" id="s2-2" />
-              <label for="s2-2">1.2</label>
-              <input type="radio" name="score2" value="1.8" id="s2-3" />
-              <label for="s2-3">1.8</label>
-              <input type="radio" name="score2" value="2.4" id="s2-4" />
-              <label for="s2-4">2.4</label>
-              <input type="radio" name="score2" value="3" id="s2-5" />
-              <label for="s2-5">3</label>
-              <input
-                type="number"
-                name="score2"
-                min="0"
-                max="3"
-                step="0.1"
-                value="0"
-              />
-            </div>
-          </div>
-          <div class="item">
-            <label>是否有优化测试流程的思考和经验（2.5 分）</label>
-            <div class="score-container">
-              <input type="radio" name="score3" value="0" id="s3-0" checked />
-              <label for="s3-0">0</label>
-              <input type="radio" name="score3" value="0.5" id="s3-1" />
-              <label for="s3-1">0.5</label>
-              <input type="radio" name="score3" value="1" id="s3-2" />
-              <label for="s3-2">1</label>
-              <input type="radio" name="score3" value="1.5" id="s3-3" />
-              <label for="s3-3">1.5</label>
-              <input type="radio" name="score3" value="2" id="s3-4" />
-              <label for="s3-4">2</label>
-              <input type="radio" name="score3" value="2.5" id="s3-5" />
-              <label for="s3-5">2.5</label>
-              <input
-                type="number"
-                name="score3"
-                min="0"
-                max="2.5"
-                step="0.1"
-                value="0"
-              />
-            </div>
-          </div>
-        </div>
-        <!-- 继续添加其他评分项 -->
-      </form>
+      <form id="score-form"></form>
     </div>
     <script>
+      const data = [
+        {
+          category: "测试流程、方法、思路",
+          score: 20,
+          subcategories: [
+            {
+              name: "测试流程",
+              score: 8,
+              items: [
+                { name: "是否熟悉完整的测试生命周期", score: 2.5 },
+                { name: "是否能清晰阐述自己在测试流程中的实际经验", score: 3 },
+                { name: "是否有优化测试流程的思考和经验", score: 2.5 },
+              ],
+            },
+            {
+              name: "测试方法论",
+              score: 7,
+              items: [
+                {
+                  name: "是否熟练掌握功能测试、接口测试、性能测试、兼容性测试等不同测试方法",
+                  score: 2.5,
+                },
+                { name: "是否能结合业务场景选择合适的测试方法", score: 2.5 },
+                { name: "是否能在不同测试阶段应用不同的测试策略", score: 2 },
+              ],
+            },
+            {
+              name: "具体测试场景设计",
+              score: 5,
+              items: [
+                {
+                  name: "以购物车等电商模块为例，能否设计合理的测试策略",
+                  score: 2,
+                },
+                { name: "是否能考虑到功能、性能、可靠性等测试点", score: 2 },
+                { name: "是否有实际案例说明如何发现和解决问题", score: 1 },
+              ],
+            },
+          ],
+        },
+        {
+          category: "基础工具、技术、知识",
+          score: 35,
+          subcategories: [
+            {
+              name: "前端相关",
+              score: 5,
+              items: [
+                { name: "是否熟悉 Chrome 浏览器调试工具", score: 2.5 },
+                { name: "是否理解 HTML、CSS、JS 基础知识", score: 2.5 },
+              ],
+            },
+            {
+              name: "接口测试",
+              score: 6,
+              items: [
+                { name: "是否熟练使用 Postman 进行接口调试与测试", score: 2 },
+                {
+                  name: "是否能设计接口测试用例（如边界值、异常值等）",
+                  score: 2,
+                },
+                { name: "是否掌握 API 自动化测试的基本方法", score: 2 },
+              ],
+            },
+            {
+              name: "自动化测试",
+              score: 10,
+              items: [
+                {
+                  name: "是否熟悉 Selenium / Playwright 进行 UI 自动化测试",
+                  score: 3,
+                },
+                { name: "是否能编写自动化测试脚本", score: 3.5 },
+                { name: "是否有自动化测试框架的落地经验", score: 3.5 },
+              ],
+            },
+            {
+              name: "CI/CD & 服务器相关",
+              score: 7,
+              items: [
+                {
+                  name: "是否熟悉 Jenkins、GitHub Actions 等 CI/CD 流程",
+                  score: 2.5,
+                },
+                {
+                  name: "是否具备 Linux 服务器基本操作能力（如日志查看、环境搭建等）",
+                  score: 2.5,
+                },
+                {
+                  name: "是否熟悉 Docker 部署，能搭建自动化测试环境",
+                  score: 2,
+                },
+              ],
+            },
+            {
+              name: "编程能力",
+              score: 7,
+              items: [
+                {
+                  name: "是否掌握 Java / Python / Node.js / Go 中至少一种语言",
+                  score: 2.5,
+                },
+                {
+                  name: "是否能独立编写 Shell / Python 脚本提高测试效率",
+                  score: 2.5,
+                },
+                { name: "是否有测试工具开发或测试框架优化经验", score: 2 },
+              ],
+            },
+          ],
+        },
+        {
+          category: "相关项目经验",
+          score: 30,
+          subcategories: [
+            {
+              name: "电商业务经验",
+              score: 10,
+              items: [
+                {
+                  name: "是否熟悉电商业务流程（购物车、支付、订单、物流等）",
+                  score: 5,
+                },
+                { name: "是否能结合业务需求制定合理的测试方案", score: 5 },
+              ],
+            },
+            {
+              name: "Web 端 & 移动端测试经验",
+              score: 5,
+              items: [
+                { name: "是否有 Web PC 和移动端适配测试经验", score: 2.5 },
+                {
+                  name: "是否熟悉不同终端、不同浏览器的兼容性测试",
+                  score: 2.5,
+                },
+              ],
+            },
+            {
+              name: "自动化测试项目经验",
+              score: 10,
+              items: [
+                {
+                  name: "是否有 UI / 接口 / 性能测试自动化的完整落地经验",
+                  score: 5,
+                },
+                {
+                  name: "是否能描述具体的测试框架、工具、流程及其优化方案",
+                  score: 5,
+                },
+              ],
+            },
+            {
+              name: "UI 自动化项目经验",
+              score: 5,
+              items: [
+                {
+                  name: "是否有 UI 自动化测试框架的设计、开发经验",
+                  score: 2.5,
+                },
+                { name: "是否能结合业务优化 UI 自动化测试的效率", score: 2.5 },
+              ],
+            },
+          ],
+        },
+        {
+          category: "个人软实力",
+          score: 15,
+          subcategories: [
+            {
+              name: "紧急上线的态度",
+              score: 3,
+              items: [
+                {
+                  name: "是否能在高压力环境下保持高效、稳定的测试质量",
+                  score: 3,
+                },
+              ],
+            },
+            {
+              name: "团队协作",
+              score: 3,
+              items: [
+                {
+                  name: "是否有与产品、开发、运维团队紧密协作的经验",
+                  score: 1.5,
+                },
+                { name: "是否能高效沟通、推进测试问题闭环", score: 1.5 },
+              ],
+            },
+            {
+              name: "逻辑能力 & 思维能力",
+              score: 3,
+              items: [
+                {
+                  name: "是否具备严谨的思维逻辑，能清晰表达复杂问题",
+                  score: 1.5,
+                },
+                { name: "是否能通过推理、分析快速找到问题根因", score: 1.5 },
+              ],
+            },
+            {
+              name: "表达能力",
+              score: 3,
+              items: [
+                { name: "是否能清楚表达自己的观点，沟通流畅", score: 1.5 },
+                {
+                  name: "是否能编写高质量的缺陷报告，精准描述问题",
+                  score: 1.5,
+                },
+              ],
+            },
+            {
+              name: "学习能力 & 发展潜力",
+              score: 3,
+              items: [
+                { name: "是否有自学新语言、新工具、新框架的能力", score: 1.5 },
+                { name: "是否能在未来成长为独立的测试专家", score: 1.5 },
+              ],
+            },
+          ],
+        },
+      ];
+
+      function renderForm(data) {
+        const form = $("#score-form");
+        data.forEach((category) => {
+          const section = $(
+            `<div class="section"><h3>${category.category}（${category.score} 分）</h3></div>`
+          );
+          category.subcategories.forEach((subcategory) => {
+            subcategory.items.forEach((item) => {
+              const itemDiv = $(`
+                <div class="item">
+                  <label>${item.name}（${item.score} 分）</label>
+                  <div class="score-container">
+                    ${Array.from({ length: 5 }, (_, i) => {
+                      const value = (item.score / 5) * i;
+                      return `
+                        <input type="radio" name="${
+                          item.name
+                        }" value="${value.toFixed(2)}" id="${item.name}-${i}" />
+                        <label for="${item.name}-${i}">${value.toFixed(
+                        2
+                      )}</label>
+                      `;
+                    }).join("")}
+                    <input type="number" name="${item.name}" min="0" max="${
+                item.score
+              }" step="0.1" value="0" />
+                  </div>
+                </div>
+              `);
+              section.append(itemDiv);
+            });
+          });
+          form.append(section);
+        });
+      }
+
       $(document).ready(function () {
+        renderForm(data);
+
         function updateTotal() {
           let total = 0;
           $(".score-container input:checked").each(function () {
