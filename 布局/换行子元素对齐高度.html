@@ -28,6 +28,7 @@
       }
 
       .item {
+        visibility: hidden; /* 先隐藏，避免闪动 */
         padding: 20px;
         background: linear-gradient(135deg, #009afe, #0078d4);
         color: white;
@@ -67,27 +68,24 @@
         const items = document.querySelectorAll(".item");
         if (!items.length) return;
 
-        // 清除所有元素的高度，确保能正确计算最大高度
+        // 先清除高度，确保正确计算
         items.forEach((item) => (item.style.height = "auto"));
 
-        // 找到最高的元素
+        // 找到最高的高度
         const maxHeight = Math.max(
           ...Array.from(items).map((item) => item.offsetHeight)
         );
 
-        // 统一设置所有元素的高度
-        items.forEach((item) => (item.style.height = maxHeight + "px"));
+        // 设置所有元素为最大高度
+        items.forEach((item) => {
+          item.style.height = maxHeight + "px";
+          item.style.visibility = "visible"; // 计算完后再显示
+        });
       }
 
       // 页面加载时执行
       window.addEventListener("load", adjustHeights);
       // 窗口大小改变时执行
-      window.addEventListener("resize", () =>
-        requestAnimationFrame(adjustHeights)
-      );
-
-      // 确保页面加载后执行
-      window.addEventListener("load", adjustHeights);
       window.addEventListener("resize", () =>
         requestAnimationFrame(adjustHeights)
       );
