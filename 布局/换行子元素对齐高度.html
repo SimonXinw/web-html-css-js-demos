@@ -39,7 +39,8 @@
         font-size: 16px;
         font-weight: bold;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: height 0.3s ease; /* 平滑过渡高度 */
+        min-height: 50px; /* 避免闪动 */
       }
 
       .item:hover {
@@ -54,8 +55,42 @@
       <div class="item">稍微长一点的内容</div>
       <div class="item">
         这是一个很长的内容，需要多行显示，让所有元素的高度一致
+        这是一个很长的内容，需要多行显示，让所有元素的高度一致
+        这是一个很长的内容，需要多行显示，让所有元素的高度一致
+        这是一个很长的内容，需要多行显示，让所有元素的高度一致
       </div>
       <div class="item">内容适中</div>
     </div>
+
+    <script>
+      function adjustHeights() {
+        const items = document.querySelectorAll(".item");
+        if (!items.length) return;
+
+        // 清除所有元素的高度，确保能正确计算最大高度
+        items.forEach((item) => (item.style.height = "auto"));
+
+        // 找到最高的元素
+        const maxHeight = Math.max(
+          ...Array.from(items).map((item) => item.offsetHeight)
+        );
+
+        // 统一设置所有元素的高度
+        items.forEach((item) => (item.style.height = maxHeight + "px"));
+      }
+
+      // 页面加载时执行
+      window.addEventListener("load", adjustHeights);
+      // 窗口大小改变时执行
+      window.addEventListener("resize", () =>
+        requestAnimationFrame(adjustHeights)
+      );
+
+      // 确保页面加载后执行
+      window.addEventListener("load", adjustHeights);
+      window.addEventListener("resize", () =>
+        requestAnimationFrame(adjustHeights)
+      );
+    </script>
   </body>
 </html>
