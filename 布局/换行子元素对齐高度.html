@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>两行自动对齐 Grid 布局</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to right, #eef2f3, #dce2e6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* 每行 2 个元素 */
+        gap: 16px; /* 间隔 16px */
+        max-width: 600px; /* 限制最大宽度 */
+        width: 100%;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .item {
+        padding: 20px;
+        background: linear-gradient(135deg, #009afe, #0078d4);
+        color: white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="item">短内容</div>
+      <div class="item">稍微长一点的内容</div>
+      <div class="item">
+        这是一个很长的内容，需要多行显示，让所有元素的高度一致
+      </div>
+      <div class="item">内容适中</div>
+    </div>
+  </body>
+</html>
