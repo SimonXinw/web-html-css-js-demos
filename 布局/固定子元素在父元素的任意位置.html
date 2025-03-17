@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>滚动固定元素</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+
+      .controls {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: white;
+        padding: 10px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        display: flex;
+        gap: 10px;
+      }
+
+      .spacer {
+        height: 200vh;
+        background: #f0f0f0;
+      }
+
+      .container {
+        position: relative;
+        height: 600px;
+        background: lightblue;
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
+      }
+
+      .stickyBox {
+        width: 200px;
+        height: 50px;
+        background: orange;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.2s ease-in-out;
+        z-index: 2;
+      }
+
+      .stickyBox.fixed {
+        position: fixed;
+      }
+
+      .stickyBox-wrap {
+        display: flex;
+        justify-content: space-between;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 控制输入框 -->
+    <div class="controls">
+      <label>Top: <input type="number" id="topValue" value="100" /></label>
+      <label>Left: <input type="number" id="leftValue" value="0" /></label>
+      <label>Right: <input type="number" id="rightValue" value="0" /></label>
+      <label>Bottom: <input type="number" id="bottomValue" value="0" /></label>
+    </div>
+
+    <!-- 占位元素，制造滚动条 -->
+    <div class="spacer"></div>
+
+    <!-- 目标元素 -->
+    <div class="stickyBox-wrap">
+      <div class="stickyBoxLeft">letf</div>
+      <div class="stickyBox" id="stickyBox">
+        <span>文本1</span>
+        <span>文本2</span>
+        <span>文本3</span>
+      </div>
+    </div>
+
+    <div class="container" id="container"></div>
+
+    <!-- 再次占位 -->
+    <div class="spacer"></div>
+
+    <script>
+      const stickyBox = document.getElementById("stickyBox");
+      const container = document.getElementById("container");
+
+      const topInput = document.getElementById("topValue");
+      const leftInput = document.getElementById("leftValue");
+      const rightInput = document.getElementById("rightValue");
+      const bottomInput = document.getElementById("bottomValue");
+
+      function getValidValue(input) {
+        const value = parseInt(input.value, 10);
+        return value !== 0 ? value : null;
+      }
+
+      function updateStickyPosition() {
+        const scrollY = window.scrollY;
+        const containerRect = container.getBoundingClientRect();
+
+        const topThreshold = getValidValue(topInput);
+        const leftValue = getValidValue(leftInput);
+        const rightValue = getValidValue(rightInput);
+        const bottomValue = getValidValue(bottomInput);
+
+        if (
+          containerRect.top <= (topThreshold || 100) &&
+          containerRect.bottom > (topThreshold || 100) + 50
+        ) {
+          stickyBox.classList.add("fixed");
+          stickyBox.style.top =
+            topThreshold !== null ? `${topThreshold}px` : "auto";
+          stickyBox.style.left =
+            leftValue !== null
+              ? `${containerRect.left + leftValue}px`
+              : "inherit";
+          stickyBox.style.right =
+            rightValue !== null
+              ? `${
+                  document.documentElement.clientWidth -
+                  containerRect.right +
+                  rightValue
+                }px`
+              : "inherit";
+          stickyBox.style.bottom =
+            bottomValue !== null ? `${bottomValue}px` : "auto";
+        } else {
+          stickyBox.classList.remove("fixed");
+          stickyBox.style.top = "auto";
+          stickyBox.style.left = "inherit";
+          stickyBox.style.right = "inherit";
+          stickyBox.style.bottom = "auto";
+        }
+      }
+
+      window.addEventListener("scroll", updateStickyPosition);
+      topInput.addEventListener("input", updateStickyPosition);
+      leftInput.addEventListener("input", updateStickyPosition);
+      rightInput.addEventListener("input", updateStickyPosition);
+      bottomInput.addEventListener("input", updateStickyPosition);
+    </script>
+  </body>
+</html>
