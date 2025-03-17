@@ -40,6 +40,8 @@
       }
 
       .stickyBox {
+        position: relative;
+
         width: 200px;
         height: 50px;
         background: orange;
@@ -88,9 +90,6 @@
     <div class="spacer"></div>
 
     <script>
-      const stickyBox = document.getElementById("stickyBox");
-      const container = document.getElementById("container");
-
       const topInput = document.getElementById("topValue");
       const leftInput = document.getElementById("leftValue");
       const rightInput = document.getElementById("rightValue");
@@ -101,22 +100,32 @@
         return value !== 0 ? value : null;
       }
 
-      function updateStickyPosition() {
-        const scrollY = window.scrollY;
-        const containerRect = container.getBoundingClientRect();
+      let isFixed = false;
 
-        const topThreshold = getValidValue(topInput);
+      function updateStickyPosition() {
+        const stickyBox = document.getElementById("stickyBox");
+        const container = document.getElementById("container");
+
+        const scrollY = window.scrollY;
+        const stickyBoxRect = stickyBox.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect(); // 获取容器的矩形
+
+        const topThreshold = getValidValue(topInput) || 100;
         const leftValue = getValidValue(leftInput);
         const rightValue = getValidValue(rightInput);
         const bottomValue = getValidValue(bottomInput);
+        console.log(
+          stickyBoxRect.top,
+          stickyBoxRect.bottom,
+          "containerbottomn >>>",
+          containerRect.bottom
+        );
 
-        if (
-          containerRect.top <= (topThreshold || 100) &&
-          containerRect.bottom > (topThreshold || 100) + 50
-        ) {
+        // 判断 stickyBox 是否应该固定
+        if (stickyBoxRect.top <= topThreshold) {
+          isFixed = true;
           stickyBox.classList.add("fixed");
-          stickyBox.style.top =
-            topThreshold !== null ? `${topThreshold}px` : "auto";
+          stickyBox.style.top = `${topThreshold}px`;
           stickyBox.style.left =
             leftValue !== null
               ? `${containerRect.left + leftValue}px`
@@ -131,7 +140,24 @@
               : "inherit";
           stickyBox.style.bottom =
             bottomValue !== null ? `${bottomValue}px` : "auto";
-        } else {
+        }
+
+        if (
+          isFixed &&
+          containerRect.top > topThreshold + stickyBox.offsetHeight + 1
+        ) {
+          isFixed = false;
+          stickyBox.classList.remove("fixed");
+          stickyBox.style.top = "auto";
+          stickyBox.style.left = "inherit";
+          stickyBox.style.right = "inherit";
+          stickyBox.style.bottom = "auto";
+        }
+
+        // 如果 stickyBox 距离顶部太远，取消 fixed
+        if (isFixed && containerRect.bottom < 0) {
+          isFixed = false;
+
           stickyBox.classList.remove("fixed");
           stickyBox.style.top = "auto";
           stickyBox.style.left = "inherit";
