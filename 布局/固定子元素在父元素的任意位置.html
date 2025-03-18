@@ -142,6 +142,7 @@
             bottomValue !== null ? `${bottomValue}px` : "auto";
         }
 
+        // 这里是  sticy 的 top 距离 + sticky 元素自身的 高度 + 对照元素的 margin距离
         if (
           isFixed &&
           containerRect.top > topThreshold + stickyBox.offsetHeight + 20
