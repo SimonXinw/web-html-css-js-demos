@@ -59,6 +59,7 @@
       .stickyBox-wrap {
         display: flex;
         justify-content: space-between;
+        min-height: 50px;
       }
     </style>
   </head>
@@ -106,7 +107,6 @@
         const stickyBox = document.getElementById("stickyBox");
         const container = document.getElementById("container");
 
-        const scrollY = window.scrollY;
         const stickyBoxRect = stickyBox.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect(); // 获取容器的矩形
 
@@ -144,7 +144,7 @@
 
         if (
           isFixed &&
-          containerRect.top > topThreshold + stickyBox.offsetHeight + 1
+          containerRect.top > topThreshold + stickyBox.offsetHeight + 20
         ) {
           isFixed = false;
           stickyBox.classList.remove("fixed");
