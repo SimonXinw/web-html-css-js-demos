@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scrollable Tabs</title>
+    <style>
+      .tabs-container {
+        display: flex;
+        padding: 4px;
+        align-items: center;
+        background: #212326;
+        z-index: 2;
+      }
+      .tabs-inner {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .tab-item {
+        display: flex;
+        padding: 12px 24px;
+        flex-direction: column;
+        justify-content: center;
+        gap: 8px;
+        align-items: center;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+      }
+      .tab-item.active {
+        background: #212326;
+        color: #ffffff;
+      }
+      .tab-item:hover {
+        color: #fffffff2;
+      }
+      .tab-item .desc-text {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .tab-item .label-text {
+        font-size: 20px;
+        font-weight: 500;
+      }
+      .tab-item .desc-text {
+        opacity: 0.4;
+      }
+
+      .content-xx {
+        height: 800px;
+        background-color: pink;
+      }
+      .content-1 {
+        height: 800px;
+        background-color: #ddd;
+      }
+      #tabsInner {
+        height: 80px;
+        background-color: blue;
+      }
+
+      .barWrap {
+        height: 100px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .barLeft {
+        height: 80px;
+        width: 200px;
+        background-color: pink;
+      }
+      #stickyElement {
+        width: 300px;
+        height: 80px;
+        background-color: blue;
+      }
+      .xw-relative {
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="content-1"></div>
+    <div class="content-1 xw-relative"></div>
+    <div id="activityBundles" style="height: 1500px; padding: 20px">
+      <div class="barWrap">
+        <div class="barLeft"></div>
+        <div id="stickyElement" class="tabs-container"></div>
+      </div>
+      <div class="content-xx"></div>
+    </div>
+    <div class="content-1"></div>
+
+    <script>
+      let isFixed = false;
+      let isBelowBar = false;
+      let isAboveBar = false;
+      const fixedBottom = 200; // 吸底的偏移量
+
+      const tabsContainer = document.getElementById("stickyElement");
+      const container = document.getElementById("activityBundles");
+
+      const getElementOffset = (element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          offsetTop: rect.top + window.scrollY,
+        };
+      };
+
+      const updatePosition = () => {
+        const stickyBox = document.getElementById("stickyElement");
+        const container = document.getElementById("activityBundles");
+        if (!stickyBox || !container) return;
+
+        const stickyBoxRect = stickyBox.getBoundingClientRect();
+
+        const containerRect = container.getBoundingClientRect(); // 获取容器的矩形
+
+        let topValue = document.documentElement.clientHeight - fixedBottom;
+
+        console.log(
+          stickyBoxRect.top,
+          "topValue >>",
+          topValue,
+          stickyBoxRect.bottom,
+          "containerRect.top >>",
+          containerRect.top,
+          "containerbottomn >>>",
+          containerRect.bottom
+        );
+
+        // 判断 stickyBox 是否应该固定
+        if (!isBelowBar && !isAboveBar && stickyBoxRect.top <= topValue) {
+          isFixed = true;
+
+          stickyBox.style.top = `${topValue}px`;
+
+          stickyBox.style.left = `${stickyBoxRect.left}px`;
+
+          stickyBox.style.position = `fixed`;
+        }
+
+        // 判断 stickyBox 是否应该固定
+        if (!isBelowBar && !isAboveBar && stickyBoxRect.top > topValue) {
+          isFixed = true;
+
+          stickyBox.style.top = `${topValue}px`;
+
+          stickyBox.style.left = `${stickyBoxRect.left}px`;
+
+          stickyBox.style.position = `fixed`;
+        }
+
+        if (isFixed && containerRect.top + 102 > topValue) {
+          isFixed = false;
+          isAboveBar = true;
+
+          stickyBox.style.top = `inherit`;
+
+          stickyBox.style.left = `inherit`;
+
+          stickyBox.style.position = `inherit`;
+        } else {
+          isAboveBar = false;
+        }
+
+        // 如果 stickyBox 距离顶部太远，取消 fixed
+        if (containerRect.bottom - 56 < topValue) {
+          isFixed = false;
+          isBelowBar = true;
+
+          const { offsetTop } = getElementOffset(`#stickyElement`);
+
+          stickyBox.style.top = offsetTop ? offsetTop + "px" : "inherit";
+
+          stickyBox.style.position = `absolute`;
+        } else {
+          isBelowBar = false;
+        }
+      };
+
+      window.addEventListener("scroll", updatePosition);
+    </script>
+  </body>
+</html>
