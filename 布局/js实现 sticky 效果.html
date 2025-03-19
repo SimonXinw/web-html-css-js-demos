@@ -7,7 +7,6 @@
     <style>
       .tabs-container {
         display: flex;
-        padding: 4px;
         align-items: center;
         background: #212326;
         z-index: 2;
@@ -57,6 +56,10 @@
         height: 800px;
         background-color: #ddd;
       }
+      .content-2 {
+        height: 800px;
+        background-color: transparent;
+      }
       #tabsInner {
         height: 80px;
         background-color: blue;
@@ -88,16 +91,89 @@
   <body>
     <div class="content-1"></div>
     <div class="content-1 xw-relative"></div>
-    <div id="activityBundles" style="height: 1500px; padding: 20px">
+    <div id="activityBundles" style="padding: 20px">
       <div class="barWrap">
         <div class="barLeft"></div>
         <div id="stickyElement" class="tabs-container"></div>
       </div>
       <div class="content-xx"></div>
     </div>
-    <div class="content-1"></div>
+    <div class="content-2"></div>
 
     <script>
+      // 计算两个元素之间的顶部的绝对距离
+      function calculateVerticalDistance(
+        element1,
+        element2,
+        enableDynamicUpdate = false
+      ) {
+        if (!element1 || !element2) {
+          console.error("Invalid elements provided.");
+          return null;
+        }
+
+        let cachedDistance = null; // 缓存计算值
+
+        function getDistance() {
+          const rect1 = element1.getBoundingClientRect();
+          const rect2 = element2.getBoundingClientRect();
+          return Math.abs(rect1.top - rect2.top);
+        }
+
+        // 只计算一次
+        if (cachedDistance === null) {
+          cachedDistance = getDistance();
+          console.log("初始垂直距离:", cachedDistance);
+        }
+
+        // 如果开启动态更新，每次调用都计算最新的距离
+        return enableDynamicUpdate ? getDistance() : cachedDistance;
+      }
+
+      /**
+       * 获取元素相对最近的有定位父级（offsetParent）的偏移距离
+       * @param {string | HTMLElement} selectorOrElement 选择器字符串或 HTML 元素 forceUpdate 默认动态计算，false 缓存
+       * @returns {Object} 偏移信息
+       *
+       */
+      function createOffsetTracker() {
+        let cachedOffset = null;
+
+        return function getElementOffset(
+          selectorOrElement,
+          forceUpdate = true
+        ) {
+          if (cachedOffset !== null && !forceUpdate) {
+            return cachedOffset; // 返回缓存的值
+          }
+
+          const element =
+            typeof selectorOrElement === "string"
+              ? document.querySelector(selectorOrElement)
+              : selectorOrElement;
+
+          if (!element) return {};
+
+          // 获取最近的有定位的父元素（offsetParent）
+          const positionedParent = element.offsetParent || document.body;
+
+          const elementRect = element.getBoundingClientRect();
+          const parentRect = positionedParent.getBoundingClientRect();
+
+          cachedOffset = {
+            element,
+            parent: positionedParent,
+            offsetTop: elementRect.top - parentRect.top,
+            parentTop: parentRect.top,
+            elementTop: elementRect.top,
+          };
+
+          return cachedOffset;
+        };
+      }
+
+      const getElementOffset = createOffsetTracker();
+
       let isFixed = false;
       let isBelowBar = false;
       let isAboveBar = false;
@@ -106,17 +182,15 @@
       const tabsContainer = document.getElementById("stickyElement");
       const container = document.getElementById("activityBundles");
 
-      const getElementOffset = (element) => {
-        const rect = element.getBoundingClientRect();
-        return {
-          offsetTop: rect.top + window.scrollY,
-        };
-      };
-
       const updatePosition = () => {
         const stickyBox = document.getElementById("stickyElement");
         const container = document.getElementById("activityBundles");
         if (!stickyBox || !container) return;
+
+        const elesBottomToTopGap = calculateVerticalDistance(
+          stickyBox,
+          container
+        );
 
         const stickyBoxRect = stickyBox.getBoundingClientRect();
 
@@ -135,7 +209,7 @@
           containerRect.bottom
         );
 
-        // 判断 stickyBox 是否应该固定
+        // 判断 stickyBox 往下滚动 是否应该固定
         if (!isBelowBar && !isAboveBar && stickyBoxRect.top <= topValue) {
           isFixed = true;
 
@@ -146,7 +220,7 @@
           stickyBox.style.position = `fixed`;
         }
 
-        // 判断 stickyBox 是否应该固定
+        // 判断 stickyBox 往上滚动 是否应该固定
         if (!isBelowBar && !isAboveBar && stickyBoxRect.top > topValue) {
           isFixed = true;
 
@@ -157,7 +231,8 @@
           stickyBox.style.position = `fixed`;
         }
 
-        if (isFixed && containerRect.top + 102 > topValue) {
+        // 向上滚动取消滚动条件
+        if (isFixed && containerRect.top + elesBottomToTopGap > topValue) {
           isFixed = false;
           isAboveBar = true;
 
@@ -171,13 +246,17 @@
         }
 
         // 如果 stickyBox 距离顶部太远，取消 fixed
-        if (containerRect.bottom - 56 < topValue) {
+        if (containerRect.bottom < topValue) {
           isFixed = false;
           isBelowBar = true;
 
-          const { offsetTop } = getElementOffset(`#stickyElement`);
+          const { offsetTop } = getElementOffset(`#stickyElement`, false);
+
+          console.log("offsetTop >>>>>", offsetTop);
 
           stickyBox.style.top = offsetTop ? offsetTop + "px" : "inherit";
+
+          stickyBox.style.zIndex = `2`;
 
           stickyBox.style.position = `absolute`;
         } else {
