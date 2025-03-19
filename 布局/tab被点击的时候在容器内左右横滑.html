@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Scrollable Tabs</title>
     <style>
+      /* 设置 HTML 和 body 高度为 100%，确保页面充满屏幕 */
       html {
         height: 100%;
       }
@@ -16,6 +17,8 @@
         margin: 0;
         padding: 20px;
       }
+
+      /* 让主体内容居中对齐 */
       .body-box {
         width: 100%;
         height: 100%;
@@ -23,6 +26,8 @@
         justify-content: center;
         align-items: center;
       }
+
+      /* 标签容器，允许横向滚动，隐藏滚动条 */
       .tabs-container {
         width: 100%;
         padding: 8%;
@@ -33,17 +38,23 @@
         padding: 4px;
         display: flex;
         align-items: flex-start;
-        scrollbar-width: none;
-        -ms-overflow-style: none;
+        scrollbar-width: none; /* Firefox 隐藏滚动条 */
+        -ms-overflow-style: none; /* IE/Edge 隐藏滚动条 */
       }
+
+      /* Webkit 浏览器（如 Chrome, Safari）隐藏滚动条 */
       .tabs-container::-webkit-scrollbar {
         display: none;
       }
+
+      /* 内部容器，确保所有 tab 以一行显示 */
       .tabs-inner {
         display: flex;
         align-items: center;
         flex-wrap: nowrap;
       }
+
+      /* 单个标签样式 */
       .tab-item {
         display: flex;
         justify-content: center;
@@ -57,13 +68,19 @@
         color: #ffffff73;
         position: relative;
       }
+
+      /* 悬停时高亮 */
       .tab-item:hover {
         color: #fffffff2;
       }
+
+      /* 选中的 tab 高亮 */
       .tab-item.active {
         background: #009afe;
         color: rgba(255, 255, 255, 0.95);
       }
+
+      /* 非最后一个 tab 右侧添加分隔线 */
       .tab-item:not(:last-child)::after {
         content: "";
         position: absolute;
@@ -76,11 +93,13 @@
   </head>
   <body>
     <div class="body-box">
+      <!-- 可滚动的 tab 容器 -->
       <div class="tabs-container" id="tabsContainer">
         <div class="tabs-inner" id="tabsInner">
-          <div class="tab-item" data-key="Tab1">Ta dfsdf b favorite 1</div>
-          <div class="tab-item" data-key="Tab2">Tab fdf fd very good 2</div>
-          <div class="tab-item" data-key="Tab3">Tabf you good df fd 3</div>
+          <!-- 每个 tab 具有唯一的 data-key 值 -->
+          <div class="tab-item" data-key="Tab1">Tab 1</div>
+          <div class="tab-item" data-key="Tab2">Tab 2</div>
+          <div class="tab-item" data-key="Tab3">Tab 3</div>
         </div>
       </div>
     </div>
@@ -93,43 +112,54 @@
         let activeItem = tabs[0]; // 默认高亮第一个 Tab
         activeItem.classList.add("active");
 
+        /**
+         * 滚动到当前选中的 tab
+         */
         function scrollToActiveTab() {
-          const containerRect = tabsContainer.getBoundingClientRect();
-          const activeRect = activeItem.getBoundingClientRect();
-          const containerScrollLeft = tabsContainer.scrollLeft;
-          const containerWidth = tabsContainer.clientWidth;
-          const activeWidth = activeItem.clientWidth;
-          let targetScrollLeft = containerScrollLeft;
+          const containerRect = tabsContainer.getBoundingClientRect(); // 获取容器可视范围
+          const activeRect = activeItem.getBoundingClientRect(); // 获取当前选中项的位置
+          const containerScrollLeft = tabsContainer.scrollLeft; // 记录当前滚动位置
+          const containerWidth = tabsContainer.clientWidth; // 容器宽度
+          const activeWidth = activeItem.clientWidth; // 选中项宽度
+          let targetScrollLeft = containerScrollLeft; // 目标滚动位置，默认为当前值
 
           if (activeRect.left < containerRect.left) {
+            // 如果选中项左侧超出容器可视范围
             targetScrollLeft = activeItem.offsetLeft;
           } else if (activeRect.right > containerRect.right) {
+            // 如果选中项右侧超出容器可视范围
             targetScrollLeft =
               activeItem.offsetLeft - (containerWidth - activeWidth) + 4;
           } else {
+            // 选中项在容器可视范围内，让其居中
             targetScrollLeft =
               activeItem.offsetLeft - containerWidth / 2 + activeWidth / 2;
           }
 
+          // 执行平滑滚动
           tabsContainer.scrollTo({
             left: targetScrollLeft,
             behavior: "smooth",
           });
         }
 
+        /**
+         * 根据 URL 参数设置选中的 Tab
+         * @param {string} tabValue - 目标 Tab 的 data-key 值
+         */
         function setActiveTabByValue(tabValue) {
           const targetTab = [...tabs].find(
             (tab) => tab.getAttribute("data-key") === `Tab${tabValue}`
           );
           if (targetTab) {
-            activeItem.classList.remove("active");
-            activeItem = targetTab;
-            activeItem.classList.add("active");
-            scrollToActiveTab();
+            activeItem.classList.remove("active"); // 移除当前选中项
+            activeItem = targetTab; // 更新选中项
+            activeItem.classList.add("active"); // 添加选中状态
+            scrollToActiveTab(); // 滚动到该 Tab
           }
         }
 
-        // 监听 URL 参数，动态设置选中项
+        // 获取 URL 中的参数 tabValue
         const urlParams = new URLSearchParams(window.location.search);
         const tabValue = urlParams.get("tabValue");
 
@@ -137,12 +167,13 @@
           setActiveTabByValue(tabValue);
         }
 
+        // 点击 Tab 切换选中项
         tabs.forEach((tab) => {
           tab.addEventListener("click", function () {
-            activeItem.classList.remove("active");
-            activeItem = this;
-            activeItem.classList.add("active");
-            scrollToActiveTab();
+            activeItem.classList.remove("active"); // 取消之前选中的 Tab
+            activeItem = this; // 更新当前选中的 Tab
+            activeItem.classList.add("active"); // 添加选中状态
+            scrollToActiveTab(); // 滚动到新选中的 Tab
           });
         });
       });
