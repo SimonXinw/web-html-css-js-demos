@@ -97,9 +97,9 @@
       <div class="tabs-container" id="tabsContainer">
         <div class="tabs-inner" id="tabsInner">
           <!-- 每个 tab 具有唯一的 data-key 值 -->
-          <div class="tab-item" data-key="Tab1">Tab 1</div>
-          <div class="tab-item" data-key="Tab2">Tab 2</div>
-          <div class="tab-item" data-key="Tab3">Tab 3</div>
+          <div class="tab-item" data-key="Tab1">Ta dfsdf b favorite 1</div>
+          <div class="tab-item" data-key="Tab2">Tab fdf fd very good 2</div>
+          <div class="tab-item" data-key="Tab3">Tabf you good df fd 3</div>
         </div>
       </div>
     </div>
@@ -108,6 +108,7 @@
       //  url 可以控制哪个优先高亮 eg:?tabValue=3
       document.addEventListener("DOMContentLoaded", function () {
         const tabsContainer = document.getElementById("tabsContainer");
+        const tabsInnerEle = document.getElementById("tabsInner");
         const tabs = document.querySelectorAll(".tab-item");
         let activeItem = tabs[0]; // 默认高亮第一个 Tab
         activeItem.classList.add("active");
@@ -117,19 +118,31 @@
          */
         function scrollToActiveTab() {
           const containerRect = tabsContainer.getBoundingClientRect(); // 获取容器可视范围
+
+          const computedStyle = window.getComputedStyle(tabsContainer);
+
           const activeRect = activeItem.getBoundingClientRect(); // 获取当前选中项的位置
+
           const containerScrollLeft = tabsContainer.scrollLeft; // 记录当前滚动位置
+
           const containerWidth = tabsContainer.clientWidth; // 容器宽度
+
           const activeWidth = activeItem.clientWidth; // 选中项宽度
+
           let targetScrollLeft = containerScrollLeft; // 目标滚动位置，默认为当前值
 
-          if (activeRect.left < containerRect.left) {
+          const paddingLeft = parseInt(computedStyle.paddingLeft, 10) || 0;
+          const paddingRight = parseInt(computedStyle.paddingRight, 10) || 0;
+
+          if (activeRect.left <= containerRect.left + paddingLeft) {
             // 如果选中项左侧超出容器可视范围
-            targetScrollLeft = activeItem.offsetLeft;
-          } else if (activeRect.right > containerRect.right) {
+            targetScrollLeft = 0;
+          } else if (activeRect.right > containerRect.right - paddingRight) {
             // 如果选中项右侧超出容器可视范围
             targetScrollLeft =
-              activeItem.offsetLeft - (containerWidth - activeWidth) + 4;
+              activeItem.offsetLeft -
+              (containerWidth - activeWidth) +
+              paddingRight;
           } else {
             // 选中项在容器可视范围内，让其居中
             targetScrollLeft =
