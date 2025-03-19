@@ -86,44 +86,55 @@
     </div>
 
     <script>
+      //  url 可以控制哪个优先高亮 eg:?tabValue=3
       document.addEventListener("DOMContentLoaded", function () {
         const tabsContainer = document.getElementById("tabsContainer");
         const tabs = document.querySelectorAll(".tab-item");
-        let activeItem = tabs[0];
+        let activeItem = tabs[0]; // 默认高亮第一个 Tab
         activeItem.classList.add("active");
 
         function scrollToActiveTab() {
-          // 获取滚动容器和当前选中的标签的位置信息
-          const containerRect = tabsContainer.getBoundingClientRect(); // 滚动容器的可视区域
-          const activeRect = activeItem.getBoundingClientRect(); // 选中项的位置信息
-          const containerScrollLeft = tabsContainer.scrollLeft; // 当前滚动的水平位置
-          const containerWidth = tabsContainer.clientWidth; // 滚动容器的可视宽度
-          const activeWidth = activeItem.clientWidth; // 选中项的宽度
-          let targetScrollLeft = containerScrollLeft; // 目标滚动位置，默认保持不变
+          const containerRect = tabsContainer.getBoundingClientRect();
+          const activeRect = activeItem.getBoundingClientRect();
+          const containerScrollLeft = tabsContainer.scrollLeft;
+          const containerWidth = tabsContainer.clientWidth;
+          const activeWidth = activeItem.clientWidth;
+          let targetScrollLeft = containerScrollLeft;
 
-          // 如果当前选中项的左侧超出了可视区域
           if (activeRect.left < containerRect.left) {
-            // 让选中项完全对齐到容器左侧
             targetScrollLeft = activeItem.offsetLeft;
-          }
-          // 如果当前选中项的右侧超出了可视区域
-          else if (activeRect.right > containerRect.right) {
-            // 让选中项的右侧对齐到容器的右侧
+          } else if (activeRect.right > containerRect.right) {
             targetScrollLeft =
               activeItem.offsetLeft - (containerWidth - activeWidth) + 4;
-          }
-          // 如果选中项在可视范围内，但没有居中
-          else {
-            // 让选中项水平居中
+          } else {
             targetScrollLeft =
               activeItem.offsetLeft - containerWidth / 2 + activeWidth / 2;
           }
 
-          // 平滑滚动到计算好的位置
           tabsContainer.scrollTo({
             left: targetScrollLeft,
             behavior: "smooth",
           });
+        }
+
+        function setActiveTabByValue(tabValue) {
+          const targetTab = [...tabs].find(
+            (tab) => tab.getAttribute("data-key") === `Tab${tabValue}`
+          );
+          if (targetTab) {
+            activeItem.classList.remove("active");
+            activeItem = targetTab;
+            activeItem.classList.add("active");
+            scrollToActiveTab();
+          }
+        }
+
+        // 监听 URL 参数，动态设置选中项
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabValue = urlParams.get("tabValue");
+
+        if (tabValue) {
+          setActiveTabByValue(tabValue);
         }
 
         tabs.forEach((tab) => {
