@@ -125,6 +125,8 @@
 
           const containerScrollLeft = tabsContainer.scrollLeft; // 记录当前滚动位置
 
+          const containerScrollWidth = tabsContainer.scrollWidth; // 容器的包含内容的全部宽度
+
           const containerWidth = tabsContainer.clientWidth; // 容器宽度
 
           const activeWidth = activeItem.clientWidth; // 选中项宽度
@@ -140,9 +142,7 @@
           } else if (activeRect.right > containerRect.right - paddingRight) {
             // 如果选中项右侧超出容器可视范围
             targetScrollLeft =
-              activeItem.offsetLeft -
-              (containerWidth - activeWidth) +
-              paddingRight;
+              containerScrollWidth - activeWidth - paddingRight;
           } else {
             // 选中项在容器可视范围内，让其居中
             targetScrollLeft =
