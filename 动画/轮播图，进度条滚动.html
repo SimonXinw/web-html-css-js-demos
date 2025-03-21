@@ -29,19 +29,14 @@
         width: 80vw;
         height: 40vh;
         overflow: hidden;
-      }
-      .swiper-wrapper {
-        display: flex;
-        align-items: center;
+        position: relative;
       }
       .swiper-slide {
         position: relative;
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 100%;
       }
-
       video {
         width: 100%;
         height: 100%;
@@ -65,30 +60,53 @@
         height: 100%;
         background: #ffcc00;
       }
+
+      /* Swiper 按钮 */
+      .swiper-button-prev,
+      .swiper-button-next {
+        color: white !important;
+      }
+
+      /* 蒙层 */
+      .overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 8px;
+        transition: opacity 0.3s ease;
+      }
+      .playing .overlay {
+        opacity: 0; /* 当前播放的视频去掉蒙层 */
+      }
     </style>
   </head>
   <body>
     <div class="swiper-container">
       <div class="swiper-wrapper" id="video-slider"></div>
+      <!-- 左右切换按钮 -->
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
     </div>
 
     <script>
       $(document).ready(function () {
         const videoUrls = [
           "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+          "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
           "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+          "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
           "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
-          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
-          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
-          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+          "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
         ];
 
         const sliderContainer = $("#video-slider");
 
         // 动态生成 Swiper 轮播项
-        videoUrls.forEach((url, index) => {
+        videoUrls.forEach((url) => {
           const slide = $(`
                     <div class="swiper-slide">
+                        <div class="overlay"></div>
                         <video src="${url}" muted></video>
                         <div class="progress-bar"><div class="progress"></div></div>
                     </div>
@@ -101,46 +119,63 @@
           loop: true,
           slidesPerView: 4,
           spaceBetween: 10,
+          navigation: {
+            nextEl: ".swiper-button-next",
+            prevEl: ".swiper-button-prev",
+          },
           autoplay: false,
+          on: {
+            slideChangeTransitionStart: () => stopAllVideos(),
+            slideChangeTransitionEnd: () => playCurrentVideo(),
+          },
         });
 
-        // 获取所有视频元素
-        const videos = document.querySelectorAll("video");
-
-        function playVideos() {
-          videos.forEach((video, index) => {
-            const progressBar = video.parentElement.querySelector(".progress");
-
-            // 重置进度条
-            gsap.set(progressBar, { width: "0%" });
-
-            // 确保视频从头开始播放
+        function stopAllVideos() {
+          document.querySelectorAll(".swiper-slide").forEach((slide) => {
+            const video = slide.querySelector("video");
+            const progressBar = slide.querySelector(".progress");
+            slide.classList.remove("playing"); // 移除播放状态
+            video.pause();
             video.currentTime = 0;
-            video.play();
-
-            // 进度条动画
-            gsap.to(progressBar, {
-              width: "100%",
-              duration: video.duration || 5, // 防止 duration 还未加载出来
-              ease: "linear",
-              onComplete: () => {
-                video.currentTime = 0; // 重置视频
-                video.play(); // 重新播放
-                playVideos(); // 递归触发下一轮
-              },
-            });
-
-            // 监听视频结束，重播
-            video.onended = function () {
-              video.currentTime = 0;
-              video.play();
-              playVideos();
-            };
+            gsap.set(progressBar, { width: "0%" });
           });
         }
 
-        // 确保所有视频都自动播放
-        playVideos();
+        function playCurrentVideo() {
+          const activeIndex = swiper.realIndex;
+          const activeSlide = swiper.slides[activeIndex];
+          const video = activeSlide.querySelector("video");
+          const progressBar = activeSlide.querySelector(".progress");
+
+          if (video) {
+            activeSlide.classList.add("playing"); // 添加播放状态
+            video.play();
+            gsap.to(progressBar, {
+              width: "100%",
+              duration: video.duration || 5,
+              ease: "linear",
+              onComplete: () => swiper.slideNext(),
+            });
+
+            video.onended = () => swiper.slideNext();
+          }
+        }
+
+        // 左右按钮绑定事件
+        $(".swiper-button-prev").on("click", function () {
+          stopAllVideos(); // 停止所有视频
+          swiper.slidePrev(); // 切换到上一个视频
+          setTimeout(playCurrentVideo, 500); // 等待切换后播放
+        });
+
+        $(".swiper-button-next").on("click", function () {
+          stopAllVideos(); // 停止所有视频
+          swiper.slideNext(); // 切换到下一个视频
+          setTimeout(playCurrentVideo, 500); // 等待切换后播放
+        });
+
+        // 初始化时播放当前视频
+        playCurrentVideo();
       });
     </script>
   </body>
