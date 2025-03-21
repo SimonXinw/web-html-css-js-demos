@@ -101,6 +101,32 @@
     <div class="content-2"></div>
 
     <script>
+      /**
+       * 设备判断
+       * */
+      function detectBrowser() {
+        const userAgent = navigator?.userAgent;
+
+        const isSamsung = /SamsungBrowser/i.test(userAgent);
+
+        const isSafari =
+          !isSamsung && /^((?!chrome|android).)*safari/i.test(userAgent);
+
+        const isChrome =
+          !isSamsung && !isSafari && /chrome|chromium|crios/i.test(userAgent);
+
+        return { isSamsung, isSafari, isChrome };
+      }
+
+      const getMobileTopGap = () => {
+        const { isSamsung, isSafari, isChrome } = detectBrowser();
+
+        if (isSamsung) return -35;
+        if (isSafari) return -22;
+        if (isChrome) return 5;
+
+        return 5;
+      };
       // 计算两个元素之间的顶部的绝对距离
       function calculateVerticalDistance(
         element1,
@@ -251,8 +277,6 @@
           isBelowBar = true;
 
           const { offsetTop } = getElementOffset(`#stickyElement`, false);
-
-          console.log("offsetTop >>>>>", offsetTop);
 
           stickyBox.style.top = offsetTop ? offsetTop + "px" : "inherit";
 
