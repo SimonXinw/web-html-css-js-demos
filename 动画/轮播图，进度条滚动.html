@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>视频轮播 - 进度条控制</title>
+    <title>动态生成视频轮播</title>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"
@@ -69,60 +69,39 @@
   </head>
   <body>
     <div class="swiper-container">
-      <div class="swiper-wrapper">
-        <div class="swiper-slide">
-          <video
-            src="https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm"
-            muted
-          ></video>
-          <div class="progress-bar"><div class="progress"></div></div>
-        </div>
-        <div class="swiper-slide">
-          <video
-            src="https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4"
-            muted
-          ></video>
-          <div class="progress-bar"><div class="progress"></div></div>
-        </div>
-        <div class="swiper-slide">
-          <video
-            src="https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm"
-            muted
-          ></video>
-          <div class="progress-bar"><div class="progress"></div></div>
-        </div>
-        <div class="swiper-slide">
-          <video
-            src="https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm"
-            muted
-          ></video>
-          <div class="progress-bar"><div class="progress"></div></div>
-        </div>
-        <div class="swiper-slide">
-          <video
-            src="https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm"
-            muted
-          ></video>
-          <div class="progress-bar"><div class="progress"></div></div>
-        </div>
-        <div class="swiper-slide">
-          <video
-            src="https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm"
-            muted
-          ></video>
-          <div class="progress-bar"><div class="progress"></div></div>
-        </div>
-      </div>
+      <div class="swiper-wrapper" id="video-slider"></div>
     </div>
 
     <script>
       $(document).ready(function () {
+        const videoUrls = [
+          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+        ];
+
+        const sliderContainer = $("#video-slider");
+
+        // 动态生成 Swiper 轮播项
+        videoUrls.forEach((url, index) => {
+          const slide = $(`
+                    <div class="swiper-slide">
+                        <video src="${url}" muted></video>
+                        <div class="progress-bar"><div class="progress"></div></div>
+                    </div>
+                `);
+          sliderContainer.append(slide);
+        });
+
         // 初始化 Swiper
         const swiper = new Swiper(".swiper-container", {
-          loop: true, // 无限循环
-          slidesPerView: 4, // 一次展示 4 个视频
-          spaceBetween: 10, // 每个视频之间的间距
-          autoplay: false, // 禁用 Swiper 自动播放，让视频控制
+          loop: true,
+          slidesPerView: 4,
+          spaceBetween: 10,
+          autoplay: false,
         });
 
         // 获取所有视频元素
