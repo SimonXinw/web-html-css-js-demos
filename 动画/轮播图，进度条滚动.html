@@ -219,21 +219,33 @@
           this.videoElements.forEach((item, i) => {
             const video = item.querySelector("video");
             const overlay = item.querySelector(".overlay");
+            const progress = item.querySelector(".progress");
 
             item.classList.toggle("active", i === index);
             overlay.style.display = i === index ? "none" : "block";
 
             if (i === index) {
               video.play();
+              this.updateProgressSmoothly(video, progress);
             } else {
               video.pause();
               video.currentTime = 0;
-              item.querySelector(".progress").style.width = "0";
+              progress.style.width = "0";
             }
           });
 
           const offset = -index * 20;
           this.carouselTrack.style.transform = `translateX(${offset}%)`;
+        }
+
+        updateProgressSmoothly(video, progress) {
+          const update = () => {
+            if (video.paused || video.ended) return; // 停止更新
+            const percent = (video.currentTime / video.duration) * 100;
+            progress.style.width = `${percent}%`;
+            requestAnimationFrame(update); // 递归调用保持流畅
+          };
+          requestAnimationFrame(update);
         }
 
         setupEvents() {
