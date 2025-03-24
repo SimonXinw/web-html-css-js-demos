@@ -194,6 +194,10 @@
 
       toggle.addEventListener("change", function () {
         this.value = this.checked ? "1" : "0";
+
+        document.querySelector(".carousel-track").innerHTML = "";
+        new VideoCarousel();
+
         console.log(
           `开关状态: ${this.checked ? "开 (1)" : "关 (0)"}, value: ${
             this.value
