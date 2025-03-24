@@ -112,15 +112,95 @@
       .next {
         right: 20px;
       }
+
+      .top-bar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        height: 50px;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+      }
+
+      .toggle-switch {
+        position: relative;
+        width: 60px;
+        height: 30px;
+        cursor: pointer;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #ccc;
+        border-radius: 30px;
+        transition: 0.3s;
+      }
+
+      .slider::before {
+        content: "";
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        left: 3px;
+        bottom: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: 0.3s;
+      }
+
+      input:checked + .slider {
+        background: #4caf50;
+      }
+
+      input:checked + .slider::before {
+        transform: translateX(30px);
+      }
     </style>
   </head>
   <body>
+    <div class="top-bar">
+      <label class="toggle-switch">
+        <input type="checkbox" id="toggle" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
     <div class="loader">Loading videos...</div>
+
     <div class="carousel-container">
       <div class="carousel-track"></div>
       <button class="nav-btn prev">❮</button>
       <button class="nav-btn next">❯</button>
     </div>
+
+    <script>
+      const toggle = document.getElementById("toggle");
+
+      // 初始化开关
+      toggle.value = toggle.checked ? "1" : "0";
+
+      toggle.addEventListener("change", function () {
+        this.value = this.checked ? "1" : "0";
+        console.log(
+          `开关状态: ${this.checked ? "开 (1)" : "关 (0)"}, value: ${
+            this.value
+          }`
+        );
+      });
+    </script>
 
     <script>
       const videoUrls = [
@@ -227,6 +307,11 @@
             if (i === index) {
               video.play();
               this.updateProgressSmoothly(video, progress);
+
+              // 监听视频播放结束事件
+              video.onended = () => {
+                this.onVideoEnd(index, video.src, video, this.videoElements);
+              };
             } else {
               video.pause();
               video.currentTime = 0;
@@ -236,6 +321,20 @@
 
           const offset = -index * 20;
           this.carouselTrack.style.transform = `translateX(${offset}%)`;
+        }
+
+        // 播放完成回调
+        onVideoEnd(index, url, videoElement, allVideoElements) {
+          console.log("播放完成: ", {
+            index,
+            url,
+            videoElement,
+            allVideoElements,
+          });
+
+          if (document.getElementById("toggle").value === "1") {
+            document.querySelector(".next").click();
+          }
         }
 
         updateProgressSmoothly(video, progress) {
