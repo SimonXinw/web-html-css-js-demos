@@ -1,182 +1,255 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>动态生成视频轮播</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"
-    />
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+    <title>Video Carousel</title>
     <style>
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
+
       body {
         background: #000;
+        min-height: 100vh;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
         align-items: center;
-        height: 100vh;
+        justify-content: center;
       }
 
-      .swiper-container {
-        width: 80vw;
-        height: 40vh;
+      .loader {
+        color: white;
+        font-size: 20px;
+        display: none;
+      }
+
+      .carousel-container {
+        position: relative;
+        width: 1000px;
+        height: 500px;
         overflow: hidden;
-        position: relative;
       }
-      .swiper-slide {
-        position: relative;
+
+      .carousel-track {
         display: flex;
-        justify-content: center;
-        align-items: center;
+        height: 100%;
+        transition: transform 0.5s ease;
       }
+
+      .video-item {
+        position: relative;
+        flex: 0 0 20%;
+        height: 100%;
+        transition: all 0.5s ease;
+        transform: scale(0.8);
+        filter: brightness(0.5);
+      }
+
+      .video-item.active {
+        flex: 0 0 40%;
+        transform: scale(1);
+        filter: brightness(1);
+        z-index: 2;
+      }
+
+      .video-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
       video {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-radius: 8px;
       }
 
-      /* 进度条 */
       .progress-bar {
         position: absolute;
-        bottom: 5px;
+        top: 10px;
         left: 10px;
-        width: calc(100% - 20px);
-        height: 4px;
+        right: 10px;
+        height: 3px;
         background: rgba(255, 255, 255, 0.3);
-        border-radius: 4px;
-        overflow: hidden;
+        z-index: 1;
       }
+
       .progress {
-        width: 0;
         height: 100%;
-        background: #ffcc00;
+        background: #ff4757;
+        width: 0;
+        transition: width 0.1s linear;
       }
 
-      /* Swiper 按钮 */
-      .swiper-button-prev,
-      .swiper-button-next {
-        color: white !important;
-      }
-
-      /* 蒙层 */
       .overlay {
         position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        border-radius: 8px;
-        transition: opacity 0.3s ease;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
       }
-      .playing .overlay {
-        opacity: 0; /* 当前播放的视频去掉蒙层 */
+
+      .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.3);
+        border: none;
+        color: white;
+        padding: 15px;
+        cursor: pointer;
+        z-index: 3;
+      }
+
+      .prev {
+        left: 20px;
+      }
+
+      .next {
+        right: 20px;
       }
     </style>
   </head>
   <body>
-    <div class="swiper-container">
-      <div class="swiper-wrapper" id="video-slider"></div>
-      <!-- 左右切换按钮 -->
-      <div class="swiper-button-prev"></div>
-      <div class="swiper-button-next"></div>
+    <div class="loader">Loading videos...</div>
+    <div class="carousel-container">
+      <div class="carousel-track"></div>
+      <button class="nav-btn prev">❮</button>
+      <button class="nav-btn next">❯</button>
     </div>
 
     <script>
-      $(document).ready(function () {
-        const videoUrls = [
-          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
-          "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
-          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
-          "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
-          "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
-          "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
-        ];
+      const videoUrls = [
+        "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+        "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
+        "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+        "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
+        "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+        "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
+        "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+        "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
+        "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+        "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
+        "https://cdn.shopify.com/videos/c/o/v/32920ef6f01c461cb5a5695464e03e40.webm",
+        "https://cdn.shopify.com/videos/c/o/v/527df4332f20465282a1e16faef18954.mp4",
 
-        const sliderContainer = $("#video-slider");
+      ];
 
-        // 动态生成 Swiper 轮播项
-        videoUrls.forEach((url) => {
-          const slide = $(`
-                    <div class="swiper-slide">
-                        <div class="overlay"></div>
-                        <video src="${url}" muted></video>
-                        <div class="progress-bar"><div class="progress"></div></div>
-                    </div>
-                `);
-          sliderContainer.append(slide);
-        });
+      class VideoCarousel {
+        constructor() {
+          this.currentIndex = 0;
+          this.videoElements = [];
+          this.carouselTrack = document.querySelector(".carousel-track");
+          this.loader = document.querySelector(".loader");
+          this.init();
+        }
 
-        // 初始化 Swiper
-        const swiper = new Swiper(".swiper-container", {
-          loop: true,
-          slidesPerView: 4,
-          spaceBetween: 10,
-          navigation: {
-            nextEl: ".swiper-button-next",
-            prevEl: ".swiper-button-prev",
-          },
-          autoplay: false,
-          on: {
-            slideChangeTransitionStart: () => stopAllVideos(),
-            slideChangeTransitionEnd: () => playCurrentVideo(),
-          },
-        });
+        async init() {
+          this.showLoader();
+          await this.createVideoElements();
+          this.setupCarousel();
+          this.setupEvents();
+          this.hideLoader();
+          this.setActiveVideo(0);
+        }
 
-        function stopAllVideos() {
-          document.querySelectorAll(".swiper-slide").forEach((slide) => {
-            const video = slide.querySelector("video");
-            const progressBar = slide.querySelector(".progress");
-            slide.classList.remove("playing"); // 移除播放状态
-            video.pause();
-            video.currentTime = 0;
-            gsap.set(progressBar, { width: "0%" });
+        showLoader() {
+          this.loader.style.display = "block";
+        }
+
+        hideLoader() {
+          this.loader.style.display = "none";
+        }
+
+        createVideoElements() {
+          return Promise.all(
+            videoUrls.map((url) => {
+              return new Promise((resolve) => {
+                const videoItem = document.createElement("div");
+                videoItem.className = "video-item";
+
+                const videoWrapper = document.createElement("div");
+                videoWrapper.className = "video-wrapper";
+
+                const video = document.createElement("video");
+                video.src = url;
+                video.playsinline = true;
+
+                const progressBar = document.createElement("div");
+                progressBar.className = "progress-bar";
+                const progress = document.createElement("div");
+                progress.className = "progress";
+                progressBar.appendChild(progress);
+
+                const overlay = document.createElement("div");
+                overlay.className = "overlay";
+
+                video.addEventListener("timeupdate", () => {
+                  const percent = (video.currentTime / video.duration) * 100;
+                  progress.style.width = `${percent}%`;
+                });
+
+                videoWrapper.appendChild(video);
+                videoWrapper.appendChild(progressBar);
+                videoWrapper.appendChild(overlay);
+                videoItem.appendChild(videoWrapper);
+                this.carouselTrack.appendChild(videoItem);
+
+                video.addEventListener("loadedmetadata", () => resolve());
+                this.videoElements.push(videoItem);
+              });
+            })
+          );
+        }
+
+        setupCarousel() {
+          this.videoElements.forEach((item, index) => {
+            item.style.transform = `translateX(${index * 20}%)`;
           });
         }
 
-        function playCurrentVideo() {
-          const activeIndex = swiper.realIndex;
-          const activeSlide = swiper.slides[activeIndex];
-          const video = activeSlide.querySelector("video");
-          const progressBar = activeSlide.querySelector(".progress");
+        setActiveVideo(index) {
+          this.currentIndex = index;
+          this.videoElements.forEach((item, i) => {
+            const video = item.querySelector("video");
+            const overlay = item.querySelector(".overlay");
 
-          if (video) {
-            activeSlide.classList.add("playing"); // 添加播放状态
-            video.play();
-            gsap.to(progressBar, {
-              width: "100%",
-              duration: video.duration || 5,
-              ease: "linear",
-              onComplete: () => swiper.slideNext(),
-            });
+            item.classList.toggle("active", i === index);
+            overlay.style.display = i === index ? "none" : "block";
 
-            video.onended = () => swiper.slideNext();
-          }
+            if (i === index) {
+              video.play();
+            } else {
+              video.pause();
+              video.currentTime = 0;
+              item.querySelector(".progress").style.width = "0";
+            }
+          });
+
+          const offset = -index * 20;
+          this.carouselTrack.style.transform = `translateX(${offset}%)`;
         }
 
-        // 左右按钮绑定事件
-        $(".swiper-button-prev").on("click", function () {
-          stopAllVideos(); // 停止所有视频
-          swiper.slidePrev(); // 切换到上一个视频
-          setTimeout(playCurrentVideo, 500); // 等待切换后播放
-        });
+        setupEvents() {
+          document.querySelector(".prev").addEventListener("click", () => {
+            this.currentIndex =
+              (this.currentIndex - 1 + videoUrls.length) % videoUrls.length;
+            this.setActiveVideo(this.currentIndex);
+          });
 
-        $(".swiper-button-next").on("click", function () {
-          stopAllVideos(); // 停止所有视频
-          swiper.slideNext(); // 切换到下一个视频
-          setTimeout(playCurrentVideo, 500); // 等待切换后播放
-        });
+          document.querySelector(".next").addEventListener("click", () => {
+            this.currentIndex = (this.currentIndex + 1) % videoUrls.length;
+            this.setActiveVideo(this.currentIndex);
+          });
+        }
+      }
 
-        // 初始化时播放当前视频
-        playCurrentVideo();
-      });
+      // 初始化轮播
+      new VideoCarousel();
     </script>
   </body>
 </html>
