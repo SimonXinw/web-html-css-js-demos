@@ -19,6 +19,7 @@
       .home-page-banner-1 .swiper-container {
         position: relative;
       }
+
       .home-page-banner-1 .swiper-slide img {
         width: 100%;
         height: auto;
@@ -155,6 +156,11 @@
         pagination: {
           el: ".dots",
           clickable: true,
+        },
+        slidesPerView: 1,
+        effect: "fade", // 关键参数
+        fadeEffect: {
+          crossFade: true, // 使切换更流畅
         },
       });
     </script>
