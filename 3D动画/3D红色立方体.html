@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Three.js 拖动旋转 + 缩放</title>
+    <title>Three.js 拖动旋转 + 缩放 + 辅助功能</title>
     <style>
       body {
         margin: 0;
@@ -11,9 +11,22 @@
       canvas {
         display: block;
       }
+      #resetBtn {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1;
+        padding: 6px 12px;
+        background: white;
+        border: 1px solid #ccc;
+        cursor: pointer;
+        font-size: 14px;
+      }
     </style>
   </head>
   <body>
+    <button id="resetBtn">重置视角</button>
+
     <script type="importmap">
       {
         "imports": {
@@ -22,13 +35,13 @@
         }
       }
     </script>
-    <!-- 使用 CDN 引入 Three.js 和 OrbitControls -->
+
     <script type="module">
-      // 引入完整 CDN 路径的 ES Module 版本
       import * as THREE from "three";
       import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
       const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xf0f0f0);
 
       const camera = new THREE.PerspectiveCamera(
         75,
@@ -36,7 +49,7 @@
         0.1,
         1000
       );
-      let initialDistance = 7;
+      const initialDistance = 7;
       camera.position.set(3, 3, initialDistance);
       camera.lookAt(0, 0, 0);
 
@@ -49,16 +62,46 @@
       controls.target.set(0, 0, 0);
       controls.update();
 
-      // 去掉顶部的立方体
+      // 添加地面
+      const planeGeometry = new THREE.PlaneGeometry(50, 50);
+      const planeMaterial = new THREE.MeshStandardMaterial({
+        color: 0xdddddd,
+        side: THREE.DoubleSide,
+      });
+      const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+      plane.rotation.x = -Math.PI / 2;
+      plane.position.y = -1;
+      scene.add(plane);
+
+      // 坐标轴辅助
+      const axesHelper = new THREE.AxesHelper(5);
+      scene.add(axesHelper);
+
+      // 网格辅助
+      const gridHelper = new THREE.GridHelper(50, 50);
+      scene.add(gridHelper);
+
+      // 环境光 + 平行光
+      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(5, 10, 7);
+      scene.add(directionalLight);
+
+      // 创建一个立方体（不包含顶部）
       const geometry = new THREE.BufferGeometry();
       const vertices = new Float32Array([
-        -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, 1,
-        1, -1, 1, 1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1,
-        -1, 1, -1, 1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,
+        -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1,
+        -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1,
+        -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1,
+        -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1,
+        1, -1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1
       ]);
       const indices = [
-        0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12,
-        14, 15, 16, 17, 18, 16, 18, 19,
+        0, 1, 2, 0, 2, 3,
+        4, 5, 6, 4, 6, 7,
+        8, 9, 10, 8, 10, 11,
+        12, 13, 14, 12, 14, 15,
+        16, 17, 18, 16, 18, 19,
       ];
       geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
       geometry.setIndex(indices);
@@ -69,6 +112,7 @@
 
       let targetDistance = initialDistance;
 
+      // 缩放功能
       window.addEventListener("wheel", (event) => {
         event.preventDefault();
         const zoomSpeed = 1;
@@ -77,6 +121,15 @@
         targetDistance = Math.max(2, Math.min(20, targetDistance));
       });
 
+      // 重置相机按钮
+      document.getElementById("resetBtn").addEventListener("click", () => {
+        targetDistance = initialDistance;
+        camera.position.set(3, 3, initialDistance);
+        controls.target.set(0, 0, 0);
+        controls.update();
+      });
+
+      // 动画循环
       function animate() {
         requestAnimationFrame(animate);
 
@@ -97,6 +150,7 @@
 
       animate();
 
+      // 窗口自适应
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
