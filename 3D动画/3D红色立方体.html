@@ -1,92 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Three.js 丝滑滚轮缩放摄像头</title>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    canvas { display: block; }
-  </style>
-</head>
-<body>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script>
-    const scene = new THREE.Scene();
+  <head>
+    <meta charset="UTF-8" />
+    <title>Three.js 拖动旋转 + 缩放</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+    <!-- 使用 CDN 引入 Three.js 和 OrbitControls -->
+    <script type="module">
+      // 引入完整 CDN 路径的 ES Module 版本
+      import * as THREE from "three";
+      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    let initialDistance = 7;
-    camera.position.set(3, 3, initialDistance);
-    camera.lookAt(0, 0, 0);
+      const scene = new THREE.Scene();
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // 立方体（无顶部面）
-    const geometry = new THREE.BufferGeometry();
-    const vertices = new Float32Array([
-      -1, -1, -1,  1, -1, -1,  1, -1,  1,  -1, -1,  1,
-      -1, -1,  1,  1, -1,  1,  1,  1,  1,  -1,  1,  1,
-      -1, -1, -1, -1,  1, -1,  1,  1, -1,   1, -1, -1,
-      -1, -1, -1, -1, -1,  1, -1,  1,  1,  -1,  1, -1,
-       1, -1, -1,  1,  1, -1,  1,  1,  1,   1, -1,  1
-    ]);
-
-    const indices = [
-       0,  1,  2,  0,  2,  3,
-       4,  5,  6,  4,  6,  7,
-       8,  9, 10,  8, 10, 11,
-      12, 13, 14, 12, 14, 15,
-      16, 17, 18, 16, 18, 19
-    ];
-
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.setIndex(indices);
-    geometry.computeVertexNormals();
-
-    const material = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
-    const cube = new THREE.Mesh(geometry, material);
-    scene.add(cube);
-
-    // 滚轮控制目标距离
-    let targetDistance = initialDistance;
-
-    window.addEventListener('wheel', (event) => {
-      event.preventDefault();
-
-      const zoomSpeed = 1;
-      const delta = event.deltaY > 0 ? 1 : -1;
-      targetDistance += delta * zoomSpeed;
-
-      // 限制最小/最大距离
-      targetDistance = Math.max(2, Math.min(20, targetDistance));
-    });
-
-    // 动画循环（每帧执行）
-    function animate() {
-      requestAnimationFrame(animate);
-
-      // 获取相机观察方向
-      const dir = new THREE.Vector3();
-      camera.getWorldDirection(dir);
-
-      // 更新相机位置，缓动移动
-      const currentDistance = camera.position.length();
-      const newDistance = THREE.MathUtils.lerp(currentDistance, targetDistance, 0.1);
-      dir.normalize().multiplyScalar(-newDistance);
-      camera.position.copy(dir);
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      let initialDistance = 7;
+      camera.position.set(3, 3, initialDistance);
       camera.lookAt(0, 0, 0);
 
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
-</body>
+      document.body.appendChild(renderer.domElement);
+
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableZoom = false;
+      controls.target.set(0, 0, 0);
+      controls.update();
+
+      // 去掉顶部的立方体
+      const geometry = new THREE.BufferGeometry();
+      const vertices = new Float32Array([
+        -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, 1,
+        1, -1, 1, 1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1,
+        -1, 1, -1, 1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,
+      ]);
+      const indices = [
+        0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12,
+        14, 15, 16, 17, 18, 16, 18, 19,
+      ];
+      geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      const material = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
+      const cube = new THREE.Mesh(geometry, material);
+      scene.add(cube);
+
+      let targetDistance = initialDistance;
+
+      window.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        const zoomSpeed = 1;
+        const delta = event.deltaY > 0 ? 1 : -1;
+        targetDistance += delta * zoomSpeed;
+        targetDistance = Math.max(2, Math.min(20, targetDistance));
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+
+        const dir = new THREE.Vector3();
+        camera.getWorldDirection(dir);
+        const currentDistance = camera.position.distanceTo(controls.target);
+        const newDistance = THREE.MathUtils.lerp(
+          currentDistance,
+          targetDistance,
+          0.1
+        );
+        const newPos = dir.multiplyScalar(-newDistance).add(controls.target);
+        camera.position.copy(newPos);
+
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      animate();
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </body>
 </html>
