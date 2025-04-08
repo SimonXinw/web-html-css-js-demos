@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Swiper 10.3.0 轮播</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@10.3.0/swiper-bundle.min.css"
+    />
+    <style>
+      .home-page-banner-1 {
+        width: 100%;
+        max-width: 1440px;
+        margin: 0 auto;
+        position: relative;
+        text-align: center;
+      }
+      .home-page-banner-1 .swiper-container {
+        position: relative;
+      }
+
+      .home-page-banner-1 .swiper-slide img {
+        width: 100%;
+        height: auto;
+      }
+      .home-page-banner-1 .nav-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        width: 40px;
+        height: 40px;
+      }
+      .home-page-banner-1 .prev {
+        left: -72px;
+      }
+      .home-page-banner-1 .next {
+        right: -72px;
+      }
+      .home-page-banner-1 .text-title {
+        margin-top: 32px;
+        font-size: 32px;
+        font-weight: bold;
+        color: #000;
+      }
+      .home-page-banner-1 .text-info {
+        margin-top: 32px;
+        font-size: 24px;
+        color: #666;
+      }
+      .home-page-banner-1 .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 60px;
+        margin-top: 40px;
+      }
+      .home-page-banner-1 .button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 13px 32px;
+        font-size: 24px;
+        border-radius: 999px;
+        background-size: cover;
+        color: white;
+        cursor: pointer;
+      }
+      .home-page-banner-1 .btn1 {
+        background-image: url("https://cdn.shopify.com/s/files/1/0715/9801/4500/files/01_Home-Page-banner_1_btn_bg1.png?v=1743326891");
+      }
+      .home-page-banner-1 .btn2 {
+        background-image: url("https://cdn.shopify.com/s/files/1/0715/9801/4500/files/01_Home-Page-banner_1_btn_bg2.png?v=1743326891");
+      }
+      .home-page-banner-1 .dots {
+        margin-top: 40px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+      .home-page-banner-1 .dot {
+        width: 12px;
+        height: 12px;
+        background: #ccc;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      .home-page-banner-1 .dot.active {
+        background: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="home-page-banner-1">
+      <div class="swiper-container">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide">
+            <img
+              src="https://cdn.shopify.com/s/files/1/0715/9801/4500/files/01_Home-Page_banner1.webp?v=1743325985"
+              alt="Slide 1"
+            />
+          </div>
+          <div class="swiper-slide">
+            <img
+              src="https://via.placeholder.com/1440x600/ff7f7f/333333?text=Slide+2"
+              alt="Slide 2"
+            />
+          </div>
+          <div class="swiper-slide">
+            <img
+              src="https://via.placeholder.com/1440x600/7fff7f/333333?text=Slide+3"
+              alt="Slide 3"
+            />
+          </div>
+          <div class="swiper-slide">
+            <img
+              src="https://via.placeholder.com/1440x600/7f7fff/333333?text=Slide+4"
+              alt="Slide 4"
+            />
+          </div>
+          <div class="swiper-slide">
+            <img
+              src="https://via.placeholder.com/1440x600/ffff7f/333333?text=Slide+5"
+              alt="Slide 5"
+            />
+          </div>
+        </div>
+      </div>
+      <img src="left-arrow.png" class="nav-arrow prev" />
+      <img src="right-arrow.png" class="nav-arrow next" />
+      <div class="text-title">APEX | 1 Bedroom</div>
+      <div class="text-info">
+        -h-2 baths | 2 beds | 749 sqft | Starting at $277,999
+      </div>
+      <div class="buttons">
+        <div class="button btn1">Explore</div>
+        <div class="button btn2">Contact</div>
+      </div>
+      <div class="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10.3.0/swiper-bundle.min.js"></script>
+    <script>
+      var swiper = new Swiper(".swiper-container", {
+        loop: true,
+        navigation: {
+          nextEl: ".next",
+          prevEl: ".prev",
+        },
+        pagination: {
+          el: ".dots",
+          clickable: true,
+        },
+        slidesPerView: 1,
+        effect: "fade", // 关键参数
+        fadeEffect: {
+          crossFade: true, // 使切换更流畅
+        },
+      });
+    </script>
+  </body>
+</html>
