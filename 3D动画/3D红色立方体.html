@@ -49,16 +49,18 @@
         0.1,
         1000
       );
-      const initialDistance = 7;
-      camera.position.set(3, 3, initialDistance);
-      camera.lookAt(0, 0, 0);
+      camera.position.set(3, 3, 7);
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.body.appendChild(renderer.domElement);
 
       const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableZoom = false;
+      controls.enableZoom = false; // 禁用原始缩放，改为自定义
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.1;
+      controls.minDistance = 2;
+      controls.maxDistance = 20;
       controls.target.set(0, 0, 0);
       controls.update();
 
@@ -73,6 +75,7 @@
       plane.position.y = -1;
       scene.add(plane);
 
+      // 辅助工具
       // 坐标轴辅助
       const axesHelper = new THREE.AxesHelper(5);
       scene.add(axesHelper);
@@ -80,19 +83,19 @@
       // 网格辅助
       const gridHelper = new THREE.GridHelper(50, 50);
       scene.add(gridHelper);
-
       // 环境光 + 平行光
       scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(5, 10, 7);
-      scene.add(directionalLight);
+      const light = new THREE.DirectionalLight(0xffffff, 0.8);
+      light.position.set(5, 10, 7);
+      scene.add(light);
 
-      // 创建一个立方体（不包含顶部）
+      // 自定义立方体
       const geometry = new THREE.BufferGeometry();
       const vertices = new Float32Array([
         -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 1, -1, 1, 1, 1,
-        1, -1, 1, 1, -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1,
-        -1, -1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1,
+        1, -1, 1, 1, -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1,
+        -1, 1, -1, -1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1, 1, 1,
+        1,
       ]);
       const indices = [
         0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12,
@@ -102,29 +105,54 @@
       geometry.setIndex(indices);
       geometry.computeVertexNormals();
       const material = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
-      const cube = new THREE.Mesh(geometry, material);
-      scene.add(cube);
+      scene.add(new THREE.Mesh(geometry, material));
 
-      let targetDistance = initialDistance;
+      // 平滑缩放逻辑
+      let targetDistance = camera.position.distanceTo(controls.target);
+      const zoomSpeed = 0.6;
 
-      // 缩放功能
-      window.addEventListener("wheel", (event) => {
+      renderer.domElement.addEventListener("wheel", (event) => {
         event.preventDefault();
-        const zoomSpeed = 1;
         const delta = event.deltaY > 0 ? 1 : -1;
         targetDistance += delta * zoomSpeed;
-        targetDistance = Math.max(2, Math.min(20, targetDistance));
+        targetDistance = THREE.MathUtils.clamp(
+          targetDistance,
+          controls.minDistance,
+          controls.maxDistance
+        );
       });
 
-      // 重置相机按钮
+      let lastTouchDist = null;
+      renderer.domElement.addEventListener("touchmove", (e) => {
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          const dx = e.touches[0].pageX - e.touches[1].pageX;
+          const dy = e.touches[0].pageY - e.touches[1].pageY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (lastTouchDist !== null) {
+            const offset = (lastTouchDist - dist) * 0.01;
+            targetDistance += offset;
+            targetDistance = THREE.MathUtils.clamp(
+              targetDistance,
+              controls.minDistance,
+              controls.maxDistance
+            );
+          }
+          lastTouchDist = dist;
+        }
+      });
+      renderer.domElement.addEventListener("touchend", () => {
+        lastTouchDist = null;
+      });
+
+      // 重置按钮
       document.getElementById("resetBtn").addEventListener("click", () => {
-        targetDistance = initialDistance;
-        camera.position.set(3, 3, initialDistance);
+        camera.position.set(3, 3, 7);
         controls.target.set(0, 0, 0);
         controls.update();
+        targetDistance = camera.position.distanceTo(controls.target);
       });
 
-      // 动画循环
       function animate() {
         requestAnimationFrame(animate);
 
