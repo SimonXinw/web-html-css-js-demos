@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>点击变灰 Demo</title>
+    <style>
+      a {
+        display: block;
+        margin-bottom: 20px;
+        text-decoration: none;
+        color: black;
+      }
+
+      /* 点击过后，链接变灰，span 会继承这个颜色 */
+      a:visited {
+        color: red;
+      }
+
+      span {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 16px;
+      }
+      a:visited span {
+        color: blue; /* 点击后变灰 */
+      }
+    </style>
+  </head>
+  <body>
+    <h2>点击链接后文字变灰</h2>
+    <div id="link-container"></div>
+
+    <script>
+      const container = document.getElementById("link-container");
+
+      const links = [
+        {
+          href: "https://github.com",
+          lines: ["第一行内容", "第二行内容", "第三行内容"],
+        },
+        {
+          href: "https://google.com",
+          lines: ["Google 第一行", "Google 第二行", "Google 第三行"],
+        },
+      ];
+
+      links.forEach((item) => {
+        const a = document.createElement("a");
+        a.href = item.href;
+        a.target = "_blank"; // 新窗口打开链接
+
+        item.lines.forEach((text) => {
+          const span = document.createElement("span");
+          span.textContent = text;
+          a.appendChild(span);
+        });
+
+        container.appendChild(a);
+      });
+    </script>
+  </body>
+</html>
