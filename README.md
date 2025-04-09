@@ -1,3 +1,8 @@
+
+飞书共享文档
+
+https://c0mzwiq2yck.feishu.cn/wiki/J9liw3fsLiYIegkwzVVcZySMnRc?from=from_copylink
+
 # web-js-demo
 
 这是用 原生 js 写的一些可供练习的逻辑的 demo， 部署在 githubp pages 静态资源服务器，自动部署
@@ -168,3 +173,5 @@ $ pm2 logs app_name|app_id
 1. 思考，连接数据库时使用的是 localhost:27017 或者 127.0.0.1:27017 这个在上线之后需要修改么？
 
 不需要修改。原因是这个是后端的 js 文件，指的就是服务器上的 MongoDB
+
+
