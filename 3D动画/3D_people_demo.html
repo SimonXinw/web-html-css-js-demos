@@ -22,9 +22,24 @@
         cursor: pointer;
         font-size: 14px;
       }
+
+      #loadingText {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+        background-color: rgba(255, 255, 255, 0.8);
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 999;
+      }
     </style>
   </head>
   <body>
+    <div id="loadingText">加载中 0%</div>
     <button id="resetBtn">重置视角</button>
 
     <script type="importmap">
@@ -92,16 +107,35 @@
 
       // 加载 OBJ + MTL + TGA 模型
       const mtlLoader = new MTLLoader();
-      
-      mtlLoader.load("./model.mtl", (materials) => {
+
+      mtlLoader.load("./module/rem/untitled.mtl", (materials) => {
         materials.preload();
         const objLoader = new OBJLoader();
         objLoader.setMaterials(materials);
-        objLoader.load("./model.obj", (object) => {
-          object.position.y = 0;
-          object.scale.set(1, 1, 1);
-          scene.add(object);
-        });
+        objLoader.load(
+          "./module/rem/untitled.obj",
+          (object) => {
+            object.position.y = 0;
+            object.scale.set(1, 1, 1);
+            scene.add(object);
+            document.getElementById("loadingText").style.display = "none"; // 隐藏加载提示
+          },
+          (xhr) => {
+            // 加载进度
+            if (xhr.lengthComputable) {
+              const percent = ((xhr.loaded / xhr.total) * 100).toFixed(0);
+              document.getElementById(
+                "loadingText"
+              ).innerText = `加载中 ${percent}%...`;
+            }
+          },
+          (error) => {
+            console.error("加载模型失败:", error);
+            const loadingEl = document.getElementById("loadingText");
+            loadingEl.innerText = "加载失败";
+            setTimeout(() => (loadingEl.style.display = "none"), 3000); // 3秒后隐藏
+          }
+        );
       });
 
       // 缩放逻辑
