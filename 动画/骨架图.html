@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Skeleton Loading</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 40px;
+        background-color: #f5f5f5;
+        font-family: sans-serif;
+      }
+
+      .visit_showroom_list {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 固定为 3 列 */
+        gap: 24px;
+      }
+
+      .visit_showroom_list .list_item {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+      }
+
+      @keyframes skeleton-loading {
+        0% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0 50%;
+        }
+      }
+
+      .visit_showroom_list .skeleton {
+        border-radius: 4px;
+        background-color: var(--Color-card_fill-white_Hover, #ececed);
+        background-image: linear-gradient(90deg, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.15) 37%, rgba(0,0,0,0.06) 63%);
+        background-size: 400% 100%;
+        background-position: 100% 0;
+        background-repeat: repeat;
+        animation: skeleton-loading 1.4s infinite ease;
+      }
+
+      .visit_showroom_list .skeleton_desc_wrap {
+        padding: 12px 20px 20px 20px;
+      }
+
+      .visit_showroom_list .skeleton_img {
+        height: 240px;
+      }
+
+      .visit_showroom_list .skeleton_subtitle {
+        height: 19px;
+        width: 177px;
+        margin-bottom: 12px;
+      }
+
+      .visit_showroom_list .skeleton_desc {
+        height: 71px;
+        margin-bottom: 20px;
+      }
+
+      .visit_showroom_list .skeleton_title {
+        height: 16px;
+        width: 131px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Skeleton Loading Example</h1>
+    <div class="visit_showroom_list">
+      <!-- item 1 -->
+      <div class="list_item">
+        <div class="skeleton skeleton_img"></div>
+        <div class="skeleton_desc_wrap">
+          <div class="skeleton skeleton_subtitle"></div>
+          <div class="skeleton skeleton_desc"></div>
+          <div class="skeleton skeleton_title"></div>
+        </div>
+      </div>
+      <!-- item 2 -->
+      <div class="list_item">
+        <div class="skeleton skeleton_img"></div>
+        <div class="skeleton_desc_wrap">
+          <div class="skeleton skeleton_subtitle"></div>
+          <div class="skeleton skeleton_desc"></div>
+          <div class="skeleton skeleton_title"></div>
+        </div>
+      </div>
+      <!-- item 3 -->
+      <div class="list_item">
+        <div class="skeleton skeleton_img"></div>
+        <div class="skeleton_desc_wrap">
+          <div class="skeleton skeleton_subtitle"></div>
+          <div class="skeleton skeleton_desc"></div>
+          <div class="skeleton skeleton_title"></div>
+        </div>
+      </div>
+      <!-- item 4 -->
+      <div class="list_item">
+        <div class="skeleton skeleton_img"></div>
+        <div class="skeleton_desc_wrap">
+          <div class="skeleton skeleton_subtitle"></div>
+          <div class="skeleton skeleton_desc"></div>
+          <div class="skeleton skeleton_title"></div>
+        </div>
+      </div>
+      <!-- item 5 -->
+      <div class="list_item">
+        <div class="skeleton skeleton_img"></div>
+        <div class="skeleton_desc_wrap">
+          <div class="skeleton skeleton_subtitle"></div>
+          <div class="skeleton skeleton_desc"></div>
+          <div class="skeleton skeleton_title"></div>
+        </div>
+      </div>
+      <!-- item 6 -->
+      <div class="list_item">
+        <div class="skeleton skeleton_img"></div>
+        <div class="skeleton_desc_wrap">
+          <div class="skeleton skeleton_subtitle"></div>
+          <div class="skeleton skeleton_desc"></div>
+          <div class="skeleton skeleton_title"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
