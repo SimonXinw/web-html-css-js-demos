@@ -13,7 +13,7 @@
 
       .visit_showroom_list {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 固定为 3 列 */
+        grid-template-columns: repeat(3, 1fr);
         gap: 24px;
       }
 
@@ -36,9 +36,13 @@
       .visit_showroom_list .skeleton {
         border-radius: 4px;
         background-color: var(--Color-card_fill-white_Hover, #ececed);
-        background-image: linear-gradient(90deg, rgba(0,0,0,0.06) 25%, rgba(0,0,0,0.15) 37%, rgba(0,0,0,0.06) 63%);
+        background-image: linear-gradient(
+          90deg,
+          rgba(0, 0, 0, 0.06) 25%,
+          rgba(0, 0, 0, 0.15) 37%,
+          rgba(0, 0, 0, 0.06) 63%
+        );
         background-size: 400% 100%;
-        background-position: 100% 0;
         background-repeat: repeat;
         animation: skeleton-loading 1.4s infinite ease;
       }
@@ -66,12 +70,43 @@
         height: 16px;
         width: 131px;
       }
+
+      .card_link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        padding: 20px;
+      }
+
+      .card_link img {
+        width: 100%;
+        height: 240px;
+        object-fit: cover;
+        display: block;
+        border-radius: 6px;
+        margin-bottom: 12px;
+      }
+
+      .item_subtitle,
+      .item_desc,
+      .item_title {
+        margin-bottom: 8px;
+      }
+
+      .link_to {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #007aff;
+        font-weight: bold;
+        margin-top: 10px;
+      }
     </style>
   </head>
   <body>
     <h1>Skeleton Loading Example</h1>
     <div class="visit_showroom_list">
-      <!-- item 1 -->
+      <!-- 初始6个骨架项 -->
       <div class="list_item">
         <div class="skeleton skeleton_img"></div>
         <div class="skeleton_desc_wrap">
@@ -80,7 +115,6 @@
           <div class="skeleton skeleton_title"></div>
         </div>
       </div>
-      <!-- item 2 -->
       <div class="list_item">
         <div class="skeleton skeleton_img"></div>
         <div class="skeleton_desc_wrap">
@@ -89,7 +123,6 @@
           <div class="skeleton skeleton_title"></div>
         </div>
       </div>
-      <!-- item 3 -->
       <div class="list_item">
         <div class="skeleton skeleton_img"></div>
         <div class="skeleton_desc_wrap">
@@ -98,7 +131,6 @@
           <div class="skeleton skeleton_title"></div>
         </div>
       </div>
-      <!-- item 4 -->
       <div class="list_item">
         <div class="skeleton skeleton_img"></div>
         <div class="skeleton_desc_wrap">
@@ -107,7 +139,6 @@
           <div class="skeleton skeleton_title"></div>
         </div>
       </div>
-      <!-- item 5 -->
       <div class="list_item">
         <div class="skeleton skeleton_img"></div>
         <div class="skeleton_desc_wrap">
@@ -116,7 +147,6 @@
           <div class="skeleton skeleton_title"></div>
         </div>
       </div>
-      <!-- item 6 -->
       <div class="list_item">
         <div class="skeleton skeleton_img"></div>
         <div class="skeleton_desc_wrap">
@@ -126,5 +156,86 @@
         </div>
       </div>
     </div>
+
+    <!-- jQuery 引入 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+      // 你需要提供 lat / lng / show 的变量，临时用默认值占位
+      const lat = 0;
+      const lng = 0;
+      const show = 1;
+
+      function removeParamsFromImageUrl(url) {
+        return url.split("?")[0];
+      }
+
+      function metersToMiles(meters) {
+        return meters / 1609.344;
+      }
+
+      $.ajax({
+        url: `https://admin.awolvision.com/prod-api/system/showrooms/list?pageSize=100`,
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json",
+        data: {
+          pageNum: 1,
+          lat: 40.7093836,
+          lng: -74.0073177,
+          isShow: 1,
+        },
+        success: function (response) {
+          if (response.code !== 200) return;
+
+          console.log("Response:", response.rows);
+          let htmls = "";
+
+          for (const row of response.rows) {
+            if (row.isShow != 1) continue;
+
+            const { id, city, country, type, tile, distance, photoList } = row;
+
+            let image_url =
+              photoList && photoList.length > 0
+                ? removeParamsFromImageUrl(photoList[0].url)
+                : "https://cdn.shopify.com/s/files/1/0554/7445/4576/files/thunder_room_swiper_image01.png?v=1727166601";
+
+            let distanceStr = "";
+            const numericDistance = Number(distance);
+
+            if (numericDistance <= 0) {
+              distanceStr = numericDistance.toFixed(2) + "m";
+            } else {
+              distanceStr = metersToMiles(numericDistance).toFixed(2) + "mi";
+            }
+
+            const typeLabel = type == 1 ? "Community Showroom" : "Retail";
+
+            htmls += `
+              <div class="list_item">
+                <a class="card_link" href="https://awolvision.com/pages/showroom-details?id=${id}&distance=${distanceStr}">
+                  <img src="${image_url}" alt="" />
+                  <div class="item_subtitle">${distanceStr} | ${city}, ${country}</div>
+                  <div class="item_desc">${typeLabel}</div>
+                  <div class="item_title">${tile}</div>
+                  <div class="link_to">
+                    <span class="link--animated">VIEW SHOWROOM</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                      <path d="M13.1558 10.4402L7.51997 16.25L6.66602 15.3697L11.8749 10L6.66602 4.63032L7.51998 3.75L13.1558 9.55984C13.3916 9.80293 13.3916 10.1971 13.1558 10.4402Z" fill="currentColor"/>
+                    </svg>
+                  </div>
+                </a>
+              </div>
+            `;
+          }
+
+          $(".visit_showroom_list").html(htmls);
+        },
+        error: function (xhr, status, error) {
+          console.error("Error:", error);
+        },
+      });
+    </script>
   </body>
 </html>
