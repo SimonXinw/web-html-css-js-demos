@@ -101,6 +101,19 @@
         font-weight: bold;
         margin-top: 10px;
       }
+
+      /* 骨架站位图>>>> */
+      .lazy-image {
+        background-color: #e0e0e0;
+        display: block;
+        width: 100%;
+        height: auto;
+        transition: opacity 0.3s ease;
+        opacity: 0;
+      }
+      .lazy-image.loaded {
+        opacity: 1;
+      }
     </style>
   </head>
   <body>
@@ -174,6 +187,33 @@
         return meters / 1609.344;
       }
 
+      function lazyLoadImages() {
+        const lazyImages = document.querySelectorAll("img.lazy-image");
+
+        const observer = new IntersectionObserver(
+          (entries, observer) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting || entry.intersectionRatio > 0) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.onload = () => {
+                  img.classList.add("loaded");
+                };
+                observer.unobserve(img);
+              }
+            });
+          },
+          {
+            rootMargin: "0px 0px 100px 0px",
+            threshold: 0.01,
+          }
+        );
+
+        lazyImages.forEach((img) => {
+          observer.observe(img);
+        });
+      }
+
       $.ajax({
         url: `https://admin.awolvision.com/prod-api/system/showrooms/list?pageSize=100`,
         type: "GET",
@@ -215,7 +255,7 @@
             htmls += `
               <div class="list_item">
                 <a class="card_link" href="https://awolvision.com/pages/showroom-details?id=${id}&distance=${distanceStr}">
-                  <img src="${image_url}" alt="" />
+                  <img data-src="${image_url}" alt="" class="lazy-image" />
                   <div class="item_subtitle">${distanceStr} | ${city}, ${country}</div>
                   <div class="item_desc">${typeLabel}</div>
                   <div class="item_title">${tile}</div>
@@ -231,6 +271,7 @@
           }
 
           $(".visit_showroom_list").html(htmls);
+          lazyLoadImages(); // 加载完成后启动懒加载
         },
         error: function (xhr, status, error) {
           console.error("Error:", error);
