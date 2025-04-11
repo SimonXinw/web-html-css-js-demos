@@ -184,9 +184,14 @@
       function metersToMiles(meters) {
         return meters / 1609.344;
       }
-
       const lazyLoadImages = (selector) => {
         const lazyImages = document.querySelectorAll(selector);
+
+        lazyImages.forEach((img) => {
+          // 初始化：设置站位图样式和初始透明度
+          img.style.opacity = "0";
+          img.style.transition = "opacity 0.3s ease";
+        });
 
         const observer = new IntersectionObserver(
           (entries, observer) => {
@@ -195,20 +200,21 @@
                 const img = entry.target;
                 const realSrc = img.dataset.src;
 
-                // 创建临时预加载图片（不会添加到页面中）
+                // 创建临时预加载图片
                 const preloadImg = new Image();
                 preloadImg.src = realSrc;
 
-                // 等加载完成后再替换真实图片的 src
                 preloadImg.onload = () => {
                   img.src = realSrc;
-                  img.classList.add("loaded");
 
-                  // 清理观察器
+                  // 显示动画（触发过渡）
+                  requestAnimationFrame(() => {
+                    img.style.opacity = "1";
+                  });
+
                   observer.unobserve(img);
                 };
 
-                // 可选：错误处理
                 preloadImg.onerror = () => {
                   console.warn("Image failed to load:", realSrc);
                   observer.unobserve(img);
@@ -284,7 +290,7 @@
           }
 
           $(".visit_showroom_list").html(htmls);
-          
+
           lazyLoadImages("img.lazy-image"); // 加载完成后启动懒加载
         },
         error: function (xhr, status, error) {
