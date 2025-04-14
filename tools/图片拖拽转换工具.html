@@ -112,31 +112,57 @@
       const controlPanel = document.getElementById("controlPanel");
 
       let currentFile = null;
-      let currentBase64 = "";
+      let originalImage = null;
+      let canvas = null;
+      let ctx = null;
+
+      function updatePreviewImage() {
+        if (!originalImage || !canvas || !ctx) return;
+
+        const quality =
+          parseInt(document.getElementById("quality").value) / 100;
+        const format = document.getElementById("format").value;
+
+        // 重新绘制图像
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(originalImage, 0, 0);
+
+        const base64 = canvas.toDataURL(format, quality);
+
+        // 更新预览图像
+        const previewImg = previewContainer.querySelector("img.preview");
+        if (previewImg) {
+          previewImg.src = base64;
+        }
+      }
 
       function handleFile(file) {
         const reader = new FileReader();
         reader.onload = (e) => {
           const img = new Image();
           img.onload = () => {
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
+            originalImage = img;
+            canvas = document.createElement("canvas");
+            ctx = canvas.getContext("2d");
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
 
-            // 显示预览
-            previewContainer.innerHTML = `
-            <img class="preview" src="${e.target.result}" />
-            <div class="info">
-              <span>文件名 : </span> ${file.name}<br />
-                <span>大小 :</span> ${(file.size / 1024).toFixed(2)} KB
-            </div>
-          `;
-
             controlPanel.style.display = "block";
+            updatePreviewImage();
 
-            // 生成压缩后的图片用于下载和 base64
+            // 文件信息
+            previewContainer.innerHTML = `
+              <img class="preview" />
+              <div class="info">
+                <span>文件名 : </span> ${file.name}<br />
+                <span>大小 :</span> ${(file.size / 1024).toFixed(2)} KB
+              </div>
+            `;
+
+            updatePreviewImage();
+
+            // 下载按钮
             document.getElementById("downloadBtn").onclick = () => {
               const quality =
                 parseInt(document.getElementById("quality").value) / 100;
@@ -148,6 +174,7 @@
               link.click();
             };
 
+            // 复制 base64
             document.getElementById("copyBase64Btn").onclick = () => {
               const quality =
                 parseInt(document.getElementById("quality").value) / 100;
@@ -157,8 +184,6 @@
                 alert("Base64 url 格式已复制到剪贴板！");
               });
             };
-
-            currentBase64 = canvas.toDataURL();
           };
           img.src = e.target.result;
         };
@@ -194,6 +219,14 @@
           handleFile(currentFile);
         }
       });
+
+      // 实时更新预览压缩效果
+      document
+        .getElementById("quality")
+        .addEventListener("input", updatePreviewImage);
+      document
+        .getElementById("format")
+        .addEventListener("change", updatePreviewImage);
     </script>
   </body>
 </html>
