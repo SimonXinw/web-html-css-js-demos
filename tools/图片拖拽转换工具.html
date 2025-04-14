@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图片上传与预览</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      .upload-card {
+        border: 2px dashed #aaa;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+      .upload-card:hover {
+        background-color: #f0f0f0;
+      }
+      .upload-card:active {
+        background-color: #e0e0e0;
+      }
+      .upload-card.dragover {
+        border-color: #007bff;
+        background-color: #e7f0ff;
+      }
+
+      .upload-card.dragover {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        z-index: 100;
+        background-color: #fafafa;
+      }
+      .preview {
+        max-width: 400px;
+        max-height: 400px;
+        object-fit: contain;
+        margin-bottom: 10px;
+        display: block;
+      }
+      .controls {
+        margin-top: 20px;
+      }
+      .controls input,
+      .controls select,
+      .controls button {
+        margin-right: 10px;
+      }
+      .info {
+        font-size: 14px;
+        color: #555;
+      }
+      .info span {
+        display: inline-block;
+        width: 53px;
+      }
+      #previewContainer {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="previewContainer"></div>
+
+    <div id="uploadCard" class="upload-card">
+      拖拽图片到此上传或点击上传
+      <input
+        id="fileInput"
+        type="file"
+        accept="image/*"
+        style="display: none"
+      />
+    </div>
+
+    <div class="controls" style="display: none" id="controlPanel">
+      <label
+        >压缩质量:
+        <input type="number" id="quality" min="0" max="100" value="100" />
+      </label>
+      <label
+        >格式:
+        <select id="format">
+          <option value="image/webp">WebP</option>
+          <option value="image/png">PNG</option>
+          <option value="image/jpeg">JPG</option>
+        </select>
+      </label>
+      <button id="downloadBtn">下载</button>
+      <button id="copyBase64Btn">复制 Base64</button>
+    </div>
+
+    <script>
+      const uploadCard = document.getElementById("uploadCard");
+      const fileInput = document.getElementById("fileInput");
+      const previewContainer = document.getElementById("previewContainer");
+      const controlPanel = document.getElementById("controlPanel");
+
+      let currentFile = null;
+      let currentBase64 = "";
+
+      function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            // 显示预览
+            previewContainer.innerHTML = `
+            <img class="preview" src="${e.target.result}" />
+            <div class="info">
+              <span>文件名 : </span> ${file.name}<br />
+                <span>大小 :</span> ${(file.size / 1024).toFixed(2)} KB
+            </div>
+          `;
+
+            controlPanel.style.display = "block";
+
+            // 生成压缩后的图片用于下载和 base64
+            document.getElementById("downloadBtn").onclick = () => {
+              const quality =
+                parseInt(document.getElementById("quality").value) / 100;
+              const format = document.getElementById("format").value;
+              const base64 = canvas.toDataURL(format, quality);
+              const link = document.createElement("a");
+              link.download = file.name;
+              link.href = base64;
+              link.click();
+            };
+
+            document.getElementById("copyBase64Btn").onclick = () => {
+              const quality =
+                parseInt(document.getElementById("quality").value) / 100;
+              const format = document.getElementById("format").value;
+              const base64 = canvas.toDataURL(format, quality);
+              navigator.clipboard.writeText(base64).then(() => {
+                alert("Base64 url 格式已复制到剪贴板！");
+              });
+            };
+
+            currentBase64 = canvas.toDataURL();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      uploadCard.addEventListener("click", () => fileInput.click());
+
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files[0]) {
+          currentFile = e.target.files[0];
+          handleFile(currentFile);
+        }
+      });
+
+      // 拖拽支持
+      window.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadCard.classList.add("dragover");
+      });
+
+      window.addEventListener("dragleave", (e) => {
+        if (e.target === document.documentElement || e.relatedTarget === null) {
+          uploadCard.classList.remove("dragover");
+        }
+      });
+
+      window.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadCard.classList.remove("dragover");
+        if (e.dataTransfer.files[0]) {
+          currentFile = e.dataTransfer.files[0];
+          handleFile(currentFile);
+        }
+      });
+    </script>
+  </body>
+</html>
