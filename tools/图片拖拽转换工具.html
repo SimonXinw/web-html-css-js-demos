@@ -41,6 +41,8 @@
         background-color: #fafafa;
       }
       .preview {
+        min-width: 200px;
+        min-height: 200px;
         max-width: 400px;
         max-height: 400px;
         object-fit: contain;
@@ -156,6 +158,7 @@
               <img class="preview" />
               <div class="info">
                 <span>文件名 : </span> ${file.name}<br />
+                <span>分辨率 : </span> ${img.width} x ${img.height} <br />
                 <span>大小 :</span> ${(file.size / 1024).toFixed(2)} KB
               </div>
             `;
