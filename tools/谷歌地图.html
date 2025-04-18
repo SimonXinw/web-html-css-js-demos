@@ -38,24 +38,23 @@
       const CONFIGURATION = {
         locations: [
           {
-            title: "Escondido Grill",
-            address1: "601 Geary St",
-            address2: "San Francisco, CA 94102, USA",
-            coords: { lat: 37.7866, lng: -122.4133 },
-            placeId: "ChIJ5Sz52pGAhYAR1raOybzuDp8",
+            title: "xw store",
+            address1: "xw store",
+            coords: { lat: 34.887285, lng: -92.404604 },
           },
         ],
         mapOptions: {
-          center: { lat: 38.0, lng: -100.0 },
+          center: { lat: 34.887285, lng: -92.404604 },
           fullscreenControl: true,
           mapTypeControl: false,
           streetViewControl: false,
-          zoom: 4,
-          zoomControl: true,
-          maxZoom: 17,
+          zoom: 15,
+          zoomControl: false,
+          maxZoom: 17, // 最大缩放
           mapId: "",
+        //   gestureHandling: "none", //禁止用户滚动
         },
-        mapsApiKey: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI1111",
+        mapsApiKey: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111",
         capabilities: {
           input: false,
           autocomplete: false,
@@ -84,7 +83,7 @@
          https://github.com/googlemaps/extended-component-library for more information
          on these HTML tags and how to configure them. -->
     <gmpx-api-loader
-      key="AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI111"
+      key="AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111"
       solution-channel="GMP_QB_locatorplus_v11_c"
     ></gmpx-api-loader>
     <gmpx-store-locator map-id="DEMO_MAP_ID"></gmpx-store-locator>
