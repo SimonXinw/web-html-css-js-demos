@@ -42,6 +42,7 @@
   </head>
   <body>
     <div id="controls">
+      <input type="text" id="address" placeholder="地址 (Address)" />
       <input type="text" id="lat" value="22.543096" placeholder="纬度 (lat)" />
       <input type="text" id="lng" value="114.057865" placeholder="经度 (lng)" />
       <button id="go">搜索</button>
@@ -52,6 +53,7 @@
       (function () {
         let map;
         let marker;
+        let geocoder;
 
         window.googleMapInit = function () {
           const initialPos = { lat: 34.0, lng: -90.0 };
@@ -66,6 +68,8 @@
             title: "默认位置",
           });
 
+          geocoder = new google.maps.Geocoder();
+
           document.getElementById("go").addEventListener("click", goToLatLng);
 
           document.querySelectorAll("#lat, #lng").forEach((input) => {
@@ -76,31 +80,56 @@
         };
 
         function goToLatLng() {
-          const lat = parseFloat(document.getElementById("lat").value);
-          const lng = parseFloat(document.getElementById("lng").value);
+          const address = document.getElementById("address").value.trim();
+          if (address) {
+            // 如果地址输入框有内容，优先使用地址搜索
+            geocodeAddress(address);
+          } else {
+            // 否则使用经纬度
+            const lat = parseFloat(document.getElementById("lat").value);
+            const lng = parseFloat(document.getElementById("lng").value);
 
-          if (isNaN(lat) || isNaN(lng)) {
-            alert("请输入正确的经纬度");
-            return;
+            if (isNaN(lat) || isNaN(lng)) {
+              alert("请输入正确的经纬度");
+              return;
+            }
+
+            const position = { lat, lng };
+            map.setCenter(position);
+            map.setZoom(15);
+
+            marker.setMap(null);
+            marker = new google.maps.Marker({
+              position,
+              map: map,
+              title: "新位置",
+            });
           }
+        }
 
-          const position = { lat, lng };
+        function geocodeAddress(address) {
+          geocoder.geocode({ address: address }, (results, status) => {
+            if (status === "OK") {
+              const position = results[0].geometry.location;
+              map.setCenter(position);
+              map.setZoom(15);
 
-          map.setCenter(position);
-          map.setZoom(15);
-
-          marker.setMap(null);
-          marker = new google.maps.Marker({
-            position,
-            map: map,
-            title: "新位置",
+              marker.setMap(null);
+              marker = new google.maps.Marker({
+                position,
+                map: map,
+                title: "新位置",
+              });
+            } else {
+              alert("地址没有找到，请检查输入的地址");
+            }
           });
         }
       })();
     </script>
 
     <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111&callback=googleMapInit"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI&callback=googleMapInit"
       defer
     ></script>
   </body>
