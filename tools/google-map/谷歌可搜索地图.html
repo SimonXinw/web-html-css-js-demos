@@ -57,6 +57,7 @@
 
         window.googleMapInit = function () {
           const initialPos = { lat: 34.0, lng: -90.0 };
+
           map = new google.maps.Map(document.getElementById("map"), {
             center: initialPos,
             zoom: 5,
@@ -95,10 +96,13 @@
             }
 
             const position = { lat, lng };
+
             map.setCenter(position);
+            
             map.setZoom(15);
 
             marker.setMap(null);
+            
             marker = new google.maps.Marker({
               position,
               map: map,
@@ -109,20 +113,21 @@
 
         function geocodeAddress(address) {
           geocoder.geocode({ address: address }, (results, status) => {
-            if (status === "OK") {
-              const position = results[0].geometry.location;
-              map.setCenter(position);
-              map.setZoom(15);
+            if (status !== "OK") return alert("地址没有找到，请检查输入的地址");
 
-              marker.setMap(null);
-              marker = new google.maps.Marker({
-                position,
-                map: map,
-                title: "新位置",
-              });
-            } else {
-              alert("地址没有找到，请检查输入的地址");
-            }
+            const position = results[0].geometry.location;
+
+            map.setCenter(position);
+            
+            map.setZoom(15);
+
+            marker.setMap(null);
+            
+            marker = new google.maps.Marker({
+              position,
+              map: map,
+              title: "新位置",
+            });
           });
         }
       })();
