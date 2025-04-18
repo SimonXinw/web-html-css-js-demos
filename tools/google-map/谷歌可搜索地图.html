@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>简单谷歌地图搜索</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: sans-serif;
+      }
+
+      #map {
+        height: 100%;
+        width: 100%;
+      }
+
+      #controls {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 999;
+        background: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      #controls input {
+        width: 120px;
+        margin-right: 5px;
+        padding: 4px;
+      }
+
+      #controls button {
+        padding: 4px 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="controls">
+      <input type="text" id="lat" value="22.543096" placeholder="纬度 (lat)" />
+      <input type="text" id="lng" value="114.057865" placeholder="经度 (lng)" />
+      <button id="go">搜索</button>
+    </div>
+    <div id="map"></div>
+
+    <script>
+      let map;
+      let marker;
+
+      function initMap() {
+        const initialPos = { lat: 34.0, lng: -90.0 };
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: initialPos,
+          zoom: 5,
+        });
+
+        marker = new google.maps.Marker({
+          position: initialPos,
+          map: map,
+          title: "默认位置",
+        });
+
+        document.getElementById("go").addEventListener("click", goToLatLng);
+
+        document.querySelectorAll("#lat, #lng").forEach((input) => {
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") goToLatLng();
+          });
+        });
+      }
+
+      function goToLatLng() {
+        const lat = parseFloat(document.getElementById("lat").value);
+        const lng = parseFloat(document.getElementById("lng").value);
+
+        if (isNaN(lat) || isNaN(lng)) {
+          alert("请输入正确的经纬度");
+          return;
+        }
+
+        const position = { lat, lng };
+
+        map.setCenter(position);
+        map.setZoom(15);
+        marker.setMap(null); // 删除旧 marker
+        marker = new google.maps.Marker({
+          position,
+          map: map,
+          title: "新位置",
+        });
+      }
+    </script>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111&callback=initMap"
+      defer
+    ></script>
+  </body>
+</html>
