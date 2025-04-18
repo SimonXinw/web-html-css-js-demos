@@ -73,7 +73,7 @@
 
           document.getElementById("go").addEventListener("click", goToLatLng);
 
-          document.querySelectorAll("#lat, #lng").forEach((input) => {
+          document.querySelectorAll("#lat, #lng, #address").forEach((input) => {
             input.addEventListener("keydown", (e) => {
               if (e.key === "Enter") goToLatLng();
             });
@@ -98,11 +98,11 @@
             const position = { lat, lng };
 
             map.setCenter(position);
-            
+
             map.setZoom(15);
 
             marker.setMap(null);
-            
+
             marker = new google.maps.Marker({
               position,
               map: map,
@@ -118,11 +118,11 @@
             const position = results[0].geometry.location;
 
             map.setCenter(position);
-            
+
             map.setZoom(15);
 
             marker.setMap(null);
-            
+
             marker = new google.maps.Marker({
               position,
               map: map,
