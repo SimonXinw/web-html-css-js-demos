@@ -139,6 +139,49 @@
         "postal_code",
       ];
 
+      /**
+       * 获取经纬度 TODO 目前涵盖没有校验这个东西
+       */
+      async function checkLatLng() {
+        const address = document.getElementById("address").value;
+
+        const apiKey = "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111";
+
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          address
+        )}&key=${apiKey}`;
+
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.status === "OK") {
+            debugger;
+            const location = data.results[0].geometry.location;
+            document.getElementById("lat").value = location.lat;
+            document.getElementById("lng").value = location.lng;
+            $("#address").removeClass("error");
+            $(".item_five").find(".required").hide();
+            isTrueAddress = true;
+          } else {
+            $("#address").addClass("error");
+            $(".item_five")
+              .find(".required")
+              .show()
+              .html("Please enter a valid address!");
+            document.getElementById("lat").value = "";
+            document.getElementById("lng").value = "";
+            isTrueAddress = false;
+          }
+        } catch (err) {
+          console.error(err);
+
+          isTrueAddress = false;
+        }
+
+        return isTrueAddress;
+      }
+
       async function isZipCodeInStateLive(postalCodeInput, stateInput) {
         const postalCode = postalCodeInput.value.trim();
         const state = stateInput.value.trim();
