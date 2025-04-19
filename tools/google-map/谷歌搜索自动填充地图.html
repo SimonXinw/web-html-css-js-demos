@@ -137,15 +137,12 @@
         "country",
       ];
 
-      async function isZipCodeInStateLive() {
-        const postalCodeInput = getFormInputElement("postal_code");
-        const stateInput = getFormInputElement("administrative_area_level_1");
-
+      async function isZipCodeInStateLive(postalCodeInput, stateInput) {
         const postalCode = postalCodeInput.value.trim();
         const state = stateInput.value.trim();
 
         if (!postalCode || !state) {
-          clearZipError();
+          clearZipError(postalCodeInput);
           return;
         }
 
@@ -159,7 +156,7 @@
           const data = await response.json();
 
           if (data.status !== "OK") {
-            showZipError("请输入有效的邮编。");
+            showZipError("请输入有效的邮编。", postalCodeInput);
             return false;
           }
 
@@ -174,51 +171,63 @@
               foundState.long_name.toLowerCase() === state.toLowerCase());
 
           if (!matched) {
-            showZipError("邮编不在当前省/州范围内，请检查。");
+            showZipError("邮编不在当前省/州范围内，请检查。", postalCodeInput);
             return false;
           }
 
-          clearZipError();
+          clearZipError(postalCodeInput);
           return true;
         } catch (err) {
           console.error("校验失败：", err);
-          showZipError("网络错误，无法校验邮编。");
+          showZipError("网络错误，无法校验邮编。", postalCodeInput);
           return false;
         }
       }
 
-      function showZipError(message) {
-        const postalCodeInput = getFormInputElement("postal_code");
+      function showZipError(message, targetElement) {
+        if (!targetElement) return;
 
-        // 查找已存在的错误提示
-        let existingError = postalCodeInput.nextElementSibling;
-        const hasError =
-          existingError && existingError.classList.contains("error-message");
+        // 确保父容器是 relative，便于 absolute 定位
+        const parent = targetElement.parentElement;
+        parent.style.position = "relative";
 
-        if (!hasError) {
+        // 检查是否已有 error span
+        let existingError = parent.querySelector(".error-message");
+        if (!existingError) {
           const errorSpan = document.createElement("span");
           errorSpan.className = "error-message";
           errorSpan.textContent = message;
-          postalCodeInput.insertAdjacentElement("afterend", errorSpan);
+          Object.assign(errorSpan.style, {
+            position: "absolute",
+            top: `${
+              targetElement.offsetTop + targetElement.offsetHeight + 4
+            }px`,
+            left: `${targetElement.offsetLeft}px`,
+            color: "red",
+            fontSize: "12px",
+            backgroundColor: "white",
+            padding: "2px 4px",
+            zIndex: "1000",
+            whiteSpace: "nowrap",
+          });
+          parent.appendChild(errorSpan);
         } else {
           existingError.textContent = message;
         }
 
-        postalCodeInput.classList.add("error");
+        targetElement.classList.add("error");
       }
 
-      function clearZipError() {
-        const postalCodeInput = getFormInputElement("postal_code");
-        let existingError = postalCodeInput.nextElementSibling;
+      function clearZipError(targetElement) {
+        if (!targetElement) return;
 
-        if (
-          existingError &&
-          existingError.classList.contains("error-message")
-        ) {
+        const parent = targetElement.parentElement;
+        const existingError = parent.querySelector(".error-message");
+        if (existingError) {
           existingError.remove();
         }
 
-        postalCodeInput.classList.remove("error");
+        targetElement.classList.remove("error");
       }
 
       function getFormInputElement(componentType) {
@@ -322,13 +331,23 @@
           fillInAddress(place);
         });
 
-        getFormInputElement("postal_code").addEventListener(
-          "input",
-          isZipCodeInStateLive
-        );
+        /**
+         * 监听输入框变化，进行邮政编码和州的校验
+         */
+
+        getFormInputElement("postal_code").addEventListener("input", (e) => {
+          const postalInput = e.target;
+          const stateInput = getFormInputElement("administrative_area_level_1");
+          isZipCodeInStateLive(postalInput, stateInput);
+        });
+
         getFormInputElement("administrative_area_level_1").addEventListener(
           "input",
-          isZipCodeInStateLive
+          (e) => {
+            const stateInput = e.target;
+            const postalInput = getFormInputElement("postal_code");
+            isZipCodeInStateLive(postalInput, stateInput);
+          }
         );
       }
 
