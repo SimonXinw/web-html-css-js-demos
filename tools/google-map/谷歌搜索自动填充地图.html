@@ -35,8 +35,9 @@
       }
 
       gmpx-split-layout {
-        height: 500px;
-        width: 600px;
+        height: 600px;
+        min-width: 352px;
+        margin: 0 auto;
       }
 
       gmpx-split-layout:not(:defined) {
@@ -95,7 +96,7 @@
         border-bottom: 1px solid red;
       }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111&libraries=places"></script>
     <script type="module">
       "use strict";
 
@@ -115,7 +116,7 @@
           maxZoom: 22,
           mapId: "",
         },
-        mapsApiKey: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI",
+        mapsApiKey: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111",
         capabilities: {
           addressAutocompleteControl: true,
           mapDisplayControl: true,
@@ -153,6 +154,7 @@
 
         try {
           const response = await fetch(url);
+
           const data = await response.json();
 
           if (data.status !== "OK") {
@@ -374,7 +376,7 @@
   </head>
   <body>
     <gmpx-api-loader
-      key="AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI"
+      key="AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111"
       solution-channel="GMP_QB_addressselection_v4_cABC"
     >
     </gmpx-api-loader>
