@@ -95,7 +95,7 @@
         border-bottom: 1px solid red;
       }
     </style>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI&libraries=places"></script>
     <script type="module">
       "use strict";
 
@@ -115,7 +115,7 @@
           maxZoom: 22,
           mapId: "",
         },
-        mapsApiKey: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111",
+        mapsApiKey: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI",
         capabilities: {
           addressAutocompleteControl: true,
           mapDisplayControl: true,
@@ -355,7 +355,7 @@
   </head>
   <body>
     <gmpx-api-loader
-      key="AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111"
+      key="AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI"
       solution-channel="GMP_QB_addressselection_v4_cABC"
     >
     </gmpx-api-loader>
@@ -369,7 +369,6 @@
           />
           <span class="sb-title">Address Selection</span>
         </div>
-        <input id="country-input" type="text" placeholder="Select country" />
         <input type="text" placeholder="Address" id="location-input" />
         <input type="text" placeholder="Apt, Suite, etc (optional)" />
         <input type="text" placeholder="City" id="locality-input" />
@@ -387,6 +386,7 @@
             id="postal_code-input"
           />
         </div>
+        <input type="text" placeholder="Country" id="country-input" />
         <gmpx-icon-button variant="filled">Checkout</gmpx-icon-button>
       </div>
       <gmp-map slot="main">
