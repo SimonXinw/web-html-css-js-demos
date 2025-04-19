@@ -96,6 +96,7 @@
         border-bottom: 1px solid red;
       }
     </style>
+    <!-- 这里加载 google apis ，只需要加载一次，和内联标签冲突了 -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111&libraries=places"></script>
     <script type="module">
       "use strict";
@@ -130,12 +131,12 @@
         "postal_code",
       ]);
 
+      // 预定义需要处理的批量表单 id 名字， 去掉国家，不填充国家
       const ADDRESS_COMPONENT_TYPES_IN_FORM = [
         "location",
         "locality",
         "administrative_area_level_1",
         "postal_code",
-        "country",
       ];
 
       async function isZipCodeInStateLive(postalCodeInput, stateInput) {
@@ -153,7 +154,9 @@
         )}&key=${apiKey}`;
 
         try {
-          const response = await fetch(url);
+          const response = await fetch(url, {
+            headers: { Accept: "application/json" }, // 强制要求 JSON 响应
+          });
 
           const data = await response.json();
 
@@ -256,9 +259,12 @@
             : getComponentName(componentType);
         }
 
-        for (const componentType of ADDRESS_COMPONENT_TYPES_IN_FORM) {
-          getFormInputElement(componentType).value =
-            getComponentText(componentType);
+        for (const id of ADDRESS_COMPONENT_TYPES_IN_FORM) {
+          const ele = getFormInputElement(id);
+
+          ele.value = getComponentText(id);
+
+          clearZipError(ele);
         }
       }
 
@@ -315,28 +321,50 @@
         };
 
         await customElements.whenDefined("gmp-map");
-        document.querySelector("gmp-map").innerMap.setOptions(mapOptions);
-        const autocomplete = new Autocomplete(getFormInputElement("location"), {
-          fields: ["address_components", "geometry", "name"],
-          types: ["address"],
-        });
 
-        autocomplete.addListener("place_changed", () => {
-          const place = autocomplete.getPlace();
+        // 初始化地图画面元素
+        document.querySelector("gmp-map").innerMap.setOptions(mapOptions);
+
+        // 1️⃣ 设置国家为美国
+        const countryInput = getFormInputElement("country");
+        if (countryInput) {
+          countryInput.value = "United States";
+          countryInput.readOnly = true; // 设置只读，防止被覆盖
+          countryInput.style.backgroundColor = "#f0f0f0"; // 可选，淡灰背景表示不可编辑
+          countryInput.style.pointerEvents = "none"; // 可选，淡灰背景表示不可编辑
+        }
+
+        // 初始化 location 输入地址 input 实例元素
+        const locationAutocompleteInstance = new Autocomplete(
+          getFormInputElement("location"),
+          {
+            fields: ["address_components", "geometry", "name"],
+            types: ["address"],
+            componentRestrictions: { country: "US" }, // ✅ 限定只能选美国地址
+          }
+        );
+
+        /**
+         *  监听 google 地址 input 事件，执行回调函数
+         */
+        locationAutocompleteInstance.addListener("place_changed", () => {
+          const place = locationAutocompleteInstance.getPlace();
+
           if (!place.geometry) {
             // User entered the name of a Place that was not suggested and
             // pressed the Enter key, or the Place Details request failed.
             window.alert(`No details available for input: '${place.name}'`);
             return;
           }
+
           renderAddress(place);
+
           fillInAddress(place);
         });
 
         /**
          * 监听输入框变化，进行邮政编码和州的校验
          */
-
         getFormInputElement("postal_code").addEventListener("input", (e) => {
           const postalInput = e.target;
           const stateInput = getFormInputElement("administrative_area_level_1");
@@ -355,31 +383,24 @@
 
       initMap();
 
-      function initAutocomplete() {
-        const input = document.getElementById("autocomplete");
-        const autocomplete = new google.maps.places.Autocomplete(input, {
-          types: ["address"],
-          componentRestrictions: { country: "us" }, // 仅限制为美国
-          fields: ["address_components", "geometry"],
-        });
+      // 初始化国家下拉框
+      // function initAutocomplete() {
+      //   const input = document.getElementById("country-input");
+      //   const autocomplete = new google.maps.places.Autocomplete(input, {
+      //     types: ["address"],
+      //     componentRestrictions: { country: "us" }, // 仅限制为美国
+      //     fields: ["address_components", "geometry"],
+      //   });
 
-        autocomplete.addListener("place_changed", () => {
-          const place = autocomplete.getPlace();
-          console.log("Selected place:", place);
-          // 你可以在这里处理返回的地址组件
-        });
-      }
-
-      // 等待 Google Maps 脚本加载后执行初始化
-      window.addEventListener("load", initAutocomplete);
+      //   autocomplete.addListener("place_changed", () => {
+      //     const place = autocomplete.getPlace();
+      //     console.log("Selected place 》》》》:", place);
+      //     // 你可以在这里处理返回的地址组件
+      //   });
+      // }
     </script>
   </head>
   <body>
-    <gmpx-api-loader
-      key="AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111"
-      solution-channel="GMP_QB_addressselection_v4_cABC"
-    >
-    </gmpx-api-loader>
     <gmpx-split-layout row-layout-min-width="600">
       <div class="panel" slot="fixed">
         <div>
@@ -407,7 +428,7 @@
             id="postal_code-input"
           />
         </div>
-        <input type="text" placeholder="Country" id="country-input" />
+        <input type="text" readonly placeholder="Country" id="country-input" />
         <gmpx-icon-button variant="filled">Checkout</gmpx-icon-button>
       </div>
       <gmp-map slot="main">
