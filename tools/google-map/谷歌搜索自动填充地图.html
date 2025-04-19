@@ -95,6 +95,7 @@
         border-bottom: 1px solid red;
       }
     </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
     <script type="module">
       "use strict";
 
@@ -114,7 +115,7 @@
           maxZoom: 22,
           mapId: "",
         },
-        mapsApiKey: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI",
+        mapsApiKey: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111",
         capabilities: {
           addressAutocompleteControl: true,
           mapDisplayControl: true,
@@ -332,11 +333,29 @@
       }
 
       initMap();
+
+      function initAutocomplete() {
+        const input = document.getElementById("autocomplete");
+        const autocomplete = new google.maps.places.Autocomplete(input, {
+          types: ["address"],
+          componentRestrictions: { country: "us" }, // 仅限制为美国
+          fields: ["address_components", "geometry"],
+        });
+
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+          console.log("Selected place:", place);
+          // 你可以在这里处理返回的地址组件
+        });
+      }
+
+      // 等待 Google Maps 脚本加载后执行初始化
+      window.addEventListener("load", initAutocomplete);
     </script>
   </head>
   <body>
     <gmpx-api-loader
-      key="AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI"
+      key="AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111"
       solution-channel="GMP_QB_addressselection_v4_cABC"
     >
     </gmpx-api-loader>
@@ -350,6 +369,7 @@
           />
           <span class="sb-title">Address Selection</span>
         </div>
+        <input id="country-input" type="text" placeholder="Select country" />
         <input type="text" placeholder="Address" id="location-input" />
         <input type="text" placeholder="Apt, Suite, etc (optional)" />
         <input type="text" placeholder="City" id="locality-input" />
@@ -367,7 +387,6 @@
             id="postal_code-input"
           />
         </div>
-        <input type="text" placeholder="Country" id="country-input" />
         <gmpx-icon-button variant="filled">Checkout</gmpx-icon-button>
       </div>
       <gmp-map slot="main">
