@@ -203,40 +203,58 @@
       }
 
       // ✨ PC 滚轮缩放（双击放大状态下才启用）
+      let targetScale = 1;
+      let isZooming = false;
+
       mainImage.addEventListener("wheel", (e) => {
-        if (scale <= 1 && e.deltaY < 0) return; // 不允许低于 scale=1 缩放
+        if (scale <= 1 && e.deltaY < 0) return;
 
         e.preventDefault();
 
         const rect = mainImage.getBoundingClientRect();
         const mouseX = e.clientX;
         const mouseY = e.clientY;
-
-        // 鼠标在图像内部的相对位置（百分比）
         const offsetX = (mouseX - rect.left) / rect.width;
         const offsetY = (mouseY - rect.top) / rect.height;
 
-        // 缩放比例（越滚越大/小）
-        const deltaScale = e.deltaY > 0 ? 0.95 : 1.05;
-        const newScale = Math.min(4, Math.max(1, scale * deltaScale));
+        // 设置 transformOrigin 为图片原点左上角
+        mainImage.style.transformOrigin = "0 0";
 
-        // 计算放大后的图像尺寸
-        const newWidth = rect.width * (newScale / scale);
-        const newHeight = rect.height * (newScale / scale);
+        const delta = e.deltaY > 0 ? 0.95 : 1.05;
+        const newTargetScale = Math.min(4, Math.max(1, scale * delta));
 
-        // 原图在 viewer 内的 translate 偏移
+        // 放大后新尺寸
+        const newWidth = rect.width * (newTargetScale / scale);
+        const newHeight = rect.height * (newTargetScale / scale);
+
         const dx = offsetX * (rect.width - newWidth);
         const dy = offsetY * (rect.height - newHeight);
 
-        // 更新 translate 值
         lastX += dx;
         lastY += dy;
 
-        scale = newScale;
+        targetScale = newTargetScale;
 
-        mainImage.style.transformOrigin = "0 0"; // 原点为左上角，便于我们直接控制偏移
-        mainImage.style.transform = `translate(${lastX}px, ${lastY}px) scale(${scale})`;
+        if (!isZooming) {
+          isZooming = true;
+          requestAnimationFrame(animateZoom);
+        }
       });
+
+      function animateZoom() {
+        const zoomSpeed = 0.2;
+        const diff = targetScale - scale;
+
+        if (Math.abs(diff) < 0.001) {
+          scale = targetScale;
+          isZooming = false;
+        } else {
+          scale += diff * zoomSpeed;
+          requestAnimationFrame(animateZoom);
+        }
+
+        mainImage.style.transform = `translate(${lastX}px, ${lastY}px) scale(${scale})`;
+      }
 
       setMainImage(0);
     </script>
