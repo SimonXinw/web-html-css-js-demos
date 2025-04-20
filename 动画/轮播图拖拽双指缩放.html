@@ -205,36 +205,13 @@
       // ✨ PC 滚轮缩放（双击放大状态下才启用）
       let targetScale = 1;
       let isZooming = false;
+      let pendingWheelEvent = null;
 
       mainImage.addEventListener("wheel", (e) => {
         if (scale <= 1 && e.deltaY < 0) return;
-
         e.preventDefault();
 
-        const rect = mainImage.getBoundingClientRect();
-        const mouseX = e.clientX;
-        const mouseY = e.clientY;
-        const offsetX = (mouseX - rect.left) / rect.width;
-        const offsetY = (mouseY - rect.top) / rect.height;
-
-        // 设置 transformOrigin 为图片原点左上角
-        mainImage.style.transformOrigin = "0 0";
-
-        const delta = e.deltaY > 0 ? 0.95 : 1.05;
-        const newTargetScale = Math.min(4, Math.max(1, scale * delta));
-
-        // 放大后新尺寸
-        const newWidth = rect.width * (newTargetScale / scale);
-        const newHeight = rect.height * (newTargetScale / scale);
-
-        const dx = offsetX * (rect.width - newWidth);
-        const dy = offsetY * (rect.height - newHeight);
-
-        lastX += dx;
-        lastY += dy;
-
-        targetScale = newTargetScale;
-
+        pendingWheelEvent = e;
         if (!isZooming) {
           isZooming = true;
           requestAnimationFrame(animateZoom);
@@ -242,18 +219,34 @@
       });
 
       function animateZoom() {
-        const zoomSpeed = 0.2;
-        const diff = targetScale - scale;
-
-        if (Math.abs(diff) < 0.001) {
-          scale = targetScale;
+        if (!pendingWheelEvent) {
           isZooming = false;
-        } else {
-          scale += diff * zoomSpeed;
-          requestAnimationFrame(animateZoom);
+          return;
         }
 
+        const e = pendingWheelEvent;
+        pendingWheelEvent = null;
+
+        const rect = mainImage.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const prevScale = scale;
+        const delta = e.deltaY > 0 ? 0.95 : 1.05;
+        const newScale = Math.min(4, Math.max(1, scale * delta));
+
+        const scaleChange = newScale / prevScale;
+
+        // 以鼠标点为中心进行缩放，计算平移偏移量
+        lastX = (lastX - mouseX) * scaleChange + mouseX;
+        lastY = (lastY - mouseY) * scaleChange + mouseY;
+
+        scale = newScale;
+
+        mainImage.style.transformOrigin = "0 0"; // 始终以左上角为原点
         mainImage.style.transform = `translate(${lastX}px, ${lastY}px) scale(${scale})`;
+
+        requestAnimationFrame(animateZoom);
       }
 
       setMainImage(0);
