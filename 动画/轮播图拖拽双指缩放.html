@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>轮播图 + 双击放大</title>
+    <title>轮播图 + 放大 + 滚轮缩放</title>
     <style>
       body {
         margin: 0;
@@ -54,7 +54,6 @@
       const thumbnailContainer = document.getElementById("thumbnailContainer");
 
       let scale = 1;
-      let doubleClickCount = 0;
       let originX = 0,
         originY = 0;
       let startX = 0,
@@ -94,22 +93,22 @@
 
       function resetZoom() {
         scale = 1;
-        doubleClickCount = 0;
         lastX = 0;
         lastY = 0;
-        mainImage.style.transform = "translate(0px, 0px) scale(1)";
+        mainImage.style.transformOrigin = "0 0";
+        mainImage.style.transform = `translate(${lastX}px, ${lastY}px) scale(${scale})`;
       }
 
       mainImage.addEventListener("dblclick", (e) => {
-        doubleClickCount++;
-        if (doubleClickCount % 2 === 1) {
+        if (scale === 1) {
           scale = 2;
           const rect = mainImage.getBoundingClientRect();
           originX = e.clientX - rect.left;
           originY = e.clientY - rect.top;
           mainImage.style.transformOrigin = `${originX}px ${originY}px`;
         } else {
-          scale = 1;
+          resetZoom();
+          return;
         }
         lastX = 0;
         lastY = 0;
@@ -157,7 +156,6 @@
         if (scale === 1 && swipeStartX !== null && swipeEndX !== null) {
           const deltaX = swipeEndX - swipeStartX;
           const threshold = 50;
-
           if (Math.abs(deltaX) > threshold) {
             if (deltaX < 0 && currentIndex < totalImages - 1) {
               setMainImage(currentIndex + 1);
@@ -203,6 +201,42 @@
         const dy = p1.clientY - p2.clientY;
         return Math.sqrt(dx * dx + dy * dy);
       }
+
+      // ✨ PC 滚轮缩放（双击放大状态下才启用）
+      mainImage.addEventListener("wheel", (e) => {
+        if (scale <= 1 && e.deltaY < 0) return; // 不允许低于 scale=1 缩放
+
+        e.preventDefault();
+
+        const rect = mainImage.getBoundingClientRect();
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+
+        // 鼠标在图像内部的相对位置（百分比）
+        const offsetX = (mouseX - rect.left) / rect.width;
+        const offsetY = (mouseY - rect.top) / rect.height;
+
+        // 缩放比例（越滚越大/小）
+        const deltaScale = e.deltaY > 0 ? 0.95 : 1.05;
+        const newScale = Math.min(4, Math.max(1, scale * deltaScale));
+
+        // 计算放大后的图像尺寸
+        const newWidth = rect.width * (newScale / scale);
+        const newHeight = rect.height * (newScale / scale);
+
+        // 原图在 viewer 内的 translate 偏移
+        const dx = offsetX * (rect.width - newWidth);
+        const dy = offsetY * (rect.height - newHeight);
+
+        // 更新 translate 值
+        lastX += dx;
+        lastY += dy;
+
+        scale = newScale;
+
+        mainImage.style.transformOrigin = "0 0"; // 原点为左上角，便于我们直接控制偏移
+        mainImage.style.transform = `translate(${lastX}px, ${lastY}px) scale(${scale})`;
+      });
 
       setMainImage(0);
     </script>
