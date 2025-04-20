@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>轮播图 + 双击放大</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        overflow: hidden;
+      }
+      .carousel {
+        display: flex;
+        overflow-x: auto;
+        gap: 8px;
+        padding: 8px;
+        background: #f0f0f0;
+      }
+      .carousel img {
+        height: 80px;
+        cursor: pointer;
+        border: 2px solid transparent;
+      }
+      .carousel img.active {
+        border-color: #007bff;
+      }
+      .viewer {
+        position: relative;
+        height: calc(100svh - 100px);
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+      }
+      .viewer img {
+        transition: transform 0.3s;
+        max-width: 100%;
+        max-height: 100%;
+        touch-action: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="viewer">
+      <img id="mainImage" src="" alt="" draggable="false" />
+    </div>
+    <div class="carousel" id="thumbnailContainer"></div>
+
+    <script>
+      const totalImages = 11;
+      const mainImage = document.getElementById("mainImage");
+      const thumbnailContainer = document.getElementById("thumbnailContainer");
+
+      let scale = 1;
+      let doubleClickCount = 0;
+      let originX = 0,
+        originY = 0;
+      let startX = 0,
+        startY = 0;
+      let lastX = 0,
+        lastY = 0;
+      let isDragging = false;
+
+      for (let i = 0; i < totalImages; i++) {
+        const thumb = document.createElement("img");
+        thumb.src = `https://cdn.shopify.com/s/files/1/0668/4970/2037/files/vision_master_award_icon_${
+          i + 1
+        }.png?v=1744798582`;
+        if (i === 0) thumb.classList.add("active");
+        thumb.addEventListener("click", () => {
+          setMainImage(i);
+        });
+        thumbnailContainer.appendChild(thumb);
+      }
+
+      function setMainImage(index) {
+        mainImage.src = `https://cdn.shopify.com/s/files/1/0668/4970/2037/files/vision_master_award_icon_${
+          index + 1
+        }.png?v=1744798582`;
+        [...thumbnailContainer.children].forEach((el, i) => {
+          el.classList.toggle("active", i === index);
+          if (i === index) {
+            el.scrollIntoView({ behavior: "smooth", inline: "center" });
+          }
+        });
+        resetZoom();
+      }
+
+      function resetZoom() {
+        scale = 1;
+        doubleClickCount = 0;
+        mainImage.style.transform = "translate(0px, 0px) scale(1)";
+      }
+
+      mainImage.addEventListener("dblclick", (e) => {
+        doubleClickCount++;
+        if (doubleClickCount % 2 === 1) {
+          scale = 2;
+          const rect = mainImage.getBoundingClientRect();
+          originX = e.clientX - rect.left;
+          originY = e.clientY - rect.top;
+          mainImage.style.transformOrigin = `${originX}px ${originY}px`;
+        } else {
+          scale = 1;
+        }
+        mainImage.style.transform = `translate(0px, 0px) scale(${scale})`;
+        lastX = 0;
+        lastY = 0;
+      });
+
+      // 拖动逻辑（PC + 单指触控）
+      mainImage.addEventListener("mousedown", dragStart);
+      mainImage.addEventListener("touchstart", dragStart);
+      mainImage.addEventListener("mousemove", dragging);
+      mainImage.addEventListener("touchmove", dragging);
+      mainImage.addEventListener("mouseup", dragEnd);
+      mainImage.addEventListener("touchend", dragEnd);
+
+      function dragStart(e) {
+        if (scale === 1) return;
+        isDragging = true;
+        const point = e.touches ? e.touches[0] : e;
+        startX = point.clientX - lastX;
+        startY = point.clientY - lastY;
+      }
+
+      function dragging(e) {
+        if (!isDragging || scale === 1) return;
+        const point = e.touches ? e.touches[0] : e;
+        lastX = point.clientX - startX;
+        lastY = point.clientY - startY;
+        mainImage.style.transform = `translate(${lastX}px, ${lastY}px) scale(${scale})`;
+      }
+
+      function dragEnd() {
+        isDragging = false;
+      }
+
+      // 双指缩放（移动端）
+      let initialDistance = null;
+      let baseScale = 1;
+
+      mainImage.addEventListener("touchstart", (e) => {
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          initialDistance = getDistance(e.touches[0], e.touches[1]);
+          baseScale = scale;
+        }
+      });
+
+      mainImage.addEventListener("touchmove", (e) => {
+        if (e.touches.length === 2 && initialDistance !== null) {
+          e.preventDefault();
+          const newDistance = getDistance(e.touches[0], e.touches[1]);
+          scale = Math.max(
+            1,
+            Math.min(4, baseScale * (newDistance / initialDistance))
+          );
+          mainImage.style.transform = `translate(${lastX}px, ${lastY}px) scale(${scale})`;
+        }
+      });
+
+      mainImage.addEventListener("touchend", (e) => {
+        if (e.touches.length < 2) {
+          initialDistance = null;
+        }
+      });
+
+      function getDistance(p1, p2) {
+        const dx = p1.clientX - p2.clientX;
+        const dy = p1.clientY - p2.clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      setMainImage(0);
+    </script>
+  </body>
+</html>
