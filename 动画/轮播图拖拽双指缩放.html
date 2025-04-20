@@ -16,6 +16,10 @@
         gap: 8px;
         padding: 8px;
         background: #f0f0f0;
+        scrollbar-width: none; /* Firefox */
+      }
+      .carousel::-webkit-scrollbar {
+        display: none; /* Chrome */
       }
       .carousel img {
         height: 80px;
@@ -62,7 +66,11 @@
       let lastX = 0,
         lastY = 0;
       let isDragging = false;
+      let swipeStartX = 0,
+        swipeEndX = 0;
+      let currentIndex = 0;
 
+      // 初始化缩略图
       for (let i = 0; i < totalImages; i++) {
         const thumb = document.createElement("img");
         thumb.src = `https://cdn.shopify.com/s/files/1/0668/4970/2037/files/vision_master_award_icon_${
@@ -76,6 +84,7 @@
       }
 
       function setMainImage(index) {
+        currentIndex = index;
         mainImage.src = `https://cdn.shopify.com/s/files/1/0668/4970/2037/files/vision_master_award_icon_${
           index + 1
         }.png?v=1744798582`;
@@ -91,6 +100,8 @@
       function resetZoom() {
         scale = 1;
         doubleClickCount = 0;
+        lastX = 0;
+        lastY = 0;
         mainImage.style.transform = "translate(0px, 0px) scale(1)";
       }
 
@@ -110,7 +121,7 @@
         lastY = 0;
       });
 
-      // 拖动逻辑（PC + 单指触控）
+      // 拖动逻辑
       mainImage.addEventListener("mousedown", dragStart);
       mainImage.addEventListener("touchstart", dragStart);
       mainImage.addEventListener("mousemove", dragging);
@@ -119,26 +130,53 @@
       mainImage.addEventListener("touchend", dragEnd);
 
       function dragStart(e) {
-        if (scale === 1) return;
-        isDragging = true;
         const point = e.touches ? e.touches[0] : e;
-        startX = point.clientX - lastX;
-        startY = point.clientY - lastY;
+        if (scale > 1) {
+          isDragging = true;
+          startX = point.clientX - lastX;
+          startY = point.clientY - lastY;
+        } else if (e.touches && e.touches.length === 1) {
+          swipeStartX = point.clientX;
+        } else if (!e.touches) {
+          swipeStartX = point.clientX;
+        }
       }
 
       function dragging(e) {
-        if (!isDragging || scale === 1) return;
-        const point = e.touches ? e.touches[0] : e;
-        lastX = point.clientX - startX;
-        lastY = point.clientY - startY;
-        mainImage.style.transform = `translate(${lastX}px, ${lastY}px) scale(${scale})`;
+        if (scale > 1 && isDragging) {
+          const point = e.touches ? e.touches[0] : e;
+          lastX = point.clientX - startX;
+          lastY = point.clientY - startY;
+          mainImage.style.transform = `translate(${lastX}px, ${lastY}px) scale(${scale})`;
+        }
       }
 
-      function dragEnd() {
-        isDragging = false;
+      function dragEnd(e) {
+        if (isDragging) {
+          isDragging = false;
+          return;
+        }
+
+        // 单指滑动切换主图
+        if (scale === 1) {
+          const endX = e.changedTouches
+            ? e.changedTouches[0].clientX
+            : e.clientX;
+          swipeEndX = endX;
+          const deltaX = swipeEndX - swipeStartX;
+          const threshold = 50;
+
+          if (Math.abs(deltaX) > threshold) {
+            if (deltaX < 0 && currentIndex < totalImages - 1) {
+              setMainImage(currentIndex + 1);
+            } else if (deltaX > 0 && currentIndex > 0) {
+              setMainImage(currentIndex - 1);
+            }
+          }
+        }
       }
 
-      // 双指缩放（移动端）
+      // 双指缩放逻辑
       let initialDistance = null;
       let baseScale = 1;
 
