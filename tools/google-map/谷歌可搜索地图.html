@@ -46,6 +46,7 @@
       <input type="text" id="lat" value="22.543096" placeholder="纬度 (lat)" />
       <input type="text" id="lng" value="114.057865" placeholder="经度 (lng)" />
       <button id="go">搜索</button>
+      <button id="initBtn">初始化地图</button>
     </div>
     <div id="map"></div>
 
@@ -55,7 +56,7 @@
         let marker;
         let geocoder;
 
-        window.googleMapInit = function () {
+        const initGoogleMap = () => {
           const initialPos = { lat: 34.0, lng: -90.0 };
 
           map = new google.maps.Map(document.getElementById("map"), {
@@ -79,6 +80,8 @@
             });
           });
         };
+
+        window.googleMapInit = initGoogleMap;
 
         function goToLatLng() {
           const address = document.getElementById("address").value.trim();
@@ -130,11 +133,16 @@
             });
           });
         }
+
+        document
+          .querySelector("#initBtn")
+          .addEventListener("click", initGoogleMap);
+        // 结尾
       })();
     </script>
 
     <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111&callback=googleMapInit"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI"
       defer
     ></script>
   </body>
