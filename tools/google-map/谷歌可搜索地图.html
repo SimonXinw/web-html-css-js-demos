@@ -17,6 +17,90 @@
         width: 100%;
       }
 
+      @keyframes skeleton-loading {
+        0% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0 50%;
+        }
+      }
+
+      #noMap {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: #f4f4f5;
+        z-index: 1;
+
+        height: 100%;
+        /* 关键的动画背景渐变 */
+        background-image: linear-gradient(
+          90deg,
+          #f4f4f5 25%,
+          #d0d0d0 35%,
+          #f4f4f5 67%
+        );
+
+        background-size: 400% 100%;
+        background-repeat: repeat;
+        animation: skeleton-loading 1.4s infinite ease;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #loadMapError {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: #f4f4f5;
+        z-index: 2;
+
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #loadMapError svg {
+        margin-bottom: 8px;
+      }
+
+      #loadMapError .loadMapError-desc {
+        color: var(--color-theme-error-default, #df2a2a);
+        text-align: center;
+
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 133%; /* 18.62px */
+        letter-spacing: -0.14px;
+        margin-bottom: 24px;
+      }
+
+      #loadMapError .loadMapError-refresh-btn {
+        color: var(--Color-text-blackDescription, rgba(60, 60, 67, 0.6));
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: 133%; /* 18.62px */
+        letter-spacing: -0.14px;
+        text-transform: capitalize;
+        text-decoration: underline;
+
+        cursor: pointer;
+      }
+
+      @media screen and (max-width: 1024px) {
+        #noMap svg {
+          width: 120px;
+          height: 120px;
+        }
+      }
+
       #controls {
         position: absolute;
         top: 10px;
@@ -49,12 +133,62 @@
       <button id="initBtn">初始化地图</button>
     </div>
     <div id="map"></div>
+    <div id="noMap">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="200"
+        height="201"
+        viewBox="0 0 200 201"
+        fill="none"
+      >
+        <path
+          d="M89.3504 131.742L64.6199 104.026L56.1988 173.249L96.4355 197.979V136.064C93.717 135.351 91.2662 133.881 89.3504 131.742ZM23.8041 115.389C22.824 115.789 22.0658 116.592 21.7549 117.573L0.366194 194.86C-0.0797043 196.241 0.366194 197.801 1.48026 198.737C2.63885 199.672 4.24237 199.806 5.49022 199.092L48.8012 174.318L57.7131 101.798L23.8041 115.389ZM110.65 131.742C108.734 133.881 106.283 135.351 103.564 136.064V197.978L143.801 173.249L135.38 104.026L110.65 131.742ZM121.579 105.417C134.364 92.4064 144.701 78.1707 147.874 69.149C149.779 63.7092 150.776 58.0422 150.776 52.2391C150.776 38.6838 145.516 25.9443 135.906 16.3338C126.294 6.72246 113.556 1.46387 100.001 1.46387C86.4441 1.46387 73.706 6.76777 64.0943 16.3338C54.484 25.9443 49.2244 38.6838 49.2244 52.2391C49.2244 58.0422 50.1762 63.7545 52.1263 69.149C55.2996 78.1707 65.6363 92.3611 78.4209 105.417C85.8555 112.989 96.0558 123.053 96.1465 123.144C97.1892 124.187 98.5949 124.73 99.9551 124.73C101.314 124.73 102.72 124.187 103.762 123.144C103.944 123.053 114.145 112.989 121.579 105.417ZM81.8666 52.1937C81.8666 42.175 89.9806 34.0596 100.001 34.0596C110.019 34.0596 118.135 42.175 118.135 52.1937C118.135 62.2127 110.019 70.3279 100.001 70.3279C89.9806 70.3279 81.8666 62.2125 81.8666 52.1937ZM199.634 194.86L178.245 117.573C177.934 116.592 177.176 115.789 176.196 115.389L142.243 101.798L151.154 174.318L194.465 199.092C194.999 199.405 195.624 199.583 196.247 199.583C197.049 199.583 197.852 199.315 198.52 198.781C199.634 197.801 200.08 196.241 199.634 194.86Z"
+          fill="white"
+        />
+      </svg>
+    </div>
+    <div id="loadMapError">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="29"
+        height="28"
+        viewBox="0 0 29 28"
+        fill="none"
+      >
+        <path
+          d="M22.4333 7.12115C20.8209 5.2614 18.6063 4.02724 16.1765 3.63424C13.7466 3.24123 11.256 3.71436 9.13947 4.97099C7.02298 6.22761 5.41523 8.18785 4.59705 10.5093C3.77887 12.8308 3.80226 15.3659 4.66314 17.6719C5.52401 19.9778 7.16765 21.9081 9.30696 23.1255C11.4463 24.3428 13.9453 24.7699 16.3675 24.3321C18.7896 23.8944 20.981 22.6196 22.5589 20.7304C24.1367 18.8412 25.0008 16.4577 25 13.9963H23.1333C23.1342 16.0233 22.4217 17.986 21.1209 19.5405C19.82 21.095 18.0136 22.1422 16.0181 22.4987C14.0227 22.8551 11.9655 22.4981 10.2068 21.4901C8.44821 20.4821 7.10034 18.8874 6.39935 16.9855C5.69836 15.0835 5.68895 12.9956 6.37278 11.0874C7.0566 9.17918 8.39006 7.57245 10.1395 6.54866C11.889 5.52486 13.9429 5.14929 15.9415 5.48774C17.9401 5.82619 19.7558 6.85708 21.0707 8.39981H18.7V10.2665H23.3667C23.4892 10.2665 23.6106 10.2423 23.7238 10.1954C23.8371 10.1485 23.94 10.0798 24.0266 9.99311C24.1133 9.90644 24.1821 9.80355 24.229 9.69032C24.2759 9.57708 24.3 9.45571 24.3 9.33315V4.66648H22.4333V7.12115Z"
+          fill="#DF2A2A"
+        />
+      </svg>
+      <span class="loadMapError-desc">Map loading failed</span>
+      <a class="loadMapError-refresh-btn" onclick="location.reload()"
+        >Click to refresh the page to reload the map</a
+      >
+    </div>
 
     <script>
       (function () {
         let map;
         let marker;
         let geocoder;
+
+        const defaultImgUtil = {
+          show: () => {
+            document.getElementById("noMap").style.display = "flex";
+          },
+          hide: () => {
+            document.getElementById("noMap").style.display = "none";
+          },
+        };
+
+        const errorImgUtil = {
+          show: () => {
+            document.getElementById("loadMapError").style.display = "flex";
+          },
+          hide: () => {
+            document.getElementById("loadMapError").style.display = "none";
+          },
+        };
 
         const initGoogleMap = (lat, lng) => {
           const initialPos = { lat: lat || 34.0, lng: lng || -90.0 };
@@ -128,7 +262,7 @@
                 // 初始化地图位置和缩放不发生变化
                 map.addListener("idle", () => {
                   console.log("地图加载完成并稳定！");
-                  $("#noMap").css("display", "none");
+                  defaultImgUtil.hide();
                 });
               } else {
                 alert("无法找到地址：" + status);
