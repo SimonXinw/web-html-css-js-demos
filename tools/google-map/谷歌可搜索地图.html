@@ -56,8 +56,8 @@
         let marker;
         let geocoder;
 
-        const initGoogleMap = () => {
-          const initialPos = { lat: 34.0, lng: -90.0 };
+        const initGoogleMap = (lat, lng) => {
+          const initialPos = { lat: lat || 34.0, lng: lng || -90.0 };
 
           map = new google.maps.Map(document.getElementById("map"), {
             center: initialPos,
@@ -71,50 +71,63 @@
           });
 
           geocoder = new google.maps.Geocoder();
-
-          document.getElementById("go").addEventListener("click", goToLatLng);
-
-          document.querySelectorAll("#lat, #lng, #address").forEach((input) => {
-            input.addEventListener("keydown", (e) => {
-              if (e.key === "Enter") goToLatLng();
-            });
-          });
         };
 
         window.googleMapInit = initGoogleMap;
 
-        function goToLatLng() {
-          const address = document.getElementById("address").value.trim();
-          if (address) {
-            // 如果地址输入框有内容，优先使用地址搜索
-            geocodeAddress(address);
-          } else {
-            // 否则使用经纬度
-            const lat = parseFloat(document.getElementById("lat").value);
-            const lng = parseFloat(document.getElementById("lng").value);
-
-            if (isNaN(lat) || isNaN(lng)) {
-              alert("请输入正确的经纬度");
-              return;
-            }
-
-            const position = { lat, lng };
-
-            map.setCenter(position);
-
-            map.setZoom(15);
-
-            marker.setMap(null);
-
-            marker = new google.maps.Marker({
-              position,
-              map: map,
-              title: "新位置",
-            });
+        function goToLatLng(lat, lng) {
+          if (isNaN(lat) || isNaN(lng)) {
+            alert("请输入正确的经纬度");
+            return;
           }
+
+          const position = { lat, lng };
+
+          map.setCenter(position);
+
+          map.setZoom(15);
+
+          marker.setMap(null);
+
+          marker = new google.maps.Marker({
+            position,
+            map: map,
+            title: "新位置",
+          });
         }
 
         function geocodeAddress(address) {
+          if (!map || !geocoder) {
+            geocoder = new google.maps.Geocoder();
+
+            geocoder.geocode({ address: address }, (results, status) => {
+              if (status === google.maps.GeocoderStatus.OK) {
+                const location = results[0].geometry.location;
+
+                // 初始化地图
+                map = new google.maps.Map(document.getElementById("map"), {
+                  center: location,
+                  zoom: 15,
+                  gestureHandling: "none",
+                  zoomControl: false,
+                  disableDefaultUI: true,
+                });
+
+                // 添加标记
+                marker = new google.maps.Marker({
+                  position: location,
+                  map: map,
+                  title: address,
+                });
+              } else {
+                alert("无法找到地址：" + status);
+              }
+            });
+
+            return;
+          }
+
+          // 默认直接跳转
           geocoder.geocode({ address: address }, (results, status) => {
             if (status !== "OK") return alert("地址没有找到，请检查输入的地址");
 
@@ -134,10 +147,31 @@
           });
         }
 
-        document
-          .querySelector("#initBtn")
-          .addEventListener("click", initGoogleMap);
+        const queryByParams = () => {
+          const address = document.getElementById("address").value.trim();
+
+          // 如果地址输入框有内容，优先使用地址搜索
+          if (address) return geocodeAddress(address);
+
+          const lat = parseFloat(document.getElementById("lat").value);
+
+          const lng = parseFloat(document.getElementById("lng").value);
+
+          goToLatLng(lat, lng);
+        };
+
+        document.querySelector("#initBtn").addEventListener("click", () => {
+          initGoogleMap();
+        });
         // 结尾
+
+        document.getElementById("go").addEventListener("click", queryByParams);
+
+        document.querySelectorAll("#lat, #lng, #address").forEach((input) => {
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") queryByParams();
+          });
+        });
       })();
     </script>
 
