@@ -119,6 +119,17 @@
                   map: map,
                   title: address,
                 });
+
+                // 监听地图的瓦片加载完成事件
+                map.addListener("tilesloaded", () => {
+                  console.log("监听地图的瓦片加载完成事件");
+                });
+
+                // 初始化地图位置和缩放不发生变化
+                map.addListener("idle", () => {
+                  console.log("地图加载完成并稳定！");
+                  $("#noMap").css("display", "none");
+                });
               } else {
                 alert("无法找到地址：" + status);
               }
@@ -176,7 +187,7 @@
     </script>
 
     <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111"
       defer
     ></script>
   </body>
