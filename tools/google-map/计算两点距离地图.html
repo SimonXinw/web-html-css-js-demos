@@ -17,20 +17,29 @@
         const bounds = new google.maps.LatLngBounds();
         const markersArray = [];
         const map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 55.53, lng: 9.4 },
-          zoom: 10,
+          center: { lat: 35.8617, lng: 104.1954 }, // 中心点设在中国
+          zoom: 4,
         });
         // initialize services
+
         const geocoder = new google.maps.Geocoder();
         const service = new google.maps.DistanceMatrixService();
+
         // build request
-        const origin1 = { lat: 55.93, lng: -3.118 };
-        const origin2 = "Greenwich, England";
-        const destinationA = "Stockholm, Sweden";
-        const destinationB = { lat: 50.087, lng: 14.421 };
+        // 多个起点
+        const origins = [
+          { lat: 31.224361, lng: 121.46917 }, // 上海
+          "Guangzhou, China",
+          "Shenzhen, China",
+          "Xi'an, China",
+        ];
+
+        // 目标点 A
+        const destination = "Beijing, China";
+
         const request = {
-          origins: [origin1, origin2],
-          destinations: [destinationA, destinationB],
+          origins,
+          destinations: [destination], // 只有一个目标点
           travelMode: google.maps.TravelMode.DRIVING,
           unitSystem: google.maps.UnitSystem.METRIC,
           avoidHighways: false,
@@ -43,7 +52,7 @@
           null,
           2
         );
-        // get distance matrix response
+
         service.getDistanceMatrix(request).then((response) => {
           // put response
           document.getElementById("response").innerText = JSON.stringify(
@@ -59,7 +68,7 @@
           deleteMarkers(markersArray);
 
           const showGeocodedAddressOnMap = (asDestination) => {
-            const handler = ({ results }) => {
+            return ({ results }) => {
               map.fitBounds(bounds.extend(results[0].geometry.location));
               markersArray.push(
                 new google.maps.Marker({
@@ -69,22 +78,24 @@
                 })
               );
             };
-            return handler;
           };
 
+          // 标记所有起点
           for (let i = 0; i < originList.length; i++) {
             const results = response.rows[i].elements;
+            console.log(
+              `${originList[i]} 到 ${destinationList[0]}: ${results[0].distance.text}, ${results[0].duration.text}`
+            );
 
             geocoder
               .geocode({ address: originList[i] })
               .then(showGeocodedAddressOnMap(false));
-
-            for (let j = 0; j < results.length; j++) {
-              geocoder
-                .geocode({ address: destinationList[j] })
-                .then(showGeocodedAddressOnMap(true));
-            }
           }
+
+          // 标记目标点
+          geocoder
+            .geocode({ address: destinationList[0] })
+            .then(showGeocodedAddressOnMap(true));
         });
       }
 
@@ -92,8 +103,7 @@
         for (let i = 0; i < markersArray.length; i++) {
           markersArray[i].setMap(null);
         }
-
-        markersArray = [];
+        markersArray.length = 0;
       }
 
       window.initMap = initMap;
