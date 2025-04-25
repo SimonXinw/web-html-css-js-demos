@@ -205,6 +205,8 @@
           });
 
           geocoder = new google.maps.Geocoder();
+
+          defaultImgUtil.hide();
         };
 
         window.googleMapInit = initGoogleMap;
@@ -228,6 +230,8 @@
             map: map,
             title: "新位置",
           });
+
+          defaultImgUtil.hide();
         }
 
         function geocodeAddress(address) {

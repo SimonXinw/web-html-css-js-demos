@@ -17,8 +17,8 @@
         const bounds = new google.maps.LatLngBounds();
         const markersArray = [];
         const map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 35.8617, lng: 104.1954 }, // 中心点设在中国
-          zoom: 4,
+          center: { lat: 39.8283, lng: -98.5795 }, // 中心点设在美国
+          zoom: 15,
         });
         // initialize services
 
@@ -28,20 +28,19 @@
         // build request
         // 多个起点
         const origins = [
-          { lat: 31.224361, lng: 121.46917 }, // 上海
-          "Guangzhou, China",
-          "Shenzhen, China",
-          "Xi'an, China",
+          // { lat: 41.3958794, lng: -72.8567218 },
+          "117 Washington Ave,  North Haven, CT, USA",
+          "12002 W Pond Way,  Tampa, FL, USA",
         ];
 
-        // 目标点 A
-        const destination = "Beijing, China";
+        // 目标点 A 诺伍德
+        const destination = { lat: 42.1861968, lng: -71.19672059999999 };
 
         const request = {
           origins,
           destinations: [destination], // 只有一个目标点
           travelMode: google.maps.TravelMode.DRIVING,
-          unitSystem: google.maps.UnitSystem.METRIC,
+          unitSystem: google.maps.UnitSystem.IMPERIAL,
           avoidHighways: false,
           avoidTolls: false,
         };

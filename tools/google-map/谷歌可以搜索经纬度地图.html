@@ -99,7 +99,97 @@
           });
       }
 
+      const getLatLng = async (address, user) => {
+        if (!address) {
+          console.log("Error - 地址不能为空！ 用户数据 >>>", user);
+          return;
+        }
+
+        const params = { address };
+
+        try {
+          clear();
+          const res = await geocoder.geocode(params);
+
+          console.log("查询的结果 >>>>>>>>", res);
+
+          const { results } = res;
+
+          const resLocation = results[0].geometry.location;
+
+          const lat = resLocation.lat();
+
+          const lng = resLocation.lng();
+
+          return { lat, lng };
+        } catch {
+          (e) => {
+            alert("Geocode was not successful for the following reason: " + e);
+          };
+        }
+      };
+
       window.initMap = initMap;
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // 额外的逻辑
+        document
+          .getElementById("requestLatLngBtn")
+          .addEventListener("click", function () {
+            let usersData = document.getElementById("userData").value;
+
+            debugger;
+
+            if (!usersData) {
+              alert("请先设置 usersData 变量！");
+              return;
+            }
+
+            usersData = JSON.parse(usersData);
+
+            const sleep = (ms) =>
+              new Promise((resolve) => setTimeout(resolve, ms));
+
+            const getNewData = async () => {
+              const newData = [];
+
+              for (const item of usersData) {
+                const res = await getLatLng(item.addressStr, item);
+                console.log("经纬度 ", res);
+
+                const latGap =
+                  (((res?.lat - item.lat) / item.lat) * 100)?.toFixed(5) + "%";
+
+                const lngGap =
+                  (((res?.lng - item.lng) / item.lng) * 100)?.toFixed(5) + "%";
+
+                console.log(
+                  "搜索 address >>>>>>>>>>>>>",
+                  item.addressStr,
+                  "res >>",
+                  res?.lat,
+                  res?.lng
+                );
+
+                newData.push({
+                  ...item,
+                  latNew: res?.lat,
+                  lngNew: res?.lng,
+                  latGap,
+                  lngGap,
+                });
+
+                await sleep(100); // ⏱ 等待 1 秒
+              }
+
+              return newData;
+            };
+
+            getNewData().then((res) => {
+              console.log("全部处理完成", res);
+            });
+          });
+      });
     </script>
     <style>
       /**
@@ -199,6 +289,11 @@
     </style>
   </head>
   <body>
+    <div id="head">
+      <button id="requestLatLngBtn" class="">请求经纬度</button>
+      <label for="">批量请求Json数据</label
+      ><input type="text" id="userData" placeholder="用户 Json 数据" />
+    </div>
     <div id="map"></div>
     <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111&callback=initMap&v=weekly&solution_channel=GMP_CCS_geocodingservice_v2"
