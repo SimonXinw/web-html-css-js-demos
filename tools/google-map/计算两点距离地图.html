@@ -175,6 +175,18 @@
         markersArray.length = 0;
       }
 
+      document.addEventListener("DOMContentLoaded", () => {
+        const inputs = document.querySelectorAll("input");
+        inputs.forEach((input) => {
+          input.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+              event.preventDefault(); // 防止表单提交或默认行为
+              startSearch(); // 执行搜索
+            }
+          });
+        });
+      });
+
       window.initMap = initMap;
     </script>
 
@@ -198,8 +210,8 @@
       }
 
       #topbar button {
+        margin-top: 10px;
         padding: 0.5rem 1rem;
-        margin-left: 1rem;
       }
 
       #container {
@@ -227,14 +239,14 @@
   <body>
     <div id="topbar">
       <div>
-        <strong>起始地：</strong><br />
+        <strong>起始地：</strong>
         地址:
         <input type="text" id="origin-address" placeholder="起始地址" /> 纬度:
         <input type="text" id="origin-lat" placeholder="纬度" /> 经度:
         <input type="text" id="origin-lng" placeholder="经度" />
       </div>
       <div>
-        <strong>目标地：</strong><br />
+        <strong>目标地：</strong>
         地址:
         <input type="text" id="destination-address" placeholder="目标地址" />
         纬度:
