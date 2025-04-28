@@ -1,40 +1,64 @@
 <!DOCTYPE html>
-<!--
- @license
- Copyright 2019 Google LLC. All Rights Reserved.
- SPDX-License-Identifier: Apache-2.0
--->
 <html>
   <head>
-    <title>Distance Matrix Service</title>
+    <title>Distance Matrix Service with Manual Input</title>
     <script>
-      /**
-       * @license
-       * Copyright 2019 Google LLC. All Rights Reserved.
-       * SPDX-License-Identifier: Apache-2.0
-       */
+      let map, geocoder, service, bounds, markersArray;
+
       function initMap() {
-        const bounds = new google.maps.LatLngBounds();
-        const markersArray = [];
-        const map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: 39.8283, lng: -98.5795 }, // 中心点设在美国
-          zoom: 5, // 拉远一点，方便看
+        bounds = new google.maps.LatLngBounds();
+        markersArray = [];
+        map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 39.8283, lng: -98.5795 }, // 美国中心
+          zoom: 5,
         });
 
-        const geocoder = new google.maps.Geocoder();
-        const service = new google.maps.DistanceMatrixService();
+        geocoder = new google.maps.Geocoder();
+        service = new google.maps.DistanceMatrixService();
+      }
 
-        const origins = [
-          { lat: 41.3958794, lng: -72.8567218 },
-          // "642 Kakala Street, Kapolei, Hawaii, US",
-        ];
+      function startSearch() {
+        const originAddress = document
+          .getElementById("origin-address")
+          .value.trim();
+        const originLat = document.getElementById("origin-lat").value.trim();
+        const originLng = document.getElementById("origin-lng").value.trim();
 
-        // 目标点 A 诺伍德
-        const destination = { lat: 42.1861968, lng: -71.19672059999999 };
+        const destinationAddress = document
+          .getElementById("destination-address")
+          .value.trim();
+        const destinationLat = document
+          .getElementById("destination-lat")
+          .value.trim();
+        const destinationLng = document
+          .getElementById("destination-lng")
+          .value.trim();
+
+        const origins = originAddress
+          ? [originAddress]
+          : originLat && originLng
+          ? [{ lat: parseFloat(originLat), lng: parseFloat(originLng) }]
+          : [];
+
+        const destinations = destinationAddress
+          ? [destinationAddress]
+          : destinationLat && destinationLng
+          ? [
+              {
+                lat: parseFloat(destinationLat),
+                lng: parseFloat(destinationLng),
+              },
+            ]
+          : [];
+
+        if (origins.length === 0 || destinations.length === 0) {
+          alert("请输入完整的起点或终点信息！");
+          return;
+        }
 
         const request = {
           origins,
-          destinations: [destination],
+          destinations,
           travelMode: google.maps.TravelMode.DRIVING,
           unitSystem: google.maps.UnitSystem.IMPERIAL,
           avoidHighways: false,
@@ -57,24 +81,25 @@
           const originList = response.originAddresses;
           const destinationList = response.destinationAddresses;
 
-          deleteMarkers(markersArray);
+          deleteMarkers();
 
           const showGeocodedAddressOnMap = (asDestination) => {
             return ({ results }) => {
-              map.fitBounds(bounds.extend(results[0].geometry.location));
-              markersArray.push(
-                new google.maps.Marker({
-                  map,
-                  position: results[0].geometry.location,
-                  label: asDestination ? "D" : "O",
-                })
-              );
+              if (results[0]) {
+                map.fitBounds(bounds.extend(results[0].geometry.location));
+                markersArray.push(
+                  new google.maps.Marker({
+                    map,
+                    position: results[0].geometry.location,
+                    label: asDestination ? "D" : "O",
+                  })
+                );
+              }
             };
           };
 
           for (let i = 0; i < originList.length; i++) {
             const results = response.rows[i].elements[0];
-
             if (results.status === "OK") {
               console.log(
                 `${originList[i]} 到 ${destinationList[0]}: ${results.distance.text}, ${results.duration.text}`
@@ -83,7 +108,6 @@
               console.warn(
                 `${originList[i]} 到 ${destinationList[0]} 驾车路线不可达，计算直线距离中...`
               );
-              // 驾车不可达，计算直线距离
               calculateStraightLineDistance(originList[i], destinationList[0]);
             }
 
@@ -96,72 +120,65 @@
             .geocode({ address: destinationList[0] })
             .then(showGeocodedAddressOnMap(true));
         });
+      }
 
-        // 计算直线距离函数（Haversine公式）
-        function calculateStraightLineDistance(
-          originAddress,
-          destinationAddress
-        ) {
-          Promise.all([
-            geocoder.geocode({ address: originAddress }),
-            geocoder.geocode({ address: destinationAddress }),
-          ]).then(([originResult, destinationResult]) => {
-            if (
-              originResult.results.length > 0 &&
-              destinationResult.results.length > 0
-            ) {
-              const originLoc = originResult.results[0].geometry.location;
-              const destLoc = destinationResult.results[0].geometry.location;
+      function calculateStraightLineDistance(
+        originAddress,
+        destinationAddress
+      ) {
+        Promise.all([
+          geocoder.geocode({ address: originAddress }),
+          geocoder.geocode({ address: destinationAddress }),
+        ]).then(([originResult, destinationResult]) => {
+          if (
+            originResult.results.length > 0 &&
+            destinationResult.results.length > 0
+          ) {
+            const originLoc = originResult.results[0].geometry.location;
+            const destLoc = destinationResult.results[0].geometry.location;
 
-              const distance = haversineDistance(
-                { lat: originLoc.lat(), lng: originLoc.lng() },
-                { lat: destLoc.lat(), lng: destLoc.lng() }
-              );
+            const distance = haversineDistance(
+              { lat: originLoc.lat(), lng: originLoc.lng() },
+              { lat: destLoc.lat(), lng: destLoc.lng() }
+            );
 
-              console.log(
-                `${originAddress} 到 ${destinationAddress} 的直线距离为约 ${distance.toFixed(
-                  2
-                )} km`
-              );
-            } else {
-              console.error("无法获取地址的经纬度");
-            }
-          });
-        }
-
-        // Haversine公式，地球半径直线距离计算公式
-        function haversineDistance(coord1, coord2) {
-          const R = 6371; // 地球半径 (km)
-          const lat1 = (coord1.lat * Math.PI) / 180;
-          const lat2 = (coord2.lat * Math.PI) / 180;
-          const deltaLat = lat2 - lat1;
-          const deltaLng = ((coord2.lng - coord1.lng) * Math.PI) / 180;
-
-          const a =
-            Math.sin(deltaLat / 2) ** 2 +
-            Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-          return R * c;
-        }
-
-        function deleteMarkers(markersArray) {
-          for (let marker of markersArray) {
-            marker.setMap(null);
+            console.log(
+              `${originAddress} 到 ${destinationAddress} 的直线距离为约 ${distance.toFixed(
+                2
+              )} km`
+            );
+          } else {
+            console.error("无法获取地址的经纬度");
           }
-          markersArray.length = 0;
+        });
+      }
+
+      function haversineDistance(coord1, coord2) {
+        const R = 6371;
+        const lat1 = (coord1.lat * Math.PI) / 180;
+        const lat2 = (coord2.lat * Math.PI) / 180;
+        const deltaLat = lat2 - lat1;
+        const deltaLng = ((coord2.lng - coord1.lng) * Math.PI) / 180;
+
+        const a =
+          Math.sin(deltaLat / 2) ** 2 +
+          Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return R * c;
+      }
+
+      function deleteMarkers() {
+        for (let marker of markersArray) {
+          marker.setMap(null);
         }
+        markersArray.length = 0;
       }
 
       window.initMap = initMap;
     </script>
+
     <style>
-      /**
-       * @license
-       * Copyright 2019 Google LLC. All Rights Reserved.
-       * SPDX-License-Identifier: Apache-2.0
-       */
-      /* Optional: Makes the sample page fill the window. */
       html,
       body {
         height: 100%;
@@ -169,8 +186,24 @@
         padding: 0;
       }
 
+      #topbar {
+        padding: 1rem;
+        background: #f2f2f2;
+        border-bottom: 1px solid #ccc;
+      }
+
+      #topbar input {
+        width: 200px;
+        margin: 0.2rem;
+      }
+
+      #topbar button {
+        padding: 0.5rem 1rem;
+        margin-left: 1rem;
+      }
+
       #container {
-        height: 100%;
+        height: calc(100% - 150px);
         display: flex;
       }
 
@@ -185,26 +218,42 @@
       }
 
       #map {
-        flex-basis: 0;
         flex-grow: 4;
         height: 100%;
       }
-
-      #sidebar {
-        flex-direction: column;
-      }
     </style>
   </head>
+
   <body>
+    <div id="topbar">
+      <div>
+        <strong>起始地：</strong><br />
+        地址:
+        <input type="text" id="origin-address" placeholder="起始地址" /> 纬度:
+        <input type="text" id="origin-lat" placeholder="纬度" /> 经度:
+        <input type="text" id="origin-lng" placeholder="经度" />
+      </div>
+      <div>
+        <strong>目标地：</strong><br />
+        地址:
+        <input type="text" id="destination-address" placeholder="目标地址" />
+        纬度:
+        <input type="text" id="destination-lat" placeholder="纬度" /> 经度:
+        <input type="text" id="destination-lng" placeholder="经度" />
+      </div>
+      <button onclick="startSearch()">开始搜索</button>
+    </div>
+
     <div id="container">
       <div id="map"></div>
       <div id="sidebar">
-        <h3 style="flex-grow: 0">Request</h3>
-        <pre style="flex-grow: 1" id="request"></pre>
-        <h3 style="flex-grow: 0">Response</h3>
-        <pre style="flex-grow: 1" id="response"></pre>
+        <h3>Request</h3>
+        <pre id="request"></pre>
+        <h3>Response</h3>
+        <pre id="response"></pre>
       </div>
     </div>
+
     <script
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111&callback=initMap&v=weekly&solution_channel=GMP_CCS_distancematrix_v2"
       defer
