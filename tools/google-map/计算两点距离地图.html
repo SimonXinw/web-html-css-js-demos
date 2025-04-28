@@ -18,19 +18,15 @@
         const markersArray = [];
         const map = new google.maps.Map(document.getElementById("map"), {
           center: { lat: 39.8283, lng: -98.5795 }, // 中心点设在美国
-          zoom: 15,
+          zoom: 5, // 拉远一点，方便看
         });
-        // initialize services
 
         const geocoder = new google.maps.Geocoder();
         const service = new google.maps.DistanceMatrixService();
 
-        // build request
-        // 多个起点
         const origins = [
-          // { lat: 41.3958794, lng: -72.8567218 },
-          "117 Washington Ave,  North Haven, CT, USA",
-          "12002 W Pond Way,  Tampa, FL, USA",
+          { lat: 41.3958794, lng: -72.8567218 },
+          // "642 Kakala Street, Kapolei, Hawaii, US",
         ];
 
         // 目标点 A 诺伍德
@@ -38,14 +34,13 @@
 
         const request = {
           origins,
-          destinations: [destination], // 只有一个目标点
+          destinations: [destination],
           travelMode: google.maps.TravelMode.DRIVING,
           unitSystem: google.maps.UnitSystem.IMPERIAL,
           avoidHighways: false,
           avoidTolls: false,
         };
 
-        // put request on page
         document.getElementById("request").innerText = JSON.stringify(
           request,
           null,
@@ -53,14 +48,12 @@
         );
 
         service.getDistanceMatrix(request).then((response) => {
-          // put response
           document.getElementById("response").innerText = JSON.stringify(
             response,
             null,
             2
           );
 
-          // show on map
           const originList = response.originAddresses;
           const destinationList = response.destinationAddresses;
 
@@ -79,30 +72,85 @@
             };
           };
 
-          // 标记所有起点
           for (let i = 0; i < originList.length; i++) {
-            const results = response.rows[i].elements;
-            console.log(
-              `${originList[i]} 到 ${destinationList[0]}: ${results[0].distance.text}, ${results[0].duration.text}`
-            );
+            const results = response.rows[i].elements[0];
+
+            if (results.status === "OK") {
+              console.log(
+                `${originList[i]} 到 ${destinationList[0]}: ${results.distance.text}, ${results.duration.text}`
+              );
+            } else {
+              console.warn(
+                `${originList[i]} 到 ${destinationList[0]} 驾车路线不可达，计算直线距离中...`
+              );
+              // 驾车不可达，计算直线距离
+              calculateStraightLineDistance(originList[i], destinationList[0]);
+            }
 
             geocoder
               .geocode({ address: originList[i] })
               .then(showGeocodedAddressOnMap(false));
           }
 
-          // 标记目标点
           geocoder
             .geocode({ address: destinationList[0] })
             .then(showGeocodedAddressOnMap(true));
         });
-      }
 
-      function deleteMarkers(markersArray) {
-        for (let i = 0; i < markersArray.length; i++) {
-          markersArray[i].setMap(null);
+        // 计算直线距离函数（Haversine公式）
+        function calculateStraightLineDistance(
+          originAddress,
+          destinationAddress
+        ) {
+          Promise.all([
+            geocoder.geocode({ address: originAddress }),
+            geocoder.geocode({ address: destinationAddress }),
+          ]).then(([originResult, destinationResult]) => {
+            if (
+              originResult.results.length > 0 &&
+              destinationResult.results.length > 0
+            ) {
+              const originLoc = originResult.results[0].geometry.location;
+              const destLoc = destinationResult.results[0].geometry.location;
+
+              const distance = haversineDistance(
+                { lat: originLoc.lat(), lng: originLoc.lng() },
+                { lat: destLoc.lat(), lng: destLoc.lng() }
+              );
+
+              console.log(
+                `${originAddress} 到 ${destinationAddress} 的直线距离为约 ${distance.toFixed(
+                  2
+                )} km`
+              );
+            } else {
+              console.error("无法获取地址的经纬度");
+            }
+          });
         }
-        markersArray.length = 0;
+
+        // Haversine公式，地球半径直线距离计算公式
+        function haversineDistance(coord1, coord2) {
+          const R = 6371; // 地球半径 (km)
+          const lat1 = (coord1.lat * Math.PI) / 180;
+          const lat2 = (coord2.lat * Math.PI) / 180;
+          const deltaLat = lat2 - lat1;
+          const deltaLng = ((coord2.lng - coord1.lng) * Math.PI) / 180;
+
+          const a =
+            Math.sin(deltaLat / 2) ** 2 +
+            Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) ** 2;
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+          return R * c;
+        }
+
+        function deleteMarkers(markersArray) {
+          for (let marker of markersArray) {
+            marker.setMap(null);
+          }
+          markersArray.length = 0;
+        }
       }
 
       window.initMap = initMap;
