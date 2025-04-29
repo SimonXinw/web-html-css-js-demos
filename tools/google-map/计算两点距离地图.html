@@ -2,6 +2,104 @@
 <html>
   <head>
     <title>Distance Matrix Service with Manual Input</title>
+
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #topbar {
+        padding: 1rem;
+        background: #f2f2f2;
+        border-bottom: 1px solid #ccc;
+      }
+
+      #topbar input {
+        width: 200px;
+        margin: 0.2rem;
+      }
+
+      #topbar button {
+        margin-top: 10px;
+        padding: 0.5rem 1rem;
+      }
+
+      #container {
+        height: calc(100% - 150px);
+        display: flex;
+      }
+
+      #sidebar {
+        flex-basis: 15rem;
+        flex-grow: 1;
+        padding: 1rem;
+        max-width: 30rem;
+        height: 100%;
+        box-sizing: border-box;
+        overflow: auto;
+      }
+
+      #map {
+        flex-grow: 4;
+        height: 100%;
+      }
+
+      #topbar .cleanSearch {
+        padding: 0px 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="topbar">
+      <div>
+        <strong>起始地：</strong>
+        地址:
+        <input
+          type="text"
+          value="北京"
+          id="origin-address"
+          placeholder="起始地址"
+        />
+        纬度: <input type="text" id="origin-lat" placeholder="纬度" /> 经度:
+        <input type="text" id="origin-lng" placeholder="经度" />
+        <button class="cleanSearch">清除</button>
+      </div>
+      <div>
+        <strong>目标地：</strong>
+        地址:
+        <input
+          type="text"
+          value="深圳"
+          id="destination-address"
+          placeholder="目标地址"
+        />
+        纬度:
+        <input type="text" id="destination-lat" placeholder="纬度" /> 经度:
+        <input type="text" id="destination-lng" placeholder="经度" />
+        <button class="cleanSearch">清除</button>
+      </div>
+      <button onclick="startSearch()">开始搜索</button>
+    </div>
+
+    <div id="container">
+      <div id="map"></div>
+      <div id="sidebar">
+        <h3>Request</h3>
+        <pre id="request"></pre>
+        <h3>Response</h3>
+        <pre id="response"></pre>
+      </div>
+    </div>
+
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111&callback=initMap&v=weekly&solution_channel=GMP_CCS_distancematrix_v2"
+      defer
+    ></script>
+
     <script>
       let map, geocoder, service, bounds, markersArray;
 
@@ -187,88 +285,19 @@
         });
       });
 
+      document.querySelectorAll(".cleanSearch").forEach((buttonEle) => {
+        // 为每个清除按钮添加点击事件监听器
+        buttonEle.addEventListener("click", () => {
+          // 清空对应的输入框
+          buttonEle.parentElement
+            .querySelectorAll("input[type='text']")
+            .forEach((input) => {
+              input.value = ""; // 清空输入框
+            });
+        });
+      });
+
       window.initMap = initMap;
     </script>
-
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-
-      #topbar {
-        padding: 1rem;
-        background: #f2f2f2;
-        border-bottom: 1px solid #ccc;
-      }
-
-      #topbar input {
-        width: 200px;
-        margin: 0.2rem;
-      }
-
-      #topbar button {
-        margin-top: 10px;
-        padding: 0.5rem 1rem;
-      }
-
-      #container {
-        height: calc(100% - 150px);
-        display: flex;
-      }
-
-      #sidebar {
-        flex-basis: 15rem;
-        flex-grow: 1;
-        padding: 1rem;
-        max-width: 30rem;
-        height: 100%;
-        box-sizing: border-box;
-        overflow: auto;
-      }
-
-      #map {
-        flex-grow: 4;
-        height: 100%;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div id="topbar">
-      <div>
-        <strong>起始地：</strong>
-        地址:
-        <input type="text" value="北京" id="origin-address" placeholder="起始地址" /> 纬度:
-        <input type="text" id="origin-lat" placeholder="纬度" /> 经度:
-        <input type="text" id="origin-lng" placeholder="经度" />
-      </div>
-      <div>
-        <strong>目标地：</strong>
-        地址:
-        <input type="text" value="深圳" id="destination-address" placeholder="目标地址" />
-        纬度:
-        <input type="text" id="destination-lat" placeholder="纬度" /> 经度:
-        <input type="text" id="destination-lng" placeholder="经度" />
-      </div>
-      <button onclick="startSearch()">开始搜索</button>
-    </div>
-
-    <div id="container">
-      <div id="map"></div>
-      <div id="sidebar">
-        <h3>Request</h3>
-        <pre id="request"></pre>
-        <h3>Response</h3>
-        <pre id="response"></pre>
-      </div>
-    </div>
-
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111&callback=initMap&v=weekly&solution_channel=GMP_CCS_distancematrix_v2"
-      defer
-    ></script>
   </body>
 </html>
