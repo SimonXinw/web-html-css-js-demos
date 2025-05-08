@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      class ConcurrencyPool {
+        constructor(maxConcurrency) {
+          this.maxConcurrency = maxConcurrency; // 最大并发
+          this.runningCount = 0; // 当前执行中
+          this.taskQueue = []; // 等待队列
+          this.results = []; // 结果
+          this.paused = false; // 是否暂停
+          this.stopped = false; // 是否彻底停止
+          this.resolveWhenStopped = null; // 停止时promise
+        }
+
+        // 1.添加任务
+        addTask(taskFn) {
+          return new Promise((resolve, reject) => {
+            this.taskQueue.push({ taskFn, resolve, reject });
+            this._next();
+          });
+        }
+
+        // 2.内部调度
+        _next() {
+          // 暂停或停止：不再调度
+          if (this.paused || this.stopped) return;
+          // 控制并发数量
+          while (
+            this.runningCount < this.maxConcurrency &&
+            this.taskQueue.length > 0
+          ) {
+            const { taskFn, resolve, reject } = this.taskQueue.shift();
+            this.runningCount++;
+            taskFn()
+              .then((res) => {
+                this.results.push(res);
+                resolve(res);
+              })
+              .catch((e) => {
+                this.results.push(Promise.reject(e));
+                reject(e);
+              })
+              .finally(() => {
+                this.runningCount--;
+                // 若被stop，此处do nothing，否则正常调度
+                if (!this.stopped) this._next();
+                else if (this.runningCount === 0 && this.resolveWhenStopped) {
+                  this.resolveWhenStopped(); // 清空结束时通知
+                  this.resolveWhenStopped = null;
+                }
+              });
+          }
+        }
+
+        // 3.获取待执行任务数量
+        getPendingCount() {
+          return this.taskQueue.length;
+        }
+
+        // 4.获取当前执行中的任务数量
+        getRunningCount() {
+          return this.runningCount;
+        }
+
+        // 5.暂停
+        pause() {
+          this.paused = true;
+        }
+
+        // 6.恢复继续队列（从暂停状态）继续未完成的
+        resume() {
+          if (!this.paused) return;
+          this.paused = false;
+          this._next();
+        }
+
+        // 7.停止，不再调度新任务，同时停止队列中的任务，当前运行中的继续执行
+        stopAndClear() {
+          this.stopped = true;
+          this.taskQueue = [];
+          if (this.runningCount === 0) {
+            return Promise.resolve();
+          }
+          return new Promise((resolve) => {
+            this.resolveWhenStopped = resolve;
+          });
+        }
+
+        // 8.重新激活/重启队列（继续剩下的未完成，不添加新任务）
+        start() {
+          if (this.stopped) {
+            this.stopped = false;
+          }
+          this.paused = false;
+          this._next();
+        }
+
+        // 9.等待全部完成（甚至暂停/恢复状态下）
+        allDone() {
+          return new Promise((resolve, reject) => {
+            // 需要用tasks收集所有addTask返回的promise
+            // 这里只返回内部的results（建议改造外部收集更安全）
+            Promise.all(this.results).then(resolve).catch(reject);
+          });
+        }
+      }
+
+      // 测试代码
+      const pool = new ConcurrencyPool(5);
+      // 假设 imageFiles, uploadImage 同前述
+      const tasks = imageFiles.map((file) =>
+        pool.addTask(() => uploadImage(file))
+      );
+      setTimeout(() => {
+        console.log("暂停中");
+        pool.pause();
+        setTimeout(() => {
+          console.log("继续...");
+          pool.resume();
+        }, 3000);
+      }, 1500);
+      setTimeout(() => {
+        console.log("当前队列任务数:", pool.getPendingCount());
+        console.log("当前在跑:", pool.getRunningCount());
+      }, 800);
+      setTimeout(async () => {
+        await pool.stopAndClear();
+        console.log("队列被停止并清空。");
+      }, 7000);
+    </script>
+  </body>
+</html>
