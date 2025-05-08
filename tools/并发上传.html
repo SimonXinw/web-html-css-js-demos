@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>批量上传图片/视频(支持拖拽)</title>
+    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <style>
+      body {
+        font-family: "PingFang SC", "Helvetica Neue", Arial;
+        background: #f8f9fb;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 480px;
+        margin: 48px auto;
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: 0 4px 24px #0001;
+        padding: 24px 32px 36px 32px;
+      }
+      .upload-card {
+        border: 2px dashed #64b5f6;
+        border-radius: 16px;
+        background: #f5faff;
+        color: #1976d2;
+        text-align: center;
+        padding: 48px 0;
+        cursor: pointer;
+        font-size: 20px;
+        transition: background 0.3s, border-color 0.3s, color 0.3s;
+        position: relative;
+        margin-bottom: 20px;
+        user-select: none;
+        will-change: background;
+      }
+      .upload-card:hover {
+        background: #e3f2fd;
+        border-color: #1976d2;
+        color: #0d47a1;
+      }
+      .upload-card.dragover {
+        background: #1976d2;
+        color: #fff;
+        border-color: #1976d2;
+        font-size: 28px;
+        box-shadow: 0 4px 32px #1976d240;
+        z-index: 999;
+      }
+      .upload-card input[type="file"] {
+        display: none;
+      }
+      .ctrl-row {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .ctrl-row label {
+        font-weight: bold;
+        color: #444;
+      }
+      .ctrl-row input[type="number"] {
+        width: 66px;
+        font-size: 15px;
+        padding: 6px 4px;
+        border: 1px solid #bbb;
+        border-radius: 6px;
+        margin-right: 8px;
+      }
+      button {
+        font-size: 15px;
+        background: #1976d2;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 7px 22px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        cursor: pointer;
+        transition: background 0.2s;
+        letter-spacing: 0.5px;
+        will-change: background;
+      }
+      button[disabled] {
+        background: #bbdefb;
+        color: #8bb2ca;
+        cursor: not-allowed;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 16px;
+        background: #e3eaf5;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        overflow: hidden;
+      }
+      .progress-bar-inner {
+        height: 100%;
+        background: linear-gradient(90deg, #64b5f6, #1976d2);
+        width: 0%;
+        border-radius: 8px;
+        transition: width 0.25s;
+      }
+      #status {
+        font-size: 15px;
+        color: #333;
+      }
+      .file-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .file-list li {
+        display: flex;
+        align-items: center;
+        font-size: 15px;
+        margin: 6px 0 2px 0;
+        padding: 2px 3px;
+        gap: 7px;
+      }
+      .file-list .list-thumb {
+        width: 28px;
+        height: 28px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 1.5px solid #fff;
+        box-shadow: 0 1px 5px #0002;
+      }
+      @media (max-width: 520px) {
+        .container {
+          max-width: 100%;
+          padding: 16px 8px 28px 8px;
+        }
+        .upload-card {
+          font-size: 17px;
+          padding: 32px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="upload-area" class="upload-card">
+        <span id="upload-label">点击 或 拖拽图片/视频到此上传</span>
+        <input type="file" id="file-input" multiple accept="image/*,video/*" />
+      </div>
+      <div class="ctrl-row">
+        <label>并发：</label>
+        <input type="number" id="concurrency" min="1" max="20" value="3" />
+        <button id="start">开始</button>
+        <button id="pause" disabled>暂停</button>
+        <button id="clear">清空</button>
+        <button id="download" disabled>下载全部</button>
+      </div>
+      <div class="progress-bar">
+        <div id="progress-inner" class="progress-bar-inner"></div>
+      </div>
+      <span id="status"></span>
+      <ul id="file-list" class="file-list"></ul>
+    </div>
+    <script>
+      // 并发池实现
+      class ConcurrencyPool {
+        constructor(maxConcurrency) {
+          this.maxConcurrency = maxConcurrency;
+          this.runningCount = 0;
+          this.taskQueue = [];
+          this.results = [];
+          this.paused = false;
+          this.stopped = false;
+          this.resolveWhenStopped = null;
+        }
+        setConcurrency(n) {
+          this.maxConcurrency = n;
+        }
+        addTask(taskFn, meta) {
+          return new Promise((resolve, reject) => {
+            this.taskQueue.push({ taskFn, resolve, reject, meta });
+            this._next();
+          });
+        }
+        _next() {
+          if (this.paused || this.stopped) return;
+          while (
+            this.runningCount < this.maxConcurrency &&
+            this.taskQueue.length > 0
+          ) {
+            const { taskFn, resolve, reject, meta } = this.taskQueue.shift();
+            this.runningCount++;
+            taskFn()
+              .then((res) => {
+                this.results.push({
+                  file: meta.file,
+                  res,
+                  name: meta.name,
+                  success: true,
+                });
+                resolve(res);
+              })
+              .catch((e) => {
+                this.results.push({
+                  file: meta.file,
+                  error: e,
+                  name: meta.name,
+                  success: false,
+                });
+                reject(e);
+              })
+              .finally(() => {
+                this.runningCount--;
+                if (!this.stopped) this._next();
+                else if (this.runningCount === 0 && this.resolveWhenStopped) {
+                  this.resolveWhenStopped();
+                  this.resolveWhenStopped = null;
+                }
+              });
+          }
+        }
+        getPendingCount() {
+          return this.taskQueue.length;
+        }
+        getRunningCount() {
+          return this.runningCount;
+        }
+        pause() {
+          this.paused = true;
+        }
+        resume() {
+          if (!this.paused) return;
+          this.paused = false;
+          this._next();
+        }
+        stopAndClear() {
+          this.stopped = true;
+          this.taskQueue = [];
+          if (this.runningCount === 0) return Promise.resolve();
+          return new Promise((resolve) => {
+            this.resolveWhenStopped = resolve;
+          });
+        }
+        start() {
+          if (this.stopped) this.stopped = false;
+          this.paused = false;
+          this._next();
+        }
+        clearResults() {
+          this.results = [];
+        }
+        allDone() {
+          return new Promise((res) => {
+            const check = () => {
+              if (this.runningCount === 0 && this.taskQueue.length === 0) res();
+              else setTimeout(check, 210);
+            };
+            check();
+          });
+        }
+      }
+
+      // DOM vars
+      const elUploadArea = document.getElementById("upload-area");
+      const elFileInput = document.getElementById("file-input");
+      const elConcurrency = document.getElementById("concurrency");
+      const elStart = document.getElementById("start");
+      const elPause = document.getElementById("pause");
+      const elClear = document.getElementById("clear");
+      const elDownload = document.getElementById("download");
+      const elStatus = document.getElementById("status");
+      const elProgress = document.getElementById("progress-inner");
+      const elFileList = document.getElementById("file-list");
+
+      let pool = null,
+        files = [],
+        started = false,
+        tasks = [];
+
+      function resetAll() {
+        files = [];
+        pool && pool.stopAndClear();
+        pool = null;
+        tasks = [];
+        started = false;
+        elFileList.innerHTML = "";
+        elProgress.style.width = "0%";
+        elStatus.innerText = "";
+        elDownload.disabled = true;
+        elPause.disabled = true;
+        elStart.disabled = false;
+      }
+      elClear.onclick = resetAll;
+
+      // UI 卡片拖拽
+      function showDragOverStyle(flag) {
+        if (flag) elUploadArea.classList.add("dragover");
+        else elUploadArea.classList.remove("dragover");
+      }
+      // 文件缩略图（图片视频）
+      function getFileThumb(file) {
+        return new Promise((res) => {
+          if (file.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              res(`<img src="${e.target.result}" class="list-thumb"/>`);
+            };
+            reader.readAsDataURL(file);
+          } else if (file.type.startsWith("video/")) {
+            // 视频显示泛缩略，或仅展示icon
+            res(
+              '<span style="font-size:19px;vertical-align:middle;">🎬</span>'
+            );
+          } else {
+            res(
+              '<span style="font-size:19px;vertical-align:middle;">📄</span>'
+            );
+          }
+        });
+      }
+      // 上传任务模拟延迟
+      function uploadFile(file) {
+        // 模拟上传：这里用一个Promise(resolve)
+        // **如需真上传，改下面的代码为上传接口请求即可**
+        return new Promise((resolve, reject) => {
+          // 模拟上传耗时
+          setTimeout(() => {
+            // 随机模拟失败
+            if (Math.random() < 0.02) reject(new Error("上传失败"));
+            else resolve(file); // 成功
+          }, 600 + Math.random() * 1000);
+        });
+      }
+      // 刷新文件列表
+      async function renderFileList(results) {
+        elFileList.innerHTML = "";
+        for (let i = 0; i < files.length; ++i) {
+          let item = results && results.find((r) => r.name === files[i].name);
+          let li = document.createElement("li");
+          let thumb = await getFileThumb(files[i]);
+          li.innerHTML = thumb + " " + files[i].name + "";
+          if (item) {
+            if (item.success)
+              li.innerHTML += ` <span style="color:#4caf50;">✔上传成功</span>`;
+            else
+              li.innerHTML += ` <span style="color:#f44336;font-weight:bold;" title="${
+                item.error || ""
+              }">×上传失败</span>`;
+          }
+          elFileList.appendChild(li);
+        }
+      }
+      // 进度条
+      function updateProgress(done, total) {
+        let percent = total ? Math.floor((done / total) * 100) : 0;
+        elProgress.style.width = percent + "%";
+        elStatus.innerText = `已完成: ${done}/${total} (${percent}%)`;
+      }
+      // 打包下载
+      async function downloadZip(resultArr) {
+        elStatus.innerText = "正在打包zip...";
+        const zip = new JSZip();
+        let addCount = 0;
+        for (const item of resultArr) {
+          if (item.success && item.res) {
+            zip.file(item.name, item.file);
+            ++addCount;
+          }
+        }
+        if (!addCount) {
+          elStatus.innerText = "没有可用文件可下载";
+          return;
+        }
+        const content = await zip.generateAsync({ type: "blob" });
+        saveAs(content, "uploaded_files.zip");
+        elStatus.innerText = "已下载zip";
+      }
+      // 选择文件
+      function onFilesSelected(fileList) {
+        // 筛掉非图片/视频
+        files = Array.from(fileList).filter((f) =>
+          /^image\/|^video\//.test(f.type)
+        );
+        if (files.length === 0) {
+          elStatus.innerText = "请上传图片或视频文件";
+          return;
+        }
+        renderFileList();
+        elStatus.innerText = "待上传 " + files.length + " 个文件";
+        elStart.disabled = false;
+        elPause.disabled = true;
+        elDownload.disabled = true;
+      }
+
+      // ----- 事件 -----
+      elUploadArea.onclick = function () {
+        elFileInput.value = "";
+        elFileInput.click();
+      };
+      elFileInput.onchange = function (e) {
+        if (e.target.files) onFilesSelected(e.target.files);
+      };
+
+      // 拖拽支持
+      elUploadArea.ondragenter = (e) => {
+        e.preventDefault();
+        showDragOverStyle(true);
+      };
+      elUploadArea.ondragover = (e) => {
+        e.preventDefault();
+        showDragOverStyle(true);
+      };
+      elUploadArea.ondragleave = (e) => {
+        e.preventDefault();
+        showDragOverStyle(false);
+      };
+      elUploadArea.ondrop = (e) => {
+        e.preventDefault();
+        showDragOverStyle(false);
+        if (e.dataTransfer && e.dataTransfer.files) {
+          onFilesSelected(e.dataTransfer.files);
+        }
+      };
+
+      // 开始上传
+      elStart.onclick = function () {
+        if (started) return;
+        started = true;
+        elStart.disabled = true;
+        elPause.disabled = false;
+        if (!files.length) {
+          elStatus.innerText = "请先上传文件";
+          started = false;
+          return;
+        }
+        let concurrency = parseInt(elConcurrency.value) || 2;
+        pool = new ConcurrencyPool(concurrency);
+        pool.clearResults();
+        updateProgress(0, files.length);
+        renderFileList();
+        elDownload.disabled = true;
+        tasks = files.map((file, idx) =>
+          pool.addTask(() => uploadFile(file), { file, name: file.name })
+        );
+
+        let updateTimer = setInterval(() => {
+          let done = pool.results.length;
+          updateProgress(done, files.length);
+          renderFileList(pool.results);
+          if (done >= files.length) {
+            clearInterval(updateTimer);
+            elDownload.disabled = false;
+            elPause.disabled = true;
+            elStatus.innerText = "全部上传完成";
+            started = false;
+          }
+        }, 270);
+
+        Promise.allSettled(tasks).then(() => {
+          updateProgress(pool.results.length, files.length);
+          renderFileList(pool.results);
+          elDownload.disabled = false;
+          elPause.disabled = true;
+          elStatus.innerText = "全部上传完成";
+          started = false;
+        });
+      };
+      // 暂停/恢复
+      elPause.onclick = function () {
+        if (!pool) return;
+        if (pool.paused) {
+          pool.resume();
+          elPause.innerText = "暂停";
+          elStatus.innerText = "恢复中...";
+        } else {
+          pool.pause();
+          elPause.innerText = "恢复";
+          elStatus.innerText = "已暂停";
+        }
+      };
+      // 下载全部
+      elDownload.onclick = function () {
+        if (!pool || !pool.results.length) return;
+        const good = pool.results.filter((i) => i.success && i.res);
+        if (!good.length) {
+          elStatus.innerText = "没有可下载内容";
+          return;
+        }
+        downloadZip(good);
+      };
+      // 初始化
+      resetAll();
+    </script>
+  </body>
+</html>
