@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Sticky Bottom Product Nav Example</title>
+    <title>Sticky Bottom Product Buy Info Nav Example</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <style>
         body {
@@ -12,7 +12,7 @@
             font-family: "Inter", "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
         }
 
-        #sticky-product-nav {
+        #sticky-product-buy-info-nav {
             position: fixed;
             left: 50%;
             transform: translateX(-50%) translateY(150%);
@@ -32,20 +32,20 @@
             opacity: 0;
         }
 
-        #sticky-product-nav.sticky-nav-visible {
+        #sticky-product-buy-info-nav.buy-info-nav-visible {
             transform: translateX(-50%) translateY(-100px);
             opacity: 1;
             pointer-events: auto;
         }
 
-        .sticky-nav-inner {
+        .buy-info-nav-inner {
             display: flex;
             align-items: center;
             width: 100%;
             gap: 32px;
         }
 
-        .sticky-nav-delivery {
+        .buy-info-nav-delivery {
             flex: 1 1 auto;
             font-size: 18px;
             color: #393939;
@@ -56,7 +56,7 @@
             min-width: 260px;
         }
 
-        .icon-delivery {
+        .buy-info-icon-delivery {
             width: 26px;
             height: 22px;
             display: inline-block;
@@ -65,7 +65,7 @@
             margin-right: 8px;
         }
 
-        .delivery-date {
+        .buy-info-delivery-date {
             font-weight: 700;
             color: #111;
             margin: 0 3px;
@@ -73,7 +73,7 @@
             letter-spacing: 0.5px;
         }
 
-        .arrow {
+        .buy-info-arrow {
             font-size: 15px;
             margin-left: 6px;
             color: #393939;
@@ -82,7 +82,7 @@
             display: inline-block;
         }
 
-        .sticky-nav-prices {
+        .buy-info-nav-prices {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
@@ -91,14 +91,14 @@
             min-width: 170px;
         }
 
-        .price-list .currant-price {
+        .buy-info-price-list .buy-info-currant-price {
             color: #e84c3d;
             font-size: 32px;
             font-weight: 600;
             margin-right: 8px;
         }
 
-        .price-list .orignal-price {
+        .buy-info-price-list .buy-info-orignal-price {
             font-size: 28px;
             color: #c4c4c4;
             text-decoration: line-through;
@@ -106,13 +106,13 @@
             margin-left: 2px;
         }
 
-        .price-list {
+        .buy-info-price-list {
             line-height: 1.1;
             display: flex;
             align-items: baseline;
         }
 
-        .price-save {
+        .buy-info-price-save {
             background: #feecec;
             color: #e84c3d;
             display: inline-block;
@@ -125,7 +125,7 @@
             line-height: 1.25;
         }
 
-        .sticky-nav-btn {
+        .buy-info-nav-btn {
             font-size: 20px;
             padding: 10px 40px;
             border-radius: 999px;
@@ -139,73 +139,71 @@
             line-height: 1.05;
         }
 
-        .cart-btn {
+        .buy-info-cart-btn {
             background: #111;
             color: #fff;
         }
 
-        .cart-btn:hover {
+        .buy-info-cart-btn:hover {
             background: #222;
         }
 
-        .shop-btn {
+        .buy-info-shop-btn {
             background: #613cdf;
             color: #fff;
             margin-left: 18px;
         }
 
-        .shop-btn img {
+        .buy-info-shop-btn img {
             height: 22px;
             margin-left: 8px;
             vertical-align: middle;
             transform: translateY(1px);
         }
 
-        /* 可选：自适应(对小屏) */
         @media (max-width: 900px) {
-            #sticky-product-nav {
+            #sticky-product-buy-info-nav {
                 min-width: 0;
                 padding: 6px;
             }
 
-            .sticky-nav-inner {
+            .buy-info-nav-inner {
                 flex-wrap: wrap;
                 gap: 14px
             }
 
-            .sticky-nav-prices {
+            .buy-info-nav-prices {
                 min-width: 94px;
                 margin-right: 6px;
             }
 
-            .price-list .currant-price {
+            .buy-info-price-list .buy-info-currant-price {
                 font-size: 20px;
             }
 
-            .price-list .orignal-price {
+            .buy-info-price-list .buy-info-orignal-price {
                 font-size: 15px;
             }
 
-            .price-save {
+            .buy-info-price-save {
                 font-size: 13px;
             }
 
-            .sticky-nav-btn {
+            .buy-info-nav-btn {
                 font-size: 14px;
                 padding: 5px 16px;
                 margin-left: 6px;
             }
 
-            .sticky-nav-delivery {
+            .buy-info-nav-delivery {
                 font-size: 14px;
             }
 
-            .delivery-date {
+            .buy-info-delivery-date {
                 font-size: 15px;
             }
         }
 
-        /* Hide scroll for demo (可选) */
         html,
         body {
             overflow-x: hidden;
@@ -215,29 +213,31 @@
 
 <body>
 
-    <!-- *** Sticky Bottom Product Nav *** -->
-    <div id="sticky-product-nav">
-        <div class="sticky-nav-inner">
-            <div class="sticky-nav-delivery">
-                <span class="icon-delivery"></span>
-                Order Now, Projector Estimated Delivery: <b class="delivery-date">04/21 - 05/01</b> View More
-                <span class="arrow">&#9650;</span>
+    <!-- Sticky Bottom Product Buy Info Nav -->
+    <div id="sticky-product-buy-info-nav">
+        <div class="buy-info-nav-inner">
+            <div class="buy-info-nav-delivery">
+                <span class="buy-info-icon-delivery"></span>
+                Order Now, Projector Estimated Delivery:
+                <b class="buy-info-delivery-date">04/21 - 05/01</b>
+                View More <span class="buy-info-arrow">&#9650;</span>
             </div>
-            <div class="sticky-nav-prices">
-                <div class="price-list">
-                    <span class="currant-price" id="sticky-currant-price">$6,298</span>
-                    <span class="orignal-price" id="sticky-orignal-price">$8,698</span>
+            <div class="buy-info-nav-prices">
+                <div class="buy-info-price-list">
+                    <span class="buy-info-currant-price" id="buy-info-currant-price">$6,298</span>
+                    <span class="buy-info-orignal-price" id="buy-info-orignal-price">$8,698</span>
                 </div>
-                <div class="price-save" id="sticky-save">Save $490</div>
+                <div class="buy-info-price-save" id="buy-info-save">Save $490</div>
             </div>
-            <button class="sticky-nav-btn cart-btn">Add to Cart</button>
-            <button class="sticky-nav-btn shop-btn">Buy with <img
-                    src="https://cdn.shopify.com/s/files/1/0632/3335/9987/files/shop-pay-logo.svg"
-                    alt="ShopPay"></button>
+            <button class="buy-info-nav-btn buy-info-cart-btn">Add to Cart</button>
+            <button class="buy-info-nav-btn buy-info-shop-btn">
+                Buy with <img src="https://cdn.shopify.com/s/files/1/0632/3335/9987/files/shop-pay-logo.svg"
+                    alt="ShopPay">
+            </button>
         </div>
     </div>
 
-    <!-- *** Demo Content/Spacer *** -->
+    <!-- Demo区、Spacer/模拟页面滚动 -->
     <div style="height:1200px;background: linear-gradient(to bottom,#f8f8f8,#fff);"></div>
     <div class="product-form__buy-buttons"
         style="height:66px;background:#eee;border-radius:16px;margin:0 10vw 140px 10vw;display:flex;align-items:center;justify-content:center;">
@@ -245,33 +245,30 @@
     </div>
     <div style="height:300px;"></div>
 
-    <!-- *** Sticky Nav Control Script *** -->
+    <!-- 脚本，已全部 buy-info 前缀并对应修改ID -->
     <script>
         (function () {
-            const navId = 'sticky-product-nav';
+            const navId = 'sticky-product-buy-info-nav';
             const nav = document.getElementById(navId);
             if (!nav) return;
             const observeTargetSelector = '.product-form__buy-buttons';
             let visible = false;
 
-            // ====★ 这部分替换为"当前选中"变体价格即可 ====
+            // 这里模拟变体对象
             const variant = {
                 price: 629800, // 单位: 分
                 compare_at_price: 869800
-                // compare_at_price: null // 取消原价显示可这样
             };
 
-            // 价格格式
             function moneyFormat(cents) {
-                // 千位分割，整数，不保留小数
                 return '$' + (Number(cents) / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
             }
             function renderPrice() {
                 const price = variant.price;
                 const cap = variant.compare_at_price || 0;
-                document.getElementById('sticky-currant-price').textContent = moneyFormat(price);
-                const op = document.getElementById('sticky-orignal-price');
-                const save = document.getElementById('sticky-save');
+                document.getElementById('buy-info-currant-price').textContent = moneyFormat(price);
+                const op = document.getElementById('buy-info-orignal-price');
+                const save = document.getElementById('buy-info-save');
                 if (cap && cap > price) {
                     op.style.display = '';
                     op.textContent = moneyFormat(cap);
@@ -284,7 +281,6 @@
             }
             renderPrice();
 
-            // 显示/隐藏动画
             const btnDom = document.querySelector(observeTargetSelector);
             if (btnDom) {
                 const io = new window.IntersectionObserver(
@@ -303,12 +299,12 @@
             function showNav() {
                 if (visible) return;
                 visible = true;
-                nav.classList.add('sticky-nav-visible');
+                nav.classList.add('buy-info-nav-visible');
             }
             function hideNav() {
                 if (!visible) return;
                 visible = false;
-                nav.classList.remove('sticky-nav-visible');
+                nav.classList.remove('buy-info-nav-visible');
             }
         })();
     </script>
