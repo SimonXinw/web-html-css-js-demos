@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sticky Bottom Product Nav Example</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        body {
+            background: #f8f8f8;
+            margin: 0;
+            font-family: "Inter", "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        }
+
+        #sticky-product-nav {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%) translateY(150%);
+            bottom: 0;
+            width: 95vw;
+            max-width: 1600px;
+            min-width: 600px;
+            z-index: 99;
+            background: #fff;
+            box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.10);
+            border-radius: 32px 32px 0 0;
+            transition: transform .36s cubic-bezier(.4, 0, .2, 1), opacity .28s;
+            padding: 24px 36px 24px 24px;
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        #sticky-product-nav.sticky-nav-visible {
+            transform: translateX(-50%) translateY(-100px);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .sticky-nav-inner {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            gap: 32px;
+        }
+
+        .sticky-nav-delivery {
+            flex: 1 1 auto;
+            font-size: 18px;
+            color: #393939;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            min-width: 260px;
+        }
+
+        .icon-delivery {
+            width: 26px;
+            height: 22px;
+            display: inline-block;
+            background: url('https://cdn-icons-png.flaticon.com/512/535/535137.png') no-repeat center/contain;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .delivery-date {
+            font-weight: 700;
+            color: #111;
+            margin: 0 3px;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+        }
+
+        .arrow {
+            font-size: 15px;
+            margin-left: 6px;
+            color: #393939;
+            font-weight: 500;
+            transform: scaleY(0.7);
+            display: inline-block;
+        }
+
+        .sticky-nav-prices {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            margin-right: 24px;
+            min-width: 170px;
+        }
+
+        .price-list .currant-price {
+            color: #e84c3d;
+            font-size: 32px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .price-list .orignal-price {
+            font-size: 28px;
+            color: #c4c4c4;
+            text-decoration: line-through;
+            font-weight: 400;
+            margin-left: 2px;
+        }
+
+        .price-list {
+            line-height: 1.1;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .price-save {
+            background: #feecec;
+            color: #e84c3d;
+            display: inline-block;
+            border-radius: 6px;
+            padding: 2px 12px;
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 4px;
+            margin-right: 6px;
+            line-height: 1.25;
+        }
+
+        .sticky-nav-btn {
+            font-size: 20px;
+            padding: 10px 40px;
+            border-radius: 999px;
+            border: none;
+            margin-left: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.18s;
+            display: flex;
+            align-items: center;
+            line-height: 1.05;
+        }
+
+        .cart-btn {
+            background: #111;
+            color: #fff;
+        }
+
+        .cart-btn:hover {
+            background: #222;
+        }
+
+        .shop-btn {
+            background: #613cdf;
+            color: #fff;
+            margin-left: 18px;
+        }
+
+        .shop-btn img {
+            height: 22px;
+            margin-left: 8px;
+            vertical-align: middle;
+            transform: translateY(1px);
+        }
+
+        /* 可选：自适应(对小屏) */
+        @media (max-width: 900px) {
+            #sticky-product-nav {
+                min-width: 0;
+                padding: 6px;
+            }
+
+            .sticky-nav-inner {
+                flex-wrap: wrap;
+                gap: 14px
+            }
+
+            .sticky-nav-prices {
+                min-width: 94px;
+                margin-right: 6px;
+            }
+
+            .price-list .currant-price {
+                font-size: 20px;
+            }
+
+            .price-list .orignal-price {
+                font-size: 15px;
+            }
+
+            .price-save {
+                font-size: 13px;
+            }
+
+            .sticky-nav-btn {
+                font-size: 14px;
+                padding: 5px 16px;
+                margin-left: 6px;
+            }
+
+            .sticky-nav-delivery {
+                font-size: 14px;
+            }
+
+            .delivery-date {
+                font-size: 15px;
+            }
+        }
+
+        /* Hide scroll for demo (可选) */
+        html,
+        body {
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- *** Sticky Bottom Product Nav *** -->
+    <div id="sticky-product-nav">
+        <div class="sticky-nav-inner">
+            <div class="sticky-nav-delivery">
+                <span class="icon-delivery"></span>
+                Order Now, Projector Estimated Delivery: <b class="delivery-date">04/21 - 05/01</b> View More
+                <span class="arrow">&#9650;</span>
+            </div>
+            <div class="sticky-nav-prices">
+                <div class="price-list">
+                    <span class="currant-price" id="sticky-currant-price">$6,298</span>
+                    <span class="orignal-price" id="sticky-orignal-price">$8,698</span>
+                </div>
+                <div class="price-save" id="sticky-save">Save $490</div>
+            </div>
+            <button class="sticky-nav-btn cart-btn">Add to Cart</button>
+            <button class="sticky-nav-btn shop-btn">Buy with <img
+                    src="https://cdn.shopify.com/s/files/1/0632/3335/9987/files/shop-pay-logo.svg"
+                    alt="ShopPay"></button>
+        </div>
+    </div>
+
+    <!-- *** Demo Content/Spacer *** -->
+    <div style="height:1200px;background: linear-gradient(to bottom,#f8f8f8,#fff);"></div>
+    <div class="product-form__buy-buttons"
+        style="height:66px;background:#eee;border-radius:16px;margin:0 10vw 140px 10vw;display:flex;align-items:center;justify-content:center;">
+        <span style="font-size:22px;color:#222;">[商品购买操作区 DEMO]</span>
+    </div>
+    <div style="height:300px;"></div>
+
+    <!-- *** Sticky Nav Control Script *** -->
+    <script>
+        (function () {
+            const navId = 'sticky-product-nav';
+            const nav = document.getElementById(navId);
+            if (!nav) return;
+            const observeTargetSelector = '.product-form__buy-buttons';
+            let visible = false;
+
+            // ====★ 这部分替换为"当前选中"变体价格即可 ====
+            const variant = {
+                price: 629800, // 单位: 分
+                compare_at_price: 869800
+                // compare_at_price: null // 取消原价显示可这样
+            };
+
+            // 价格格式
+            function moneyFormat(cents) {
+                // 千位分割，整数，不保留小数
+                return '$' + (Number(cents) / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+            }
+            function renderPrice() {
+                const price = variant.price;
+                const cap = variant.compare_at_price || 0;
+                document.getElementById('sticky-currant-price').textContent = moneyFormat(price);
+                const op = document.getElementById('sticky-orignal-price');
+                const save = document.getElementById('sticky-save');
+                if (cap && cap > price) {
+                    op.style.display = '';
+                    op.textContent = moneyFormat(cap);
+                    save.style.display = '';
+                    save.textContent = `Save $${((cap - price) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+                } else {
+                    op.style.display = 'none';
+                    save.style.display = 'none';
+                }
+            }
+            renderPrice();
+
+            // 显示/隐藏动画
+            const btnDom = document.querySelector(observeTargetSelector);
+            if (btnDom) {
+                const io = new window.IntersectionObserver(
+                    entries => {
+                        for (const entry of entries) {
+                            if (entry.isIntersecting) {
+                                hideNav();
+                            } else {
+                                showNav();
+                            }
+                        }
+                    }, { rootMargin: '0px 0px 0px 0px', threshold: 0.01 }
+                );
+                io.observe(btnDom);
+            }
+            function showNav() {
+                if (visible) return;
+                visible = true;
+                nav.classList.add('sticky-nav-visible');
+            }
+            function hideNav() {
+                if (!visible) return;
+                visible = false;
+                nav.classList.remove('sticky-nav-visible');
+            }
+        })();
+    </script>
+
+</body>
+
+</html>
