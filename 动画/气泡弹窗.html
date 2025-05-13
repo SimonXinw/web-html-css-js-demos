@@ -51,8 +51,12 @@
       }
       .buy-info-view-more-icon svg {
         display: block;
-        transform: rotate(180deg);
+        transform: rotate(180deg); /* 默认180度，朝上 */
         transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .buy-info-view-more-icon:hover svg,
+      .buy-info-view-more-icon:focus svg {
+        transform: rotate(0deg); /* 悬停时朝下 */
       }
       /* Popover 样式 */
       .buy-info-view-more-popover {
@@ -64,7 +68,6 @@
         border-radius: 4px;
         padding: 8px 12px;
         position: absolute;
-        /* 由于container加了padding，不再需要translateX(-50%) */
         left: auto;
         right: -12px;
         bottom: 24px;
@@ -75,7 +78,9 @@
         pointer-events: none;
         transition: opacity 0.2s;
       }
-      .buy-info-view-more.popover-open .buy-info-view-more-popover {
+      /* 只 hover 时显示 */
+      .buy-info-view-more-icon:hover .buy-info-view-more-popover,
+      .buy-info-view-more-icon:focus .buy-info-view-more-popover {
         opacity: 1;
         pointer-events: auto;
       }
@@ -120,10 +125,6 @@
         top: 100%;
         pointer-events: none;
       }
-      /* 图标旋转 */
-      .buy-info-view-more.popover-open .buy-info-view-more-icon svg {
-        transform: rotate(0deg);
-      }
       /* 鼠标hover效果(可选) */
       .buy-info-view-more:hover {
         box-shadow: 0 2px 24px rgba(80, 90, 120, 0.12);
@@ -167,96 +168,12 @@
           </div>
           <div class="popover-row">
             <span class="popover-label">支持：</span
-            ><span class="popover-value">移动端点击/PC悬停</span>
+            ><span class="popover-value">只支持 PC 悬停弹窗</span>
           </div>
           <div class="popover-arrow"></div>
         </div>
       </span>
     </span>
-
-    <script>
-      /**
-       * @js是移动端用专用点击事件，也可以不要
-       * BuyInfoPopover 组件，负责弹窗的所有交互
-       * @param {string|Element} containerSelector
-       * @param {string|Element} iconSelector
-       * @param {string|Element} popoverSelector
-       */
-      class BuyInfoPopover {
-        constructor(containerSelector, iconSelector, popoverSelector) {
-          this.container =
-            typeof containerSelector === "string"
-              ? document.querySelector(containerSelector)
-              : containerSelector;
-          this.icon =
-            typeof iconSelector === "string"
-              ? this.container.querySelector(iconSelector)
-              : iconSelector;
-          this.popover =
-            typeof popoverSelector === "string"
-              ? this.container.querySelector(popoverSelector)
-              : popoverSelector;
-          this.timer = null;
-          this.initEvents();
-        }
-        openPopover() {
-          this.container.classList.add("popover-open");
-          if (this.timer) clearTimeout(this.timer);
-        }
-        closePopover(delay = 60) {
-          this.timer = setTimeout(() => {
-            this.container.classList.remove("popover-open");
-          }, delay);
-        }
-        togglePopover() {
-          if (this.container.classList.contains("popover-open")) {
-            this.container.classList.remove("popover-open");
-          } else {
-            this.openPopover();
-          }
-        }
-        handleDocumentClick = (e) => {
-          if (!this.container.contains(e.target)) {
-            this.container.classList.remove("popover-open");
-          }
-        };
-        initEvents() {
-          // PC 悬停
-          this.icon.addEventListener("mouseenter", () => this.openPopover());
-          this.icon.addEventListener("mouseleave", () => this.closePopover());
-          this.popover.addEventListener("mouseenter", () => this.openPopover());
-          this.popover.addEventListener("mouseleave", () =>
-            this.closePopover()
-          );
-          // 移动端点击
-          this.icon.addEventListener("click", (e) => {
-            e.stopPropagation();
-            this.togglePopover();
-          });
-          // 外部点击关闭
-          document.addEventListener("click", this.handleDocumentClick);
-          // 键盘 focus
-          this.icon.addEventListener("focus", () => this.openPopover());
-          this.icon.addEventListener("blur", () => this.closePopover());
-        }
-        destroy() {
-          // 如不再需要时可解绑所有事件，防止内存泄漏
-          this.icon.removeEventListener("mouseenter", this.openPopover);
-          this.icon.removeEventListener("mouseleave", this.closePopover);
-          this.popover.removeEventListener("mouseenter", this.openPopover);
-          this.popover.removeEventListener("mouseleave", this.closePopover);
-          this.icon.removeEventListener("click", this.togglePopover);
-          document.removeEventListener("click", this.handleDocumentClick);
-          this.icon.removeEventListener("focus", this.openPopover);
-          this.icon.removeEventListener("blur", this.closePopover);
-        }
-      }
-      // 实例化
-      new BuyInfoPopover(
-        ".buy-info-view-more",
-        ".buy-info-view-more-icon",
-        ".buy-info-view-more-popover"
-      );
-    </script>
+    <!-- 无需 JS 了 -->
   </body>
 </html>
