@@ -51,6 +51,7 @@
       }
       .buy-info-view-more-icon svg {
         display: block;
+        transform: rotate(180deg);
         transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
       }
       /* Popover 样式 */
@@ -121,7 +122,7 @@
       }
       /* 图标旋转 */
       .buy-info-view-more.popover-open .buy-info-view-more-icon svg {
-        transform: rotate(180deg);
+        transform: rotate(0deg);
       }
       /* 鼠标hover效果(可选) */
       .buy-info-view-more:hover {
@@ -174,45 +175,87 @@
     </span>
 
     <script>
-      // 获取元素
-      const icon = document.querySelector(".buy-info-view-more-icon");
-      const container = document.querySelector(".buy-info-view-more");
-      const popover = document.querySelector(".buy-info-view-more-popover");
-      let timer = null;
-
-      function openPopover() {
-        container.classList.add("popover-open");
-        if (timer) clearTimeout(timer);
-      }
-      function closePopover(delay = 60) {
-        timer = setTimeout(() => {
-          container.classList.remove("popover-open");
-        }, delay);
-      }
-
-      // PC 悬停
-      icon.addEventListener("mouseenter", openPopover);
-      icon.addEventListener("mouseleave", closePopover);
-      popover.addEventListener("mouseenter", openPopover);
-      popover.addEventListener("mouseleave", closePopover);
-      // 移动端点击
-      icon.addEventListener("click", function (e) {
-        e.stopPropagation();
-        if (container.classList.contains("popover-open")) {
-          container.classList.remove("popover-open");
-        } else {
-          openPopover();
+      /**
+       * BuyInfoPopover 组件，负责弹窗的所有交互
+       * @param {string|Element} containerSelector
+       * @param {string|Element} iconSelector
+       * @param {string|Element} popoverSelector
+       */
+      class BuyInfoPopover {
+        constructor(containerSelector, iconSelector, popoverSelector) {
+          this.container =
+            typeof containerSelector === "string"
+              ? document.querySelector(containerSelector)
+              : containerSelector;
+          this.icon =
+            typeof iconSelector === "string"
+              ? this.container.querySelector(iconSelector)
+              : iconSelector;
+          this.popover =
+            typeof popoverSelector === "string"
+              ? this.container.querySelector(popoverSelector)
+              : popoverSelector;
+          this.timer = null;
+          this.initEvents();
         }
-      });
-      // 外部点击关闭
-      document.addEventListener("click", function (e) {
-        if (!container.contains(e.target)) {
-          container.classList.remove("popover-open");
+        openPopover() {
+          this.container.classList.add("popover-open");
+          if (this.timer) clearTimeout(this.timer);
         }
-      });
-      // 键盘 focus
-      icon.addEventListener("focus", openPopover);
-      icon.addEventListener("blur", closePopover);
+        closePopover(delay = 60) {
+          this.timer = setTimeout(() => {
+            this.container.classList.remove("popover-open");
+          }, delay);
+        }
+        togglePopover() {
+          if (this.container.classList.contains("popover-open")) {
+            this.container.classList.remove("popover-open");
+          } else {
+            this.openPopover();
+          }
+        }
+        handleDocumentClick = (e) => {
+          if (!this.container.contains(e.target)) {
+            this.container.classList.remove("popover-open");
+          }
+        };
+        initEvents() {
+          // PC 悬停
+          this.icon.addEventListener("mouseenter", () => this.openPopover());
+          this.icon.addEventListener("mouseleave", () => this.closePopover());
+          this.popover.addEventListener("mouseenter", () => this.openPopover());
+          this.popover.addEventListener("mouseleave", () =>
+            this.closePopover()
+          );
+          // 移动端点击
+          this.icon.addEventListener("click", (e) => {
+            e.stopPropagation();
+            this.togglePopover();
+          });
+          // 外部点击关闭
+          document.addEventListener("click", this.handleDocumentClick);
+          // 键盘 focus
+          this.icon.addEventListener("focus", () => this.openPopover());
+          this.icon.addEventListener("blur", () => this.closePopover());
+        }
+        destroy() {
+          // 如不再需要时可解绑所有事件，防止内存泄漏
+          this.icon.removeEventListener("mouseenter", this.openPopover);
+          this.icon.removeEventListener("mouseleave", this.closePopover);
+          this.popover.removeEventListener("mouseenter", this.openPopover);
+          this.popover.removeEventListener("mouseleave", this.closePopover);
+          this.icon.removeEventListener("click", this.togglePopover);
+          document.removeEventListener("click", this.handleDocumentClick);
+          this.icon.removeEventListener("focus", this.openPopover);
+          this.icon.removeEventListener("blur", this.closePopover);
+        }
+      }
+      // 实例化
+      new BuyInfoPopover(
+        ".buy-info-view-more",
+        ".buy-info-view-more-icon",
+        ".buy-info-view-more-popover"
+      );
     </script>
   </body>
 </html>
