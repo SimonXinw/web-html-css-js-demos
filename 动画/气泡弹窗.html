@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Buy Info View More Popover Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- 可选的字体 -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color_background_primary: #fff;
+        --Color-text-blackDescription: rgba(60, 60, 67, 0.6);
+        --Color-text-blackPrimary: rgba(0, 0, 0, 0.95);
+      }
+      html {
+        height: 100%;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        font-family: "Manrope", Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 40px;
+      }
+
+      .buy-info-view-more {
+        display: inline-flex;
+        align-items: center;
+        position: relative;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 12px rgba(80, 90, 120, 0.08);
+        font-size: 15px;
+        cursor: default;
+      }
+      .buy-info-view-more-icon {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        margin-left: 4px;
+        position: relative;
+        z-index: 2; /* 为弹窗定位锚定 */
+        transition: color 0.2s;
+      }
+      .buy-info-view-more-icon svg {
+        display: block;
+        transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      /* Popover 样式 */
+      .buy-info-view-more-popover {
+        display: flex;
+        flex-direction: column;
+        min-width: 220px;
+        background: var(--color_background_primary);
+        box-shadow: 0px 2px 12px 0px rgba(0, 0, 0, 0.12);
+        border-radius: 4px;
+        padding: 8px 12px;
+        position: absolute;
+        /* 由于container加了padding，不再需要translateX(-50%) */
+        left: auto;
+        right: -12px;
+        bottom: 24px;
+        z-index: 50;
+        align-items: stretch;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+      }
+      .buy-info-view-more.popover-open .buy-info-view-more-popover {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .popover-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+      .popover-row:last-child {
+        margin-bottom: 0;
+      }
+      .popover-label {
+        color: var(--Color-text-blackDescription);
+        font-family: Manrope;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 133%;
+        letter-spacing: -0.12px;
+        margin-right: 8px;
+        min-width: 50px;
+        text-align: left;
+      }
+      .popover-value {
+        color: var(--Color-text-blackPrimary);
+        font-family: Manrope;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 133%;
+        letter-spacing: -0.12px;
+        text-align: left;
+      }
+      /* 三角形 */
+      .popover-arrow {
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid #fff;
+        position: absolute;
+        left: auto;
+        right: 12px; /* 距弹窗右侧12px */
+        top: 100%;
+        pointer-events: none;
+      }
+      /* 图标旋转 */
+      .buy-info-view-more.popover-open .buy-info-view-more-icon svg {
+        transform: rotate(180deg);
+      }
+      /* 鼠标hover效果(可选) */
+      .buy-info-view-more:hover {
+        box-shadow: 0 2px 24px rgba(80, 90, 120, 0.12);
+      }
+      @media (max-width: 440px) {
+        .buy-info-view-more {
+          width: 100%;
+        }
+        .buy-info-view-more-popover {
+          min-width: 180px;
+          padding: 8px 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <span class="buy-info-view-more" tabindex="-1">
+      View More
+      <span class="buy-info-view-more-icon" tabindex="0">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="17"
+          viewBox="0 0 16 17"
+          fill="none"
+        >
+          <path
+            d="M7.64787 6.19487L3 10.7036L3.70426 11.3867L8 7.21963L12.2957 11.3867L13 10.7036L8.35213 6.19487C8.15765 6.00622 7.84235 6.00622 7.64787 6.19487Z"
+            fill="black"
+            fill-opacity="0.95"
+          />
+        </svg>
+        <div class="buy-info-view-more-popover">
+          <div class="popover-row">
+            <span class="popover-label">属性一：</span
+            ><span class="popover-value">这是第1行说明</span>
+          </div>
+          <div class="popover-row">
+            <span class="popover-label">属性二：</span
+            ><span class="popover-value">还有第2个内容</span>
+          </div>
+          <div class="popover-row">
+            <span class="popover-label">支持：</span
+            ><span class="popover-value">移动端点击/PC悬停</span>
+          </div>
+          <div class="popover-arrow"></div>
+        </div>
+      </span>
+    </span>
+
+    <script>
+      // 获取元素
+      const icon = document.querySelector(".buy-info-view-more-icon");
+      const container = document.querySelector(".buy-info-view-more");
+      const popover = document.querySelector(".buy-info-view-more-popover");
+      let timer = null;
+
+      function openPopover() {
+        container.classList.add("popover-open");
+        if (timer) clearTimeout(timer);
+      }
+      function closePopover(delay = 60) {
+        timer = setTimeout(() => {
+          container.classList.remove("popover-open");
+        }, delay);
+      }
+
+      // PC 悬停
+      icon.addEventListener("mouseenter", openPopover);
+      icon.addEventListener("mouseleave", closePopover);
+      popover.addEventListener("mouseenter", openPopover);
+      popover.addEventListener("mouseleave", closePopover);
+      // 移动端点击
+      icon.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (container.classList.contains("popover-open")) {
+          container.classList.remove("popover-open");
+        } else {
+          openPopover();
+        }
+      });
+      // 外部点击关闭
+      document.addEventListener("click", function (e) {
+        if (!container.contains(e.target)) {
+          container.classList.remove("popover-open");
+        }
+      });
+      // 键盘 focus
+      icon.addEventListener("focus", openPopover);
+      icon.addEventListener("blur", closePopover);
+    </script>
+  </body>
+</html>
