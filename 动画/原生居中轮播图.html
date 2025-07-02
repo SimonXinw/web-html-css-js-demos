@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>原生Swiper实现</title>
+    <style>
+      body {
+        background: #000;
+        margin: 0;
+        padding: 40px 0;
+      }
+      .swiper-outer {
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        overflow: hidden;
+        position: relative;
+        background-color: #fff;
+      }
+      .swiper-inner {
+        display: flex;
+        transition: transform 0.4s ease;
+        will-change: transform;
+        user-select: none;
+      }
+      .swiper-card {
+        flex: 0 0 80%;
+        margin: 0 12px;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        position: relative;
+        background: #fff;
+        transition: box-shadow 0.4s, transform 0.4s, opacity 0.4s;
+        cursor: pointer;
+      }
+      .swiper-card img {
+        width: 100%;
+        display: block;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+      }
+
+      .swiper-card:not(.active) {
+        transform: scale(1);
+        opacity: 0.7;
+        z-index: 0;
+      }
+      
+      .swiper-card.active {
+        box-shadow: 0 6px 30px rgba(32, 46, 84, 0.15);
+        transform: scale(1);
+        opacity: 1;
+        z-index: 2;
+      }
+
+      /* 底部控制区容器 */
+      .swiper-controls-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 18px 0 0 0;
+        gap: 18px;
+        /* 高度适当 */
+      }
+      .swiper-controls {
+        display: flex;
+        align-items: center;
+        width: 80%; /* 跟卡片宽度百分比一致 */
+        max-width: 100%;
+        margin: 0 auto;
+        justify-content: space-between;
+        position: relative;
+      }
+      /* 按钮基础样式 */
+      .ctrl-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+        border: none;
+        cursor: pointer;
+        font-size: 22px;
+        color: #607d8b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.94;
+        transition: background 0.18s;
+        user-select: none;
+      }
+      .ctrl-btn:active {
+        background: #f0f4f9;
+      }
+      .ctrl-btn[disabled] {
+        opacity: 0.38;
+        pointer-events: none;
+      }
+      /* 指示点区 */
+      .ctrl-indicator-dots {
+        display: flex;
+        gap: 7px;
+        flex: 1;
+        justify-content: center;
+      }
+      .ctrl-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #ccc;
+        transition: background 0.3s, transform 0.3s;
+        cursor: pointer;
+        opacity: 0.5;
+        border: none;
+        padding: 0;
+        outline: none;
+      }
+      .ctrl-dot.active {
+        background: #567efb;
+        opacity: 1;
+        transform: scale(1.22);
+      }
+      /* 分数型计数器 */
+      .ctrl-indicator-score {
+        text-align: center;
+        font-size: 15px;
+        color: #567efb;
+        font-weight: 500;
+        flex: 1;
+        user-select: none;
+        letter-spacing: 0.2em;
+        margin: 0 6px;
+        min-width: 44px;
+      }
+
+      /* 响应式 */
+      @media (max-width: 600px) {
+        .swiper-outer {
+          max-width: none;
+        }
+        .swiper-card {
+          border-radius: 11px;
+        }
+        .swiper-controls,
+        .swiper-controls-wrapper {
+          width: 98%;
+          margin: 0 auto;
+          gap: 10px;
+        }
+        .ctrl-btn {
+          width: 32px;
+          height: 32px;
+          font-size: 17px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="swiper-outer">
+      <div class="swiper-inner" id="swiper-inner"></div>
+    </div>
+    <!-- 控制区：点状 -->
+    <div class="swiper-controls-wrapper">
+      <div
+        class="swiper-controls"
+        id="controls-dots"
+        style="display: flex"
+      ></div>
+    </div>
+    <!-- 控制区：分数（1/6 格式）-->
+    <div class="swiper-controls-wrapper">
+      <div
+        class="swiper-controls"
+        id="controls-score"
+        style="display: flex"
+      ></div>
+    </div>
+    <script>
+      // 配置
+      const IMAGE_URL =
+        "https://cdn.shopify.com/s/files/1/0668/4970/2037/files/7963f26f86ef9f2535dfdcdf80b6c86f_076b03d2-e416-4b6d-b5f1-b958ac026614.webp?v=1748148616";
+      const IMG_COUNT = 7;
+      const CARD_WIDTH_PERCENT = 80; // 卡片宽百分比
+      const CARD_MARGIN = 12; // px
+      const swiperInner = document.getElementById("swiper-inner");
+
+      for (let i = 0; i < IMG_COUNT; i++) {
+        const div = document.createElement("div");
+        div.className = "swiper-card";
+        div.innerHTML = `<img src="${IMAGE_URL}" alt="轮播图${i + 1}">`;
+        swiperInner.appendChild(div);
+      }
+
+      // 激活卡片
+      let activeIndex = 0;
+
+      // --- 控件抽象 ---
+      function createArrowButton(type, onClick) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ctrl-btn ctrl-" + type;
+        btn.innerHTML = type === "prev" ? "&#8592;" : "&#8594;";
+        btn.addEventListener("click", onClick);
+        return btn;
+      }
+
+      function createDot(idx, isActive, onClick) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "ctrl-dot" + (isActive ? " active" : "");
+        btn.tabIndex = 0;
+        btn.setAttribute("aria-label", `图片${idx + 1}`);
+        btn.addEventListener("click", () => onClick(idx));
+        return btn;
+      }
+
+      function createScoreIndicator(current, total) {
+        const span = document.createElement("span");
+        span.className = "ctrl-indicator-score";
+        span.textContent = `${current + 1} / ${total}`;
+        return span;
+      }
+
+      function renderDotsControls(root, current, total, prevCb, nextCb, dotCb) {
+        root.innerHTML = "";
+        root.style.width = ""; // 重置
+        // 左按钮
+        const btnPrev = createArrowButton("prev", prevCb);
+        btnPrev.disabled = current === 0;
+        root.appendChild(btnPrev);
+
+        // 中部点点
+        const dots = document.createElement("div");
+        dots.className = "ctrl-indicator-dots";
+        for (let i = 0; i < total; i++) {
+          dots.appendChild(createDot(i, i === current, dotCb));
+        }
+        root.appendChild(dots);
+
+        // 右按钮
+        const btnNext = createArrowButton("next", nextCb);
+        btnNext.disabled = current === total - 1;
+        root.appendChild(btnNext);
+      }
+
+      function renderScoreControls(root, current, total, prevCb, nextCb) {
+        root.innerHTML = "";
+        // 左按钮
+        const btnPrev = createArrowButton("prev", prevCb);
+        btnPrev.disabled = current === 0;
+        root.appendChild(btnPrev);
+
+        // 分数字样
+        root.appendChild(createScoreIndicator(current, total));
+
+        // 右按钮
+        const btnNext = createArrowButton("next", nextCb);
+        btnNext.disabled = current === total - 1;
+        root.appendChild(btnNext);
+      }
+
+      function updateControlsWidth() {
+        // 让底部控制区与中间图片宽度对齐
+        const outer = document.querySelector(".swiper-outer");
+        const containerW = outer.clientWidth;
+        const cardW = (containerW * CARD_WIDTH_PERCENT) / 100;
+        document.querySelectorAll(".swiper-controls").forEach((ctrl) => {
+          ctrl.style.width = cardW + "px";
+        });
+      }
+
+      function updateSwiper() {
+        const cards = swiperInner.children;
+        for (let i = 0; i < cards.length; i++) {
+          if (i === activeIndex) cards[i].classList.add("active");
+          else cards[i].classList.remove("active");
+        }
+        // 计算每张总宽度 = 卡片宽 + 2*margin
+        const outer = document.querySelector(".swiper-outer");
+        const containerW = outer.clientWidth;
+        const cardW = (containerW * CARD_WIDTH_PERCENT) / 100;
+        const fullCardW = cardW + 2 * CARD_MARGIN;
+        // 平移量 = 激活卡片中心位置 - 容器中心
+        const translateX = fullCardW * activeIndex - (containerW - cardW) / 2;
+        swiperInner.style.transform = `translateX(${-translateX}px)`;
+
+        // 渲染两套控件
+        renderDotsControls(
+          document.getElementById("controls-dots"),
+          activeIndex,
+          IMG_COUNT,
+          () => {
+            if (activeIndex > 0) {
+              activeIndex--;
+              updateSwiper();
+            }
+          },
+          () => {
+            if (activeIndex < IMG_COUNT - 1) {
+              activeIndex++;
+              updateSwiper();
+            }
+          },
+          (idx) => {
+            if (activeIndex !== idx) {
+              activeIndex = idx;
+              updateSwiper();
+            }
+          }
+        );
+        renderScoreControls(
+          document.getElementById("controls-score"),
+          activeIndex,
+          IMG_COUNT,
+          () => {
+            if (activeIndex > 0) {
+              activeIndex--;
+              updateSwiper();
+            }
+          },
+          () => {
+            if (activeIndex < IMG_COUNT - 1) {
+              activeIndex++;
+              updateSwiper();
+            }
+          }
+        );
+
+        updateControlsWidth();
+      }
+
+      // 响应式
+      window.addEventListener("resize", updateSwiper);
+
+      // 轮播卡片点击
+      swiperInner.addEventListener("click", (e) => {
+        const cardEls = Array.from(swiperInner.children);
+        const idx = cardEls.indexOf(e.target.closest(".swiper-card"));
+        if (idx >= 0 && idx !== activeIndex) {
+          activeIndex = idx;
+          updateSwiper();
+        }
+      });
+
+      // 启动初始化
+      updateSwiper();
+    </script>
+  </body>
+</html>
