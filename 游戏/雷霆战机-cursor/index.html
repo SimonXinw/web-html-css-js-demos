@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雷霆战机 - 优化版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 游戏容器 -->
+    <div class="game-container">
+        <!-- 游戏画布 -->
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- 游戏信息 -->
+        <div class="game-info">
+            <div class="score">分数: <span id="scoreValue">0</span></div>
+            <div class="lives">生命: <span id="livesValue">3</span></div>
+            <div class="power">火力: <span id="powerValue">1</span></div>
+            <div class="bullet-type">子弹: <span id="bulletTypeValue">普通</span></div>
+        </div>
+        
+        <!-- 游戏开始界面 -->
+        <div id="startScreen" class="game-screen">
+            <h1>雷霆战机</h1>
+            <p>使用方向键或WASD移动飞机，空格键发射子弹</p>
+            <p>每100分升级火力，获得更强大的武器！</p>
+            <button id="startButton">开始游戏</button>
+        </div>
+        
+        <!-- 游戏结束界面 -->
+        <div id="gameOverScreen" class="game-screen hidden">
+            <h1>游戏结束</h1>
+            <p>您的最终得分: <span id="finalScore">0</span></p>
+            <button id="restartButton">重新开始</button>
+        </div>
+    </div>
+
+    <!-- 引入游戏脚本 -->
+    <script src="game.js"></script>
+</body>
+</html>
