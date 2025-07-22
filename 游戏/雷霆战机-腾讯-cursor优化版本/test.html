@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雷霆战机 - 测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-item.pass {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .test-item.fail {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .test-item.warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>雷霆战机游戏测试</h1>
+        
+        <div class="test-item">
+            <h3>文件结构测试</h3>
+            <div id="fileTest"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>类定义测试</h3>
+            <div id="classTest"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>游戏功能测试</h3>
+            <div id="gameTest"></div>
+        </div>
+        
+        <div class="test-item">
+            <h3>操作说明</h3>
+            <ul>
+                <li>方向键或WASD：移动飞机</li>
+                <li>空格键：发射子弹</li>
+                <li>ESC键或P键：暂停/恢复游戏</li>
+                <li>收集道具升级武器和获得护盾</li>
+            </ul>
+        </div>
+        
+        <button onclick="runTests()">运行测试</button>
+        <button onclick="openGame()">打开游戏</button>
+    </div>
+
+    <script>
+        function runTests() {
+            const fileTest = document.getElementById('fileTest');
+            const classTest = document.getElementById('classTest');
+            const gameTest = document.getElementById('gameTest');
+            
+            // 文件结构测试
+            const requiredFiles = [
+                'js/Background.js',
+                'js/Player.js',
+                'js/Enemy.js',
+                'js/Bullet.js',
+                'js/Explosion.js',
+                'js/PowerUp.js',
+                'js/InputHandler.js',
+                'js/UI.js',
+                'js/Game.js',
+                'index.html',
+                'style.css'
+            ];
+            
+            let filePass = 0;
+            let fileTotal = requiredFiles.length;
+            
+            requiredFiles.forEach(file => {
+                fetch(file)
+                    .then(response => {
+                        if (response.ok) {
+                            filePass++;
+                        }
+                        updateFileTest();
+                    })
+                    .catch(() => {
+                        updateFileTest();
+                    });
+            });
+            
+            function updateFileTest() {
+                const percentage = (filePass / fileTotal * 100).toFixed(1);
+                fileTest.innerHTML = `
+                    <p>文件检查: ${filePass}/${fileTotal} (${percentage}%)</p>
+                    <p class="${filePass === fileTotal ? 'pass' : 'fail'}">
+                        ${filePass === fileTotal ? '✅ 所有文件存在' : '❌ 部分文件缺失'}
+                    </p>
+                `;
+            }
+            
+            // 类定义测试
+            setTimeout(() => {
+                let classPass = 0;
+                let classTotal = 8;
+                
+                if (typeof Background !== 'undefined') classPass++;
+                if (typeof Player !== 'undefined') classPass++;
+                if (typeof Enemy !== 'undefined') classPass++;
+                if (typeof Bullet !== 'undefined') classPass++;
+                if (typeof Explosion !== 'undefined') classPass++;
+                if (typeof PowerUp !== 'undefined') classPass++;
+                if (typeof InputHandler !== 'undefined') classPass++;
+                if (typeof UI !== 'undefined') classPass++;
+                
+                const percentage = (classPass / classTotal * 100).toFixed(1);
+                classTest.innerHTML = `
+                    <p>类定义检查: ${classPass}/${classTotal} (${percentage}%)</p>
+                    <p class="${classPass === classTotal ? 'pass' : 'fail'}">
+                        ${classPass === classTotal ? '✅ 所有类已定义' : '❌ 部分类未定义'}
+                    </p>
+                `;
+            }, 1000);
+            
+            // 游戏功能测试
+            setTimeout(() => {
+                let gamePass = 0;
+                let gameTotal = 3;
+                
+                try {
+                    // 测试Game类实例化
+                    if (typeof Game !== 'undefined') {
+                        gamePass++;
+                    }
+                    
+                    // 测试Canvas元素
+                    const canvas = document.getElementById('gameCanvas');
+                    if (canvas) {
+                        gamePass++;
+                    }
+                    
+                    // 测试按钮元素
+                    const startButton = document.getElementById('startButton');
+                    if (startButton) {
+                        gamePass++;
+                    }
+                    
+                    const percentage = (gamePass / gameTotal * 100).toFixed(1);
+                    gameTest.innerHTML = `
+                        <p>游戏功能检查: ${gamePass}/${gameTotal} (${percentage}%)</p>
+                        <p class="${gamePass === gameTotal ? 'pass' : 'fail'}">
+                            ${gamePass === gameTotal ? '✅ 游戏功能正常' : '❌ 游戏功能异常'}
+                        </p>
+                    `;
+                } catch (error) {
+                    gameTest.innerHTML = `
+                        <p>游戏功能检查: 0/3 (0%)</p>
+                        <p class="fail">❌ 游戏功能异常: ${error.message}</p>
+                    `;
+                }
+            }, 2000);
+        }
+        
+        function openGame() {
+            window.open('index.html', '_blank');
+        }
+        
+        // 页面加载时自动运行测试
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html> 
