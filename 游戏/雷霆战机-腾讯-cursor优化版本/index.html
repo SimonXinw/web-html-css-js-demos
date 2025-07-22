@@ -15,6 +15,7 @@
         <div class="game-info">
             <div class="score">分数: <span id="scoreValue">0</span></div>
             <div class="lives">生命: <span id="livesValue">3</span></div>
+            <div class="level">等级: <span id="levelValue">1</span></div>
         </div>
         
         <!-- 开始界面 -->
@@ -24,15 +25,30 @@
             <button id="startButton">开始游戏</button>
         </div>
         
+        <!-- 暂停界面 -->
+        <div id="pauseScreen" class="game-screen hidden">
+            <h1>游戏暂停</h1>
+            <p>按ESC键继续游戏</p>
+        </div>
+        
         <!-- 游戏结束界面 -->
         <div id="gameOverScreen" class="game-screen hidden">
             <h1>游戏结束</h1>
             <p>你的最终得分: <span id="finalScore">0</span></p>
+            <p>最高等级: <span id="finalLevel">1</span></p>
             <button id="restartButton">重新开始</button>
         </div>
     </div>
     
     <!-- 游戏脚本 -->
-    <script src="game.js"></script>
+    <script src="js/Background.js"></script>
+    <script src="js/Player.js"></script>
+    <script src="js/Enemy.js"></script>
+    <script src="js/Bullet.js"></script>
+    <script src="js/Explosion.js"></script>
+    <script src="js/PowerUp.js"></script>
+    <script src="js/InputHandler.js"></script>
+    <script src="js/UI.js"></script>
+    <script src="js/Game.js"></script>
 </body>
 </html>
