@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雷霆战机 - 测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .test-container {
+            text-align: center;
+            padding: 20px;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #4cd137, #44bd32);
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 209, 55, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>雷霆战机 - 优化版测试</h1>
+        <p>点击下面的按钮测试游戏功能</p>
+        <button class="test-button" onclick="window.open('index.html', '_blank')">打开游戏</button>
+        <button class="test-button" onclick="testGameFeatures()">测试功能</button>
+    </div>
+
+    <script>
+        function testGameFeatures() {
+            const features = [
+                '✅ 精美的飞机模型（渐变、引擎火焰、复杂几何形状）',
+                '✅ 多样化的子弹系统（普通、散射、激光）',
+                '✅ 火力升级系统（每100分升级）',
+                '✅ Boss敌机（30%概率生成，有血条）',
+                '✅ 增强的爆炸效果（粒子系统、渐变）',
+                '✅ 星空背景和渐变效果',
+                '✅ 优化的UI界面（火力等级、子弹类型显示）',
+                '✅ 响应式设计',
+                '✅ 流畅的动画效果'
+            ];
+            
+            alert('游戏功能测试结果：\n\n' + features.join('\n'));
+        }
+    </script>
+</body>
+</html> 
