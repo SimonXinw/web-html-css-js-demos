@@ -1,0 +1,119 @@
+/* 全局样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #121212;
+    color: #ffffff;
+    overflow: hidden;
+}
+
+/* 游戏容器样式 */
+.game-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 游戏画布样式 */
+#gameCanvas {
+    background-color: #000000;
+    border: 2px solid #444;
+    box-shadow: 0 0 20px rgba(0, 150, 255, 0.5);
+}
+
+/* 游戏信息区样式 */
+.game-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 20px;
+    font-size: 18px;
+    color: #fff;
+    text-shadow: 0 0 5px rgba(0, 150, 255, 0.8);
+}
+
+/* 游戏开始界面样式 */
+.game-start {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10;
+}
+
+.game-start h1 {
+    font-size: 48px;
+    margin-bottom: 30px;
+    color: #0096ff;
+    text-shadow: 0 0 10px rgba(0, 150, 255, 0.8);
+}
+
+.game-start p {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #ccc;
+    max-width: 400px;
+    text-align: center;
+}
+
+/* 游戏结束界面样式 */
+.game-over {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10;
+}
+
+.game-over h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #ff3030;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+.game-over p {
+    font-size: 24px;
+    margin-bottom: 30px;
+    color: #fff;
+}
+
+/* 按钮样式 */
+button {
+    padding: 12px 30px;
+    font-size: 18px;
+    background-color: #0096ff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: #007acc;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 150, 255, 0.8);
+}
+
+button:active {
+    transform: scale(0.98);
+}
