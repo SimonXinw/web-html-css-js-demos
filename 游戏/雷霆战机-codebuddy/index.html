@@ -13,25 +13,58 @@
         
         <!-- 游戏信息显示区 -->
         <div class="game-info">
-            <div class="score">分数: <span id="scoreValue">0</span></div>
-            <div class="lives">生命: <span id="livesValue">3</span></div>
+            <div class="info-item">
+                <span class="info-label">分数:</span>
+                <span id="scoreValue" class="info-value">0</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">生命:</span>
+                <span id="livesValue" class="info-value">3</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">武器:</span>
+                <span id="weaponLevel" class="info-value">1</span>
+            </div>
         </div>
         
         <!-- 游戏开始界面 -->
         <div class="game-start" id="gameStart">
-            <h1>雷霆战机</h1>
-            <button id="startButton">开始游戏</button>
-            <p>操作说明: 使用方向键或WASD移动飞机，空格键发射子弹</p>
+            <div class="start-content">
+                <h1 class="game-title">⚡ 雷霆战机 ⚡</h1>
+                <div class="game-features">
+                    <div class="feature">🚀 多种武器升级</div>
+                    <div class="feature">💎 丰富道具系统</div>
+                    <div class="feature">👾 多样敌机类型</div>
+                    <div class="feature">💥 华丽爆炸特效</div>
+                </div>
+                <button id="startButton" class="start-btn">开始游戏</button>
+                <div class="controls">
+                    <h3>操作说明</h3>
+                    <div class="control-item">🎮 WASD / 方向键 - 移动飞机</div>
+                    <div class="control-item">🔫 空格键 - 发射子弹</div>
+                    <div class="control-item">⏸️ P键 - 暂停游戏</div>
+                    <div class="control-item">🔙 ESC键 - 返回主菜单</div>
+                </div>
+            </div>
         </div>
         
         <!-- 游戏结束界面 -->
         <div class="game-over" id="gameOver">
-            <h1>游戏结束</h1>
-            <p>最终得分: <span id="finalScore">0</span></p>
-            <button id="restartButton">重新开始</button>
+            <div class="game-over-content">
+                <h1>💥 游戏结束 💥</h1>
+                <p>最终得分: <span id="finalScore">0</span></p>
+                <button id="restartButton">🔄 重新开始</button>
+            </div>
         </div>
     </div>
     
-    <script src="script.js"></script>
+    <!-- 引入所有游戏模块 -->
+    <script src="js/Explosion.js"></script>
+    <script src="js/Bullet.js"></script>
+    <script src="js/Enemy.js"></script>
+    <script src="js/Player.js"></script>
+    <script src="js/PowerUp.js"></script>
+    <script src="js/Game.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
