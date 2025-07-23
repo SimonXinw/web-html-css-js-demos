@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雷霆战机</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 游戏容器 -->
+    <div class="game-container">
+        <!-- 游戏画布 -->
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- 游戏开始界面 -->
+        <div class="game-start">
+            <h1>雷霆战机</h1>
+            <button id="start-btn">开始游戏</button>
+        </div>
+        
+        <!-- 游戏结束界面 -->
+        <div class="game-over hidden">
+            <h2>游戏结束</h2>
+            <p>得分: <span id="final-score">0</span></p>
+            <button id="restart-btn">重新开始</button>
+        </div>
+        
+        <!-- 游戏信息 -->
+        <div class="game-info">
+            <div class="score">得分: <span id="score">0</span></div>
+            <div class="lives">生命: <span id="lives">3</span></div>
+        </div>
+    </div>
+    
+    <!-- 引入游戏脚本 -->
+    <script src="game.js"></script>
+</body>
+</html>

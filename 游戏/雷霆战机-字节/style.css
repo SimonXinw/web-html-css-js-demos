@@ -1,0 +1,122 @@
+/* 重置样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* 游戏容器样式 */
+.game-container {
+    position: relative;
+    width: 400px;
+    height: 600px;
+    background-color: #111;
+    border: 2px solid #444;
+    overflow: hidden;
+}
+
+/* 游戏画布样式 */
+#game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* 游戏开始界面样式 */
+.game-start {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10;
+}
+
+.game-start h1 {
+    color: #fff;
+    font-size: 36px;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px #0af;
+}
+
+/* 游戏结束界面样式 */
+.game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10;
+}
+
+.game-over h2 {
+    color: #fff;
+    font-size: 32px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #f00;
+}
+
+.game-over p {
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+/* 按钮样式 */
+button {
+    padding: 12px 24px;
+    font-size: 18px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0055aa;
+}
+
+/* 游戏信息样式 */
+.game-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    color: white;
+    font-size: 16px;
+    text-shadow: 1px 1px 2px black;
+}
+
+.score, .lives {
+    margin-bottom: 5px;
+}
+
+/* 辅助类 */
+.hidden {
+    display: none;
+}
