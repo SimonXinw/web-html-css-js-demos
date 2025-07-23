@@ -531,8 +531,19 @@
         }
       }
 
-      // 初始化倒计时器
-      const countdownTimer = new CountdownTimer();
+              // 初始化倒计时器
+        const countdownTimer = new CountdownTimer();
+
+        // 绑定开始按钮事件，支持停止功能
+        document
+            .getElementById("startBtn")
+            .addEventListener("click", function () {
+                if (countdownTimer.isRunning) {
+                    countdownTimer.stopCountdown();
+                } else {
+                    countdownTimer.startCountdown();
+                }
+            });
     </script>
   </body>
 </html>
