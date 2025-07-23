@@ -1,0 +1,210 @@
+/* 重置样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@font-face {
+    font-family: 'GameFont';
+    src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+}
+
+body {
+    font-family: 'GameFont', Arial, sans-serif;
+    background-color: #000;
+    background-image: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+    color: #fff;
+}
+
+/* 游戏容器样式 */
+.game-container {
+    position: relative;
+    width: 400px;
+    height: 600px;
+    background-color: #111;
+    border: 3px solid #444;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 100, 255, 0.5);
+}
+
+/* 游戏画布样式 */
+#game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* 游戏开始界面样式 */
+.game-start {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10;
+    padding: 20px;
+}
+
+.game-start h1 {
+    color: #fff;
+    font-size: 42px;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px #0af, 0 0 20px #0af, 0 0 30px #0af;
+    letter-spacing: 3px;
+    animation: glow 2s infinite alternate;
+}
+
+.game-description {
+    text-align: center;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.powerup-text {
+    color: #ffcc00;
+    font-weight: bold;
+    text-shadow: 0 0 5px #ffcc00;
+}
+
+/* 游戏暂停界面样式 */
+.game-pause {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 10;
+}
+
+.game-pause h2 {
+    color: #fff;
+    font-size: 36px;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px #0af;
+}
+
+.game-pause button {
+    margin: 10px 0;
+}
+
+/* 游戏结束界面样式 */
+.game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 10;
+}
+
+.game-over h2 {
+    color: #fff;
+    font-size: 36px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #f00, 0 0 20px #f00;
+}
+
+.game-stats {
+    background-color: rgba(50, 50, 70, 0.7);
+    border-radius: 10px;
+    padding: 15px 30px;
+    margin-bottom: 30px;
+    border: 1px solid #555;
+    box-shadow: 0 0 10px rgba(0, 100, 255, 0.3);
+}
+
+.game-stats p {
+    color: #fff;
+    font-size: 18px;
+    margin: 10px 0;
+    text-align: left;
+}
+
+/* 按钮样式 */
+button {
+    padding: 12px 30px;
+    font-size: 18px;
+    background: linear-gradient(to bottom, #0088ff, #0055aa);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'GameFont', Arial, sans-serif;
+    box-shadow: 0 0 10px rgba(0, 100, 255, 0.5);
+    outline: none;
+}
+
+button:hover {
+    background: linear-gradient(to bottom, #00aaff, #0077cc);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 150, 255, 0.7);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+/* 游戏信息样式 */
+.game-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 5;
+    color: white;
+    font-size: 16px;
+    text-shadow: 1px 1px 2px black;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #444;
+}
+
+.score, .lives, .weapon-level {
+    margin-bottom: 5px;
+}
+
+.weapon-level span {
+    color: #ffcc00;
+    text-shadow: 0 0 5px #ffcc00;
+}
+
+/* 辅助类 */
+.hidden {
+    display: none;
+}
+
+/* 动画效果 */
+@keyframes glow {
+    from {
+        text-shadow: 0 0 10px #0af, 0 0 20px #0af, 0 0 30px #0af;
+    }
+    to {
+        text-shadow: 0 0 15px #0af, 0 0 25px #0af, 0 0 35px #0af, 0 0 45px #0af;
+    }
+}
