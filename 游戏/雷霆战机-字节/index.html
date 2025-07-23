@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>雷霆战机</title>
-    <link rel="stylesheet" href="style.css">
+    <title>雷霆战机 - 升级版</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <!-- 游戏容器 -->
@@ -15,13 +15,29 @@
         <!-- 游戏开始界面 -->
         <div class="game-start">
             <h1>雷霆战机</h1>
+            <div class="game-description">
+                <p>使用鼠标移动飞机，点击鼠标发射子弹</p>
+                <p>收集<span class="powerup-text">能量道具</span>升级武器</p>
+                <p>击败敌机获得高分！</p>
+            </div>
             <button id="start-btn">开始游戏</button>
+        </div>
+        
+        <!-- 游戏暂停界面 -->
+        <div class="game-pause hidden">
+            <h2>游戏暂停</h2>
+            <button id="resume-btn">继续游戏</button>
+            <button id="restart-btn-pause">重新开始</button>
         </div>
         
         <!-- 游戏结束界面 -->
         <div class="game-over hidden">
             <h2>游戏结束</h2>
-            <p>得分: <span id="final-score">0</span></p>
+            <div class="game-stats">
+                <p>得分: <span id="final-score">0</span></p>
+                <p>击落敌机: <span id="enemies-destroyed">0</span></p>
+                <p>最高武器等级: <span id="max-weapon-level">1</span></p>
+            </div>
             <button id="restart-btn">重新开始</button>
         </div>
         
@@ -29,10 +45,23 @@
         <div class="game-info">
             <div class="score">得分: <span id="score">0</span></div>
             <div class="lives">生命: <span id="lives">3</span></div>
+            <div class="weapon-level">武器等级: <span id="weapon-level">1</span></div>
         </div>
     </div>
     
+    <!-- 预加载游戏资源 -->
+    <div id="preload" style="display: none;">
+        <!-- 预加载图片将在JS中动态添加 -->
+    </div>
+    
     <!-- 引入游戏脚本 -->
-    <script src="game.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/particle.js"></script>
+    <script src="js/bullet.js"></script>
+    <script src="js/weapon.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
