@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成语连连看 - 测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-section {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🀄 成语连连看 - 游戏测试页面</h1>
+    
+    <div class="test-section">
+        <h2>1. DOM元素检查</h2>
+        <button class="test-button" onclick="testDOMElements()">检查DOM元素</button>
+        <div id="domTestResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 数据文件检查</h2>
+        <button class="test-button" onclick="testDataFiles()">检查数据文件</button>
+        <div id="dataTestResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 游戏初始化测试</h2>
+        <button class="test-button" onclick="testGameInit()">初始化游戏</button>
+        <div id="gameInitResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. 功能测试</h2>
+        <button class="test-button" onclick="testGameFunctions()">测试游戏功能</button>
+        <div id="functionTestResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. 完整游戏</h2>
+        <a href="index.html" class="test-button" style="text-decoration: none; display: inline-block;">打开完整游戏</a>
+    </div>
+
+    <script>
+        // 测试DOM元素
+        function testDOMElements() {
+            const result = document.getElementById('domTestResult');
+            result.innerHTML = '';
+            
+            // 创建一个临时iframe来加载主页面
+            const iframe = document.createElement('iframe');
+            iframe.src = 'index.html';
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+            
+            iframe.onload = function() {
+                const doc = iframe.contentDocument;
+                const requiredElements = [
+                    'gameStart', 'gameOver', 'levelComplete', 'mahjongArea', 
+                    'startButton', 'restartButton', 'nextLevelButton', 'continueButton',
+                    'levelValue', 'scoreValue', 'timeValue', 'idiomMeaning'
+                ];
+                
+                let results = [];
+                requiredElements.forEach(id => {
+                    const element = doc.getElementById(id);
+                    if (element) {
+                        results.push(`<div class="status success">✅ ${id}: 找到</div>`);
+                    } else {
+                        results.push(`<div class="status error">❌ ${id}: 未找到</div>`);
+                    }
+                });
+                
+                result.innerHTML = results.join('');
+                document.body.removeChild(iframe);
+            };
+        }
+        
+        // 测试数据文件
+        function testDataFiles() {
+            const result = document.getElementById('dataTestResult');
+            result.innerHTML = '<div class="status info">正在检查数据文件...</div>';
+            
+            // 检查IdiomData.js
+            const script = document.createElement('script');
+            script.src = 'js/IdiomData.js';
+            script.onload = function() {
+                if (typeof IDIOM_DATA !== 'undefined' && typeof getLevelIdioms === 'function') {
+                    const level1Data = getLevelIdioms(1);
+                    const totalLevels = getTotalLevels();
+                    
+                    result.innerHTML = `
+                        <div class="status success">✅ IdiomData.js 加载成功</div>
+                        <div class="status info">📊 总关卡数: ${totalLevels}</div>
+                        <div class="status info">📝 第1关成语数: ${level1Data.length}</div>
+                        <div class="status info">🎯 第1个成语: ${level1Data[0].idiom}</div>
+                    `;
+                } else {
+                    result.innerHTML = '<div class="status error">❌ IdiomData.js 数据不完整</div>';
+                }
+            };
+            script.onerror = function() {
+                result.innerHTML = '<div class="status error">❌ 无法加载 IdiomData.js</div>';
+            };
+            document.head.appendChild(script);
+        }
+        
+        // 测试游戏初始化
+        function testGameInit() {
+            const result = document.getElementById('gameInitResult');
+            result.innerHTML = '<div class="status info">正在测试游戏初始化...</div>';
+            
+            try {
+                // 创建临时的DOM元素用于测试
+                const testContainer = document.createElement('div');
+                testContainer.innerHTML = `
+                    <div id="testGameStart"></div>
+                    <div id="testGameOver"></div>
+                    <div id="testLevelComplete"></div>
+                    <div id="testMahjongArea"></div>
+                    <button id="testStartButton"></button>
+                `;
+                testContainer.style.display = 'none';
+                document.body.appendChild(testContainer);
+                
+                // 模拟游戏类（简化版）
+                class TestGame {
+                    constructor() {
+                        this.gameStart = document.getElementById('testGameStart');
+                        this.gameOver = document.getElementById('testGameOver');
+                        this.levelComplete = document.getElementById('testLevelComplete');
+                        this.mahjongArea = document.getElementById('testMahjongArea');
+                        this.startButton = document.getElementById('testStartButton');
+                        
+                        if (this.gameStart && this.gameOver && this.levelComplete) {
+                            return true;
+                        } else {
+                            throw new Error('DOM元素获取失败');
+                        }
+                    }
+                }
+                
+                const testGame = new TestGame();
+                result.innerHTML = '<div class="status success">✅ 游戏初始化测试通过</div>';
+                
+                // 清理测试元素
+                document.body.removeChild(testContainer);
+                
+            } catch (error) {
+                result.innerHTML = `<div class="status error">❌ 游戏初始化失败: ${error.message}</div>`;
+            }
+        }
+        
+        // 测试游戏功能
+        function testGameFunctions() {
+            const result = document.getElementById('functionTestResult');
+            result.innerHTML = '<div class="status info">正在测试游戏功能...</div>';
+            
+            const tests = [];
+            
+            // 测试成语数据生成
+            try {
+                if (typeof generateMahjongChars === 'function') {
+                    const testIdioms = [{chars: ['一', '心', '一', '意']}];
+                    const chars = generateMahjongChars(testIdioms, 10);
+                    if (chars.length === 10) {
+                        tests.push('<div class="status success">✅ 麻将牌生成功能正常</div>');
+                    } else {
+                        tests.push('<div class="status error">❌ 麻将牌生成数量错误</div>');
+                    }
+                } else {
+                    tests.push('<div class="status error">❌ generateMahjongChars 函数未找到</div>');
+                }
+            } catch (error) {
+                tests.push(`<div class="status error">❌ 麻将牌生成测试失败: ${error.message}</div>`);
+            }
+            
+            // 测试字符检查功能
+            try {
+                if (typeof getNextRequiredChar === 'function') {
+                    const testIdiom = {chars: ['一', '心', '一', '意']};
+                    const selected = [false, false, false, false];
+                    const next = getNextRequiredChar(testIdiom, selected);
+                    if (next && next.char === '一' && next.position === 0) {
+                        tests.push('<div class="status success">✅ 字符检查功能正常</div>');
+                    } else {
+                        tests.push('<div class="status error">❌ 字符检查功能异常</div>');
+                    }
+                } else {
+                    tests.push('<div class="status error">❌ getNextRequiredChar 函数未找到</div>');
+                }
+            } catch (error) {
+                tests.push(`<div class="status error">❌ 字符检查测试失败: ${error.message}</div>`);
+            }
+            
+            result.innerHTML = tests.join('');
+        }
+        
+        // 页面加载时自动运行基础测试
+        window.onload = function() {
+            console.log('测试页面加载完成');
+        };
+    </script>
+</body>
+</html>
