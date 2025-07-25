@@ -52,7 +52,8 @@ class IdiomGame {
             'mahjongArea', 'idiomDisplay', 'idiomMeaning', 'levelValue', 
             'scoreValue', 'timeValue', 'gameStart', 'gameOver', 'levelComplete',
             'startButton', 'restartButton', 'nextLevelButton', 'continueButton',
-            'finalScore', 'finalLevel', 'finalTime', 'completedLevel', 'gameOverTitle'
+            'finalScore', 'finalLevel', 'finalTime', 'completedLevel', 'gameOverTitle',
+            'hintButton', 'hintTooltip', 'hintMessage', 'hintNeed', 'hintClose'
         ];
         
         const elements = {};
@@ -96,6 +97,19 @@ class IdiomGame {
         }
         if (this.nextLevelButton) {
             this.nextLevelButton.addEventListener('click', () => this.nextLevel());
+        }
+        if (this.hintButton) {
+            this.hintButton.addEventListener('click', () => this.showHint());
+        }
+        if (this.hintClose) {
+            this.hintClose.addEventListener('click', () => this.hideHint());
+        }
+        if (this.hintTooltip) {
+            this.hintTooltip.addEventListener('click', (e) => {
+                if (e.target === this.hintTooltip) {
+                    this.hideHint();
+                }
+            });
         }
         if (this.continueButton) {
             this.continueButton.addEventListener('click', () => this.continueGame());
@@ -391,6 +405,64 @@ class IdiomGame {
 
 
     /**
+     * 显示智能提示
+     */
+    showHint() {
+        if (!this.hintTooltip || !this.hintMessage || !this.hintNeed) {
+            return;
+        }
+        
+        // 检查游戏是否正在运行
+        if (!this.isGameRunning || this.isPaused) {
+            this.hintMessage.textContent = '请先开始游戏再使用提示功能！';
+            this.hintNeed.textContent = '🎮 开始游戏';
+            this.hintTooltip.classList.add('show');
+            return;
+        }
+        
+        // 获取当前需要的字符
+        const currentIdiom = this.currentIdioms[this.currentIdiomIndex];
+        const nextRequired = getNextRequiredChar(currentIdiom, this.selectedChars);
+        
+        if (!nextRequired) {
+            this.hintMessage.textContent = '当前成语已经完成！继续下一个成语吧！';
+            this.hintNeed.textContent = '🎉 继续加油';
+            this.hintTooltip.classList.add('show');
+            return;
+        }
+        
+        // 设置提示内容
+        const positionText = ['第一', '第二', '第三', '第四'][nextRequired.position];
+        
+        const messages = [
+            `当前需要完成成语"${currentIdiom.idiom}"`,
+            `${positionText}个字应该选择"${nextRequired.char}"`,
+            `💡 小提示: ${currentIdiom.hint}`,
+            `寻找麻将牌中的"${nextRequired.char}"字吧！`,
+            `成语含义: ${currentIdiom.meaning}`
+        ];
+        
+        this.hintMessage.textContent = messages[Math.floor(Math.random() * messages.length)];
+        this.hintNeed.textContent = `🎯 需要选择：${nextRequired.char}`;
+        
+        // 显示提示
+        this.hintTooltip.classList.add('show');
+        
+        // 扣除一些分数作为使用提示的代价
+        this.score = Math.max(0, this.score - 5);
+        this.updateUI();
+    }
+    
+    /**
+     * 隐藏提示弹窗
+     */
+    hideHint() {
+        if (this.hintTooltip) {
+            this.hintTooltip.classList.remove('show');
+        }
+    }
+
+    /**
      * 处理错误选择
      */
     handleWrongSelection(tile) {
@@ -557,6 +629,9 @@ class IdiomGame {
             clearInterval(this.gameTimer);
             this.gameTimer = null;
         }
+        
+        // 隐藏提示框
+        this.hideHint();
     }
     
     /**
