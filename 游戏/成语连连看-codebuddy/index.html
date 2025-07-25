@@ -37,7 +37,10 @@
             <!-- 当前成语提示区域 -->
             <div class="current-idiom">
                 <div class="idiom-hint">
-                    <span class="hint-label">完成成语:</span>
+                    <div class="hint-header">
+                        <span class="hint-label">完成成语:</span>
+                        <button class="hint-button" id="hintButton" title="获取提示">💡 提示</button>
+                    </div>
                     <div class="idiom-display" id="idiomDisplay">
                         <span class="char-slot" id="char1">?</span>
                         <span class="char-slot" id="char2">?</span>
@@ -94,6 +97,19 @@
                 <h2>🎊 关卡完成! 🎊</h2>
                 <p>恭喜您完成第 <span id="completedLevel">1</span> 关!</p>
                 <button id="continueButton" class="continue-btn">继续游戏</button>
+            </div>
+        </div>
+
+        <!-- 友好的提示弹窗 -->
+        <div class="hint-tooltip" id="hintTooltip">
+            <div class="hint-content">
+                <div class="hint-icon">💡</div>
+                <div class="hint-text">
+                    <div class="hint-title">智能提示</div>
+                    <div class="hint-message" id="hintMessage"></div>
+                    <div class="hint-need" id="hintNeed"></div>
+                </div>
+                <button class="hint-close" id="hintClose">×</button>
             </div>
         </div>
     </div>
