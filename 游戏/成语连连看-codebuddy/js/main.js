@@ -222,17 +222,21 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     
     // 扩展游戏对象以支持统计
-    const originalGameOver = game.gameOver;
-    game.gameOver = function() {
-        updateStats(this.score, this.currentLevel, this.levelTimeLimit - this.timeLeft);
-        originalGameOver.call(this);
-    };
+    const originalGameOverHandler = game.gameOverHandler;
+    if (originalGameOverHandler) {
+        game.gameOverHandler = function() {
+            updateStats(this.score, this.currentLevel, this.levelTimeLimit - this.timeLeft);
+            originalGameOverHandler.call(this);
+        };
+    }
     
     const originalGameWin = game.gameWin;
-    game.gameWin = function() {
-        updateStats(this.score, this.currentLevel - 1, this.levelTimeLimit - this.timeLeft);
-        originalGameWin.call(this);
-    };
+    if (originalGameWin) {
+        game.gameWin = function() {
+            updateStats(this.score, this.currentLevel - 1, this.levelTimeLimit - this.timeLeft);
+            originalGameWin.call(this);
+        };
+    }
     
     // 添加调试模式（开发时使用）
     if (window.location.search.includes('debug=true')) {
