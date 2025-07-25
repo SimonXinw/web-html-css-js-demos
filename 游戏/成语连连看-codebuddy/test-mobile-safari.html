@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- iOS Safari优化 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="成语连连看-移动端测试">
+    
+    <!-- Android优化 -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2c5530">
+    
+    <title>成语连连看 - 移动端&Safari优化测试</title>
+    
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            /* 移动端优化 */
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            overscroll-behavior: none;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .test-section {
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            /* 移动端触摸目标优化 */
+            min-height: 48px;
+            min-width: 120px;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        .test-button:active {
+            transform: scale(0.98);
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+        }
+        
+        .game-link {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            padding: 18px 30px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px;
+            box-shadow: 0 5px 20px rgba(238, 90, 36, 0.4);
+            transition: all 0.3s ease;
+            min-height: 48px;
+            min-width: 150px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .game-link:active {
+            transform: scale(0.98);
+        }
+        
+        .feature-list {
+            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .feature-item {
+            margin: 12px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .test-results {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .result-item {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .success { background: rgba(76, 175, 80, 0.3); color: #90EE90; }
+        .error { background: rgba(244, 67, 54, 0.3); color: #ffcdd2; }
+        .info { background: rgba(33, 150, 243, 0.3); color: #87ceeb; }
+        .warning { background: rgba(255, 152, 0, 0.3); color: #ffcc80; }
+        
+        /* 移动端特殊样式 */
+        @media (max-width: 768px) {
+            .test-container {
+                padding: 10px;
+            }
+            
+            .test-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+            
+            .test-button {
+                width: 100%;
+                margin: 8px 0;
+            }
+            
+            .game-link {
+                width: 100%;
+                margin: 15px 0;
+                box-sizing: border-box;
+            }
+        }
+        
+        /* iOS安全区域适配 */
+        @supports (padding: max(0px)) {
+            body {
+                padding-top: max(20px, env(safe-area-inset-top));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>📱 成语连连看 - 移动端&Safari优化测试</h1>
+        
+        <div class="test-section">
+            <h2>🔧 优化功能列表</h2>
+            <div class="feature-list">
+                <div class="feature-item">📱 <strong>移动端触摸优化</strong> - 增强触摸反馈，最小44px触摸目标</div>
+                <div class="feature-item">🍎 <strong>iOS Safari兼容</strong> - 安全区域适配，防缩放，防橡皮筋</div>
+                <div class="feature-item">⚡ <strong>触觉反馈</strong> - 支持设备震动反馈</div>
+                <div class="feature-item">🎯 <strong>精确触摸</strong> - 防止误触，优化触摸边界</div>
+                <div class="feature-item">💨 <strong>性能优化</strong> - 硬件加速，内存管理优化</div>
+                <div class="feature-item">🔄 <strong>响应式布局</strong> - 完美适配各种屏幕尺寸</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧪 设备检测与测试</h2>
+            <button class="test-button" onclick="detectDevice()">检测设备信息</button>
+            <button class="test-button" onclick="testTouchSupport()">测试触摸支持</button>
+            <button class="test-button" onclick="testSafariFeatures()">测试Safari特性</button>
+            <button class="test-button" onclick="testPerformance()">测试性能</button>
+            <button class="test-button" onclick="clearResults()">清空结果</button>
+            
+            <div id="testResults" class="test-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 游戏链接</h2>
+            <a href="index.html" class="game-link">🚀 打开优化版游戏</a>
+            <a href="debug.html" class="game-link" style="background: linear-gradient(45deg, #9c27b0, #673ab7);">🔧 调试页面</a>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 测试说明</h2>
+            <div class="feature-list">
+                <div class="feature-item"><strong>移动端测试：</strong>在手机上打开此页面，测试触摸反馈和响应</div>
+                <div class="feature-item"><strong>Safari测试：</strong>在iOS Safari中测试安全区域和特殊功能</div>
+                <div class="feature-item"><strong>性能测试：</strong>观察动画流畅度和内存使用情况</div>
+                <div class="feature-item"><strong>兼容测试：</strong>在不同设备和浏览器中验证功能</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        // 添加测试结果
+        function addResult(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            testResults.push({ message, type, timestamp });
+            updateResultsDisplay();
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // 更新结果显示
+        function updateResultsDisplay() {
+            const container = document.getElementById('testResults');
+            container.innerHTML = testResults.map(result => 
+                `<div class="result-item ${result.type}">
+                    [${result.timestamp}] ${result.message}
+                </div>`
+            ).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // 清空结果
+        function clearResults() {
+            testResults = [];
+            updateResultsDisplay();
+        }
+        
+        // 检测设备信息
+        function detectDevice() {
+            addResult('开始检测设备信息...', 'info');
+            
+            const userAgent = navigator.userAgent;
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+            const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+            const isSafari = /Safari/.test(userAgent) && /Apple Computer/.test(navigator.vendor);
+            const isAndroid = /Android/.test(userAgent);
+            
+            addResult(`设备类型: ${isMobile ? '移动设备' : '桌面设备'}`, isMobile ? 'success' : 'info');
+            addResult(`操作系统: ${isIOS ? 'iOS' : isAndroid ? 'Android' : '其他'}`, 'info');
+            addResult(`浏览器: ${isSafari ? 'Safari' : '其他浏览器'}`, isSafari ? 'success' : 'info');
+            addResult(`屏幕尺寸: ${window.screen.width}x${window.screen.height}`, 'info');
+            addResult(`视窗尺寸: ${window.innerWidth}x${window.innerHeight}`, 'info');
+            addResult(`设备像素比: ${window.devicePixelRatio}`, 'info');
+            
+            // 检测安全区域
+            if (isIOS) {
+                const safeAreaTop = getComputedStyle(document.documentElement).getPropertyValue('env(safe-area-inset-top)');
+                addResult(`iOS安全区域顶部: ${safeAreaTop || '0px'}`, safeAreaTop ? 'success' : 'warning');
+            }
+        }
+        
+        // 测试触摸支持
+        function testTouchSupport() {
+            addResult('开始测试触摸支持...', 'info');
+            
+            const touchSupport = 'ontouchstart' in window;
+            addResult(`触摸事件支持: ${touchSupport ? '✅ 支持' : '❌ 不支持'}`, touchSupport ? 'success' : 'error');
+            
+            const vibrationSupport = !!navigator.vibrate;
+            addResult(`震动反馈支持: ${vibrationSupport ? '✅ 支持' : '❌ 不支持'}`, vibrationSupport ? 'success' : 'warning');
+            
+            if (vibrationSupport) {
+                navigator.vibrate(100);
+                addResult('✅ 震动反馈测试完成', 'success');
+            }
+            
+            // 测试触摸精度
+            const touchPrecision = window.TouchEvent ? '高精度' : '标准';
+            addResult(`触摸精度: ${touchPrecision}`, 'info');
+            
+            // 测试最大触摸点数
+            const maxTouchPoints = navigator.maxTouchPoints || 0;
+            addResult(`最大触摸点数: ${maxTouchPoints}`, maxTouchPoints > 0 ? 'success' : 'warning');
+        }
+        
+        // 测试Safari特性
+        function testSafariFeatures() {
+            addResult('开始测试Safari特性...', 'info');
+            
+            const isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+            if (!isSafari) {
+                addResult('❌ 当前不是Safari浏览器', 'warning');
+                return;
+            }
+            
+            addResult('✅ Safari浏览器检测成功', 'success');
+            
+            // 测试硬件加速
+            const hasWebkitTransform = 'webkitTransform' in document.body.style;
+            addResult(`硬件加速支持: ${hasWebkitTransform ? '✅ 支持' : '❌ 不支持'}`, hasWebkitTransform ? 'success' : 'error');
+            
+            // 测试-webkit-overflow-scrolling
+            const hasWebkitScrolling = 'webkitOverflowScrolling' in document.body.style;
+            addResult(`弹性滚动支持: ${hasWebkitScrolling ? '✅ 支持' : '❌ 不支持'}`, hasWebkitScrolling ? 'success' : 'warning');
+            
+            // 测试安全区域
+            const hasSafeArea = CSS.supports('padding', 'env(safe-area-inset-top)');
+            addResult(`安全区域支持: ${hasSafeArea ? '✅ 支持' : '❌ 不支持'}`, hasSafeArea ? 'success' : 'warning');
+            
+            // 测试全屏API
+            const hasFullscreen = document.webkitFullscreenEnabled;
+            addResult(`全屏API支持: ${hasFullscreen ? '✅ 支持' : '❌ 不支持'}`, hasFullscreen ? 'success' : 'info');
+        }
+        
+        // 测试性能
+        function testPerformance() {
+            addResult('开始性能测试...', 'info');
+            
+            const startTime = performance.now();
+            
+            // 测试FPS
+            let frameCount = 0;
+            const fpsStartTime = performance.now();
+            
+            function countFrame() {
+                frameCount++;
+                if (frameCount < 60) {
+                    requestAnimationFrame(countFrame);
+                } else {
+                    const fpsEndTime = performance.now();
+                    const fps = Math.round((frameCount * 1000) / (fpsEndTime - fpsStartTime));
+                    addResult(`帧率测试: ${fps} FPS`, fps >= 50 ? 'success' : fps >= 30 ? 'warning' : 'error');
+                }
+            }
+            requestAnimationFrame(countFrame);
+            
+            // 测试内存使用
+            if (performance.memory) {
+                const memory = performance.memory;
+                const usedMB = Math.round(memory.usedJSHeapSize / 1024 / 1024);
+                const totalMB = Math.round(memory.totalJSHeapSize / 1024 / 1024);
+                addResult(`内存使用: ${usedMB}MB / ${totalMB}MB`, usedMB < 50 ? 'success' : 'warning');
+            }
+            
+            // 测试响应时间
+            setTimeout(() => {
+                const endTime = performance.now();
+                const responseTime = Math.round(endTime - startTime);
+                addResult(`响应时间: ${responseTime}ms`, responseTime < 100 ? 'success' : 'warning');
+            }, 50);
+        }
+        
+        // 页面加载完成后自动运行设备检测
+        window.onload = function() {
+            addResult('🚀 移动端&Safari优化测试页面加载完成', 'success');
+            
+            // 自动检测设备
+            setTimeout(() => {
+                detectDevice();
+            }, 500);
+            
+            // 添加触摸事件监听器用于测试
+            document.addEventListener('touchstart', function(e) {
+                console.log('触摸开始:', e.touches.length, '个触摸点');
+            });
+            
+            document.addEventListener('touchend', function(e) {
+                console.log('触摸结束');
+            });
+        };
+        
+        // 添加触摸反馈
+        document.addEventListener('touchstart', function(e) {
+            if (e.target.classList.contains('test-button') || e.target.classList.contains('game-link')) {
+                e.target.style.transform = 'scale(0.98)';
+            }
+        });
+        
+        document.addEventListener('touchend', function(e) {
+            if (e.target.classList.contains('test-button') || e.target.classList.contains('game-link')) {
+                setTimeout(() => {
+                    e.target.style.transform = '';
+                }, 150);
+            }
+        });
+    </script>
+</body>
+</html> 
