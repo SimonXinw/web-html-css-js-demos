@@ -388,6 +388,8 @@ class IdiomGame {
         this.playSound('correct');
     }
     
+
+
     /**
      * 处理错误选择
      */
@@ -395,18 +397,16 @@ class IdiomGame {
         console.log('错误选择');
         
         // 防止重复触发动画
-        if (tile.classList.contains('shaking')) {
+        if (tile.classList.contains('wrong-shake')) {
             return;
         }
         
-        // 添加错误动画
-        tile.classList.add('shaking');
-        tile.style.animation = 'shake 0.5s ease-in-out';
+        // 添加增强的红色摇晃动画
+        tile.classList.add('wrong-shake');
         
         setTimeout(() => {
-            tile.style.animation = '';
-            tile.classList.remove('shaking');
-        }, 500);
+            tile.classList.remove('wrong-shake');
+        }, 600);
         
         // 扣分（限制最低分数）
         this.score = Math.max(0, this.score - 10);
