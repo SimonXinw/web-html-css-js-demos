@@ -26,6 +26,13 @@ class Player {
         this.isShooting = false;
         this.shootCooldown = 150; // 射击冷却时间(毫秒)
         this.lastShootTime = 0;   // 上次射击时间
+        this.autoShoot = false;   // 自动射击模式
+        
+        // 触摸控制
+        this.touchStartX = 0;
+        this.touchStartY = 0;
+        this.isTouching = false;
+        this.touchSensitivity = 1.5; // 触摸灵敏度
         
         // 武器系统
         this.weaponLevel = 1;     // 武器等级
@@ -42,6 +49,78 @@ class Player {
         this.engineFlame = 0;
         this.invulnerable = false;
         this.invulnerableTime = 0;
+        
+        // 检测移动端并启用自动射击
+        this.detectMobile();
+        this.setupTouchControls();
+    }
+    
+    /**
+     * 检测是否为移动端设备
+     */
+    detectMobile() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                        || window.innerWidth <= 768;
+        if (isMobile) {
+            this.autoShoot = true;
+            this.isShooting = true; // 移动端自动开启射击
+        }
+    }
+    
+    /**
+     * 设置触摸控制
+     */
+    setupTouchControls() {
+        const canvas = this.game.canvas;
+        
+        // 触摸开始
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            this.touchStartX = touch.clientX - rect.left;
+            this.touchStartY = touch.clientY - rect.top;
+            this.isTouching = true;
+        }, { passive: false });
+        
+        // 触摸移动
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!this.isTouching) return;
+            
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const currentX = touch.clientX - rect.left;
+            const currentY = touch.clientY - rect.top;
+            
+            // 计算移动距离
+            const deltaX = (currentX - this.touchStartX) * this.touchSensitivity;
+            const deltaY = (currentY - this.touchStartY) * this.touchSensitivity;
+            
+            // 更新玩家位置
+            this.x += deltaX;
+            this.y += deltaY;
+            
+            // 边界限制
+            this.x = Math.max(0, Math.min(this.x, this.game.canvas.width - this.width));
+            this.y = Math.max(0, Math.min(this.y, this.game.canvas.height - this.height));
+            
+            // 更新触摸起始位置
+            this.touchStartX = currentX;
+            this.touchStartY = currentY;
+        }, { passive: false });
+        
+        // 触摸结束
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.isTouching = false;
+        }, { passive: false });
+        
+        // 防止触摸时的默认行为
+        canvas.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            this.isTouching = false;
+        }, { passive: false });
     }
     
     /**
