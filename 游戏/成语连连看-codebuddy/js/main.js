@@ -34,21 +34,125 @@ document.addEventListener('DOMContentLoaded', () => {
     // 添加页面加载动画
     document.body.classList.add('fade-in');
     
-    // 添加触摸设备支持
-    if ('ontouchstart' in window) {
-        document.body.classList.add('touch-device');
+    // 增强的移动端和Safari兼容性处理
+    function initMobileSupport() {
+        // 检测是否为移动设备
+        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isSafari = /Safari/.test(navigator.userAgent) && /Apple Computer/.test(navigator.vendor);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
         
-        // 防止触摸时的默认行为
-        document.addEventListener('touchstart', (e) => {
-            if (e.target.classList.contains('mahjong-tile')) {
-                e.preventDefault();
+        if (isMobile || 'ontouchstart' in window) {
+            document.body.classList.add('touch-device');
+            
+            // iOS Safari特殊处理
+            if (isIOS) {
+                document.body.classList.add('ios-device');
+                
+                // 防止iOS Safari的橡皮筋效果
+                document.addEventListener('touchmove', (e) => {
+                    if (e.target.closest('.mahjong-area')) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+                
+                // 防止iOS Safari双击缩放
+                let lastTouchTime = 0;
+                document.addEventListener('touchend', (e) => {
+                    const currentTime = new Date().getTime();
+                    const tapLength = currentTime - lastTouchTime;
+                    if (tapLength < 500 && tapLength > 0) {
+                        e.preventDefault();
+                    }
+                    lastTouchTime = currentTime;
+                });
             }
-        }, { passive: false });
+            
+            // Safari特殊处理
+            if (isSafari) {
+                document.body.classList.add('safari-browser');
+                
+                // Safari内存管理优化
+                const optimizeSafariPerformance = () => {
+                    // 强制垃圾回收（Safari特有）
+                    if (window.gc && typeof window.gc === 'function') {
+                        window.gc();
+                    }
+                };
+                
+                // 每30秒执行一次内存优化
+                setInterval(optimizeSafariPerformance, 30000);
+            }
+            
+            // 增强的触摸事件处理
+            let touchTimeout;
+            
+            document.addEventListener('touchstart', (e) => {
+                const target = e.target;
+                
+                if (target.classList.contains('mahjong-tile')) {
+                    // 防止默认行为
+                    e.preventDefault();
+                    
+                    // 添加触摸反馈
+                    target.classList.add('touch-active');
+                    
+                    // 触觉反馈（支持的设备）
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50); // 轻微震动50ms
+                    }
+                    
+                    // 清除之前的超时
+                    if (touchTimeout) {
+                        clearTimeout(touchTimeout);
+                    }
+                    
+                    // 设置超时移除触摸状态
+                    touchTimeout = setTimeout(() => {
+                        target.classList.remove('touch-active');
+                    }, 300);
+                }
+            }, { passive: false });
+            
+            document.addEventListener('touchend', (e) => {
+                const target = e.target;
+                
+                if (target.classList.contains('mahjong-tile')) {
+                    // 延迟移除触摸状态以显示反馈
+                    setTimeout(() => {
+                        target.classList.remove('touch-active');
+                    }, 150);
+                }
+            });
+            
+            document.addEventListener('touchcancel', (e) => {
+                // 处理触摸取消事件
+                const target = e.target;
+                if (target.classList.contains('mahjong-tile')) {
+                    target.classList.remove('touch-active');
+                }
+            });
+            
+            // 防止意外的触摸滚动
+            document.addEventListener('touchmove', (e) => {
+                // 只在麻将牌区域防止滚动
+                if (e.target.classList.contains('mahjong-tile') || 
+                    e.target.closest('.mahjong-area')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+        }
         
-        document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-        }, { passive: false });
+        console.log('移动端支持初始化完成', {
+            isMobile,
+            isSafari,
+            isIOS,
+            touchSupport: 'ontouchstart' in window
+        });
     }
+    
+    // 初始化移动端支持
+    initMobileSupport();
     
     // 添加键盘快捷键支持
     document.addEventListener('keydown', (e) => {

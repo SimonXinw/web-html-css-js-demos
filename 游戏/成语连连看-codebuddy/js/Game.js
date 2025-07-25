@@ -231,8 +231,56 @@ class IdiomGame {
             tile.dataset.index = index;
             tile.dataset.char = char;
             
-            // 添加点击事件
-            tile.addEventListener('click', () => this.handleTileClick(tile, index, char));
+            // 移动端和Safari优化的事件处理
+            const handleTileInteraction = (event) => {
+                // 防止重复触发
+                event.preventDefault();
+                event.stopPropagation();
+                
+                this.handleTileClick(tile, index, char);
+            };
+            
+            // 添加点击事件（桌面端和移动端兼容）
+            tile.addEventListener('click', handleTileInteraction);
+            
+            // 移动端触摸事件优化
+            if ('ontouchstart' in window) {
+                // 触摸开始
+                tile.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    tile.classList.add('touch-active');
+                    
+                    // Safari触觉反馈优化
+                    if (navigator.vibrate && /Safari/.test(navigator.userAgent)) {
+                        navigator.vibrate(30);
+                    }
+                }, { passive: false });
+                
+                // 触摸结束
+                tile.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // 延迟移除触摸状态
+                    setTimeout(() => {
+                        tile.classList.remove('touch-active');
+                    }, 100);
+                    
+                    // 执行点击逻辑
+                    this.handleTileClick(tile, index, char);
+                }, { passive: false });
+                
+                // 触摸取消
+                tile.addEventListener('touchcancel', () => {
+                    tile.classList.remove('touch-active');
+                });
+            }
+            
+            // Safari性能优化
+            if (/Safari/.test(navigator.userAgent)) {
+                tile.style.webkitTransform = 'translateZ(0)';
+                tile.style.webkitBackfaceVisibility = 'hidden';
+            }
             
             this.mahjongArea.appendChild(tile);
             this.mahjongTiles.push(tile);
