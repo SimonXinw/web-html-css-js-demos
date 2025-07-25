@@ -234,6 +234,16 @@ const DISTRACTION_CHARS = [
     "热", "冷", "温", "凉", "干", "湿", "硬", "软", "粗", "细"
 ];
 
+// 随机打乱数组（Fisher-Yates洗牌算法）
+function shuffleArray(array) {
+    const shuffled = [...array]; // 创建副本避免修改原数组
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // 交换元素
+    }
+    return shuffled;
+}
+
 // 获取指定关卡的成语数据
 function getLevelIdioms(level) {
     const levelKey = `level${level}`;
@@ -259,21 +269,21 @@ function generateMahjongChars(idioms, gridSize = 48) {
     // 计算需要的干扰字符数量
     const neededChars = gridSize - chars.length;
     
-    // 随机选择干扰字符
-    const shuffledDistractions = [...DISTRACTION_CHARS].sort(() => Math.random() - 0.5);
+    // 随机选择干扰字符（使用Fisher-Yates洗牌算法）
+    const shuffledDistractions = shuffleArray([...DISTRACTION_CHARS]);
     
     for (let i = 0; i < neededChars && i < shuffledDistractions.length; i++) {
         chars.push(shuffledDistractions[i]);
     }
     
-    // 如果还不够，重复添加一些字符
+    // 如果还不够，重复添加一些随机字符
     while (chars.length < gridSize) {
         const randomChar = DISTRACTION_CHARS[Math.floor(Math.random() * DISTRACTION_CHARS.length)];
         chars.push(randomChar);
     }
     
-    // 打乱字符顺序
-    return chars.sort(() => Math.random() - 0.5);
+    // 使用Fisher-Yates算法真正随机打乱字符顺序
+    return shuffleArray(chars);
 }
 
 // 检查字符是否属于指定成语

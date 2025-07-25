@@ -198,9 +198,12 @@ class IdiomGame {
         this.currentIdiomIndex = 0;
         this.usedTileIndices.clear();
         
-        // 获取当前关卡的成语数据
-        this.currentIdioms = getLevelIdioms(this.currentLevel);
-        console.log('当前关卡成语:', this.currentIdioms.map(item => item.idiom));
+        // 获取当前关卡的成语数据并随机打乱
+        const levelIdioms = getLevelIdioms(this.currentLevel);
+        this.currentIdioms = this.shuffleArray([...levelIdioms]); // 复制数组后随机打乱
+        
+        console.log(`🎲 第${this.currentLevel}关 - 成语随机顺序:`, this.currentIdioms.map(item => item.idiom));
+        console.log('📋 原始顺序参考:', levelIdioms.map(item => item.idiom));
         
         // 生成麻将牌
         this.generateMahjongTiles();
@@ -403,6 +406,18 @@ class IdiomGame {
     }
     
 
+
+    /**
+     * 随机打乱数组（Fisher-Yates洗牌算法）
+     */
+    shuffleArray(array) {
+        const shuffled = [...array]; // 创建副本避免修改原数组
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // 交换元素
+        }
+        return shuffled;
+    }
 
     /**
      * 显示智能提示
