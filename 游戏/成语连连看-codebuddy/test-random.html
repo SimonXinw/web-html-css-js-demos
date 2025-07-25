@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成语连连看 - 随机化测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .test-section {
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        .test-button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        .test-button:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(76, 175, 80, 0.4);
+        }
+        .idiom-list {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: left;
+        }
+        .level-section {
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .level-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        .idiom-item {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+        .original-order {
+            border-left: 4px solid #ff6b6b;
+        }
+        .random-order {
+            border-left: 4px solid #4CAF50;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎲 成语连连看 - 随机化功能测试</h1>
+        
+        <div class="test-section">
+            <h2>🔄 成语随机化测试</h2>
+            <p>点击下面的按钮多次测试成语随机化功能</p>
+            <button class="test-button" onclick="testRandomization()">🎲 生成随机成语顺序</button>
+            <button class="test-button" onclick="clearResults()">🧹 清空结果</button>
+            <button class="test-button" onclick="location.href='index.html'">🎮 打开游戏</button>
+            
+            <div id="testResults"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 随机化说明</h2>
+            <div class="idiom-list">
+                <p><strong>✨ 新增功能：</strong></p>
+                <p>• 🎲 每个关卡的成语现在会随机排列</p>
+                <p>• 🔄 每次重新开始游戏，成语出现顺序都不同</p>
+                <p>• 🎯 增加游戏的重玩性和挑战性</p>
+                <p>• 📈 使用Fisher-Yates洗牌算法确保真正的随机性</p>
+                <p>• 🎪 麻将牌的干扰字符也更加随机化</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧪 技术实现</h2>
+            <div class="idiom-list">
+                <p><strong>🔧 实现方法：</strong></p>
+                <p>• 在获取关卡成语数据后，使用shuffleArray()方法随机打乱</p>
+                <p>• Fisher-Yates洗牌算法保证每种排列的概率相等</p>
+                <p>• 改进麻将牌生成中的随机化逻辑</p>
+                <p>• 增强干扰字符的随机选择</p>
+                <p>• 保持原有游戏逻辑不变，仅影响成语出现顺序</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载游戏脚本 -->
+    <script src="js/IdiomData.js"></script>
+    
+    <script>
+        let testCount = 0;
+        
+        // 测试随机化功能
+        function testRandomization() {
+            testCount++;
+            const resultsDiv = document.getElementById('testResults');
+            
+            // 创建测试结果容器
+            const testDiv = document.createElement('div');
+            testDiv.className = 'level-section';
+            
+            const title = document.createElement('div');
+            title.className = 'level-title';
+            title.textContent = `🎲 测试 #${testCount} - ${new Date().toLocaleTimeString()}`;
+            testDiv.appendChild(title);
+            
+            // 创建对比容器
+            const comparisonDiv = document.createElement('div');
+            comparisonDiv.className = 'comparison';
+            
+            // 测试所有关卡
+            for (let level = 1; level <= getTotalLevels(); level++) {
+                // 原始顺序
+                const originalDiv = document.createElement('div');
+                originalDiv.className = 'idiom-list original-order';
+                originalDiv.innerHTML = `
+                    <strong>第${level}关 - 原始顺序:</strong><br>
+                    ${getLevelIdioms(level).map(idiom => 
+                        `<span class="idiom-item">${idiom.idiom}</span>`
+                    ).join('')}
+                `;
+                
+                // 随机顺序
+                const randomDiv = document.createElement('div');
+                randomDiv.className = 'idiom-list random-order';
+                const shuffledIdioms = shuffleArray([...getLevelIdioms(level)]);
+                randomDiv.innerHTML = `
+                    <strong>第${level}关 - 随机顺序:</strong><br>
+                    ${shuffledIdioms.map(idiom => 
+                        `<span class="idiom-item">${idiom.idiom}</span>`
+                    ).join('')}
+                `;
+                
+                // 如果是第一次测试，显示对比
+                if (testCount === 1) {
+                    comparisonDiv.appendChild(originalDiv);
+                }
+                comparisonDiv.appendChild(randomDiv);
+            }
+            
+            testDiv.appendChild(comparisonDiv);
+            resultsDiv.appendChild(testDiv);
+            
+            // 滚动到结果
+            testDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            console.log(`🎲 随机化测试 #${testCount} 完成`);
+        }
+        
+        // 清空结果
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+            testCount = 0;
+            console.log('🧹 测试结果已清空');
+        }
+        
+        // Fisher-Yates洗牌算法（与游戏中相同）
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+        
+        // 页面加载时自动运行一次测试
+        window.onload = function() {
+            console.log('🎲 成语随机化测试页面已加载');
+            console.log('📊 总关卡数:', getTotalLevels());
+            
+            // 延迟执行第一次测试
+            setTimeout(() => {
+                testRandomization();
+            }, 500);
+        };
+    </script>
+</body>
+</html> 
