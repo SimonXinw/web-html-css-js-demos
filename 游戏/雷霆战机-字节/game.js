@@ -135,9 +135,9 @@ document.addEventListener('DOMContentLoaded', function() {
          * @param {number} timestamp - 当前时间戳
          */
         gameLoop(timestamp) {
-            // 计算帧间隔时间
+            // 计算游戏时间间隔
             this.deltaTime = timestamp - this.lastFrameTime;
-            this.lastFrameTime = timestamp;
+            this.lastFrameTime = timestamp; 
             
             // 清空画布
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
