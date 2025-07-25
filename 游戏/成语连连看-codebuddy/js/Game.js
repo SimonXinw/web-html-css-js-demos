@@ -4,25 +4,16 @@
  */
 class IdiomGame {
     constructor() {
-        // 获取DOM元素
-        this.mahjongArea = document.getElementById('mahjongArea');
-        this.idiomDisplay = document.getElementById('idiomDisplay');
-        this.idiomMeaning = document.getElementById('idiomMeaning');
-        this.levelValue = document.getElementById('levelValue');
-        this.scoreValue = document.getElementById('scoreValue');
-        this.timeValue = document.getElementById('timeValue');
-        this.gameStart = document.getElementById('gameStart');
-        this.gameOver = document.getElementById('gameOver');
-        this.levelComplete = document.getElementById('levelComplete');
-        this.startButton = document.getElementById('startButton');
-        this.restartButton = document.getElementById('restartButton');
-        this.nextLevelButton = document.getElementById('nextLevelButton');
-        this.continueButton = document.getElementById('continueButton');
-        this.finalScore = document.getElementById('finalScore');
-        this.finalLevel = document.getElementById('finalLevel');
-        this.finalTime = document.getElementById('finalTime');
-        this.completedLevel = document.getElementById('completedLevel');
-        this.gameOverTitle = document.getElementById('gameOverTitle');
+        // 获取DOM元素并进行安全检查
+        this.domElements = this.initDOMElements();
+        
+        // 将DOM元素赋值给实例属性（保持向后兼容）
+        Object.assign(this, this.domElements);
+        
+        // 检查关键DOM元素
+        if (!this.validateRequiredElements()) {
+            throw new Error('游戏初始化失败：缺少必要的DOM元素');
+        }
         
         // 游戏状态
         this.currentLevel = 1;
@@ -51,6 +42,46 @@ class IdiomGame {
         this.bindEvents();
         
         console.log('成语连连看游戏初始化完成');
+    }
+    
+    /**
+     * 初始化DOM元素
+     */
+    initDOMElements() {
+        const elementIds = [
+            'mahjongArea', 'idiomDisplay', 'idiomMeaning', 'levelValue', 
+            'scoreValue', 'timeValue', 'gameStart', 'gameOver', 'levelComplete',
+            'startButton', 'restartButton', 'nextLevelButton', 'continueButton',
+            'finalScore', 'finalLevel', 'finalTime', 'completedLevel', 'gameOverTitle'
+        ];
+        
+        const elements = {};
+        elementIds.forEach(id => {
+            elements[id] = document.getElementById(id);
+            if (!elements[id]) {
+                console.warn(`DOM元素未找到: ${id}`);
+            }
+        });
+        
+        return elements;
+    }
+    
+    /**
+     * 验证必需的DOM元素
+     */
+    validateRequiredElements() {
+        const requiredElements = [
+            'mahjongArea', 'gameStart', 'gameOver', 'levelComplete', 'startButton'
+        ];
+        
+        for (const elementName of requiredElements) {
+            if (!this[elementName]) {
+                console.error(`缺少必需的DOM元素: ${elementName}`);
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**
@@ -146,16 +177,16 @@ class IdiomGame {
      * 初始化关卡
      */
     initLevel() {
-        console.log('初始化关卡', this.currentLevel);
+        console.log('初始化关卡:', this.currentLevel);
+        
+        // 重置游戏状态
+        this.timeLeft = this.levelTimeLimit;
+        this.currentIdiomIndex = 0;
+        this.usedTileIndices.clear();
         
         // 获取当前关卡的成语数据
         this.currentIdioms = getLevelIdioms(this.currentLevel);
-        this.currentIdiomIndex = 0;
-        this.selectedChars = [false, false, false, false];
-        this.usedTileIndices.clear();
-        
-        // 重置时间
-        this.timeLeft = this.levelTimeLimit;
+        console.log('当前关卡成语:', this.currentIdioms.map(item => item.idiom));
         
         // 生成麻将牌
         this.generateMahjongTiles();
@@ -168,11 +199,6 @@ class IdiomGame {
      * 生成麻将牌
      */
     generateMahjongTiles() {
-        if (!this.mahjongArea) {
-            console.error('麻将区域元素未找到');
-            return;
-        }
-        
         // 生成包含成语字符和干扰字符的数组
         const chars = generateMahjongChars(this.currentIdioms, this.totalTiles);
         
@@ -196,6 +222,37 @@ class IdiomGame {
         });
         
         console.log('生成了', chars.length, '个麻将牌');
+    }
+    
+    /**
+     * 游戏失败
+     */
+    gameOverHandler() {
+        console.log('游戏结束');
+        this.isGameRunning = false;
+        this.stopTimer();
+        
+        if (this.gameOverTitle) {
+            this.gameOverTitle.textContent = '⏰ 时间到! ⏰';
+        }
+        if (this.finalScore) {
+            this.finalScore.textContent = this.score;
+        }
+        if (this.finalLevel) {
+            this.finalLevel.textContent = this.currentLevel;
+        }
+        if (this.finalTime) {
+            this.finalTime.textContent = this.levelTimeLimit;
+        }
+        
+        if (this.nextLevelButton) {
+            this.nextLevelButton.style.display = 'none';
+        }
+        if (this.gameOver) {
+            this.gameOver.style.display = 'flex';
+        }
+        
+        this.playSound('gameOver');
     }
     
     /**
@@ -234,8 +291,18 @@ class IdiomGame {
     handleTileClick(tile, index, char) {
         console.log('点击了麻将牌:', char);
         
+        // 检查游戏是否正在运行
+        if (!this.isGameRunning || this.isPaused) {
+            return;
+        }
+        
         // 检查牌是否已被使用
         if (this.usedTileIndices.has(index) || tile.classList.contains('used')) {
+            return;
+        }
+        
+        // 检查当前成语数据是否有效
+        if (!this.currentIdioms || this.currentIdiomIndex >= this.currentIdioms.length) {
             return;
         }
         
@@ -281,29 +348,40 @@ class IdiomGame {
     handleCorrectSelection(tile, index, char, position) {
         console.log('正确选择:', char, '位置:', position);
         
+        // 防止重复选择
+        if (this.selectedChars[position]) {
+            return;
+        }
+        
         // 标记字符已选择
         this.selectedChars[position] = true;
         
-        // 更新显示
-        const charSlot = document.getElementById(`char${position + 1}`);
-        if (charSlot) {
-            charSlot.textContent = char;
-            charSlot.classList.add('filled');
-        }
-        
-        // 标记麻将牌为正确
-        tile.classList.add('correct');
+        // 更新显示（使用requestAnimationFrame优化）
+        requestAnimationFrame(() => {
+            const charSlot = document.getElementById(`char${position + 1}`);
+            if (charSlot) {
+                charSlot.textContent = char;
+                charSlot.classList.add('filled');
+            }
+            
+            // 标记麻将牌为正确
+            tile.classList.add('correct');
+        });
         
         // 延迟标记为已使用
         setTimeout(() => {
-            tile.classList.remove('correct');
-            tile.classList.add('used');
-            this.usedTileIndices.add(index);
+            if (tile.classList.contains('correct')) {
+                tile.classList.remove('correct');
+                tile.classList.add('used');
+                this.usedTileIndices.add(index);
+            }
         }, 600);
         
         // 检查成语是否完成
         if (this.selectedChars.every(selected => selected)) {
-            this.completeCurrentIdiom();
+            setTimeout(() => {
+                this.completeCurrentIdiom();
+            }, 700); // 稍微延迟以显示动画效果
         }
         
         // 播放成功音效（模拟）
@@ -316,16 +394,27 @@ class IdiomGame {
     handleWrongSelection(tile) {
         console.log('错误选择');
         
+        // 防止重复触发动画
+        if (tile.classList.contains('shaking')) {
+            return;
+        }
+        
         // 添加错误动画
+        tile.classList.add('shaking');
         tile.style.animation = 'shake 0.5s ease-in-out';
         
         setTimeout(() => {
             tile.style.animation = '';
+            tile.classList.remove('shaking');
         }, 500);
         
-        // 扣分
+        // 扣分（限制最低分数）
         this.score = Math.max(0, this.score - 10);
-        this.updateUI();
+        
+        // 使用requestAnimationFrame优化UI更新
+        requestAnimationFrame(() => {
+            this.updateUI();
+        });
         
         // 播放错误音效（模拟）
         this.playSound('wrong');
@@ -416,34 +505,10 @@ class IdiomGame {
     }
     
     /**
-     * 游戏失败
+     * 游戏失败（统一处理）
      */
     gameOver() {
-        console.log('游戏结束');
-        this.isGameRunning = false;
-        this.stopTimer();
-        
-        if (this.gameOverTitle) {
-            this.gameOverTitle.textContent = '⏰ 时间到! ⏰';
-        }
-        if (this.finalScore) {
-            this.finalScore.textContent = this.score;
-        }
-        if (this.finalLevel) {
-            this.finalLevel.textContent = this.currentLevel;
-        }
-        if (this.finalTime) {
-            this.finalTime.textContent = this.levelTimeLimit;
-        }
-        
-        if (this.nextLevelButton) {
-            this.nextLevelButton.style.display = 'none';
-        }
-        if (this.gameOver) {
-            this.gameOver.style.display = 'flex';
-        }
-        
-        this.playSound('gameOver');
+        this.gameOverHandler();
     }
     
     /**
@@ -468,13 +533,18 @@ class IdiomGame {
         this.stopTimer();
         
         this.gameTimer = setInterval(() => {
-            if (!this.isPaused && this.isGameRunning) {
-                this.timeLeft--;
-                this.updateUI();
-                
-                if (this.timeLeft <= 0) {
-                    this.gameOver();
+            try {
+                if (!this.isPaused && this.isGameRunning && this.timeLeft > 0) {
+                    this.timeLeft--;
+                    this.updateUI();
+                    
+                    if (this.timeLeft <= 0) {
+                        this.gameOverHandler();
+                    }
                 }
+            } catch (error) {
+                console.error('计时器错误:', error);
+                this.stopTimer();
             }
         }, 1000);
     }
@@ -493,23 +563,32 @@ class IdiomGame {
      * 更新UI显示
      */
     updateUI() {
-        if (this.levelValue) {
-            this.levelValue.textContent = this.currentLevel;
-        }
-        if (this.scoreValue) {
-            this.scoreValue.textContent = this.score;
-        }
-        if (this.timeValue) {
-            this.timeValue.textContent = this.timeLeft;
-            
-            // 时间警告效果
-            if (this.timeLeft <= 10) {
-                this.timeValue.style.color = '#ff4444';
-                this.timeValue.style.animation = 'pulse 1s infinite';
-            } else {
-                this.timeValue.style.color = '#ffd700';
-                this.timeValue.style.animation = '';
+        try {
+            // 更新关卡显示
+            if (this.levelValue && typeof this.currentLevel === 'number') {
+                this.levelValue.textContent = this.currentLevel.toString();
             }
+            
+            // 更新分数显示
+            if (this.scoreValue && typeof this.score === 'number') {
+                this.scoreValue.textContent = this.score.toString();
+            }
+            
+            // 更新时间显示
+            if (this.timeValue && typeof this.timeLeft === 'number') {
+                this.timeValue.textContent = Math.max(0, this.timeLeft).toString();
+                
+                // 时间警告效果
+                if (this.timeLeft <= 10) {
+                    this.timeValue.style.color = '#ff4444';
+                    this.timeValue.style.animation = 'pulse 1s infinite';
+                } else {
+                    this.timeValue.style.color = '#ffd700';
+                    this.timeValue.style.animation = '';
+                }
+            }
+        } catch (error) {
+            console.error('UI更新错误:', error);
         }
     }
     

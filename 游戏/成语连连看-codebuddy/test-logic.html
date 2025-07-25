@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成语连连看 - 逻辑测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #2c5530;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #ffd700;
+        }
+        .test-button {
+            background: #ffd700;
+            color: #8b4513;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .test-button:hover {
+            background: #ffed4e;
+        }
+        .test-result {
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ffd700;
+        }
+        .success { border-left-color: #90EE90; color: #90EE90; }
+        .error { border-left-color: #ff4444; color: #ff4444; }
+        .warning { border-left-color: #ffa500; color: #ffa500; }
+        .info { border-left-color: #87ceeb; color: #87ceeb; }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🀄 成语连连看 - 逻辑测试</h1>
+        
+        <div class="test-section">
+            <h2>1. 数据结构测试</h2>
+            <button class="test-button" onclick="testDataStructure()">测试成语数据</button>
+            <div id="dataTestResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. 游戏类初始化测试</h2>
+            <button class="test-button" onclick="testGameClass()">测试游戏类</button>
+            <div id="gameClassResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. DOM元素测试</h2>
+            <button class="test-button" onclick="testDOMElements()">测试DOM元素</button>
+            <div id="domTestResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>4. 游戏逻辑测试</h2>
+            <button class="test-button" onclick="testGameLogic()">测试游戏逻辑</button>
+            <div id="logicTestResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>5. 完整游戏</h2>
+            <a href="index.html" class="test-button" style="text-decoration: none; display: inline-block;">打开完整游戏</a>
+            <a href="debug.html" class="test-button" style="text-decoration: none; display: inline-block;">打开调试页面</a>
+        </div>
+    </div>
+
+    <!-- 加载游戏脚本 -->
+    <script src="js/IdiomData.js"></script>
+    
+    <script>
+        // 测试结果显示函数
+        function showResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const result = document.createElement('div');
+            result.className = `test-result ${type}`;
+            result.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            container.appendChild(result);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // 清空结果容器
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+        
+        // 1. 测试数据结构
+        function testDataStructure() {
+            clearResults('dataTestResult');
+            showResult('dataTestResult', '开始测试成语数据结构...', 'info');
+            
+            try {
+                // 检查IDIOM_DATA是否存在
+                if (typeof IDIOM_DATA === 'undefined') {
+                    showResult('dataTestResult', '❌ IDIOM_DATA 未定义', 'error');
+                    return;
+                }
+                showResult('dataTestResult', '✅ IDIOM_DATA 已加载', 'success');
+                
+                // 检查关卡数量
+                const levelCount = Object.keys(IDIOM_DATA).length;
+                showResult('dataTestResult', `📊 总关卡数: ${levelCount}`, 'info');
+                
+                // 检查第1关数据
+                if (typeof getLevelIdioms === 'function') {
+                    const level1Data = getLevelIdioms(1);
+                    showResult('dataTestResult', `✅ getLevelIdioms 函数正常`, 'success');
+                    showResult('dataTestResult', `📝 第1关成语数: ${level1Data.length}`, 'info');
+                    
+                    if (level1Data.length > 0) {
+                        const firstIdiom = level1Data[0];
+                        showResult('dataTestResult', `🎯 第1个成语: ${firstIdiom.idiom} (${firstIdiom.meaning})`, 'info');
+                    }
+                } else {
+                    showResult('dataTestResult', '❌ getLevelIdioms 函数未定义', 'error');
+                }
+                
+                // 检查generateMahjongChars函数
+                if (typeof generateMahjongChars === 'function') {
+                    const testChars = generateMahjongChars([{chars: ['一', '心', '一', '意']}], 10);
+                    showResult('dataTestResult', `✅ generateMahjongChars 函数正常，生成 ${testChars.length} 个字符`, 'success');
+                } else {
+                    showResult('dataTestResult', '❌ generateMahjongChars 函数未定义', 'error');
+                }
+                
+            } catch (error) {
+                showResult('dataTestResult', `❌ 数据测试出错: ${error.message}`, 'error');
+            }
+        }
+        
+        // 2. 测试游戏类
+        function testGameClass() {
+            clearResults('gameClassResult');
+            showResult('gameClassResult', '开始测试游戏类...', 'info');
+            
+            try {
+                // 创建模拟DOM元素
+                createMockDOMElements();
+                
+                // 动态加载Game.js
+                const script = document.createElement('script');
+                script.src = 'js/Game.js';
+                script.onload = function() {
+                    try {
+                        if (typeof IdiomGame === 'undefined') {
+                            showResult('gameClassResult', '❌ IdiomGame 类未定义', 'error');
+                            return;
+                        }
+                        showResult('gameClassResult', '✅ IdiomGame 类已加载', 'success');
+                        
+                        // 尝试创建游戏实例
+                        const game = new IdiomGame();
+                        showResult('gameClassResult', '✅ 游戏实例创建成功', 'success');
+                        
+                        // 检查游戏方法
+                        const methods = ['startGame', 'initLevel', 'handleTileClick', 'updateUI'];
+                        methods.forEach(method => {
+                            if (typeof game[method] === 'function') {
+                                showResult('gameClassResult', `✅ ${method} 方法存在`, 'success');
+                            } else {
+                                showResult('gameClassResult', `❌ ${method} 方法缺失`, 'error');
+                            }
+                        });
+                        
+                        // 检查游戏属性
+                        const properties = ['currentLevel', 'score', 'timeLeft', 'isGameRunning'];
+                        properties.forEach(prop => {
+                            if (prop in game) {
+                                showResult('gameClassResult', `✅ ${prop} 属性存在: ${game[prop]}`, 'success');
+                            } else {
+                                showResult('gameClassResult', `❌ ${prop} 属性缺失`, 'error');
+                            }
+                        });
+                        
+                    } catch (error) {
+                        showResult('gameClassResult', `❌ 游戏实例创建失败: ${error.message}`, 'error');
+                    }
+                };
+                script.onerror = function() {
+                    showResult('gameClassResult', '❌ 无法加载 Game.js', 'error');
+                };
+                document.head.appendChild(script);
+                
+            } catch (error) {
+                showResult('gameClassResult', `❌ 游戏类测试出错: ${error.message}`, 'error');
+            }
+        }
+        
+        // 3. 测试DOM元素
+        function testDOMElements() {
+            clearResults('domTestResult');
+            showResult('domTestResult', '开始测试DOM元素...', 'info');
+            
+            const requiredElements = [
+                'gameStart', 'gameOver', 'levelComplete', 'mahjongArea', 
+                'startButton', 'restartButton', 'nextLevelButton', 'continueButton',
+                'levelValue', 'scoreValue', 'timeValue', 'idiomMeaning'
+            ];
+            
+            let foundCount = 0;
+            requiredElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    showResult('domTestResult', `✅ ${id}: 找到`, 'success');
+                    foundCount++;
+                } else {
+                    showResult('domTestResult', `❌ ${id}: 未找到`, 'error');
+                }
+            });
+            
+            showResult('domTestResult', `📊 DOM元素检查完成: ${foundCount}/${requiredElements.length} 个元素找到`, 
+                      foundCount === requiredElements.length ? 'success' : 'warning');
+        }
+        
+        // 4. 测试游戏逻辑
+        function testGameLogic() {
+            clearResults('logicTestResult');
+            showResult('logicTestResult', '开始测试游戏逻辑...', 'info');
+            
+            try {
+                // 测试字符匹配逻辑
+                if (typeof getNextRequiredChar === 'function') {
+                    const testIdiom = {chars: ['一', '心', '一', '意']};
+                    const selected = [false, false, false, false];
+                    const next = getNextRequiredChar(testIdiom, selected);
+                    
+                    if (next && next.char === '一' && next.position === 0) {
+                        showResult('logicTestResult', '✅ getNextRequiredChar 函数正常', 'success');
+                    } else {
+                        showResult('logicTestResult', '❌ getNextRequiredChar 函数返回错误', 'error');
+                    }
+                } else {
+                    showResult('logicTestResult', '❌ getNextRequiredChar 函数未找到', 'error');
+                }
+                
+                // 测试成语字符检查
+                if (typeof isCharInIdiom === 'function') {
+                    const testIdiom = {chars: ['一', '心', '一', '意']};
+                    const result1 = isCharInIdiom('一', testIdiom);
+                    const result2 = isCharInIdiom('二', testIdiom);
+                    
+                    if (result1 === true && result2 === false) {
+                        showResult('logicTestResult', '✅ isCharInIdiom 函数正常', 'success');
+                    } else {
+                        showResult('logicTestResult', '❌ isCharInIdiom 函数逻辑错误', 'error');
+                    }
+                } else {
+                    showResult('logicTestResult', '❌ isCharInIdiom 函数未找到', 'error');
+                }
+                
+                showResult('logicTestResult', '📊 游戏逻辑测试完成', 'info');
+                
+            } catch (error) {
+                showResult('logicTestResult', `❌ 游戏逻辑测试出错: ${error.message}`, 'error');
+            }
+        }
+        
+        // 创建模拟DOM元素用于测试
+        function createMockDOMElements() {
+            const mockElements = [
+                'gameStart', 'gameOver', 'levelComplete', 'mahjongArea', 
+                'startButton', 'restartButton', 'nextLevelButton', 'continueButton',
+                'levelValue', 'scoreValue', 'timeValue', 'idiomMeaning',
+                'finalScore', 'finalLevel', 'finalTime', 'completedLevel', 'gameOverTitle'
+            ];
+            
+            mockElements.forEach(id => {
+                if (!document.getElementById(id)) {
+                    const element = document.createElement('div');
+                    element.id = id;
+                    element.style.display = 'none';
+                    document.body.appendChild(element);
+                }
+            });
+        }
+        
+        // 页面加载时的初始化
+        window.onload = function() {
+            console.log('🀄 成语连连看逻辑测试页面加载完成');
+            
+            // 自动运行数据结构测试
+            setTimeout(() => {
+                testDataStructure();
+            }, 500);
+        };
+    </script>
+</body>
+</html> 

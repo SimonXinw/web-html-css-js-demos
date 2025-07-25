@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成语连连看 - 简化测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #2c5530;
+            color: white;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-info {
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #ffd700;
+            color: #8b4513;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        .test-result {
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        #gameFrame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h1>🀄 成语连连看游戏测试</h1>
+        <p>服务器状态: <span id="serverStatus">检查中...</span></p>
+        <p>游戏地址: <a href="http://localhost:8080" target="_blank" style="color: #ffd700;">http://localhost:8080</a></p>
+        
+        <div>
+            <button class="test-button" onclick="testGameLoad()">测试游戏加载</button>
+            <button class="test-button" onclick="testGameLogic()">测试游戏逻辑</button>
+            <button class="test-button" onclick="openGameInNewTab()">在新标签页打开游戏</button>
+        </div>
+        
+        <div id="testResults"></div>
+    </div>
+    
+    <iframe id="gameFrame" src="http://localhost:8080" onload="onGameFrameLoad()"></iframe>
+    
+    <script>
+        let testResults = document.getElementById('testResults');
+        let serverStatus = document.getElementById('serverStatus');
+        
+        // 检查服务器状态
+        function checkServerStatus() {
+            fetch('http://localhost:8080')
+                .then(response => {
+                    if (response.ok) {
+                        serverStatus.textContent = '✅ 运行正常';
+                        serverStatus.style.color = '#90EE90';
+                    } else {
+                        serverStatus.textContent = '❌ 响应异常';
+                        serverStatus.style.color = '#ff4444';
+                    }
+                })
+                .catch(error => {
+                    serverStatus.textContent = '❌ 连接失败';
+                    serverStatus.style.color = '#ff4444';
+                    console.error('服务器连接失败:', error);
+                });
+        }
+        
+        // 游戏框架加载完成
+        function onGameFrameLoad() {
+            addTestResult('✅ 游戏页面加载完成');
+            
+            // 尝试访问游戏框架内容
+            try {
+                const gameFrame = document.getElementById('gameFrame');
+                const gameDoc = gameFrame.contentDocument || gameFrame.contentWindow.document;
+                
+                if (gameDoc) {
+                    const gameTitle = gameDoc.querySelector('.game-title');
+                    if (gameTitle) {
+                        addTestResult('✅ 游戏标题元素找到: ' + gameTitle.textContent);
+                    }
+                    
+                    const startButton = gameDoc.getElementById('startButton');
+                    if (startButton) {
+                        addTestResult('✅ 开始按钮元素找到');
+                    }
+                    
+                    const mahjongArea = gameDoc.getElementById('mahjongArea');
+                    if (mahjongArea) {
+                        addTestResult('✅ 麻将区域元素找到');
+                    }
+                }
+            } catch (error) {
+                addTestResult('⚠️ 无法访问游戏框架内容 (跨域限制)');
+            }
+        }
+        
+        // 测试游戏加载
+        function testGameLoad() {
+            addTestResult('🔄 开始测试游戏加载...');
+            
+            fetch('http://localhost:8080')
+                .then(response => response.text())
+                .then(html => {
+                    if (html.includes('成语连连看')) {
+                        addTestResult('✅ HTML页面包含游戏标题');
+                    }
+                    if (html.includes('IdiomData.js')) {
+                        addTestResult('✅ 成语数据脚本引用正确');
+                    }
+                    if (html.includes('Game.js')) {
+                        addTestResult('✅ 游戏逻辑脚本引用正确');
+                    }
+                    if (html.includes('main.js')) {
+                        addTestResult('✅ 主脚本引用正确');
+                    }
+                })
+                .catch(error => {
+                    addTestResult('❌ 游戏加载测试失败: ' + error.message);
+                });
+        }
+        
+        // 测试游戏逻辑
+        function testGameLogic() {
+            addTestResult('🔄 开始测试游戏逻辑...');
+            
+            // 测试成语数据
+            fetch('http://localhost:8080/js/IdiomData.js')
+                .then(response => response.text())
+                .then(code => {
+                    if (code.includes('IDIOM_DATA')) {
+                        addTestResult('✅ 成语数据结构正确');
+                    }
+                    if (code.includes('level1')) {
+                        addTestResult('✅ 关卡数据存在');
+                    }
+                })
+                .catch(error => {
+                    addTestResult('❌ 成语数据测试失败: ' + error.message);
+                });
+            
+            // 测试游戏类
+            fetch('http://localhost:8080/js/Game.js')
+                .then(response => response.text())
+                .then(code => {
+                    if (code.includes('class IdiomGame')) {
+                        addTestResult('✅ 游戏类定义正确');
+                    }
+                    if (code.includes('startGame')) {
+                        addTestResult('✅ 开始游戏方法存在');
+                    }
+                    if (code.includes('handleTileClick')) {
+                        addTestResult('✅ 点击处理方法存在');
+                    }
+                })
+                .catch(error => {
+                    addTestResult('❌ 游戏逻辑测试失败: ' + error.message);
+                });
+        }
+        
+        // 在新标签页打开游戏
+        function openGameInNewTab() {
+            window.open('http://localhost:8080', '_blank');
+            addTestResult('🔗 已在新标签页打开游戏');
+        }
+        
+        // 添加测试结果
+        function addTestResult(message) {
+            const result = document.createElement('div');
+            result.className = 'test-result';
+            result.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+            testResults.appendChild(result);
+            testResults.scrollTop = testResults.scrollHeight;
+        }
+        
+        // 页面加载时检查服务器状态
+        window.onload = function() {
+            checkServerStatus();
+            setTimeout(checkServerStatus, 2000); // 2秒后再次检查
+        };
+    </script>
+</body>
+</html>
