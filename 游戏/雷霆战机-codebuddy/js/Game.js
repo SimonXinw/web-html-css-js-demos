@@ -19,9 +19,8 @@ class Game {
         this.startButton = document.getElementById('startButton');
         this.restartButton = document.getElementById('restartButton');
         
-        // 设置画布尺寸
-        this.canvas.width = 480;
-        this.canvas.height = 720;
+        // 设置画布尺寸 - 移动端适配
+        this.setupCanvasSize();
         
         // 游戏状态
         this.isRunning = false;
@@ -58,9 +57,44 @@ class Game {
     }
     
     /**
+     * 设置画布尺寸 - 移动端适配
+     */
+    setupCanvasSize() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                        || window.innerWidth <= 768;
+        
+        if (isMobile) {
+            // 移动端全屏
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
+            
+            // 监听屏幕方向变化
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    this.canvas.width = window.innerWidth;
+                    this.canvas.height = window.innerHeight;
+                    this.initStars(); // 重新初始化星空
+                }, 100);
+            });
+            
+            // 监听窗口大小变化
+            window.addEventListener('resize', () => {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.initStars(); // 重新初始化星空
+            });
+        } else {
+            // 桌面端固定尺寸
+            this.canvas.width = 480;
+            this.canvas.height = 720;
+        }
+    }
+    
+    /**
      * 初始化星空背景
      */
     initStars() {
+        this.stars = []; // 清空现有星星
         for (let i = 0; i < 100; i++) {
             this.stars.push({
                 x: Math.random() * this.canvas.width,
