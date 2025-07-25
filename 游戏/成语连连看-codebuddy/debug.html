@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成语连连看 - 调试版本</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .debug-info {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 成语连连看调试页面</h1>
+    
+    <div id="debugInfo"></div>
+    
+    <button onclick="testStep1()">步骤1: 测试数据加载</button>
+    <button onclick="testStep2()">步骤2: 测试DOM元素</button>
+    <button onclick="testStep3()">步骤3: 测试游戏初始化</button>
+    <button onclick="testStep4()">步骤4: 启动完整游戏</button>
+    
+    <div id="gameContainer" style="display: none;">
+        <!-- 简化的游戏界面用于测试 -->
+        <div id="gameStart">开始界面</div>
+        <div id="gameOver">结束界面</div>
+        <div id="levelComplete">关卡完成</div>
+        <div id="mahjongArea">麻将区域</div>
+        <button id="startButton">开始游戏</button>
+        <button id="restartButton">重新开始</button>
+        <button id="nextLevelButton">下一关</button>
+        <button id="continueButton">继续</button>
+        <span id="levelValue">1</span>
+        <span id="scoreValue">0</span>
+        <span id="timeValue">60</span>
+        <div id="idiomMeaning">成语含义</div>
+        <span id="finalScore">0</span>
+        <span id="finalLevel">1</span>
+        <span id="finalTime">0</span>
+        <span id="completedLevel">1</span>
+        <span id="gameOverTitle">游戏结束</span>
+        <div id="char1">?</div>
+        <div id="char2">?</div>
+        <div id="char3">?</div>
+        <div id="char4">?</div>
+    </div>
+
+    <script>
+        let debugLog = [];
+        
+        function log(message, type = 'info') {
+            debugLog.push({message, type, time: new Date().toLocaleTimeString()});
+            updateDebugDisplay();
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function updateDebugDisplay() {
+            const container = document.getElementById('debugInfo');
+            container.innerHTML = debugLog.map(entry => 
+                `<div class="debug-info ${entry.type}">
+                    <strong>[${entry.time}]</strong> ${entry.message}
+                </div>`
+            ).join('');
+        }
+        
+        // 步骤1: 测试数据加载
+        function testStep1() {
+            log('开始测试数据加载...', 'info');
+            
+            // 动态加载IdiomData.js
+            const script = document.createElement('script');
+            script.src = 'js/IdiomData.js';
+            script.onload = function() {
+                try {
+                    if (typeof IDIOM_DATA !== 'undefined') {
+                        log('✅ IDIOM_DATA 加载成功', 'success');
+                        log(`📊 数据包含 ${Object.keys(IDIOM_DATA).length} 个关卡`, 'success');
+                    } else {
+                        log('❌ IDIOM_DATA 未定义', 'error');
+                    }
+                    
+                    if (typeof getLevelIdioms === 'function') {
+                        const level1 = getLevelIdioms(1);
+                        log(`✅ getLevelIdioms 函数正常，第1关有 ${level1.length} 个成语`, 'success');
+                        log(`📝 第1个成语: ${level1[0].idiom}`, 'success');
+                    } else {
+                        log('❌ getLevelIdioms 函数未定义', 'error');
+                    }
+                    
+                    if (typeof generateMahjongChars === 'function') {
+                        const testChars = generateMahjongChars([{chars: ['一', '二', '三', '四']}], 10);
+                        log(`✅ generateMahjongChars 函数正常，生成了 ${testChars.length} 个字符`, 'success');
+                    } else {
+                        log('❌ generateMahjongChars 函数未定义', 'error');
+                    }
+                    
+                } catch (error) {
+                    log(`❌ 数据测试出错: ${error.message}`, 'error');
+                }
+            };
+            script.onerror = function() {
+                log('❌ 无法加载 IdiomData.js 文件', 'error');
+            };
+            document.head.appendChild(script);
+        }
+        
+        // 步骤2: 测试DOM元素
+        function testStep2() {
+            log('开始测试DOM元素...', 'info');
+            document.getElementById('gameContainer').style.display = 'block';
+            
+            const requiredElements = [
+                'gameStart', 'gameOver', 'levelComplete', 'mahjongArea', 
+                'startButton', 'restartButton', 'nextLevelButton', 'continueButton'
+            ];
+            
+            let allFound = true;
+            requiredElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    log(`✅ 找到元素: ${id}`, 'success');
+                } else {
+                    log(`❌ 未找到元素: ${id}`, 'error');
+                    allFound = false;
+                }
+            });
+            
+            if (allFound) {
+                log('✅ 所有必需的DOM元素都存在', 'success');
+            } else {
+                log('❌ 部分DOM元素缺失', 'error');
+            }
+        }
+        
+        // 步骤3: 测试游戏初始化
+        function testStep3() {
+            log('开始测试游戏初始化...', 'info');
+            
+            try {
+                // 简化的游戏类用于测试
+                class TestIdiomGame {
+                    constructor() {
+                        log('正在获取DOM元素...', 'info');
+                        
+                        this.gameStart = document.getElementById('gameStart');
+                        this.gameOver = document.getElementById('gameOver');
+                        this.levelComplete = document.getElementById('levelComplete');
+                        this.mahjongArea = document.getElementById('mahjongArea');
+                        this.startButton = document.getElementById('startButton');
+                        
+                        if (!this.gameStart) {
+                            throw new Error('gameStart 元素未找到');
+                        }
+                        if (!this.gameOver) {
+                            throw new Error('gameOver 元素未找到');
+                        }
+                        if (!this.levelComplete) {
+                            throw new Error('levelComplete 元素未找到');
+                        }
+                        
+                        log('✅ 所有关键DOM元素获取成功', 'success');
+                        
+                        // 测试基本操作
+                        this.gameStart.style.display = 'none';
+                        log('✅ gameStart.style.display 设置成功', 'success');
+                        
+                        this.gameStart.style.display = 'block';
+                        log('✅ DOM操作测试通过', 'success');
+                        
+                        log('✅ 游戏初始化测试成功！', 'success');
+                    }
+                }
+                
+                const testGame = new TestIdiomGame();
+                
+            } catch (error) {
+                log(`❌ 游戏初始化失败: ${error.message}`, 'error');
+                log(`错误堆栈: ${error.stack}`, 'error');
+            }
+        }
+        
+        // 步骤4: 启动完整游戏
+        function testStep4() {
+            log('准备启动完整游戏...', 'info');
+            
+            // 加载完整的游戏脚本
+            const gameScript = document.createElement('script');
+            gameScript.src = 'js/Game.js';
+            gameScript.onload = function() {
+                log('✅ Game.js 加载成功', 'success');
+                
+                try {
+                    const fullGame = new IdiomGame();
+                    log('✅ 完整游戏初始化成功！', 'success');
+                    log('🎮 可以尝试点击开始游戏按钮', 'success');
+                } catch (error) {
+                    log(`❌ 完整游戏初始化失败: ${error.message}`, 'error');
+                }
+            };
+            gameScript.onerror = function() {
+                log('❌ 无法加载 Game.js', 'error');
+            };
+            document.head.appendChild(gameScript);
+        }
+        
+        // 页面加载完成后的初始化
+        window.onload = function() {
+            log('🚀 调试页面加载完成', 'success');
+            log('请按顺序点击测试按钮进行诊断', 'info');
+        };
+    </script>
+</body>
+</html>
