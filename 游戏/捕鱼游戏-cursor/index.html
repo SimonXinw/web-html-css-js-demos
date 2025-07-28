@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>捕鱼游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 开始界面 -->
+    <div id="startScreen" class="screen">
+        <div class="start-container">
+            <h1 class="game-title">🎣 捕鱼达人 🎣</h1>
+            <div class="difficulty-selection">
+                <h2>选择游戏难度</h2>
+                <button class="difficulty-btn" data-difficulty="easy">🐟 简单模式</button>
+                <button class="difficulty-btn" data-difficulty="medium">🐠 中等模式</button>
+                <button class="difficulty-btn" data-difficulty="hard">🦈 困难模式</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏界面 -->
+    <div id="gameScreen" class="screen hidden">
+        <!-- 游戏画布 -->
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- 游戏UI -->
+        <div class="game-ui">
+            <!-- 顶部信息栏 -->
+            <div class="top-ui">
+                <div class="score-info">
+                    <span class="coins">💰 <span id="coins">1000</span></span>
+                    <span class="cannon-level">🔫 炮弹等级: <span id="cannonLevel">1</span></span>
+                </div>
+                <button id="pauseBtn" class="pause-btn">⏸️</button>
+            </div>
+            
+            <!-- 底部控制栏 -->
+            <div class="bottom-ui">
+                <div class="cannon-controls">
+                    <button id="addMoneyBtn" class="add-money-btn">💎 免费+1000</button>
+                    <div class="cannon-level-controls">
+                        <button class="cannon-btn" data-level="1">1级</button>
+                        <button class="cannon-btn" data-level="2">2级</button>
+                        <button class="cannon-btn" data-level="3">3级</button>
+                        <button class="cannon-btn" data-level="4">4级</button>
+                        <button class="cannon-btn" data-level="5">5级</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 暂停界面 -->
+    <div id="pauseScreen" class="screen hidden">
+        <div class="pause-container">
+            <h2>游戏暂停</h2>
+            <button id="resumeBtn" class="menu-btn">继续游戏</button>
+            <button id="restartBtn" class="menu-btn">重新开始</button>
+            <button id="backToMenuBtn" class="menu-btn">返回主菜单</button>
+        </div>
+    </div>
+
+    <!-- 游戏结束界面 -->
+    <div id="gameOverScreen" class="screen hidden">
+        <div class="gameover-container">
+            <h2>游戏结束</h2>
+            <p>最终得分: <span id="finalScore">0</span></p>
+            <button id="playAgainBtn" class="menu-btn">再玩一次</button>
+            <button id="backToMenuBtn2" class="menu-btn">返回主菜单</button>
+        </div>
+    </div>
+
+    <!-- 加载脚本 -->
+    <script src="js/utils.js"></script>
+    <script src="js/fish.js"></script>
+    <script src="js/bullet.js"></script>
+    <script src="js/cannon.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html> 
