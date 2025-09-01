@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线视频生成与压缩工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #343a40;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background: linear-gradient(45deg, var(--primary-color), #0056b3);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+            font-weight: 600;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+        }
+
+        .btn {
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary-color), #0056b3);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, var(--success-color), #1e7e34);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .progress {
+            height: 25px;
+            border-radius: 12px;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(45deg, var(--primary-color), #0056b3);
+            transition: width 0.3s ease;
+        }
+
+        .status-indicator {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+
+        .status-processing {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background-color: #f8f9fa;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: #e3f2fd;
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--success-color);
+            background-color: #d4edda;
+        }
+
+        .download-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, var(--success-color), #1e7e34);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-link:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 10px;
+            }
+            
+            .card {
+                margin-bottom: 20px;
+            }
+            
+            .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .row > div {
+                margin-bottom: 20px;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="text-center mb-4">
+            <h1 class="text-white mb-3">
+                <i class="fas fa-video me-3"></i>
+                在线视频生成与压缩工具
+            </h1>
+            <p class="text-white-50">快速生成测试视频，高效压缩视频文件</p>
+        </div>
+
+        <div class="row">
+            <!-- 视频生成模块 -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-magic me-2"></i>
+                        视频生成
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-film feature-icon"></i>
+                            <h5>生成测试视频</h5>
+                            <p class="text-muted">快速生成指定时长的测试视频文件</p>
+                        </div>
+
+                        <form id="generateForm">
+                            <div class="mb-3">
+                                <label for="duration" class="form-label">
+                                    <i class="fas fa-clock me-2"></i>视频时长（秒）
+                                </label>
+                                <input type="number" class="form-control" id="duration" 
+                                       min="1" max="300" value="10" required>
+                                <div class="form-text">支持1-300秒的视频生成</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="format" class="form-label">
+                                    <i class="fas fa-file-video me-2"></i>输出格式
+                                </label>
+                                <select class="form-select" id="format" required>
+                                    <option value="mp4">MP4 (推荐)</option>
+                                    <option value="webm">WebM</option>
+                                    <option value="avi">AVI</option>
+                                    <option value="mov">MOV</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="resolution" class="form-label">
+                                    <i class="fas fa-expand me-2"></i>分辨率
+                                </label>
+                                <select class="form-select" id="resolution" required>
+                                    <option value="640x480">640x480 (标清)</option>
+                                    <option value="1280x720" selected>1280x720 (高清)</option>
+                                    <option value="1920x1080">1920x1080 (全高清)</option>
+                                    <option value="3840x2160">3840x2160 (4K)</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100" id="generateBtn">
+                                <i class="fas fa-play me-2"></i>开始生成
+                            </button>
+                        </form>
+
+                        <div id="generateProgress" style="display: none;">
+                            <div class="progress mb-3">
+                                <div class="progress-bar" id="generateProgressBar" role="progressbar" 
+                                     style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="status-indicator status-processing" id="generateStatus">
+                                <i class="loading-spinner me-2"></i>正在生成视频...
+                            </div>
+                        </div>
+
+                        <div id="generateResult" style="display: none;">
+                            <div class="status-indicator status-success">
+                                <i class="fas fa-check-circle me-2"></i>视频生成完成！
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="#" class="download-link" id="generateDownload">
+                                    <i class="fas fa-download me-2"></i>下载视频
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 视频压缩模块 -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-compress-alt me-2"></i>
+                        视频压缩
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-file-compress feature-icon"></i>
+                            <h5>压缩视频文件</h5>
+                            <p class="text-muted">高效压缩视频，减小文件大小</p>
+                        </div>
+
+                                                 <form id="compressForm" novalidate>
+                             <div class="mb-3">
+                                 <label class="form-label">
+                                     <i class="fas fa-upload me-2"></i>选择视频文件
+                                 </label>
+                                 <div class="file-upload-area" id="fileUploadArea">
+                                     <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                     <p class="mb-2">拖拽视频文件到此处或点击选择</p>
+                                     <p class="text-muted small">支持 MP4, WebM, AVI, MOV 格式</p>
+                                     <input type="file" id="videoFile" accept="video/*" style="display: none;">
+                                 </div>
+                                 <div id="fileInfo" style="display: none;" class="mt-2">
+                                     <small class="text-muted" id="fileDetails"></small>
+                                 </div>
+                             </div>
+
+                                                                                      <div class="mb-3">
+                                 <label for="compressionPercent" class="form-label">
+                                     <i class="fas fa-cog me-2"></i>压缩质量
+                                 </label>
+                                 <div class="d-flex align-items-center">
+                                     <input type="range" class="form-range flex-grow-1 me-3" id="compressionPercent" 
+                                            min="1" max="100" value="50">
+                                     <span class="badge bg-primary" id="compressionPercentValue">50%</span>
+                                 </div>
+                                 <div class="form-text">1% = 最大压缩，100% = 无压缩</div>
+                             </div>
+
+                             <div class="mb-3">
+                                 <label for="outputFormat" class="form-label">
+                                     <i class="fas fa-file-export me-2"></i>输出格式
+                                 </label>
+                                 <select class="form-select" id="outputFormat">
+                                     <option value="mp4" selected>MP4</option>
+                                     <option value="webm">WebM</option>
+                                     <option value="avi">AVI</option>
+                                 </select>
+                             </div>
+
+                            <button type="submit" class="btn btn-success w-100" id="compressBtn">
+                                <i class="fas fa-compress me-2"></i>开始压缩
+                            </button>
+                        </form>
+
+                        <div id="compressProgress" style="display: none;">
+                            <div class="progress mb-3">
+                                <div class="progress-bar" id="compressProgressBar" role="progressbar" 
+                                     style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="status-indicator status-processing" id="compressStatus">
+                                <i class="loading-spinner me-2"></i>正在压缩视频...
+                            </div>
+                        </div>
+
+                        <div id="compressResult" style="display: none;">
+                            <div class="status-indicator status-success">
+                                <i class="fas fa-check-circle me-2"></i>视频压缩完成！
+                            </div>
+                            <div class="text-center mt-3">
+                                <a href="#" class="download-link" id="compressDownload">
+                                    <i class="fas fa-download me-2"></i>下载压缩视频
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <i class="fas fa-info-circle me-2"></i>
+                使用说明
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-magic text-primary me-2"></i>视频生成</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success me-2"></i>选择视频时长（1-300秒）</li>
+                            <li><i class="fas fa-check text-success me-2"></i>选择输出格式和分辨率</li>
+                            <li><i class="fas fa-check text-success me-2"></i>点击生成按钮开始处理</li>
+                            <li><i class="fas fa-check text-success me-2"></i>等待进度完成即可下载</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                                                 <h6><i class="fas fa-compress-alt text-success me-2"></i>视频压缩</h6>
+                         <ul class="list-unstyled">
+                             <li><i class="fas fa-check text-success me-2"></i>拖拽或选择视频文件</li>
+                             <li><i class="fas fa-check text-success me-2"></i>选择压缩质量</li>
+                             <li><i class="fas fa-check text-success me-2"></i>选择输出格式</li>
+                             <li><i class="fas fa-check text-success me-2"></i>点击压缩按钮开始处理</li>
+                             <li><i class="fas fa-check text-success me-2"></i>等待进度完成即可下载</li>
+                         </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+     <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/ffmpeg.min.js"></script>
+    <script>
+                 class VideoProcessor {
+             constructor() {
+                 this.initializeEventListeners();
+                 this.currentFile = null;
+                 this.ffmpeg = null;
+                 this.initFFmpeg();
+             }
+
+             async initFFmpeg() {
+                 try {
+                     this.ffmpeg = createFFmpeg({ log: true });
+                     await this.ffmpeg.load();
+                     console.log('FFmpeg 加载成功');
+                 } catch (error) {
+                     console.log('FFmpeg 加载失败，使用备用压缩方法:', error);
+                 }
+             }
+
+            initializeEventListeners() {
+                // 视频生成表单
+                document.getElementById('generateForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.generateVideo();
+                });
+
+                // 视频压缩表单
+                document.getElementById('compressForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.compressVideo();
+                });
+
+                                 // 文件上传区域
+                 const fileUploadArea = document.getElementById('fileUploadArea');
+                 const fileInput = document.getElementById('videoFile');
+
+                 fileUploadArea.addEventListener('click', () => fileInput.click());
+                 fileUploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
+                 fileUploadArea.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                 fileUploadArea.addEventListener('drop', this.handleDrop.bind(this));
+                 fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+
+                 // 压缩百分比滑块
+                 const compressionPercent = document.getElementById('compressionPercent');
+                 const compressionPercentValue = document.getElementById('compressionPercentValue');
+                 compressionPercent.addEventListener('input', (e) => {
+                     compressionPercentValue.textContent = e.target.value + '%';
+                 });
+            }
+
+            handleDragOver(e) {
+                e.preventDefault();
+                e.currentTarget.classList.add('dragover');
+            }
+
+            handleDragLeave(e) {
+                e.preventDefault();
+                e.currentTarget.classList.remove('dragover');
+            }
+
+            handleDrop(e) {
+                e.preventDefault();
+                e.currentTarget.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.handleFile(files[0]);
+                }
+            }
+
+            handleFileSelect(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    this.handleFile(file);
+                }
+            }
+
+            handleFile(file) {
+                if (!file.type.startsWith('video/')) {
+                    this.showError('请选择有效的视频文件');
+                    return;
+                }
+
+                this.currentFile = file;
+                const fileInfo = document.getElementById('fileInfo');
+                const fileDetails = document.getElementById('fileDetails');
+                
+                fileDetails.textContent = `${file.name} (${this.formatFileSize(file.size)})`;
+                fileInfo.style.display = 'block';
+            }
+
+            async generateVideo() {
+                const duration = parseInt(document.getElementById('duration').value);
+                const format = document.getElementById('format').value;
+                const resolution = document.getElementById('resolution').value;
+
+                if (duration < 1 || duration > 300) {
+                    this.showError('视频时长必须在1-300秒之间');
+                    return;
+                }
+
+                this.showGenerateProgress();
+                
+                try {
+                    // 模拟视频生成过程
+                    await this.simulateProgress('generateProgressBar', 'generateStatus', 
+                        '正在生成视频...', '视频生成完成！', 3000);
+                    
+                    // 创建模拟视频文件
+                    const videoBlob = await this.createMockVideo(duration, format, resolution);
+                    const url = URL.createObjectURL(videoBlob);
+                    
+                    this.showGenerateResult(url, `generated_video.${format}`);
+                } catch (error) {
+                    this.showError('视频生成失败: ' + error.message);
+                }
+            }
+
+                         async compressVideo() {
+                 if (!this.currentFile) {
+                     this.showError('请先选择视频文件');
+                     return;
+                 }
+
+                 const outputFormat = document.getElementById('outputFormat').value;
+                 const compressionPercent = parseInt(document.getElementById('compressionPercent').value);
+
+                 if (compressionPercent < 1 || compressionPercent > 100) {
+                     this.showError('压缩质量必须在1-100之间');
+                     return;
+                 }
+
+                 this.showCompressProgress();
+
+                 try {
+                     // 模拟压缩过程
+                     await this.simulateProgress('compressProgressBar', 'compressStatus', 
+                         `正在压缩视频 (${compressionPercent}%)...`, '视频压缩完成！', 4000);
+                     
+                     // 创建压缩后的视频文件
+                     const compressedBlob = await this.createCompressedVideo(this.currentFile, outputFormat, compressionPercent);
+                     const url = URL.createObjectURL(compressedBlob);
+                     
+                     this.showCompressResult(url, `compressed_video.${outputFormat}`);
+                 } catch (error) {
+                     this.showError('视频压缩失败: ' + error.message);
+                 }
+             }
+
+            async createMockVideo(duration, format, resolution) {
+                // 创建一个简单的测试视频（这里使用Canvas生成）
+                const canvas = document.createElement('canvas');
+                const [width, height] = resolution.split('x').map(Number);
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+
+                // 生成简单的动画帧
+                const frames = duration * 30; // 30fps
+                const stream = canvas.captureStream(30);
+                const mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: `video/${format === 'webm' ? 'webm' : 'mp4'}`
+                });
+
+                const chunks = [];
+                mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+                mediaRecorder.onstop = () => {};
+
+                return new Promise((resolve) => {
+                    mediaRecorder.onstop = () => {
+                        const blob = new Blob(chunks, { type: `video/${format}` });
+                        resolve(blob);
+                    };
+
+                    mediaRecorder.start();
+                    
+                    let frame = 0;
+                    const animate = () => {
+                        // 绘制简单的动画
+                        ctx.fillStyle = `hsl(${frame * 2 % 360}, 70%, 50%)`;
+                        ctx.fillRect(0, 0, width, height);
+                        
+                        ctx.fillStyle = 'white';
+                        ctx.font = '48px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(`测试视频 ${Math.floor(frame / 30)}s`, width / 2, height / 2);
+                        
+                        frame++;
+                        if (frame < frames) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            mediaRecorder.stop();
+                        }
+                    };
+                    animate();
+                });
+            }
+
+                         async createCompressedVideo(file, format, compressionPercent) {
+                 const originalSize = file.size;
+                 
+                 // 如果FFmpeg可用，使用FFmpeg进行压缩
+                 if (this.ffmpeg && this.ffmpeg.isLoaded()) {
+                     try {
+                         return await this.compressWithFFmpeg(file, format, compressionPercent, originalSize);
+                     } catch (error) {
+                         console.log('FFmpeg压缩失败，使用备用方法:', error);
+                     }
+                 }
+                 
+                 // 备用压缩方法：使用Canvas重新编码
+                 return await this.compressWithCanvas(file, format, compressionPercent, originalSize);
+             }
+
+             async compressWithFFmpeg(file, format, compressionPercent, originalSize) {
+                 return new Promise(async (resolve) => {
+                     try {
+                         // 将文件写入FFmpeg
+                         this.ffmpeg.FS('writeFile', 'input.mp4', await this.fileToUint8Array(file));
+                         
+                         // 根据压缩百分比计算比特率（反转逻辑）
+                         const videoInfo = await this.getVideoInfo(file);
+                         const qualityFactor = compressionPercent / 100;
+                         const targetBitrate = Math.floor(videoInfo.bitrate * qualityFactor);
+                         
+                         // 构建FFmpeg命令
+                         let command = ['-i', 'input.mp4'];
+                         
+                         if (format === 'mp4') {
+                             command = command.concat([
+                                 '-c:v', 'libx264',
+                                 '-b:v', `${targetBitrate}k`,
+                                 '-preset', 'medium',
+                                 '-crf', Math.max(18, 28 - (compressionPercent / 10))
+                             ]);
+                         } else if (format === 'webm') {
+                             command = command.concat([
+                                 '-c:v', 'libvpx-vp9',
+                                 '-b:v', `${targetBitrate}k`,
+                                 '-crf', Math.max(20, 30 - (compressionPercent / 10))
+                             ]);
+                         }
+                         
+                         command.push('output.' + format);
+                         
+                         // 执行FFmpeg命令
+                         await this.ffmpeg.run(...command);
+                         
+                         // 读取输出文件
+                         const data = this.ffmpeg.FS('readFile', `output.${format}`);
+                         const compressedBlob = new Blob([data.buffer], { type: `video/${format}` });
+                         
+                         console.log(`原始文件大小: ${this.formatFileSize(originalSize)}`);
+                         console.log(`压缩质量: ${compressionPercent}%`);
+                         console.log(`最终文件大小: ${this.formatFileSize(compressedBlob.size)}`);
+                         console.log(`压缩率: ${((1 - compressedBlob.size / originalSize) * 100).toFixed(2)}%`);
+                         
+                         // 清理文件
+                         this.ffmpeg.FS('unlink', 'input.mp4');
+                         this.ffmpeg.FS('unlink', `output.${format}`);
+                         
+                         resolve(compressedBlob);
+                     } catch (error) {
+                         console.error('FFmpeg压缩错误:', error);
+                         resolve(await this.compressWithCanvas(file, format, compressionPercent, originalSize));
+                     }
+                 });
+             }
+
+             async compressWithCanvas(file, format, compressionPercent, originalSize) {
+                 return new Promise((resolve) => {
+                     const video = document.createElement('video');
+                     video.src = URL.createObjectURL(file);
+                     
+                     video.onloadedmetadata = () => {
+                         const canvas = document.createElement('canvas');
+                         const ctx = canvas.getContext('2d');
+                         
+                         // 反转压缩逻辑：压缩百分比越小，压缩效果越强
+                         const qualityFactor = compressionPercent / 100;
+                         
+                         // 根据压缩百分比调整分辨率（压缩百分比越小，分辨率越低）
+                         const scaleFactor = Math.sqrt(qualityFactor);
+                         canvas.width = Math.floor(video.videoWidth * scaleFactor);
+                         canvas.height = Math.floor(video.videoHeight * scaleFactor);
+                         
+                         // 调整帧率（压缩百分比越小，帧率越低）
+                         const fps = Math.max(5, Math.floor(30 * qualityFactor));
+                         
+                         const stream = canvas.captureStream(fps);
+                         const mediaRecorder = new MediaRecorder(stream, {
+                             mimeType: `video/${format === 'webm' ? 'webm' : 'mp4'}`
+                         });
+                         
+                         const chunks = [];
+                         mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+                         
+                         mediaRecorder.onstop = () => {
+                             const compressedBlob = new Blob(chunks, { type: `video/${format}` });
+                             
+                             console.log(`原始文件大小: ${this.formatFileSize(originalSize)}`);
+                             console.log(`压缩质量: ${compressionPercent}%`);
+                             console.log(`最终文件大小: ${this.formatFileSize(compressedBlob.size)}`);
+                             console.log(`压缩率: ${((1 - compressedBlob.size / originalSize) * 100).toFixed(2)}%`);
+                             console.log(`分辨率: ${canvas.width}x${canvas.height}`);
+                             console.log(`帧率: ${fps}fps`);
+                             
+                             resolve(compressedBlob);
+                         };
+                         
+                         mediaRecorder.start();
+                         
+                         let frameCount = 0;
+                         const totalFrames = Math.floor(video.duration * fps);
+                         
+                         const drawFrame = () => {
+                             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                             frameCount++;
+                             
+                             if (frameCount < totalFrames) {
+                                 video.currentTime += 1 / fps;
+                                 setTimeout(drawFrame, 1000 / fps);
+                             } else {
+                                 mediaRecorder.stop();
+                             }
+                         };
+                         
+                         video.currentTime = 0;
+                         drawFrame();
+                     };
+                 });
+             }
+
+             async fileToUint8Array(file) {
+                 return new Promise((resolve) => {
+                     const reader = new FileReader();
+                     reader.onload = () => {
+                         resolve(new Uint8Array(reader.result));
+                     };
+                     reader.readAsArrayBuffer(file);
+                 });
+             }
+
+             async getVideoInfo(file) {
+                 return new Promise((resolve) => {
+                     const video = document.createElement('video');
+                     video.src = URL.createObjectURL(file);
+                     
+                     video.onloadedmetadata = () => {
+                         // 估算比特率（基于文件大小和时长）
+                         const estimatedBitrate = Math.floor((file.size * 8) / video.duration / 1000);
+                         resolve({
+                             duration: video.duration,
+                             width: video.videoWidth,
+                             height: video.videoHeight,
+                             bitrate: estimatedBitrate
+                         });
+                     };
+                 });
+             }
+
+            async simulateProgress(progressBarId, statusId, processingText, successText, duration) {
+                const progressBar = document.getElementById(progressBarId);
+                const status = document.getElementById(statusId);
+                const startTime = Date.now();
+
+                return new Promise((resolve) => {
+                    const updateProgress = () => {
+                        const elapsed = Date.now() - startTime;
+                        const progress = Math.min((elapsed / duration) * 100, 100);
+                        
+                        progressBar.style.width = progress + '%';
+                        progressBar.setAttribute('aria-valuenow', progress);
+                        
+                        if (progress < 100) {
+                            requestAnimationFrame(updateProgress);
+                        } else {
+                            status.innerHTML = `<i class="fas fa-check-circle me-2"></i>${successText}`;
+                            status.className = 'status-indicator status-success';
+                            resolve();
+                        }
+                    };
+                    updateProgress();
+                });
+            }
+
+            showGenerateProgress() {
+                document.getElementById('generateProgress').style.display = 'block';
+                document.getElementById('generateResult').style.display = 'none';
+                document.getElementById('generateBtn').disabled = true;
+            }
+
+            showGenerateResult(url, filename) {
+                document.getElementById('generateProgress').style.display = 'none';
+                document.getElementById('generateResult').style.display = 'block';
+                document.getElementById('generateBtn').disabled = false;
+                
+                const downloadLink = document.getElementById('generateDownload');
+                downloadLink.href = url;
+                downloadLink.download = filename;
+            }
+
+            showCompressProgress() {
+                document.getElementById('compressProgress').style.display = 'block';
+                document.getElementById('compressResult').style.display = 'none';
+                document.getElementById('compressBtn').disabled = true;
+            }
+
+            showCompressResult(url, filename) {
+                document.getElementById('compressProgress').style.display = 'none';
+                document.getElementById('compressResult').style.display = 'block';
+                document.getElementById('compressBtn').disabled = false;
+                
+                const downloadLink = document.getElementById('compressDownload');
+                downloadLink.href = url;
+                downloadLink.download = filename;
+            }
+
+            showError(message) {
+                // 创建错误提示
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'status-indicator status-error';
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${message}`;
+                
+                // 插入到页面顶部
+                const container = document.querySelector('.main-container');
+                container.insertBefore(errorDiv, container.firstChild);
+                
+                // 3秒后自动移除
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 3000);
+            }
+
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            new VideoProcessor();
+        });
+    </script>
+</body>
+</html>
