@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>图片转换工具</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+
       img {
         width: 100%;
       }
@@ -44,6 +53,34 @@
         font-size: 16px;
         color: #007bff;
       }
+
+      /* 拖拽卡片样式 */
+      .drag-overlay {
+        position: fixed;
+        top: 70px;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        background-color: rgba(0, 123, 255, 0.1);
+        border-radius: 10px;
+        border: 3px dashed #007bff;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        font-size: 24px;
+        color: #007bff;
+        font-weight: bold;
+      }
+
+      .drag-overlay.show {
+        display: flex;
+      }
+
+      .drag-overlay::before {
+        content: "拖拽图片到此处上传";
+        text-align: center;
+      }
     </style>
     <!-- 加载JSZip和FileSaver.js，用于压缩和下载文件 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -51,6 +88,9 @@
   </head>
 
   <body>
+    <!-- 拖拽覆盖层 -->
+    <div id="dragOverlay" class="drag-overlay"></div>
+
     <!-- 文件上传控件 -->
     <input type="file" id="fileInput" accept="image/*" multiple />
 
@@ -92,12 +132,46 @@
         const clearButton = document.getElementById("clearButton");
         const resultDiv = document.getElementById("result");
         const statusMessage = document.getElementById("statusMessage");
+        const dragOverlay = document.getElementById("dragOverlay");
 
         let imagesData = []; // 存储每个图片的dataUrl和新文件名
         let conversionInProgress = false; // 标识转换状态，防止重复转换
+        let isDragging = false; // 拖拽状态
 
         // 监听文件选择
         fileInput.addEventListener("change", handleFileSelect, false);
+
+        // 拖拽事件处理
+        window.addEventListener("dragover", function(e) {
+          e.preventDefault();
+          if (!isDragging) {
+            isDragging = true;
+            dragOverlay.classList.add("show");
+          }
+        });
+
+        window.addEventListener("dragleave", function(e) {
+          e.preventDefault();
+          // 只有当鼠标真正离开窗口时才移除拖拽状态
+          if (e.clientX <= 0 || e.clientY <= 0 || 
+              e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+            isDragging = false;
+            dragOverlay.classList.remove("show");
+          }
+        });
+
+        window.addEventListener("drop", function(e) {
+          e.preventDefault();
+          isDragging = false;
+          dragOverlay.classList.remove("show");
+          
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            // 将拖拽的文件设置到文件输入框
+            fileInput.files = files;
+            handleFileSelect({ target: { files: files } });
+          }
+        });
 
         // 下载按钮点击事件
         downloadButton.addEventListener("click", function () {
