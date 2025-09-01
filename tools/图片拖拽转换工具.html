@@ -19,6 +19,10 @@
         text-align: center;
         transition: all 0.3s ease;
         cursor: pointer;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .upload-card:hover {
         background-color: #f0f0f0;
@@ -117,6 +121,7 @@
       let originalImage = null;
       let canvas = null;
       let ctx = null;
+      let isDragging = false;
 
       function updatePreviewImage() {
         if (!originalImage || !canvas || !ctx) return;
@@ -205,17 +210,25 @@
       // 拖拽支持
       window.addEventListener("dragover", (e) => {
         e.preventDefault();
-        uploadCard.classList.add("dragover");
+        if (!isDragging) {
+          isDragging = true;
+          uploadCard.classList.add("dragover");
+        }
       });
 
       window.addEventListener("dragleave", (e) => {
-        if (e.target === document.documentElement || e.relatedTarget === null) {
+        e.preventDefault();
+        // 只有当鼠标真正离开窗口时才移除拖拽状态
+        if (e.clientX <= 0 || e.clientY <= 0 || 
+            e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+          isDragging = false;
           uploadCard.classList.remove("dragover");
         }
       });
 
       window.addEventListener("drop", (e) => {
         e.preventDefault();
+        isDragging = false;
         uploadCard.classList.remove("dragover");
         if (e.dataTransfer.files[0]) {
           currentFile = e.dataTransfer.files[0];
