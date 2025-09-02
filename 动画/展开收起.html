@@ -22,16 +22,18 @@
         padding: 20px;
         overflow: hidden;
         position: relative;
-        height: 300px; /* 默认高度 */
-        transition: height 0.5s ease;
+        border-radius: 15px; /* 圆角边框 */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        height: 300px; /* 初始高度 */
+        transition: height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 更流畅的缓动函数 */
       }
 
       .collapsed {
-        height: 300px; /* 初始高度类 */
+        /* 高度通过JS动态设置为300px */
       }
 
       .expanded {
-        height: auto; /* 展开时高度自动 */
+        /* 高度通过JS动态设置为实际内容高度 */
       }
 
       /* 默认行的透明度 */
@@ -49,7 +51,20 @@
         background-color: #333;
         color: #fff;
         border: none;
-        border-radius: 5px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .show-button:hover {
+        background-color: #555;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .show-button:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       }
     </style>
   </head>
@@ -95,61 +110,134 @@
     <button class="show-button" onclick="toggleExpand()">显示更多</button>
 
     <script>
-      // 初始化状态
-      let isExpanded = false;
-      const textContainer = document.getElementById("textContainer");
-      const textLines = document.querySelectorAll(".text-line");
+      // 展开收起文本组件
+      (function () {
+        "use strict";
 
-      // 设置初始透明度
-      function setInitialOpacity() {
-        const totalLines = textLines.length;
-        textLines.forEach((line, index) => {
-          line.style.opacity = (totalLines - index) / totalLines; // 初始设置为逐行透明度
-        });
-      }
+        // ===== 配置常量 =====
+        const CONFIG = {
+          collapsedHeight: 300,
+          animationDelay: 32,
+          selectors: {
+            container: "#textContainer",
+            button: ".show-button",
+            textLine: ".text-line",
+          },
+        };
 
-      function toggleExpand() {
-        if (!isExpanded) {
-          // 展开容器
-          textContainer.classList.remove("collapsed");
-          textContainer.classList.add("expanded");
-          // 展开时，逐行变亮
-          gradualOpacityChange(true);
+        // ===== 状态管理 =====
+        let state = {
+          isExpanded: false,
+          fullHeight: 0,
+        };
 
-          document.querySelector(".show-button").textContent = "收起";
-        } else {
-          // 收起容器
-          textContainer.classList.remove("expanded");
-          textContainer.classList.add("collapsed");
-          // 收起时，逐行变暗
-          gradualOpacityChange(false);
-          document.querySelector(".show-button").textContent = "显示更多";
+        // ===== DOM 元素 =====
+        const elements = {
+          container: document.getElementById("textContainer"),
+          button: document.querySelector(".show-button"),
+          textLines: document.querySelectorAll(".text-line"),
+        };
+
+        // ===== 核心功能函数 =====
+
+        /**
+         * 精确计算完整内容的高度
+         */
+        function calculateFullHeight() {
+          const { container } = elements;
+
+          // 保存当前样式
+          const originalHeight = container.style.height;
+          const originalOverflow = container.style.overflow;
+
+          // 临时设置为auto来获取真实高度
+          container.style.height = "auto";
+          container.style.overflow = "visible";
+
+          // 获取实际内容高度
+          state.fullHeight = container.scrollHeight;
+
+          // 恢复原始样式
+          container.style.height = originalHeight;
+          container.style.overflow = originalOverflow;
+
+          console.log(`计算出的完整高度: ${state.fullHeight}px`);
         }
-        isExpanded = !isExpanded;
-      }
 
-      // 逐行变亮或变暗
-      function gradualOpacityChange(isExpanding) {
-        const totalLines = textLines.length;
-        if (isExpanding) {
-          // 展开时逐行变亮
+        /**
+         * 设置初始透明度
+         */
+        function setInitialOpacity() {
+          const { textLines } = elements;
+          const totalLines = textLines.length;
+
           textLines.forEach((line, index) => {
-            setTimeout(() => {
-              line.style.opacity = 1; // 设置为完全可见
-            }, index * 32); // 每行之间延迟 32 毫秒
+            line.style.opacity = (totalLines - index) / totalLines;
           });
-        } else {
-          // 收起时逐行变暗，从下往上
-          for (let i = totalLines - 1; i >= 0; i--) {
-            setTimeout(() => {
-              textLines[i].style.opacity = (totalLines - i) / totalLines; // 根据行号逐行变暗
-            }, (totalLines - 1 - i) * 32); // 从下往上延迟
+        }
+
+        /**
+         * 逐行透明度变化动画
+         * @param {boolean} isExpanding - 是否为展开状态
+         */
+        function gradualOpacityChange(isExpanding) {
+          const { textLines } = elements;
+          const totalLines = textLines.length;
+
+          if (isExpanding) {
+            // 展开时逐行变亮
+            textLines.forEach((line, index) => {
+              setTimeout(() => {
+                line.style.opacity = 1;
+              }, index * CONFIG.animationDelay);
+            });
+          } else {
+            // 收起时逐行变暗，从下往上
+            for (let i = totalLines - 1; i >= 0; i--) {
+              setTimeout(() => {
+                textLines[i].style.opacity = (totalLines - i) / totalLines;
+              }, (totalLines - 1 - i) * CONFIG.animationDelay);
+            }
           }
         }
-      }
 
-      // 设置初始透明度
-      setInitialOpacity();
+        /**
+         * 切换展开/收起状态
+         */
+        function toggleExpand() {
+          const { container, button } = elements;
+
+          if (!state.isExpanded) {
+            // 展开：设置为精确的内容高度
+            container.style.height = state.fullHeight + "px";
+            container.classList.remove("collapsed");
+            container.classList.add("expanded");
+            gradualOpacityChange(true);
+            button.textContent = "收起";
+          } else {
+            // 收起：设置为固定的收起高度
+            container.style.height = CONFIG.collapsedHeight + "px";
+            container.classList.remove("expanded");
+            container.classList.add("collapsed");
+            gradualOpacityChange(false);
+            button.textContent = "显示更多";
+          }
+
+          state.isExpanded = !state.isExpanded;
+        }
+
+        // ===== 初始化 =====
+        function init() {
+          calculateFullHeight();
+          setInitialOpacity();
+        }
+
+        // ===== 全局暴露 =====
+        window.toggleExpand = toggleExpand;
+
+        // ===== 启动应用 =====
+        init();
+      })();
     </script>
   </body>
 </html>
