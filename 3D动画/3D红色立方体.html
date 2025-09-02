@@ -69,10 +69,20 @@
       controls.target.set(0, 0, 0);
       controls.update();
 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-      const light = new THREE.DirectionalLight(0xffffff, 0.8);
+      // 增强光照设置以改善模型显示
+      scene.add(new THREE.AmbientLight(0xffffff, 0.8)); // 增加环境光
+      const light = new THREE.DirectionalLight(0xffffff, 1.0); // 增加方向光强度
       light.position.set(5, 10, 7);
       scene.add(light);
+
+      // 添加更多光源来改善模型显示
+      const light2 = new THREE.DirectionalLight(0xffffff, 0.8);
+      light2.position.set(-5, 5, -7);
+      scene.add(light2);
+      
+      const pointLight = new THREE.PointLight(0xffffff, 0.7, 100);
+      pointLight.position.set(0, 10, 0);
+      scene.add(pointLight);
 
       // 地面
       const plane = new THREE.Mesh(
@@ -90,46 +100,7 @@
       scene.add(new THREE.AxesHelper(5));
       scene.add(new THREE.GridHelper(50, 50));
 
-      // 加载 OBJ + MTL + TGA 模型
-      const tgaLoader = new TGALoader();
-      
-      // 创建一个管理器来处理TGA文件
-      const manager = new THREE.LoadingManager();
-      manager.addHandler(/\.tga$/i, tgaLoader);
-      
-      // 使用管理器创建MTLLoader
-      const mtlLoader = new MTLLoader(manager);
-      mtlLoader.setPath('./module/rem/');
-      
-      mtlLoader.load("untitled.mtl", 
-        (materials) => {
-          materials.preload();
-          
-          const objLoader = new OBJLoader();
-          objLoader.setMaterials(materials);
-          objLoader.setPath('./module/rem/');
-          objLoader.load("untitled.obj", 
-            (object) => {
-              object.position.y = 0;
-              object.scale.set(1, 1, 1);
-              scene.add(object);
-              console.log('模型加载成功！');
-            },
-            (progress) => {
-              console.log('OBJ加载进度:', (progress.loaded / progress.total * 100) + '%');
-            },
-            (error) => {
-              console.error('OBJ加载错误:', error);
-            }
-          );
-        },
-        (progress) => {
-          console.log('MTL加载进度:', (progress.loaded / progress.total * 100) + '%');
-        },
-        (error) => {
-          console.error('MTL加载错误:', error);
-        }
-      );
+      // 模型将通过loadModel函数加载
 
       // 缩放逻辑
       let targetDistance = camera.position.distanceTo(controls.target);
@@ -168,6 +139,84 @@
       renderer.domElement.addEventListener("touchend", () => {
         lastTouchDist = null;
       });
+
+      // 自动加载模型
+      loadModel();
+
+      function loadModel() {
+        const tgaLoader = new TGALoader();
+        const manager = new THREE.LoadingManager();
+        manager.addHandler(/\.tga$/i, tgaLoader);
+        
+        const mtlLoader = new MTLLoader(manager);
+        mtlLoader.setPath('./module/rem/');
+        
+        mtlLoader.load("untitled.mtl", 
+          (materials) => {
+            materials.preload();
+            
+            // 调整材质属性以改善显示效果
+            Object.keys(materials.materials).forEach(materialName => {
+              const material = materials.materials[materialName];
+              
+              // 大幅增加漫反射系数，让模型更亮
+              if (material.color) {
+                material.color.multiplyScalar(5); // 增加更多亮度
+              }
+              
+              // 如果没有纹理，设置一个基本颜色
+              if (!material.map) {
+                material.color.setHex(0x888888); // 设置为灰色
+              }
+              
+              console.log(`材质 ${materialName}:`, {
+                color: material.color.getHex().toString(16),
+                hasTexture: !!material.map
+              });
+            });
+            
+            const objLoader = new OBJLoader();
+            objLoader.setMaterials(materials);
+            objLoader.setPath('./module/rem/');
+            objLoader.load("untitled.obj", 
+              (object) => {
+                object.position.y = 0;
+                object.scale.set(1, 1, 1);
+                scene.add(object);
+                console.log('模型加载成功！', object);
+                
+                // 遍历模型的所有材质，确保它们可见
+                object.traverse((child) => {
+                  if (child.isMesh) {
+                    console.log('网格材质:', child.material);
+                    if (Array.isArray(child.material)) {
+                      child.material.forEach((mat, index) => {
+                        if (mat.color && mat.color.r < 0.3 && mat.color.g < 0.3 && mat.color.b < 0.3) {
+                          mat.color.setHex(0x888888); // 设置为中等灰色
+                        }
+                      });
+                    } else if (child.material.color && child.material.color.r < 0.3) {
+                      child.material.color.setHex(0x888888);
+                    }
+                  }
+                });
+              },
+              (progress) => {
+                console.log('OBJ加载进度:', (progress.loaded / progress.total * 100) + '%');
+              },
+              (error) => {
+                console.error('OBJ加载错误:', error);
+              }
+            );
+          },
+          (progress) => {
+            console.log('MTL加载进度:', (progress.loaded / progress.total * 100) + '%');
+          },
+          (error) => {
+            console.error('MTL加载错误:', error);
+          }
+        );
+      }
 
       // 重置按钮
       document.getElementById("resetBtn").addEventListener("click", () => {
