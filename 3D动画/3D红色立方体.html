@@ -11,21 +11,89 @@
       canvas {
         display: block;
       }
-      #resetBtn {
+      #controls {
         position: absolute;
         top: 10px;
         left: 10px;
         z-index: 1;
+        background: rgba(255,255,255,0.95);
+        padding: 15px;
+        border-radius: 8px;
+        font-family: Arial, sans-serif;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        min-width: 250px;
+      }
+      
+      .control-group {
+        margin-bottom: 10px;
+      }
+      
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        font-size: 12px;
+      }
+      
+      input[type="range"] {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+      
+      button {
         padding: 6px 12px;
-        background: white;
-        border: 1px solid #ccc;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 12px;
+        margin-right: 5px;
+        margin-bottom: 5px;
+      }
+      
+      button:hover {
+        background: #45a049;
+      }
+      
+      .status {
+        font-size: 11px;
+        color: #666;
+        margin-top: 10px;
       }
     </style>
   </head>
   <body>
-    <button id="resetBtn">重置视角</button>
+    <div id="controls">
+      <div class="control-group">
+        <button id="resetBtn">重置视角</button>
+        <button id="toggleLights">切换光源显示</button>
+      </div>
+      
+      <div class="control-group">
+        <label>材质亮度: <span id="materialBrightness">8</span></label>
+        <input type="range" id="brightnessSlider" min="1" max="15" value="8" step="0.5">
+      </div>
+      
+      <div class="control-group">
+        <label>环境光强度: <span id="ambientValue">1.2</span></label>
+        <input type="range" id="ambientSlider" min="0" max="2" value="1.2" step="0.1">
+      </div>
+      
+      <div class="control-group">
+        <label>主光源强度: <span id="mainLightValue">1.2</span></label>
+        <input type="range" id="mainLightSlider" min="0" max="3" value="1.2" step="0.1">
+      </div>
+      
+      <div class="control-group">
+        <label>聚光灯强度: <span id="spotLightValue">1.0</span></label>
+        <input type="range" id="spotLightSlider" min="0" max="3" value="1.0" step="0.1">
+      </div>
+      
+      <div class="status">
+        状态: <span id="status">加载中...</span>
+      </div>
+    </div>
 
     <script type="importmap">
       {
@@ -69,20 +137,61 @@
       controls.target.set(0, 0, 0);
       controls.update();
 
-      // 增强光照设置以改善模型显示
-      scene.add(new THREE.AmbientLight(0xffffff, 0.8)); // 增加环境光
-      const light = new THREE.DirectionalLight(0xffffff, 1.0); // 增加方向光强度
-      light.position.set(5, 10, 7);
-      scene.add(light);
+      // 声明光源和模型变量
+      let lightHelpers = [];
+      let loadedModel = null;
+      let currentMaterials = null;
+      let ambientLight, light, light2, pointLight, spotLight; // 声明所有光源变量
 
-      // 添加更多光源来改善模型显示
-      const light2 = new THREE.DirectionalLight(0xffffff, 0.8);
-      light2.position.set(-5, 5, -7);
-      scene.add(light2);
+      // 增强光照设置以改善模型显示
+      ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // 增加环境光
+      scene.add(ambientLight);
       
-      const pointLight = new THREE.PointLight(0xffffff, 0.7, 100);
-      pointLight.position.set(0, 10, 0);
+      // 主方向光（右上方）
+      light = new THREE.DirectionalLight(0xffffff, 1.2); // 进一步增加强度
+      light.position.set(5, 10, 7);
+      light.target.position.set(0, 0, 0);
+      scene.add(light);
+      scene.add(light.target);
+      
+      // 添加方向光辅助器（显示光线方向）
+      const lightHelper = new THREE.DirectionalLightHelper(light, 2, 0xffff00);
+      scene.add(lightHelper);
+      lightHelpers.push(lightHelper);
+
+      // 辅助方向光（左后方）
+      light2 = new THREE.DirectionalLight(0xffffff, 0.8);
+      light2.position.set(-5, 5, -7);
+      light2.target.position.set(0, 0, 0);
+      scene.add(light2);
+      scene.add(light2.target);
+      
+      // 添加第二个方向光辅助器
+      const lightHelper2 = new THREE.DirectionalLightHelper(light2, 2, 0x00ffff);
+      scene.add(lightHelper2);
+      lightHelpers.push(lightHelper2);
+      
+      // 点光源（顶部）
+      pointLight = new THREE.PointLight(0xffffff, 1.0, 100);
+      pointLight.position.set(0, 8, 0);
       scene.add(pointLight);
+      
+      // 添加点光源辅助器（显示为小球）
+      const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.5, 0xff00ff);
+      scene.add(pointLightHelper);
+      lightHelpers.push(pointLightHelper);
+      
+      // 添加聚光灯效果
+      spotLight = new THREE.SpotLight(0xffffff, 1.0, 50, Math.PI / 6, 0.3);
+      spotLight.position.set(3, 8, 3);
+      spotLight.target.position.set(0, 0, 0);
+      scene.add(spotLight);
+      scene.add(spotLight.target);
+      
+      // 添加聚光灯辅助器
+      const spotLightHelper = new THREE.SpotLightHelper(spotLight, 0xff8800);
+      scene.add(spotLightHelper);
+      lightHelpers.push(spotLightHelper);
 
       // 地面
       const plane = new THREE.Mesh(
@@ -100,7 +209,41 @@
       scene.add(new THREE.AxesHelper(5));
       scene.add(new THREE.GridHelper(50, 50));
 
-      // 模型将通过loadModel函数加载
+      // 材质亮度调整函数
+      function adjustMaterialBrightness(brightness) {
+        if (!currentMaterials) return;
+        
+        Object.keys(currentMaterials.materials).forEach(materialName => {
+          const material = currentMaterials.materials[materialName];
+          
+          // 重置材质颜色到原始状态
+          if (materialName.includes('Hair')) {
+            material.color.setRGB(0.034089, 0.034089, 0.034089);
+          } else {
+            material.color.setRGB(0.100495, 0.100495, 0.100495);
+          }
+          
+          // 应用亮度调整
+          material.color.multiplyScalar(brightness);
+          
+          // 如果没有纹理，设置基本颜色
+          if (!material.map) {
+            material.color.setHex(0xbbbbbb);
+          }
+          
+          // 调整材质属性让颜色更鲜艳
+          material.shininess = 30;
+          
+          // 如果有纹理贴图，增强其显示效果
+          if (material.map) {
+            material.map.colorSpace = THREE.SRGBColorSpace;
+            material.color.setHex(0xffffff); // 设置为白色以显示纹理原色
+          }
+        });
+      }
+
+      // 自动加载模型（函数将在后面定义）
+      setTimeout(() => loadModel(), 100);
 
       // 缩放逻辑
       let targetDistance = camera.position.distanceTo(controls.target);
@@ -140,9 +283,6 @@
         lastTouchDist = null;
       });
 
-      // 自动加载模型
-      loadModel();
-
       function loadModel() {
         const tgaLoader = new TGALoader();
         const manager = new THREE.LoadingManager();
@@ -154,52 +294,29 @@
         mtlLoader.load("untitled.mtl", 
           (materials) => {
             materials.preload();
+            currentMaterials = materials; // 保存材质引用
             
             // 调整材质属性以改善显示效果
-            Object.keys(materials.materials).forEach(materialName => {
-              const material = materials.materials[materialName];
-              
-              // 大幅增加漫反射系数，让模型更亮
-              if (material.color) {
-                material.color.multiplyScalar(5); // 增加更多亮度
-              }
-              
-              // 如果没有纹理，设置一个基本颜色
-              if (!material.map) {
-                material.color.setHex(0x888888); // 设置为灰色
-              }
-              
-              console.log(`材质 ${materialName}:`, {
-                color: material.color.getHex().toString(16),
-                hasTexture: !!material.map
-              });
-            });
+            adjustMaterialBrightness(8); // 初始亮度设为8
+            
+            console.log('材质加载完成，数量:', Object.keys(materials.materials).length);
             
             const objLoader = new OBJLoader();
             objLoader.setMaterials(materials);
             objLoader.setPath('./module/rem/');
             objLoader.load("untitled.obj", 
               (object) => {
+                if (loadedModel) {
+                  scene.remove(loadedModel);
+                }
+                
                 object.position.y = 0;
                 object.scale.set(1, 1, 1);
                 scene.add(object);
-                console.log('模型加载成功！', object);
+                loadedModel = object;
                 
-                // 遍历模型的所有材质，确保它们可见
-                object.traverse((child) => {
-                  if (child.isMesh) {
-                    console.log('网格材质:', child.material);
-                    if (Array.isArray(child.material)) {
-                      child.material.forEach((mat, index) => {
-                        if (mat.color && mat.color.r < 0.3 && mat.color.g < 0.3 && mat.color.b < 0.3) {
-                          mat.color.setHex(0x888888); // 设置为中等灰色
-                        }
-                      });
-                    } else if (child.material.color && child.material.color.r < 0.3) {
-                      child.material.color.setHex(0x888888);
-                    }
-                  }
-                });
+                document.getElementById('status').textContent = '模型加载成功！';
+                console.log('模型加载成功！', object);
               },
               (progress) => {
                 console.log('OBJ加载进度:', (progress.loaded / progress.total * 100) + '%');
@@ -218,12 +335,47 @@
         );
       }
 
-      // 重置按钮
+      // 控制事件
       document.getElementById("resetBtn").addEventListener("click", () => {
         camera.position.set(3, 3, 7);
         controls.target.set(0, 0, 0);
         controls.update();
         targetDistance = camera.position.distanceTo(controls.target);
+      });
+
+      // 切换光源显示
+      document.getElementById("toggleLights").addEventListener("click", () => {
+        lightHelpers.forEach(helper => {
+          helper.visible = !helper.visible;
+        });
+      });
+
+      // 材质亮度控制
+      document.getElementById("brightnessSlider").addEventListener("input", (e) => {
+        const brightness = parseFloat(e.target.value);
+        document.getElementById("materialBrightness").textContent = brightness;
+        adjustMaterialBrightness(brightness);
+      });
+
+      // 环境光控制
+      document.getElementById("ambientSlider").addEventListener("input", (e) => {
+        const intensity = parseFloat(e.target.value);
+        document.getElementById("ambientValue").textContent = intensity;
+        ambientLight.intensity = intensity;
+      });
+
+      // 主光源控制
+      document.getElementById("mainLightSlider").addEventListener("input", (e) => {
+        const intensity = parseFloat(e.target.value);
+        document.getElementById("mainLightValue").textContent = intensity;
+        light.intensity = intensity;
+      });
+
+      // 聚光灯控制
+      document.getElementById("spotLightSlider").addEventListener("input", (e) => {
+        const intensity = parseFloat(e.target.value);
+        document.getElementById("spotLightValue").textContent = intensity;
+        spotLight.intensity = intensity;
       });
 
       function animate() {
