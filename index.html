@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,83 +24,242 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css"
     />
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f8f9fa;
-        color: #333;
+      * {
+        box-sizing: border-box;
       }
 
-      h1,
-      h2 {
-        text-align: center;
-        margin: 12px 0;
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: #333;
+        line-height: 1.6;
       }
 
       .page {
-        max-width: 1200px;
+        max-width: 1400px;
         margin: 0 auto;
-        padding: 10px;
+        padding: 15px;
       }
 
-      /* 五列布局的 section 容器 */
+      h1 {
+        text-align: center;
+        margin: 20px 0 30px 0;
+        color: #fff;
+        font-size: 2.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-weight: 700;
+      }
+
+      /* 响应式网格布局 */
       .section-container {
         display: grid;
-        grid-template-columns: repeat(5, 1fr); /* 每行五列 */
-        gap: 20px; /* 每列间距 */
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
       }
 
       section {
-        background-color: #fff;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
         padding: 16px;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      section:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      section h2 {
+        text-align: center;
+        margin: 0 0 12px 0;
+        color: #2c3e50;
+        font-size: 1.2rem;
+        font-weight: 600;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #3498db;
       }
 
       .links {
         display: flex;
         flex-wrap: wrap;
-        justify-content: center;
-        gap: 12px;
+        gap: 8px;
+        justify-content: flex-start;
       }
 
       .links a {
         display: inline-block;
-        padding: 8px 12px;
+        padding: 6px 10px;
         text-align: center;
         text-decoration: none;
-        background-color: #007bff;
+        background: linear-gradient(135deg, #3498db, #2980b9);
         color: white;
-        border-radius: 5px;
+        border-radius: 6px;
         transition: all 0.3s ease;
-        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+        font-size: 0.85rem;
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
         white-space: nowrap;
+        border: none;
       }
 
       .links a:hover {
-        background-color: #0056b3;
-        transform: translateY(-5px) scale(1.05);
+        background: linear-gradient(135deg, #2980b9, #1f4e79);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+      }
+
+      /* 不同分类的颜色主题 */
+      .category-games .links a {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+      }
+
+      .category-games .links a:hover {
+        background: linear-gradient(135deg, #c0392b, #a93226);
+        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+      }
+
+      .category-tools .links a {
+        background: linear-gradient(135deg, #27ae60, #229954);
+        box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);
+      }
+
+      .category-tools .links a:hover {
+        background: linear-gradient(135deg, #229954, #1e8449);
+        box-shadow: 0 4px 12px rgba(39, 174, 96, 0.4);
+      }
+
+      .category-animation .links a {
+        background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        box-shadow: 0 2px 8px rgba(155, 89, 182, 0.3);
+      }
+
+      .category-animation .links a:hover {
+        background: linear-gradient(135deg, #8e44ad, #7d3c98);
+        box-shadow: 0 4px 12px rgba(155, 89, 182, 0.4);
+      }
+
+      .category-interactive .links a {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        box-shadow: 0 2px 8px rgba(243, 156, 18, 0.3);
+      }
+
+      .category-interactive .links a:hover {
+        background: linear-gradient(135deg, #e67e22, #d35400);
+        box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+      }
+
+      .category-api .links a {
+        background: linear-gradient(135deg, #1abc9c, #16a085);
+        box-shadow: 0 2px 8px rgba(26, 188, 156, 0.3);
+      }
+
+      .category-api .links a:hover {
+        background: linear-gradient(135deg, #16a085, #138d75);
+        box-shadow: 0 4px 12px rgba(26, 188, 156, 0.4);
       }
 
       footer {
         text-align: center;
-        padding: 0px;
-        background-color: #343a40;
-        color: #fff;
+        padding: 15px;
+        background: rgba(52, 73, 94, 0.9);
+        color: #ecf0f1;
+        border-radius: 12px;
+        margin-top: 20px;
+        backdrop-filter: blur(10px);
       }
+
       footer p {
-        margin: 8px;
+        margin: 0;
+        font-size: 0.9rem;
       }
 
       footer a {
-        color: #17a2b8;
+        color: #3498db;
         text-decoration: none;
+        transition: color 0.3s ease;
       }
 
       footer a:hover {
+        color: #5dade2;
         text-decoration: underline;
+      }
+
+      /* 移动端适配 */
+      @media (max-width: 768px) {
+        .page {
+          padding: 10px;
+        }
+
+        h1 {
+          font-size: 1.8rem;
+          margin: 15px 0 20px 0;
+        }
+
+        .section-container {
+          grid-template-columns: 1fr;
+          gap: 12px;
+        }
+
+        section {
+          padding: 12px;
+        }
+
+        section h2 {
+          font-size: 1.1rem;
+          margin-bottom: 10px;
+        }
+
+        .links {
+          gap: 6px;
+        }
+
+        .links a {
+          padding: 5px 8px;
+          font-size: 0.8rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        section h2 {
+          font-size: 1rem;
+        }
+
+        .links a {
+          padding: 4px 6px;
+          font-size: 0.75rem;
+        }
+      }
+
+      /* 中等屏幕适配 */
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .section-container {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      /* 大屏幕适配 */
+      @media (min-width: 1025px) {
+        .section-container {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      /* 超大屏幕适配 */
+      @media (min-width: 1400px) {
+        .section-container {
+          grid-template-columns: repeat(4, 1fr);
+        }
       }
     </style>
   </head>
@@ -108,88 +267,169 @@
     <div class="page">
       <!-- 页面标题 -->
       <h1 class="animate__animated animate__fadeInDown">
-        欢迎，来到辛望的轮子贮藏间
+        🎯 辛望的轮子贮藏间
       </h1>
 
-      <!-- 基础功能模块 -->
+      <!-- 重新分类的内容模块 -->
       <div class="section-container">
-        <section data-aos="fade-up">
-          <h2>基础功能演示</h2>
+        <!-- 游戏娱乐 -->
+        <section class="category-games" data-aos="fade-up">
+          <h2>🎮 游戏娱乐</h2>
           <div class="links">
+            <a href="./游戏/雷霆战机-codebuddy/index.html">雷霆战机-codebuddy</a>
+            <a href="./游戏/雷霆战机-cursor/index.html">雷霆战机-cursor</a>
+            <a href="./游戏/雷霆战机-腾讯-cursor优化版本/index.html">雷霆战机-腾讯优化版</a>
+            <a href="./游戏/成语连连看-codebuddy/index.html">成语连连看</a>
+            <a href="./游戏/捕鱼游戏-cursor/index.html">捕鱼游戏</a>
+          </div>
+        </section>
+
+        <!-- 动画特效 -->
+        <section class="category-animation" data-aos="fade-up" data-aos-delay="100">
+          <h2>✨ 动画特效</h2>
+          <div class="links">
+            <a href="./3D动画/3D红色立方体.html">3D红色立方体</a>
+            <a href="./动画/3D立方体.html">3D立方体</a>
+            <a href="./动画/苹果官网滚动缩小动画/index.html">苹果官网动画</a>
+            <a href="./动画/正反面翻转.html">翻转动画</a>
+            <a href="./动画/展开收起.html">展开收起</a>
+            <a href="./动画/滚动文本滑块Swiper.html">滚动文本滑块</a>
+            <a href="./动画/懒加载骨架图.html">懒加载骨架图</a>
             <a href="./js/缓冲运动.html">缓冲运动</a>
             <a href="./js/缓冲运动碰壁.html">缓冲运动碰壁</a>
-            <a href="./js/回到首页，触底.html">回到首页，触底</a>
-            <a href="./js/轮播图.html">轮播图</a>
-            <a href="./js/拖动元素四边距.html">拖动元素四边距</a>
-            <a
-              href="https://blog.csdn.net/qq_42877027/article/details/104959320"
-              >面向对象封装原生ajax</a
-            >
-            <a href="./js/cookies.html">cookies 更换主题颜色</a>
-            <a href="./游戏/雷霆战机-codebuddy/index.html"
-              >雷霆战机-codebuddy</a
-            >
-            <a href="./游戏/雷霆战机-cursor/index.html">雷霆战机-cursor</a>
-            <a href="./游戏/雷霆战机-腾讯-cursor优化版本/index.html"
-              >雷霆战机-腾讯-cursor优化版本</a
-            >
-            <a href="./游戏/成语连连看-codebuddy/index.html"
-              >成语连连看-codebuddy-cursor优化</a
-            >
-            <a href="./游戏/捕鱼游戏-cursor/index.html">捕鱼游戏-cursor</a>
-          </div>
-        </section>
-
-        <section data-aos="fade-up">
-          <h2>工具类项目</h2>
-          <div class="links">
-            <a href="./tools/国债复利年化率计算.html">国债复利年化率计算</a>
-            <a href="./tools/多段股息分红利率计算.html">多段股息分红利率计算</a>
-            <a href="./tools/手写签名转图片.html">手写签名转图片</a>
-            <a href="./tools/抽纸性价比计算器.html">抽纸性价比计算器</a>
-            <a href="./tools/股息分红利率计算.html">股息分红利率计算</a>
-            <a href="./tools/CDN测速.html">CDN测速</a>
-            <a href="./tools/图片浏览器.html">图片浏览器</a>
-            <a href="./tools/银行外汇牌价性价比.html">银行外汇性价比</a>
-            <a href="./tools/分期还款利率计算.html">分期还款利率计算</a>
-            <a href="./tools/指定汇率及黄金计算.html">指定汇率及黄金计算</a>
-            <a href="./tools/面试打分工具.html">面试打分工具</a>
-            <a href="./tools/图片拖拽转换工具.html">图片base64转码</a>
-            <a href="./tools/图片压缩转换工具.html">图片压缩转换工具</a>
-            <a href="./tools/video/生成-压缩视频.html">视频生成-压缩</a>
-          </div>
-        </section>
-
-        <section data-aos="fade-up">
-          <h2>动画与视觉效果</h2>
-          <div class="links">
-            <a href="./动画/3D立方体.html">3D 立方体</a>
-            <a href="./动画/展开收起.html">展开收起</a>
-            <a href="./动画/左右不一致-粘性定位.html">左右不一致-粘性定位</a>
-            <a href="./动画/滚动文本滑块Swiper.html">滚动文本滑块Swiper</a>
-            <a href="./动画\苹果官网滚动缩小动画\index.html">苹果官网动画</a>
-            <a href="./动画//正反面翻转.html">翻转动画</a>
-            <a href="./动画/懒加载骨架图.html">懒加载骨架图</a>
-            <a href="./3D动画/3D红色立方体.html">3D 动画</a>
             <a href="./js/倒计时.htm">倒计时</a>
           </div>
         </section>
 
-        <section data-aos="fade-up">
-          <h2>视频与多媒体</h2>
+        <!-- 实用工具 -->
+        <section class="category-tools" data-aos="fade-up" data-aos-delay="200">
+          <h2>🔧 实用工具</h2>
           <div class="links">
-            <a href="./js/video.html">video</a>
-            <a href="./js/横屏video.html">横屏video</a>
+            <a href="./tools/国债复利年化率计算.html">国债复利计算</a>
+            <a href="./tools/多段股息分红利率计算.html">股息分红计算</a>
+            <a href="./tools/分期还款利率计算.html">分期还款计算</a>
+            <a href="./tools/指定汇率及黄金计算.html">汇率黄金计算</a>
+            <a href="./tools/银行外汇牌价性价比.html">外汇性价比</a>
+            <a href="./tools/抽纸性价比计算器.html">抽纸性价比</a>
+            <a href="./tools/面试打分工具.html">面试打分</a>
+            <a href="./js/复利计算.html">复利计算</a>
           </div>
         </section>
 
-        <section data-aos="fade-up">
-          <h2>算法与逻辑</h2>
+        <!-- 图片视频处理 -->
+        <section class="category-tools" data-aos="fade-up" data-aos-delay="300">
+          <h2>🖼️ 媒体处理</h2>
+          <div class="links">
+            <a href="./tools/图片浏览器.html">图片浏览器</a>
+            <a href="./tools/图片压缩转换工具.html">图片压缩转换</a>
+            <a href="./tools/图片拖拽转换工具.html">图片base64转码</a>
+            <a href="./tools/手写签名转图片.html">手写签名转图片</a>
+            <a href="./tools/video/生成-压缩视频.html">视频生成压缩</a>
+            <a href="./js/video.html">视频播放器</a>
+            <a href="./js/横屏video.html">横屏视频</a>
+            <a href="./js/转换时间和视频.html">时间视频转换</a>
+          </div>
+        </section>
+
+        <!-- 交互组件 -->
+        <section class="category-interactive" data-aos="fade-up" data-aos-delay="400">
+          <h2>🎛️ 交互组件</h2>
+          <div class="links">
+            <a href="./js/轮播图.html">轮播图</a>
+            <a href="./动画/原生居中轮播图.html">原生居中轮播</a>
+            <a href="./动画/轮播图，进度条滚动.html">进度条轮播</a>
+            <a href="./动画/轮播图拖拽双指缩放.html">拖拽缩放轮播</a>
+            <a href="./js/拖动元素四边距.html">拖动元素</a>
+            <a href="./js/Magnifier/放大镜.html">放大镜</a>
+            <a href="./动画/气泡弹窗.html">气泡弹窗</a>
+            <a href="./dialog-demo/基本弹窗.html">基本弹窗</a>
+          </div>
+        </section>
+
+        <!-- 表单验证 -->
+        <section class="category-interactive" data-aos="fade-up" data-aos-delay="500">
+          <h2>📝 表单验证</h2>
+          <div class="links">
+            <a href="./js/js功能库/正则验证表单.html">正则验证表单</a>
+            <a href="./js/js功能库/表单验证.html">表单验证</a>
+            <a href="./js/js功能库/登录主题选择/login.html">登录页面</a>
+            <a href="./js/正则.html">正则表达式</a>
+          </div>
+        </section>
+
+        <!-- 数据交互 -->
+        <section class="category-api" data-aos="fade-up" data-aos-delay="600">
+          <h2>🌐 数据交互</h2>
+          <div class="links">
+            <a href="./js/ajax.html">Ajax 演示</a>
+            <a href="./js/jsonp.html">JSONP 跨域</a>
+            <a href="./js/promise.html">Promise 异步</a>
+            <a href="./js/cookies.html">Cookies 主题</a>
+            <a href="./api/上海期货.html">上海期货API</a>
+            <a href="./api/伦敦黄金价格.html">伦敦黄金API</a>
+            <a href="./api/期货纽约金价格.html">纽约金价API</a>
+            <a href="./tools/CDN测速.html">CDN测速</a>
+          </div>
+        </section>
+
+        <!-- 算法逻辑 -->
+        <section data-aos="fade-up" data-aos-delay="700">
+          <h2>🧮 算法逻辑</h2>
           <div class="links">
             <a href="./js/排序算法.html">排序算法</a>
+            <a href="./js/数组扩展.html">数组扩展</a>
+            <a href="./js/面向对象.html">面向对象</a>
             <a href="./js/双飞翼布局.html">双飞翼布局</a>
-            <a href="./js/复利计算.html">复利计算</a>
-            <a href="./js/滚动.html">滚动</a>
+            <a href="./布局/js实现 sticky 效果.html">Sticky效果</a>
+            <a href="./布局/固定子元素在父元素的任意位置.html">元素定位</a>
+          </div>
+        </section>
+
+        <!-- 用户体验 -->
+        <section data-aos="fade-up" data-aos-delay="800">
+          <h2>👆 用户体验</h2>
+          <div class="links">
+            <a href="./js/回到首页，触底.html">回到顶部触底</a>
+            <a href="./js/懒加载瀑布流/瀑布流.html">瀑布流</a>
+            <a href="./js/懒加载瀑布流/图片懒加载.html">图片懒加载</a>
+            <a href="./js/滚动.html">滚动效果</a>
+            <a href="./js/js功能库/评分效果.html">评分效果</a>
+            <a href="./js/js功能库/选项卡跳转.html">选项卡跳转</a>
+            <a href="./动画/点击记住a标签状态.html">状态记忆</a>
+          </div>
+        </section>
+
+        <!-- 购物商城 -->
+        <section class="category-interactive" data-aos="fade-up" data-aos-delay="900">
+          <h2>🛒 电商功能</h2>
+          <div class="links">
+            <a href="./js/js功能库/购物车/gouwuche/gouwuche.html">购物车</a>
+            <a href="./js/js功能库/购物车/gouwuche/goodsList.html">商品列表</a>
+            <a href="./js/js功能库/todolist/todolist.html">待办清单</a>
+            <a href="./js/js功能库/10.6_Js_day18_京东/京东.html">京东首页</a>
+          </div>
+        </section>
+
+        <!-- 地图服务 -->
+        <section class="category-api" data-aos="fade-up" data-aos-delay="1000">
+          <h2>🗺️ 地图服务</h2>
+          <div class="links">
+            <a href="./tools/高德地图.html">高德地图</a>
+            <a href="./tools/google-map/谷歌默认定位地图.html">谷歌定位</a>
+            <a href="./tools/google-map/谷歌可搜索地图.html">谷歌搜索</a>
+            <a href="./tools/google-map/计算两点距离地图.html">距离计算</a>
+            <a href="./tools/google-map/谷歌搜索自动填充地图.html">自动填充</a>
+          </div>
+        </section>
+
+        <!-- 移动端功能 -->
+        <section data-aos="fade-up" data-aos-delay="1100">
+          <h2>📱 移动端功能</h2>
+          <div class="links">
+            <a href="./js/mobileApi.html">移动端API</a>
+            <a href="./tools/手机添加日历提醒.html">日历提醒</a>
+            <a href="./js/Rem计算.html">Rem计算</a>
+            <a href="./布局/tab被点击的时候在容器内左右横滑.html">Tab横滑</a>
           </div>
         </section>
       </div>
@@ -197,11 +437,12 @@
       <!-- 页脚 -->
       <footer>
         <p>
+          ⚡ 辛望的前端技术演示空间 | 
           <a
             href="http://beian.miit.gov.cn"
             target="_blank"
             rel="noopener noreferrer"
-            >备案号</a
+            >备案信息</a
           >
         </p>
       </footer>
@@ -211,9 +452,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
     <script>
       AOS.init({
-        duration: 800, // 动画持续时间
-        easing: "ease-in-out", // 动画缓动
-        once: true, // 滚动触发一次
+        duration: 600, // 缩短动画时间
+        easing: "ease-out-cubic",
+        once: true,
+        offset: 50, // 提前触发动画
       });
     </script>
   </body>
