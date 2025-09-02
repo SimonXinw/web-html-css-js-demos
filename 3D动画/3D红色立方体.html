@@ -43,8 +43,8 @@
       import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
       import { TGALoader } from "three/addons/loaders/TGALoader.js";
 
-      // 添加 TGA Loader 支持
-      THREE.Loader.Handlers.add(/\.tga$/i, new TGALoader());
+      // 移除已废弃的 THREE.Loader.Handlers.add 代码
+      // THREE.Loader.Handlers.add(/\.tga$/i, new TGALoader());
 
       const scene = new THREE.Scene();
       scene.background = new THREE.Color(0xf0f0f0);
@@ -91,18 +91,45 @@
       scene.add(new THREE.GridHelper(50, 50));
 
       // 加载 OBJ + MTL + TGA 模型
-      const mtlLoader = new MTLLoader();
+      const tgaLoader = new TGALoader();
       
-      mtlLoader.load("./model.mtl", (materials) => {
-        materials.preload();
-        const objLoader = new OBJLoader();
-        objLoader.setMaterials(materials);
-        objLoader.load("./model.obj", (object) => {
-          object.position.y = 0;
-          object.scale.set(1, 1, 1);
-          scene.add(object);
-        });
-      });
+      // 创建一个管理器来处理TGA文件
+      const manager = new THREE.LoadingManager();
+      manager.addHandler(/\.tga$/i, tgaLoader);
+      
+      // 使用管理器创建MTLLoader
+      const mtlLoader = new MTLLoader(manager);
+      mtlLoader.setPath('./module/rem/');
+      
+      mtlLoader.load("untitled.mtl", 
+        (materials) => {
+          materials.preload();
+          
+          const objLoader = new OBJLoader();
+          objLoader.setMaterials(materials);
+          objLoader.setPath('./module/rem/');
+          objLoader.load("untitled.obj", 
+            (object) => {
+              object.position.y = 0;
+              object.scale.set(1, 1, 1);
+              scene.add(object);
+              console.log('模型加载成功！');
+            },
+            (progress) => {
+              console.log('OBJ加载进度:', (progress.loaded / progress.total * 100) + '%');
+            },
+            (error) => {
+              console.error('OBJ加载错误:', error);
+            }
+          );
+        },
+        (progress) => {
+          console.log('MTL加载进度:', (progress.loaded / progress.total * 100) + '%');
+        },
+        (error) => {
+          console.error('MTL加载错误:', error);
+        }
+      );
 
       // 缩放逻辑
       let targetDistance = camera.position.distanceTo(controls.target);
