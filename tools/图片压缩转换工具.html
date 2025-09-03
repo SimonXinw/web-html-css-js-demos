@@ -36,6 +36,12 @@
         color: #333;
       }
 
+      .size-info {
+        margin-top: 3px;
+        font-size: 12px;
+        text-align: center;
+      }
+
       #downloadButton {
         cursor: pointer;
         text-decoration: underline;
@@ -142,7 +148,7 @@
         fileInput.addEventListener("change", handleFileSelect, false);
 
         // 拖拽事件处理
-        window.addEventListener("dragover", function(e) {
+        window.addEventListener("dragover", function (e) {
           e.preventDefault();
           if (!isDragging) {
             isDragging = true;
@@ -150,21 +156,25 @@
           }
         });
 
-        window.addEventListener("dragleave", function(e) {
+        window.addEventListener("dragleave", function (e) {
           e.preventDefault();
           // 只有当鼠标真正离开窗口时才移除拖拽状态
-          if (e.clientX <= 0 || e.clientY <= 0 || 
-              e.clientX >= window.innerWidth || e.clientY >= window.innerHeight) {
+          if (
+            e.clientX <= 0 ||
+            e.clientY <= 0 ||
+            e.clientX >= window.innerWidth ||
+            e.clientY >= window.innerHeight
+          ) {
             isDragging = false;
             dragOverlay.classList.remove("show");
           }
         });
 
-        window.addEventListener("drop", function(e) {
+        window.addEventListener("drop", function (e) {
           e.preventDefault();
           isDragging = false;
           dragOverlay.classList.remove("show");
-          
+
           const files = e.dataTransfer.files;
           if (files.length > 0) {
             // 将拖拽的文件设置到文件输入框
@@ -208,6 +218,7 @@
             // 遍历选择的每个文件并执行转换
             for (let i = 0; i < files.length; i++) {
               const file = files[i];
+              const originalSize = file.size; // 获取原始文件大小
               const reader = new FileReader();
               const promise = new Promise((resolve) => {
                 reader.onload = function (event) {
@@ -221,8 +232,26 @@
                     const originalName = file.name.split(".")[0]; // 获取原文件名（不带扩展名）
                     const newExtension = formatSelect.value.split("/")[1]; // 获取新扩展名
                     const newFileName = originalName + "." + newExtension;
-                    imagesData.push({ dataUrl, newFileName });
-                    displayImage(dataUrl, newFileName);
+
+                    // 计算转换后的文件大小
+                    const compressedSize = Math.round(
+                      ((dataUrl.length - "data:image/jpeg;base64,".length) *
+                        3) /
+                        4
+                    );
+
+                    imagesData.push({
+                      dataUrl,
+                      newFileName,
+                      originalSize,
+                      compressedSize,
+                    });
+                    displayImage(
+                      dataUrl,
+                      newFileName,
+                      originalSize,
+                      compressedSize
+                    );
                     resolve(); // 完成一个文件的转换
                   };
                   img.src = event.target.result;
@@ -267,7 +296,7 @@
         }
 
         // 显示转换后的图片及其文件名
-        function displayImage(dataUrl, fileName) {
+        function displayImage(dataUrl, fileName, originalSize, compressedSize) {
           const container = document.createElement("div");
           container.classList.add("image-container");
 
@@ -278,6 +307,21 @@
           fileNameLabel.classList.add("file-name");
           fileNameLabel.textContent = fileName;
 
+          // 添加文件大小信息
+          const sizeInfo = document.createElement("div");
+          sizeInfo.classList.add("size-info");
+
+          const originalSizeText = document.createElement("span");
+          originalSizeText.style.color = "black";
+          originalSizeText.textContent = `${formatFileSize(originalSize)}  / `;
+
+          const compressedSizeText = document.createElement("span");
+          compressedSizeText.style.color = "green";
+          compressedSizeText.textContent = `${formatFileSize(compressedSize)}`;
+
+          sizeInfo.appendChild(originalSizeText);
+          sizeInfo.appendChild(compressedSizeText);
+
           const individualDownloadButton = document.createElement("a");
           individualDownloadButton.classList.add("individual-download");
           individualDownloadButton.textContent = "单独下载";
@@ -287,8 +331,20 @@
 
           container.appendChild(img);
           container.appendChild(fileNameLabel);
+          container.appendChild(sizeInfo);
           container.appendChild(individualDownloadButton);
           resultDiv.appendChild(container);
+        }
+
+        // 格式化文件大小显示
+        function formatFileSize(bytes) {
+          if (bytes === 0) return "0 B";
+          const k = 1024;
+          const sizes = ["B", "KB", "MB", "GB"];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return (
+            parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
+          );
         }
 
         // 单独下载一张图片
