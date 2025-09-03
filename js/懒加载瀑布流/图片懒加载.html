@@ -1,114 +1,891 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Document</title>
-    <style>
-      .wrap {
-        width: 1200px;
-        margin: 0 auto;
-      }
-      .wrap h3 {
-        text-align: center;
-      }
-      .con img {
-        width: 590px;
-        height: 370px;
-        /* display: none; */
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <h3>图片展示</h3>
-      <div class="con">
-        <!-- <img src="images/001.jpg" alt="">
-        <img src="images/002.jpg" alt="">
-        <img src="images/003.jpg" alt="">
-        <img src="images/004.jpg" alt="">
-        <img src="images/005.jpg" alt="">
-        <img src="images/006.jpg" alt="">
-        <img src="images/007.jpg" alt="">
-        <img src="images/008.jpg" alt="">
-        <img src="images/009.jpg" alt="">
-        <img src="images/010.jpg" alt="">
-        <img src="images/011.jpg" alt="">
-        <img src="images/012.jpg" alt=""> -->
 
-        <img data-src="images/001.jpg" alt="" />
-        <img data-src="images/002.jpg" alt="" />
-        <img data-src="images/003.jpg" alt="" />
-        <img data-src="images/004.jpg" alt="" />
-        <img data-src="images/005.jpg" alt="" />
-        <img data-src="images/006.jpg" alt="" />
-        <img data-src="images/007.jpg" alt="" />
-        <img data-src="images/008.jpg" alt="" />
-        <img data-src="images/009.jpg" alt="" />
-        <img data-src="images/010.jpg" alt="" />
-        <img data-src="images/011.jpg" alt="" />
-        <img data-src="images/012.jpg" alt="" />
-        <img data-src="images/001.jpg" alt="" />
-        <img data-src="images/002.jpg" alt="" />
-        <img data-src="images/003.jpg" alt="" />
-        <img data-src="images/004.jpg" alt="" />
-        <img data-src="images/005.jpg" alt="" />
-        <img data-src="images/006.jpg" alt="" />
-        <img data-src="images/007.jpg" alt="" />
-        <img data-src="images/008.jpg" alt="" />
-        <img data-src="images/009.jpg" alt="" />
-        <img data-src="images/010.jpg" alt="" />
-        <img data-src="images/011.jpg" alt="" />
-        <img data-src="images/012.jpg" alt="" />
-        <img data-src="images/001.jpg" alt="" />
-        <img data-src="images/002.jpg" alt="" />
-        <img data-src="images/003.jpg" alt="" />
-        <img data-src="images/004.jpg" alt="" />
-        <img data-src="images/005.jpg" alt="" />
-        <img data-src="images/006.jpg" alt="" />
-        <img data-src="images/007.jpg" alt="" />
-        <img data-src="images/008.jpg" alt="" />
-        <img data-src="images/009.jpg" alt="" />
-        <img data-src="images/010.jpg" alt="" />
-        <img data-src="images/011.jpg" alt="" />
-        <img data-src="images/012.jpg" alt="" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>优化版图片懒加载</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f7fa;
+      line-height: 1.6;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .wrap h3 {
+      text-align: center;
+      font-size: 2rem;
+      color: #2c3e50;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      background: #667eea;
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .stats {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .stat-item {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #667eea;
+      display: block;
+    }
+
+    .stat-label {
+      color: #6c757d;
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+
+    .con {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .image-container {
+      position: relative;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .image-container:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .con img {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .con img.loaded {
+      opacity: 1;
+    }
+
+    .con img.error {
+      opacity: 0.5;
+    }
+
+    /* 骨架屏样式 */
+    .skeleton {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg,
+          #f0f0f0 25%,
+          #e0e0e0 37%,
+          #f0f0f0 63%);
+      background-size: 400% 100%;
+      animation: skeleton-loading 1.4s ease infinite;
+      transition: opacity 0.3s ease;
+    }
+
+    .skeleton.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    @keyframes skeleton-loading {
+      0% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0 50%;
+      }
+    }
+
+    /* 错误占位符 */
+    .error-placeholder {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      background: #f8f9fa;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    .error-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      opacity: 0.5;
+    }
+
+    /* 加载状态指示 */
+    .loading-indicator {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .status-loading {
+      background: rgba(255, 193, 7, 0.9);
+      color: #856404;
+    }
+
+    .status-loaded {
+      background: rgba(40, 167, 69, 0.9);
+      color: white;
+    }
+
+    .status-error {
+      background: rgba(220, 53, 69, 0.9);
+      color: white;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .wrap {
+        padding: 15px;
+      }
+
+      .con {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+      }
+
+      .con img {
+        height: 200px;
+      }
+
+      .stats {
+        flex-direction: column;
+        gap: 15px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .con {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    /* 深色主题支持 */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1a1a1a;
+        color: #ffffff;
+      }
+
+      .skeleton {
+        background: linear-gradient(90deg,
+            #2a2a2a 25%,
+            #3a3a3a 37%,
+            #2a2a2a 63%);
+      }
+
+      .image-container {
+        background: #2c2c2c;
+      }
+
+      .stats {
+        background: #2c2c2c;
+      }
+    }
+
+    /* 减少动画偏好支持 */
+    @media (prefers-reduced-motion: reduce) {
+      .skeleton {
+        animation: none;
+        background: #e0e0e0;
+      }
+
+      .con img {
+        transition: none;
+      }
+
+      .image-container {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h3>🚀 优化版图片懒加载演示</h3>
+
+    <!-- 控制面板 -->
+    <div class="controls">
+      <button class="btn" onclick="loadAllImages()">⚡ 全部加载</button>
+      <button class="btn" onclick="resetDemo()">🔄 重置演示</button>
+      <button class="btn" onclick="toggleSequential()" id="sequentialBtn">
+        📋 顺序加载
+      </button>
+      <button class="btn" onclick="toggleKeepObserving()" id="keepObservingBtn">
+        👁️ 保持观察
+      </button>
+      <button class="btn" onclick="toggleDebug()">🐛 调试模式</button>
+    </div>
+
+    <!-- 统计信息 -->
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-number" id="totalImages">0</span>
+        <div class="stat-label">总图片数</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="loadedImages">0</span>
+        <div class="stat-label">已加载</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="loadingImages">0</span>
+        <div class="stat-label">加载中</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="errorImages">0</span>
+        <div class="stat-label">加载失败</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="avgLoadTime">0ms</span>
+        <div class="stat-label">平均加载时间</div>
       </div>
     </div>
 
-    <script>
-      function offset(obj) {
-        var l = 0;
-        var t = 0;
-        var bdl = obj.clientLeft; //目标元素的左边框宽度
-        var bdt = obj.clientTop; //目标元素的上边框宽度
-        while (obj) {
-          //循环累加目标元素到定位父级的距离
-          l = l + obj.offsetLeft + obj.clientLeft;
-          t = t + obj.offsetTop + obj.clientTop;
-          obj = obj.offsetParent; //每次循环之后指向离他最近的定位父级
-        }
-        return { left: l - bdl, top: t - bdt };
+    <div class="con" id="imageContainer">
+      <!-- 动态生成的图片容器 -->
+    </div>
+  </div>
+
+  <script>
+    /**
+     * 现代化懒加载类 - 优化版
+     */
+    class ModernLazyLoader {
+      constructor(options = {}) {
+        // 默认配置
+        this.options = {
+          rootMargin: "50px 0px 100px 0px",
+          threshold: 0.01,
+          maxConcurrent: 3,
+          retryCount: 3, // 增加重试次数
+          retryDelay: 1000,
+          skeletonDuration: 600,
+          debug: false,
+          sequentialLoad: false, // 是否按顺序加载
+          keepObserving: true, // 保持观察，即使加载失败也不解绑
+          ...options,
+        };
+
+        // 状态管理
+        this.stats = {
+          total: 0,
+          loaded: 0,
+          loading: 0,
+          error: 0,
+        };
+
+        // 性能监控
+        this.performance = {
+          loadTimes: [],
+          startTime: Date.now(),
+        };
+
+        // 内部状态
+        this.loadingQueue = new Set();
+        this.retryMap = new Map();
+        this.observer = null;
+        this.elements = new Set();
+        this.pendingElements = []; // 待加载队列（用于顺序加载）
+        this.currentIndex = 0; // 当前加载索引
+        this.visibleElements = new Set(); // 可见元素集合
+
+        this.init();
       }
-      var imgs = document.querySelectorAll(".con img");
 
-      function loadImg() {
-        var scrollT =
-          document.documentElement.scrollTop || document.body.scrollTop;
-        var windowH =
-          document.documentElement.clientHeight || document.body.clientHeight;
+      init() {
+        this.log("初始化懒加载器...");
+        this.createObserver();
+        this.bindEvents();
+        this.log("懒加载器初始化完成");
+      }
 
-        for (var i = 0, len = imgs.length; i < len; i++) {
-          if (offset(imgs[i]).top <= scrollT + windowH + 100) {
-            //图片进入可视区
-            imgs[i].src = imgs[i].getAttribute("data-src"); //设置图片src
+      createObserver() {
+        if (!("IntersectionObserver" in window)) {
+          this.log("不支持 IntersectionObserver，降级到滚动事件");
+          this.fallbackToScroll();
+          return;
+        }
+
+        this.observer = new IntersectionObserver(
+          (entries) => this.handleIntersection(entries),
+          {
+            rootMargin: this.options.rootMargin,
+            threshold: this.options.threshold,
+          }
+        );
+      }
+
+      handleIntersection(entries) {
+        entries.forEach((entry) => {
+          const img = entry.target;
+
+          if (entry.isIntersecting) {
+            // 添加到可见元素集合
+            this.visibleElements.add(img);
+            this.log("📍 图片进入视口:", img.dataset.src);
+
+            if (this.options.sequentialLoad) {
+              // 顺序加载模式
+              this.handleSequentialLoad();
+            } else {
+              // 并发加载模式
+              this.handleConcurrentLoad(img);
+            }
+          } else {
+            // 移出可见区域
+            this.visibleElements.delete(img);
+          }
+        });
+      }
+
+      handleConcurrentLoad(img) {
+        if (this.loadingQueue.size >= this.options.maxConcurrent) {
+          this.log("⏳ 达到并发限制，等待中...", img.dataset.src);
+          return;
+        }
+
+        this.loadImage(img);
+
+        // 根据配置决定是否解绑观察
+        if (!this.options.keepObserving) {
+          this.observer.unobserve(img);
+          this.elements.delete(img);
+        }
+      }
+
+      handleSequentialLoad() {
+        // 按顺序加载可见的图片
+        const sortedVisible = Array.from(this.visibleElements).sort(
+          (a, b) => {
+            const aIndex = parseInt(a.dataset.index) || 0;
+            const bIndex = parseInt(b.dataset.index) || 0;
+            return aIndex - bIndex;
+          }
+        );
+
+        // 找到下一个需要加载的图片
+        for (const img of sortedVisible) {
+          if (
+            !img.classList.contains("loaded") &&
+            !img.classList.contains("error") &&
+            !this.loadingQueue.has(img)
+          ) {
+            if (this.loadingQueue.size < this.options.maxConcurrent) {
+              this.loadImage(img);
+              break; // 一次只加载一张（严格顺序）
+            }
+            break;
           }
         }
       }
-      loadImg();
-      window.onscroll = function () {
-        loadImg();
-      };
-    </script>
-  </body>
+
+      async loadImage(img) {
+        const src = img.dataset.src;
+        if (!src || this.loadingQueue.has(img)) return;
+
+        this.loadingQueue.add(img);
+        this.updateStats("loading", 1);
+        this.updateImageStatus(img, "loading");
+
+        const startTime = Date.now();
+        const skeleton = img.parentElement.querySelector(".skeleton");
+
+        try {
+          // 确保骨架屏显示足够时间
+          const [loadResult] = await Promise.all([
+            this.preloadImage(src),
+            this.delay(this.options.skeletonDuration),
+          ]);
+
+          // 加载成功
+          img.src = src;
+          img.classList.add("loaded");
+
+          // 隐藏骨架屏
+          if (skeleton) {
+            skeleton.classList.add("hide");
+            setTimeout(() => skeleton.remove(), 300);
+          }
+
+          this.updateImageStatus(img, "loaded");
+          this.updateStats("loading", -1);
+          this.updateStats("loaded", 1);
+
+          // 记录性能数据
+          const loadTime = Date.now() - startTime;
+          this.performance.loadTimes.push(loadTime);
+
+          this.log("✅ 图片加载成功:", src, "耗时:", loadTime + "ms");
+
+          // 如果是顺序加载模式，继续加载下一张
+          if (this.options.sequentialLoad) {
+            setTimeout(() => this.handleSequentialLoad(), 100);
+          } else if (this.options.keepObserving) {
+            // 并发模式下，检查是否有等待的图片
+            setTimeout(() => this.checkPendingImages(), 100);
+          }
+        } catch (error) {
+          this.log("❌ 图片加载失败:", src, error);
+          await this.handleImageError(img, src, skeleton, error);
+        } finally {
+          this.loadingQueue.delete(img);
+        }
+      }
+
+      preloadImage(src) {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error(`Failed to load: ${src}`));
+          setTimeout(() => reject(new Error("Load timeout")), 10000);
+          img.src = src;
+        });
+      }
+
+      async handleImageError(img, src, skeleton, error) {
+        const retryCount = this.retryMap.get(img) || 0;
+
+        if (retryCount < this.options.retryCount) {
+          this.retryMap.set(img, retryCount + 1);
+          await this.delay(this.options.retryDelay * (retryCount + 1));
+
+          try {
+            await this.preloadImage(src);
+            img.src = src;
+            img.classList.add("loaded");
+            this.updateImageStatus(img, "loaded");
+            this.updateStats("loading", -1);
+            this.updateStats("loaded", 1);
+            return;
+          } catch (retryError) {
+            this.log(`重试 ${retryCount + 1} 失败:`, src);
+          }
+        }
+
+        // 最终失败处理
+        this.handleFinalError(img, skeleton);
+      }
+
+      checkPendingImages() {
+        // 检查可见区域内是否还有未加载的图片
+        this.visibleElements.forEach((img) => {
+          if (
+            !img.classList.contains("loaded") &&
+            !img.classList.contains("error") &&
+            !this.loadingQueue.has(img) &&
+            this.loadingQueue.size < this.options.maxConcurrent
+          ) {
+            this.log("🔄 重新尝试加载:", img.dataset.src);
+            this.loadImage(img);
+          }
+        });
+      }
+
+      handleFinalError(img, skeleton) {
+        const errorPlaceholder = document.createElement("div");
+        errorPlaceholder.className = "error-placeholder";
+        errorPlaceholder.innerHTML = `
+            <div class="error-icon">🖼️</div>
+            <div>图片加载失败</div>
+          `;
+
+        img.parentElement.appendChild(errorPlaceholder);
+
+        if (skeleton) {
+          skeleton.classList.add("hide");
+          setTimeout(() => skeleton.remove(), 300);
+        }
+
+        img.classList.add("error");
+        this.updateImageStatus(img, "error");
+        this.updateStats("loading", -1);
+        this.updateStats("error", 1);
+
+        // 错误后也要检查是否继续加载
+        if (this.options.sequentialLoad) {
+          setTimeout(() => this.handleSequentialLoad(), 100);
+        } else if (this.options.keepObserving) {
+          setTimeout(() => this.checkPendingImages(), 100);
+        }
+      }
+
+      updateImageStatus(img, status) {
+        const indicator =
+          img.parentElement.querySelector(".loading-indicator");
+        if (indicator) {
+          indicator.className = `loading-indicator status-${status}`;
+          indicator.textContent = {
+            loading: "加载中...",
+            loaded: "已加载",
+            error: "加载失败",
+          }[status];
+        }
+      }
+
+      observe(element) {
+        if (this.observer && !element.dataset.observed) {
+          element.dataset.observed = "true";
+          this.observer.observe(element);
+          this.elements.add(element);
+          this.stats.total++;
+          this.updateStatsDisplay();
+        }
+      }
+
+      updateStats(type, delta) {
+        this.stats[type] += delta;
+        this.updateStatsDisplay();
+      }
+
+      updateStatsDisplay() {
+        document.getElementById("totalImages").textContent = this.stats.total;
+        document.getElementById("loadedImages").textContent =
+          this.stats.loaded;
+        document.getElementById("loadingImages").textContent =
+          this.stats.loading;
+        document.getElementById("errorImages").textContent = this.stats.error;
+
+        const avgTime =
+          this.performance.loadTimes.length > 0
+            ? Math.round(
+              this.performance.loadTimes.reduce((a, b) => a + b, 0) /
+              this.performance.loadTimes.length
+            )
+            : 0;
+        document.getElementById("avgLoadTime").textContent = avgTime + "ms";
+      }
+
+      bindEvents() {
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) {
+            this.pauseLoading = true;
+          } else {
+            this.pauseLoading = false;
+          }
+        });
+      }
+
+      fallbackToScroll() {
+        let ticking = false;
+
+        const checkImages = () => {
+          const images = document.querySelectorAll(
+            "[data-src]:not(.loaded):not(.error)"
+          );
+          const scrollTop =
+            window.pageYOffset || document.documentElement.scrollTop;
+          const windowHeight = window.innerHeight;
+
+          images.forEach((img) => {
+            const rect = img.getBoundingClientRect();
+            if (rect.top <= windowHeight + 100) {
+              this.loadImage(img);
+            }
+          });
+
+          ticking = false;
+        };
+
+        const onScroll = () => {
+          if (!ticking) {
+            requestAnimationFrame(checkImages);
+            ticking = true;
+          }
+        };
+
+        window.addEventListener("scroll", onScroll);
+        checkImages();
+      }
+
+      loadAll() {
+        this.elements.forEach((element) => {
+          if (
+            !element.classList.contains("loaded") &&
+            !element.classList.contains("error")
+          ) {
+            this.loadImage(element);
+          }
+        });
+      }
+
+      destroy() {
+        if (this.observer) {
+          this.observer.disconnect();
+          this.observer = null;
+        }
+        this.elements.clear();
+        this.loadingQueue.clear();
+        this.retryMap.clear();
+        this.log("懒加载器已销毁");
+      }
+
+      delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      log(...args) {
+        if (this.options.debug) {
+          console.log("[LazyLoader]", ...args);
+        }
+      }
+    }
+
+    // 全局变量
+    let lazyLoader;
+    let debugMode = false;
+    let sequentialMode = false;
+    let keepObservingMode = true;
+
+    // 图片数据
+    const imageData = [
+      "images/001.jpg",
+      "images/002.jpg",
+      "images/003.jpg",
+      "images/004.jpg",
+      "images/005.jpg",
+      "images/006.jpg",
+      "images/007.jpg",
+      "images/008.jpg",
+      "images/009.jpg",
+      "images/010.jpg",
+      "images/011.jpg",
+      "images/012.jpg",
+      "images/001.jpg",
+      "images/002.jpg",
+      "images/003.jpg",
+      "images/004.jpg",
+      "images/005.jpg",
+      "images/006.jpg",
+      "images/007.jpg",
+      "images/008.jpg",
+      "images/009.jpg",
+      "images/010.jpg",
+      "images/011.jpg",
+      "images/012.jpg",
+      "images/001.jpg",
+      "images/002.jpg",
+      "images/003.jpg",
+      "images/004.jpg",
+      "images/005.jpg",
+      "images/006.jpg",
+      "images/007.jpg",
+      "images/008.jpg",
+      "images/009.jpg",
+      "images/010.jpg",
+      "images/011.jpg",
+      "images/012.jpg",
+    ];
+
+    // 初始化
+    document.addEventListener("DOMContentLoaded", function () {
+      initLazyLoader();
+      generateImages();
+    });
+
+    function initLazyLoader() {
+      lazyLoader = new ModernLazyLoader({
+        rootMargin: "50px 0px 100px 0px",
+        threshold: 0.01,
+        maxConcurrent: 4,
+        retryCount: 3,
+        retryDelay: 1000,
+        skeletonDuration: 600,
+        debug: debugMode,
+        sequentialLoad: sequentialMode,
+        keepObserving: keepObservingMode,
+      });
+    }
+
+    function generateImages() {
+      const container = document.getElementById("imageContainer");
+      const fragment = document.createDocumentFragment();
+
+      imageData.forEach((src, index) => {
+        const imageContainer = document.createElement("div");
+        imageContainer.className = "image-container";
+        imageContainer.innerHTML = `
+            <div class="skeleton"></div>
+            <img data-src="${src}" data-index="${index}" alt="图片 ${index + 1
+          }" />
+            <div class="loading-indicator status-loading">等待加载 #${index + 1
+          }</div>
+          `;
+        fragment.appendChild(imageContainer);
+      });
+
+      container.appendChild(fragment);
+
+      // 观察所有图片
+      const images = container.querySelectorAll("img[data-src]");
+      images.forEach((img) => lazyLoader.observe(img));
+    }
+
+    // 全局函数
+    function loadAllImages() {
+      lazyLoader.loadAll();
+    }
+
+    function resetDemo() {
+      const container = document.getElementById("imageContainer");
+      container.innerHTML = "";
+
+      lazyLoader.destroy();
+      initLazyLoader();
+      generateImages();
+    }
+
+    function toggleDebug() {
+      debugMode = !debugMode;
+
+      lazyLoader.destroy();
+      initLazyLoader();
+
+      const images = document.querySelectorAll("img[data-src]");
+      images.forEach((img) => {
+        if (!img.dataset.observed) {
+          lazyLoader.observe(img);
+        }
+      });
+
+      const btn = event.target;
+      btn.textContent = debugMode ? "🐛 调试模式 (开)" : "🐛 调试模式";
+      btn.style.background = debugMode ? "#28a745" : "#667eea";
+    }
+
+    function toggleSequential() {
+      sequentialMode = !sequentialMode;
+
+      lazyLoader.destroy();
+      initLazyLoader();
+
+      const images = document.querySelectorAll("img[data-src]");
+      images.forEach((img) => {
+        img.classList.remove("loaded", "error");
+        img.src = "";
+        lazyLoader.observe(img);
+      });
+
+      const btn = document.getElementById("sequentialBtn");
+      btn.textContent = sequentialMode ? "📋 顺序加载 (开)" : "📋 顺序加载";
+      btn.style.background = sequentialMode ? "#28a745" : "#667eea";
+
+      console.log(
+        "🔄 切换到",
+        sequentialMode ? "顺序加载" : "并发加载",
+        "模式"
+      );
+    }
+
+    function toggleKeepObserving() {
+      keepObservingMode = !keepObservingMode;
+
+      lazyLoader.destroy();
+      initLazyLoader();
+
+      const images = document.querySelectorAll("img[data-src]");
+      images.forEach((img) => {
+        img.classList.remove("loaded", "error");
+        img.src = "";
+        lazyLoader.observe(img);
+      });
+
+      const btn = document.getElementById("keepObservingBtn");
+      btn.textContent = keepObservingMode
+        ? "👁️ 保持观察 (开)"
+        : "👁️ 保持观察";
+      btn.style.background = keepObservingMode ? "#28a745" : "#667eea";
+
+      console.log(
+        "🔄 切换到",
+        keepObservingMode ? "保持观察" : "一次性观察",
+        "模式"
+      );
+    }
+  </script>
+</body>
+
 </html>
