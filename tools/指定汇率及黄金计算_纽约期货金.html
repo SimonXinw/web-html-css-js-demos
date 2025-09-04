@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>货币转换器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fc;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      font-size: 1.1em;
+      color: #555;
+      margin-bottom: 5px;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #fff;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .result-container {
+      margin-top: 20px;
+      font-size: 1.2em;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .result-item label {
+      font-weight: bold;
+    }
+
+    footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      font-size: 16px;
+      column-gap: 8px;
+      row-gap: 5px;
+    }
+
+    footer a {
+      color: #007bff;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 15px;
+      }
+
+      footer {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>货币转换器</h1>
+  <div class="container">
+    <label for="base-currency">选择基础货币</label>
+    <select id="base-currency">
+      <option value="USD">美元 (USD)</option>
+      <option value="EUR">欧元 (EUR)</option>
+      <option value="CNY">人民币 (CNY)</option>
+      <option value="JPY">日元 (JPY)</option>
+      <option value="HKD">港币 (HKD)</option>
+      <option value="KRW">韩元 (KRW)</option>
+      <option value="GBP">英镑 (GBP)</option>
+    </select>
+
+    <label for="compare-currency">选择目标货币</label>
+    <select id="compare-currency">
+      <option value="CNY">人民币 (CNY)</option>
+      <option value="USD">美元 (USD)</option>
+      <option value="EUR">欧元 (EUR)</option>
+      <option value="JPY">日元 (JPY)</option>
+      <option value="HKD">港币 (HKD)</option>
+      <option value="KRW">韩元 (KRW)</option>
+      <option value="GBP">英镑 (GBP)</option>
+    </select>
+
+    <button onclick="calculateExchangeRate()">计算汇率</button>
+    <button onclick="convertGoldPrice()">转换伦敦金至沪金</button>
+    <button onclick="convertNYGoldPrice()">转换纽约金至沪金</button>
+
+    <div class="result-container">
+      <div class="result-item">
+        <label>汇率：</label>
+        <span id="exchange-rate">--</span>
+      </div>
+      <div class="result-item">
+        <label>伦敦金：</label>
+        <span id="gold-price">--</span>
+      </div>
+      <div class="result-item">
+        <label>伦敦沪金：</label>
+        <span id="converted-gold-price">--</span>
+      </div>
+      <div class="result-item">
+        <label>纽约金：</label>
+        <span id="ny-gold-price">--</span>
+      </div>
+      <div class="result-item">
+        <label>纽约沪金：</label>
+        <span id="converted-ny-gold-price">--</span>
+      </div>
+    </div>
+    <footer>
+      <a href="http://web.juhe.cn/finance/gold/shgold?key=05f857458519761c2ba067e15df499bd&v=1">上海黄金</a>
+      <a href="http://web.juhe.cn/finance/gold/shfuture?key=05f857458519761c2ba067e15df499bd&v=1">上海期货</a>
+      <a href="#" id="currencyExchangeRate">货币汇率查询</a>
+    </footer>
+  </div>
+
+  <script>
+    document
+      .querySelector("#currencyExchangeRate")
+      .addEventListener("click", function (event) {
+        // 阻止默认的跳转行为
+        event.preventDefault();
+
+        // 获取选择的货币
+        const baseCurrency = document.getElementById("base-currency").value;
+        const compareCurrency =
+          document.getElementById("compare-currency").value;
+
+        // 构建跳转 URL
+        const apiKey = "d27d17fff8b64117a78e0bb2622eb9b4"; // 替换为你的 API 密钥
+        const url = `http://op.juhe.cn/onebox/exchange/currency?from=${baseCurrency}&to=${compareCurrency}&version=2&key=${apiKey}`;
+
+        // 打开新页面，不改变当前页面的 URL
+        window.open(url, "_blank");
+      });
+
+    function calculateExchangeRate() {
+      const baseCurrency = document.getElementById("base-currency").value;
+      const compareCurrency =
+        document.getElementById("compare-currency").value;
+      const url = `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/${baseCurrency}`;
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.result === "success") {
+            const rate = data.conversion_rates[compareCurrency];
+            document.getElementById(
+              "exchange-rate"
+            ).textContent = `1 ${baseCurrency} = ${rate} ${compareCurrency}`;
+          } else {
+            document.getElementById("exchange-rate").textContent =
+              "无法获取汇率数据，请稍后再试。";
+          }
+        })
+        .catch((error) => {
+          document.getElementById("exchange-rate").textContent =
+            "错误：" + error.message;
+        });
+    }
+
+    function convertGoldPrice() {
+      const goldApiUrl = "https://api.gold-api.com/price/XAU";
+      const compareCurrency =
+        document.getElementById("compare-currency").value;
+
+      fetch(goldApiUrl)
+        .then((response) => response.json())
+        .then((goldData) => {
+          const goldPrice = goldData.price;
+          const goldPricePerGram = goldPrice / 31.1034768;
+
+          document.getElementById(
+            "gold-price"
+          ).textContent = `$${goldPrice.toFixed(2)}`;
+
+          fetch(
+            `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`
+          )
+            .then((response) => response.json())
+            .then((exchangeData) => {
+              const rate = exchangeData.conversion_rates[compareCurrency];
+              const convertedPrice = (goldPricePerGram * rate).toFixed(2);
+
+              document.getElementById(
+                "converted-gold-price"
+              ).textContent = `${convertedPrice} ${compareCurrency}/g`;
+            });
+        });
+    }
+
+    function convertNYGoldPrice() {
+      // 通用的 query 参数对象转 URL 查询字符串方法
+      function translateQuery(params) {
+        return (
+          "?" +
+          Object.entries(params)
+            .map(
+              ([key, value]) =>
+                encodeURIComponent(key) + "=" + encodeURIComponent(value)
+            )
+            .join("&")
+        );
+      }
+
+      // 构建 API 请求参数对象 ，不支持纽约期货数据，只提供现货数据
+      const queryParams = {
+        api_key: "c0f82a209af9860048b0e666f905ab8e",
+        base: 'USD',
+        currencies: 'CNY,HKD,GBP,JPY,XAU,XAG'
+      };
+
+      const url =
+        "https://api.metalpriceapi.com/v1/latest" +
+        translateQuery(queryParams);
+
+
+      fetch(url)
+        .then((response) => response.json())
+        .then((result) => {
+          // 兼容返回数据结构
+          console.log('result >>>>>>>>>>>>>>>', result);
+
+          if (!result?.rates?.USDGC1) {
+            return document.getElementById("ny-gold-price").textContent =
+              "未获取到纽约金价格";
+
+          }
+
+          let nyGoldPrice = result.rates.USDGC1;
+
+          const nyGoldPerGram = nyGoldPrice / 31.1034768;
+
+          document.getElementById(
+            "ny-gold-price"
+          ).textContent = `$${nyGoldPrice.toFixed(2)}`;
+
+          fetch(
+            `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`
+          )
+            .then((response) => response.json())
+            .then((exchangeData) => {
+              const compareCurrency =
+                document.getElementById("compare-currency").value;
+              const rate = exchangeData.conversion_rates[compareCurrency];
+              const convertedNYPrice = (nyGoldPerGram * rate).toFixed(2);
+
+              document.getElementById(
+                "converted-ny-gold-price"
+              ).textContent = `${convertedNYPrice} ${compareCurrency}/g`;
+            });
+        })
+        .catch((error) => {
+          document.getElementById("ny-gold-price").textContent =
+            "错误：" + error.message;
+        });
+    }
+
+    // 包装为异步任务
+    function runAsAsync(task) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          task();
+          resolve();
+        }, 0); // 使用 0ms 延迟模拟异步
+      });
+    }
+
+    // 并发执行
+    async function executeAll() {
+      try {
+        await Promise.all([
+          runAsAsync(calculateExchangeRate),
+          runAsAsync(convertGoldPrice),
+          runAsAsync(convertNYGoldPrice),
+        ]);
+        console.log("All functions executed successfully.");
+      } catch (error) {
+        console.error("An error occurred:", error);
+      }
+    }
+
+    // 调用主函数
+    executeAll();
+  </script>
+</body>
+
+</html>
