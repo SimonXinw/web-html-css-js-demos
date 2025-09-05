@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清晰对比滚动动画</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+
+        /* 页面内容区域 */
+        .content-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 2rem;
+            text-align: center;
+        }
+
+        /* 图片对比容器 */
+        .image-compare-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: #f0f0f0;
+        }
+
+        /* 图片容器 */
+        .image-wrapper {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 图片基础样式 */
+        .compare-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 模糊图片（底层） - 添加模糊效果 */
+        .blur-image {
+            z-index: 1;
+            filter: blur(8px);
+            /* 初始状态显示完整图片 */
+            clip-path: inset(0% 0% 0% 0%);
+        }
+
+        /* 清晰图片（上层） */
+        .clear-image {
+            z-index: 2;
+            /* 初始状态完全隐藏在底部 */
+            clip-path: inset(100% 0% 0% 0%);
+        }
+
+        /* 进度指示器 */
+        .progress-indicator {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            width: 4px;
+            height: 100px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(to top, #667eea, #764ba2);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        /* 说明文字 */
+        .description {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .content-section {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+
+            .progress-indicator {
+                right: 10px;
+                padding: 10px;
+            }
+
+            .progress-bar {
+                height: 80px;
+            }
+
+            .description {
+                bottom: 20px;
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+        }
+
+        /* 加载动画 */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 加载动画 -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- 开始内容 -->
+    <section class="content-section">
+        <div>
+            <h1>清晰对比滚动动画</h1>
+            <p>向下滚动查看神奇的图片对比效果</p>
+        </div>
+    </section>
+
+    <!-- 图片对比区域 -->
+    <section class="image-compare-container" id="imageCompare">
+        <div class="image-wrapper">
+            <!-- 模糊图片（底层） -->
+            <img src="https://cdn.shopify.com/s/files/1/0668/4970/2037/files/Frame_2117130815_2.webp" alt="模糊图片"
+                class="compare-image blur-image" id="blurImage">
+
+            <!-- 清晰图片（上层） -->
+            <img src="https://cdn.shopify.com/s/files/1/0668/4970/2037/files/Frame_2117130815.webp" alt="清晰图片"
+                class="compare-image clear-image" id="clearImage">
+
+            <!-- 说明文字 -->
+            <div class="description" id="description">
+                滚动鼠标，观看图片从模糊到清晰的神奇变化
+            </div>
+        </div>
+    </section>
+
+    <!-- 进度指示器 -->
+    <div class="progress-indicator">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">0%</div>
+    </div>
+
+    <!-- 结束内容 -->
+    <section class="content-section">
+        <div>
+            <h2>完美的视觉体验</h2>
+            <p>这就是现代Web动画的魅力</p>
+        </div>
+    </section>
+
+    <script>
+        // 注册 ScrollTrigger 插件
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 等待图片加载完成
+        function waitForImages() {
+            const images = document.querySelectorAll('.compare-image');
+            const promises = Array.from(images).map(img => {
+                return new Promise((resolve) => {
+                    if (img.complete) {
+                        resolve();
+                    } else {
+                        img.onload = resolve;
+                        img.onerror = resolve; // 即使加载失败也要继续
+                    }
+                });
+            });
+            return Promise.all(promises);
+        }
+
+        // 初始化动画
+        async function initAnimation() {
+            // 等待图片加载
+            await waitForImages();
+
+            // 隐藏加载动画
+            document.getElementById('loading').classList.add('hidden');
+
+            // 获取元素
+            const blurImage = document.getElementById('blurImage');
+            const clearImage = document.getElementById('clearImage');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const description = document.getElementById('description');
+
+            // 创建滚动动画
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: "#imageCompare",
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: 1, // 平滑跟随滚动
+                    pin: true, // 固定元素
+                    anticipatePin: 1,
+                    onUpdate: (self) => {
+                        // 计算进度 (0-1)
+                        const progress = self.progress;
+                        const progressPercent = Math.round(progress * 100);
+
+                        // 更新进度条
+                        progressFill.style.height = progressPercent + '%';
+                        progressText.textContent = progressPercent + '%';
+
+                        // 使用 clip-path 实现无缝过渡效果
+                        // 模糊图片从下到上逐渐被裁剪掉
+                        const blurClipPercent = progress * 100;
+                        blurImage.style.clipPath = `inset(0% 0% ${blurClipPercent}% 0%)`;
+
+                        // 清晰图片从下到上逐渐显示
+                        const clearClipPercent = (1 - progress) * 100;
+                        clearImage.style.clipPath = `inset(${clearClipPercent}% 0% 0% 0%)`;
+
+                        // 根据进度更新说明文字
+                        if (progressPercent < 25) {
+                            description.textContent = '继续向下滚动...';
+                        } else if (progressPercent < 50) {
+                            description.textContent = '图片开始变清晰了！';
+                        } else if (progressPercent < 75) {
+                            description.textContent = '越来越清晰了...';
+                        } else {
+                            description.textContent = '完美的清晰效果！';
+                        }
+                    }
+                }
+            });
+
+            // 添加说明文字的淡入淡出效果
+            gsap.fromTo(description,
+                { opacity: 0, y: 20 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    scrollTrigger: {
+                        trigger: "#imageCompare",
+                        start: "top 80%",
+                        end: "top 20%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initAnimation);
+
+        // 优化性能：防抖滚动事件
+        let ticking = false;
+        function updateOnScroll() {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }
+
+        window.addEventListener('scroll', updateOnScroll, { passive: true });
+
+        // 错误处理
+        window.addEventListener('error', (e) => {
+            console.warn('图片加载可能失败:', e);
+            document.getElementById('loading').classList.add('hidden');
+        });
+    </script>
+</body>
+
+</html>
