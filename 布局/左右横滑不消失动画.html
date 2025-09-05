@@ -1,305 +1,993 @@
 <!DOCTYPE html>
 <html lang="zh">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>滑动横条Tab</title>
-  <style>
-    /* 设置 HTML 和 body 高度为 100%，确保页面充满屏幕 */
-    html {
-      height: 100%;
-    }
-
-    body {
-      height: 100%;
-      font-family: Arial, sans-serif;
-      background-color: #fff;
-      color: white;
-      margin: 0;
-      padding: 20px;
-    }
-
-    /* 让主体内容居中对齐 */
-    .body-box {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    /* 标签容器，允许横向滚动，隐藏滚动条 */
-    .tabs-container {
-      width: 100%;
-      padding: 8%;
-      overflow-x: auto;
-      white-space: nowrap;
-      border-radius: 99px;
-      background: #212326;
-      padding: 4px;
-      display: flex;
-      align-items: flex-start;
-      scrollbar-width: none;
-      /* Firefox 隐藏滚动条 */
-      -ms-overflow-style: none;
-      /* IE/Edge 隐藏滚动条 */
-      position: relative;
-      /* 为滑动横条定位 */
-    }
-
-    /* Webkit 浏览器（如 Chrome, Safari）隐藏滚动条 */
-    .tabs-container::-webkit-scrollbar {
-      display: none;
-    }
-
-    /* 滑动横条背景指示器 */
-    .sliding-indicator {
-      position: absolute;
-      top: 4px;
-      left: 4px;
-      height: calc(100% - 8px);
-      background: #009afe;
-      border-radius: 99px;
-      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-      z-index: 1;
-      opacity: 1;
-    }
-
-    /* 内部容器，确保所有 tab 以一行显示 */
-    .tabs-inner {
-      display: flex;
-      align-items: center;
-      flex-wrap: nowrap;
-      position: relative;
-      z-index: 2;
-    }
-
-    /* 单个标签样式 */
-    .tab-item {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border-radius: 99px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease-in-out;
-      padding: 12px 16px;
-      color: #ffffff73;
-      position: relative;
-      white-space: nowrap;
-      z-index: 3;
-    }
-
-    /* 悬停时高亮 */
-    .tab-item:hover {
-      color: #fffffff2;
-    }
-
-    /* 选中的 tab 高亮 - 移除背景色，因为现在用滑动横条 */
-    .tab-item.active {
-      color: rgba(255, 255, 255, 0.95);
-      font-weight: 600;
-    }
-
-    /* 移除分隔线，因为现在用滑动横条 */
-    .tab-item:not(:last-child)::after {
-      content: "";
-      position: absolute;
-      right: 0;
-      width: 1px;
-      height: 16px;
-      background-color: #4a4a4f;
-      opacity: 0.5;
-    }
-
-    /* 当tab被选中时，隐藏相邻的分隔线 */
-    .tab-item.active::after,
-    .tab-item.active+.tab-item::before {
-      opacity: 0;
-    }
-
-    /* 为分隔线添加前置伪元素 */
-    .tab-item:not(:first-child)::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      width: 1px;
-      height: 16px;
-      background-color: #4a4a4f;
-      opacity: 0.5;
-      transition: opacity 0.3s ease;
-    }
-
-    /* 响应式设计 */
-    @media (max-width: 768px) {
-      .tabs-container {
-        padding: 6%;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>现代化滑动横条Tab组件</title>
+    <style>
+      /* 设置 HTML 和 body 高度为 100%，确保页面充满屏幕 */
+      html {
+        height: 100%;
+      }
+      
+      body {
+        height: 100%;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin: 0;
+        padding: 20px;
+        line-height: 1.6;
       }
 
+      /* 主容器 */
+      .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      /* 标题 */
+      .title {
+        text-align: center;
+        font-size: 2.5rem;
+        color: white;
+        margin-bottom: 30px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        font-weight: 300;
+      }
+
+      /* 控制面板 */
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      .btn.active {
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+      }
+
+      /* 统计信息 */
+      .stats {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(20px);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .stat-item {
+        flex: 1;
+        min-width: 120px;
+      }
+
+      .stat-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: #fff;
+        display: block;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .stat-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+        margin-top: 5px;
+      }
+
+      /* 让主体内容居中对齐 */
+      .body-box {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      /* 标签容器，允许横向滚动，隐藏滚动条 */
+      .tabs-container {
+        width: 100%;
+        max-width: 800px;
+        overflow-x: auto;
+        white-space: nowrap;
+        border-radius: 50px;
+        background: rgba(33, 35, 38, 0.9);
+        backdrop-filter: blur(20px);
+        padding: 6px;
+        display: flex;
+        align-items: flex-start;
+        scrollbar-width: none; /* Firefox 隐藏滚动条 */
+        -ms-overflow-style: none; /* IE/Edge 隐藏滚动条 */
+        position: relative; /* 为滑动横条定位 */
+        box-shadow: 
+          0 8px 32px rgba(0, 0, 0, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      /* Webkit 浏览器（如 Chrome, Safari）隐藏滚动条 */
+      .tabs-container::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* 滑动横条背景指示器 - 增强版 */
+      .sliding-indicator {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        height: calc(100% - 12px);
+        background: linear-gradient(135deg, #00d4ff 0%, #009afe 100%);
+        border-radius: 50px;
+        transition: all 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+        z-index: 1;
+        opacity: 1;
+        box-shadow: 
+          0 4px 15px rgba(0, 148, 254, 0.4),
+          0 2px 8px rgba(0, 148, 254, 0.2);
+        transform: translateX(0px);
+        will-change: transform, width;
+      }
+
+      /* 滑动横条发光效果 */
+      .sliding-indicator::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(135deg, #00d4ff, #009afe);
+        border-radius: 50px;
+        z-index: -1;
+        opacity: 0.3;
+        filter: blur(4px);
+      }
+
+      /* 内部容器，确保所有 tab 以一行显示 */
+      .tabs-inner {
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        position: relative;
+        z-index: 2;
+        min-width: 100%;
+      }
+
+      /* 单个标签样式 - 增强版 */
       .tab-item {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        padding: 14px 20px;
+        color: rgba(255, 255, 255, 0.6);
+        position: relative;
+        white-space: nowrap;
+        z-index: 3;
+        user-select: none;
+        min-width: fit-content;
+        backdrop-filter: blur(10px);
+      }
+
+      /* 悬停时高亮 */
+      .tab-item:hover {
+        color: rgba(255, 255, 255, 0.9);
+        transform: translateY(-1px);
+      }
+
+      /* 选中的 tab 高亮 - 移除背景色，因为现在用滑动横条 */
+      .tab-item.active {
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 600;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      }
+
+      /* 分隔线样式优化 */
+      .tab-item:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        width: 1px;
+        height: 20px;
+        background: linear-gradient(to bottom, 
+          transparent 0%, 
+          rgba(255, 255, 255, 0.2) 50%, 
+          transparent 100%);
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+      }
+
+      /* 当tab被选中时，隐藏相邻的分隔线 */
+      .tab-item.active::after,
+      .tab-item.active + .tab-item::before {
+        opacity: 0;
+      }
+
+      /* 为分隔线添加前置伪元素 */
+      .tab-item:not(:first-child)::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        width: 1px;
+        height: 20px;
+        background: linear-gradient(to bottom, 
+          transparent 0%, 
+          rgba(255, 255, 255, 0.2) 50%, 
+          transparent 100%);
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+      }
+
+      /* 性能监控面板 */
+      .performance-panel {
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 20px;
+        font-family: 'Courier New', monospace;
         font-size: 12px;
-        padding: 10px 14px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .tabs-container {
-        padding: 4%;
+        color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: none;
       }
 
-      .tab-item {
-        font-size: 11px;
-        padding: 8px 12px;
+      .performance-panel.show {
+        display: block;
       }
-    }
-  </style>
-</head>
 
-<body>
-  <div class="body-box">
-    <!-- 可滚动的 tab 容器 -->
-    <div class="tabs-container" id="tabsContainer">
-      <!-- 滑动横条指示器 -->
-      <div class="sliding-indicator" id="slidingIndicator"></div>
+      /* 加载状态 */
+      .loading-state {
+        opacity: 0.7;
+        pointer-events: none;
+      }
 
-      <div class="tabs-inner" id="tabsInner">
-        <!-- 每个 tab 具有唯一的 data-key 值 -->
-        <div class="tab-item" data-key="Tab1">Tab favorite 1</div>
-        <div class="tab-item" data-key="Tab2">Tab very good 2</div>
-        <div class="tab-item" data-key="Tab3">Tab you good 3</div>
-        <div class="tab-item" data-key="Tab4">Tab excellent 4</div>
-        <div class="tab-item" data-key="Tab5">Tab amazing 5</div>
-        <div class="tab-item" data-key="Tab6">Tab wonderful 6</div>
+      /* 错误状态 */
+      .error-state {
+        color: #ff6b6b;
+        background: rgba(255, 107, 107, 0.1);
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 768px) {
+        .title {
+          font-size: 2rem;
+        }
+
+        .tabs-container {
+          padding: 4px;
+          border-radius: 25px;
+        }
+        
+        .tab-item {
+          font-size: 13px;
+          padding: 12px 16px;
+        }
+
+        .sliding-indicator {
+          top: 4px;
+          left: 4px;
+          height: calc(100% - 8px);
+        }
+
+        .stats {
+          flex-direction: column;
+          gap: 15px;
+        }
+
+        .controls {
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .main-container {
+          padding: 15px;
+        }
+
+        .tabs-container {
+          padding: 3px;
+        }
+        
+        .tab-item {
+          font-size: 12px;
+          padding: 10px 14px;
+        }
+
+        .sliding-indicator {
+          top: 3px;
+          left: 3px;
+          height: calc(100% - 6px);
+        }
+      }
+
+      /* 深色主题支持 */
+      @media (prefers-color-scheme: dark) {
+        .tabs-container {
+          background: rgba(20, 20, 20, 0.9);
+        }
+      }
+
+      /* 减少动画偏好支持 */
+      @media (prefers-reduced-motion: reduce) {
+        .sliding-indicator,
+        .tab-item {
+          transition: none;
+        }
+      }
+
+      /* 高对比度支持 */
+      @media (prefers-contrast: high) {
+        .tab-item {
+          border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .sliding-indicator {
+          border: 2px solid #fff;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-container">
+      <!-- 标题 -->
+      <h1 class="title">🚀 现代化滑动Tab组件</h1>
+
+      <!-- 控制面板 -->
+      <div class="controls">
+        <button class="btn" onclick="toggleDebugMode()" id="debugBtn">🐛 调试模式</button>
+        <button class="btn" onclick="togglePerformanceMonitor()" id="perfBtn">📊 性能监控</button>
+        <button class="btn" onclick="addRandomTab()">➕ 添加Tab</button>
+        <button class="btn" onclick="removeLastTab()">➖ 删除Tab</button>
+        <button class="btn" onclick="resetTabs()">🔄 重置</button>
+      </div>
+
+      <!-- 统计信息 -->
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-number" id="totalTabs">6</span>
+          <div class="stat-label">总Tab数</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="activeTabs">1</span>
+          <div class="stat-label">活跃Tab</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="switchCount">0</span>
+          <div class="stat-label">切换次数</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="avgSwitchTime">0ms</span>
+          <div class="stat-label">平均切换时间</div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="performanceScore">100</span>
+          <div class="stat-label">性能评分</div>
+        </div>
+      </div>
+
+      <div class="body-box">
+        <!-- 可滚动的 tab 容器 -->
+        <div class="tabs-container" id="tabsContainer">
+          <!-- 滑动横条指示器 -->
+          <div class="sliding-indicator" id="slidingIndicator"></div>
+          
+          <div class="tabs-inner" id="tabsInner">
+            <!-- 每个 tab 具有唯一的 data-key 值 -->
+            <div class="tab-item" data-key="Tab1">首页</div>
+            <div class="tab-item" data-key="Tab2">产品中心</div>
+            <div class="tab-item" data-key="Tab3">解决方案</div>
+            <div class="tab-item" data-key="Tab4">技术支持</div>
+            <div class="tab-item" data-key="Tab5">关于我们</div>
+            <div class="tab-item" data-key="Tab6">联系我们</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 性能监控面板 -->
+      <div class="performance-panel" id="performancePanel">
+        <div><strong>性能监控面板</strong></div>
+        <div>渲染时间: <span id="renderTime">0ms</span></div>
+        <div>内存使用: <span id="memoryUsage">0MB</span></div>
+        <div>FPS: <span id="fps">60</span></div>
+        <div>事件监听器: <span id="eventListeners">0</span></div>
       </div>
     </div>
-  </div>
 
-  <script>
-    //  url 可以控制哪个优先高亮 eg:?tabValue=3
-    document.addEventListener("DOMContentLoaded", function () {
-      const tabsContainer = document.getElementById("tabsContainer");
-      const tabsInnerEle = document.getElementById("tabsInner");
-      const slidingIndicator = document.getElementById("slidingIndicator");
-      const tabs = document.querySelectorAll(".tab-item");
-      let activeItem = tabs[0]; // 默认高亮第一个 Tab
-      activeItem.classList.add("active");
-
+    <script>
       /**
-       * 更新滑动横条的位置和大小
+       * 现代化Tab滑动组件类 - 优化版
        */
-      function updateSlidingIndicator() {
-        if (!activeItem) return;
+      class ModernSlidingTabs {
+        constructor(options = {}) {
+          // 默认配置
+          this.options = {
+            container: '#tabsContainer',
+            indicator: '#slidingIndicator',
+            tabSelector: '.tab-item',
+            animationDuration: 400,
+            scrollBehavior: 'smooth',
+            debug: false,
+            enablePerformanceMonitor: false,
+            enableAccessibility: true,
+            enableKeyboardNavigation: true,
+            throttleDelay: 16, // 60fps
+            debounceDelay: 100,
+            ...options,
+          };
 
-        const containerRect = tabsContainer.getBoundingClientRect();
-        const activeRect = activeItem.getBoundingClientRect();
+          // 状态管理
+          this.state = {
+            activeTab: null,
+            isAnimating: false,
+            switchCount: 0,
+            switchTimes: [],
+            startTime: Date.now(),
+          };
 
-        // 计算相对于容器的位置
-        const left = activeRect.left - containerRect.left - 4; // 减去容器的padding
-        const width = activeRect.width;
+          // 性能监控
+          this.performance = {
+            renderTimes: [],
+            memoryUsage: 0,
+            fps: 60,
+            eventListeners: 0,
+          };
 
-        // 更新滑动横条的位置和大小
-        slidingIndicator.style.width = width + 'px';
-        slidingIndicator.style.transform = `translateX(${left}px)`;
-      }
+          // DOM 元素
+          this.elements = {
+            container: null,
+            indicator: null,
+            tabs: null,
+            tabsInner: null,
+          };
 
-      /**
-       * 滚动到当前选中的 tab
-       */
-      function scrollToActiveTab() {
-        const containerRect = tabsContainer.getBoundingClientRect();
-        const computedStyle = window.getComputedStyle(tabsContainer);
-        const activeRect = activeItem.getBoundingClientRect();
-        const containerScrollLeft = tabsContainer.scrollLeft;
-        const containerScrollWidth = tabsContainer.scrollWidth;
-        const containerWidth = tabsContainer.clientWidth;
-        const activeWidth = activeItem.clientWidth;
+          // 事件处理器
+          this.handlers = new Map();
 
-        let targetScrollLeft = containerScrollLeft;
-        const paddingLeft = parseInt(computedStyle.paddingLeft, 10) || 0;
-        const paddingRight = parseInt(computedStyle.paddingRight, 10) || 0;
-
-        if (activeRect.left <= containerRect.left + paddingLeft) {
-          // 如果选中项左侧超出容器可视范围
-          targetScrollLeft = activeItem.offsetLeft - paddingLeft;
-        } else if (activeRect.right > containerRect.right - paddingRight) {
-          // 如果选中项右侧超出容器可视范围
-          targetScrollLeft = activeItem.offsetLeft - containerWidth + activeWidth + paddingRight;
-        } else {
-          // 选中项在容器可视范围内，让其居中
-          targetScrollLeft = activeItem.offsetLeft - containerWidth / 2 + activeWidth / 2;
+          // 初始化
+          this.init();
         }
 
-        // 执行平滑滚动
-        tabsContainer.scrollTo({
-          left: targetScrollLeft,
-          behavior: "smooth",
-        });
+        init() {
+          this.log('初始化现代化Tab组件...');
+          
+          try {
+            this.initElements();
+            this.bindEvents();
+            this.initAccessibility();
+            this.setInitialState();
+            
+            if (this.options.enablePerformanceMonitor) {
+              this.startPerformanceMonitor();
+            }
+            
+            this.log('Tab组件初始化完成');
+          } catch (error) {
+            this.error('初始化失败:', error);
+          }
+        }
 
-        // 滚动完成后更新滑动横条位置
-        setTimeout(() => {
-          updateSlidingIndicator();
-        }, 300);
-      }
+        initElements() {
+          this.elements.container = document.querySelector(this.options.container);
+          this.elements.indicator = document.querySelector(this.options.indicator);
+          this.elements.tabsInner = this.elements.container.querySelector('.tabs-inner');
+          
+          if (!this.elements.container || !this.elements.indicator) {
+            throw new Error('必要的DOM元素未找到');
+          }
 
-      /**
-       * 根据 URL 参数设置选中的 Tab
-       * @param {string} tabValue - 目标 Tab 的 data-key 值
-       */
-      function setActiveTabByValue(tabValue) {
-        const targetTab = [...tabs].find(
-          (tab) => tab.getAttribute("data-key") === `Tab${tabValue}`
-        );
-        if (targetTab) {
-          activeItem.classList.remove("active");
-          activeItem = targetTab;
-          activeItem.classList.add("active");
-          scrollToActiveTab();
+          this.updateTabElements();
+        }
+
+        updateTabElements() {
+          this.elements.tabs = this.elements.container.querySelectorAll(this.options.tabSelector);
+          this.updateStats();
+        }
+
+        bindEvents() {
+          // Tab点击事件
+          this.addEventHandler('click', this.elements.container, (e) => {
+            const tab = e.target.closest(this.options.tabSelector);
+            if (tab && !tab.classList.contains('active')) {
+              this.switchToTab(tab);
+            }
+          });
+
+          // 键盘导航
+          if (this.options.enableKeyboardNavigation) {
+            this.addEventHandler('keydown', this.elements.container, (e) => {
+              this.handleKeyboardNavigation(e);
+            });
+          }
+
+          // 窗口大小变化
+          this.addEventHandler('resize', window, this.throttle(() => {
+            this.updateIndicatorPosition();
+          }, this.options.throttleDelay));
+
+          // 容器滚动
+          this.addEventHandler('scroll', this.elements.container, this.throttle(() => {
+            this.updateIndicatorPosition();
+          }, this.options.throttleDelay));
+
+          // URL参数监听
+          this.addEventHandler('popstate', window, () => {
+            this.handleUrlChange();
+          });
+
+          // 页面可见性变化
+          this.addEventHandler('visibilitychange', document, () => {
+            if (!document.hidden) {
+              this.updateIndicatorPosition();
+            }
+          });
+        }
+
+        addEventHandler(event, element, handler) {
+          element.addEventListener(event, handler);
+          this.handlers.set(`${event}_${element}`, handler);
+          this.performance.eventListeners++;
+        }
+
+        removeEventHandler(event, element) {
+          const handler = this.handlers.get(`${event}_${element}`);
+          if (handler) {
+            element.removeEventListener(event, handler);
+            this.handlers.delete(`${event}_${element}`);
+            this.performance.eventListeners--;
+          }
+        }
+
+        initAccessibility() {
+          if (!this.options.enableAccessibility) return;
+
+          // 添加ARIA属性
+          this.elements.container.setAttribute('role', 'tablist');
+          this.elements.container.setAttribute('aria-label', '导航标签');
+
+          this.elements.tabs.forEach((tab, index) => {
+            tab.setAttribute('role', 'tab');
+            tab.setAttribute('tabindex', index === 0 ? '0' : '-1');
+            tab.setAttribute('aria-selected', 'false');
+            tab.setAttribute('id', `tab-${index}`);
+          });
+        }
+
+        setInitialState() {
+          // 设置初始活跃Tab
+          const urlParams = new URLSearchParams(window.location.search);
+          const tabValue = urlParams.get('tab');
+          
+          let initialTab = this.elements.tabs[0];
+          
+          if (tabValue) {
+            const targetTab = Array.from(this.elements.tabs).find(
+              tab => tab.getAttribute('data-key') === tabValue
+            );
+            if (targetTab) {
+              initialTab = targetTab;
+            }
+          }
+
+          this.switchToTab(initialTab, false);
+        }
+
+        switchToTab(targetTab, animate = true) {
+          if (this.state.isAnimating || !targetTab) return;
+
+          const startTime = performance.now();
+          this.state.isAnimating = true;
+
+          // 更新活跃状态
+          if (this.state.activeTab) {
+            this.state.activeTab.classList.remove('active');
+            this.state.activeTab.setAttribute('aria-selected', 'false');
+            this.state.activeTab.setAttribute('tabindex', '-1');
+          }
+
+          targetTab.classList.add('active');
+          targetTab.setAttribute('aria-selected', 'true');
+          targetTab.setAttribute('tabindex', '0');
+          this.state.activeTab = targetTab;
+
+          // 更新URL
+          this.updateUrl(targetTab.getAttribute('data-key'));
+
+          // 更新指示器位置
+          this.updateIndicatorPosition(animate);
+
+          // 滚动到可见区域
+          this.scrollToActiveTab();
+
+          // 统计信息
+          this.state.switchCount++;
+          const switchTime = performance.now() - startTime;
+          this.state.switchTimes.push(switchTime);
+          this.updateStats();
+
+          // 动画完成回调
+          setTimeout(() => {
+            this.state.isAnimating = false;
+            this.log('Tab切换完成:', targetTab.textContent, '耗时:', switchTime.toFixed(2) + 'ms');
+          }, animate ? this.options.animationDuration : 0);
+
+          // 触发自定义事件
+          this.dispatchEvent('tabchange', {
+            activeTab: targetTab,
+            switchTime: switchTime,
+          });
+        }
+
+        updateIndicatorPosition(animate = true) {
+          if (!this.state.activeTab || !this.elements.indicator) return;
+
+          const containerRect = this.elements.container.getBoundingClientRect();
+          const activeRect = this.state.activeTab.getBoundingClientRect();
+          
+          // 计算相对于容器的位置
+          const left = activeRect.left - containerRect.left - 6; // 减去容器的padding
+          const width = activeRect.width;
+          
+          // 更新滑动横条的位置和大小
+          this.elements.indicator.style.width = width + 'px';
+          this.elements.indicator.style.transform = `translateX(${left}px)`;
+          
+          if (!animate) {
+            this.elements.indicator.style.transition = 'none';
+            requestAnimationFrame(() => {
+              this.elements.indicator.style.transition = '';
+            });
+          }
+        }
+
+        scrollToActiveTab() {
+          if (!this.state.activeTab) return;
+
+          const containerRect = this.elements.container.getBoundingClientRect();
+          const activeRect = this.state.activeTab.getBoundingClientRect();
+          const containerScrollLeft = this.elements.container.scrollLeft;
+          const containerWidth = this.elements.container.clientWidth;
+          const activeWidth = this.state.activeTab.clientWidth;
+
+          let targetScrollLeft = containerScrollLeft;
+
+          if (activeRect.left < containerRect.left) {
+            // 左侧超出
+            targetScrollLeft = this.state.activeTab.offsetLeft - 20;
+          } else if (activeRect.right > containerRect.right) {
+            // 右侧超出
+            targetScrollLeft = this.state.activeTab.offsetLeft - containerWidth + activeWidth + 20;
+          }
+
+          this.elements.container.scrollTo({
+            left: targetScrollLeft,
+            behavior: this.options.scrollBehavior,
+          });
+        }
+
+        handleKeyboardNavigation(e) {
+          const currentIndex = Array.from(this.elements.tabs).indexOf(this.state.activeTab);
+          let targetIndex = currentIndex;
+
+          switch (e.key) {
+            case 'ArrowLeft':
+              targetIndex = Math.max(0, currentIndex - 1);
+              break;
+            case 'ArrowRight':
+              targetIndex = Math.min(this.elements.tabs.length - 1, currentIndex + 1);
+              break;
+            case 'Home':
+              targetIndex = 0;
+              break;
+            case 'End':
+              targetIndex = this.elements.tabs.length - 1;
+              break;
+            default:
+              return;
+          }
+
+          if (targetIndex !== currentIndex) {
+            e.preventDefault();
+            this.switchToTab(this.elements.tabs[targetIndex]);
+            this.elements.tabs[targetIndex].focus();
+          }
+        }
+
+        handleUrlChange() {
+          const urlParams = new URLSearchParams(window.location.search);
+          const tabValue = urlParams.get('tab');
+          
+          if (tabValue) {
+            const targetTab = Array.from(this.elements.tabs).find(
+              tab => tab.getAttribute('data-key') === tabValue
+            );
+            if (targetTab && targetTab !== this.state.activeTab) {
+              this.switchToTab(targetTab);
+            }
+          }
+        }
+
+        updateUrl(tabKey) {
+          const url = new URL(window.location);
+          url.searchParams.set('tab', tabKey);
+          window.history.replaceState({}, '', url);
+        }
+
+        addTab(text, key) {
+          const newTab = document.createElement('div');
+          newTab.className = 'tab-item';
+          newTab.setAttribute('data-key', key || `Tab${Date.now()}`);
+          newTab.textContent = text;
+          
+          if (this.options.enableAccessibility) {
+            const index = this.elements.tabs.length;
+            newTab.setAttribute('role', 'tab');
+            newTab.setAttribute('tabindex', '-1');
+            newTab.setAttribute('aria-selected', 'false');
+            newTab.setAttribute('id', `tab-${index}`);
+          }
+
+          this.elements.tabsInner.appendChild(newTab);
+          this.updateTabElements();
+          
+          this.log('添加Tab:', text);
+          return newTab;
+        }
+
+        removeTab(tab) {
+          if (this.elements.tabs.length <= 1) {
+            this.warn('至少需要保留一个Tab');
+            return false;
+          }
+
+          const isActive = tab === this.state.activeTab;
+          const tabIndex = Array.from(this.elements.tabs).indexOf(tab);
+          
+          tab.remove();
+          this.updateTabElements();
+
+          if (isActive) {
+            // 如果删除的是活跃Tab，切换到相邻Tab
+            const newActiveIndex = Math.min(tabIndex, this.elements.tabs.length - 1);
+            this.switchToTab(this.elements.tabs[newActiveIndex]);
+          }
+
+          this.log('删除Tab:', tab.textContent);
+          return true;
+        }
+
+        updateStats() {
+          document.getElementById('totalTabs').textContent = this.elements.tabs.length;
+          document.getElementById('activeTabs').textContent = this.state.activeTab ? 1 : 0;
+          document.getElementById('switchCount').textContent = this.state.switchCount;
+          
+          const avgTime = this.state.switchTimes.length > 0
+            ? Math.round(this.state.switchTimes.reduce((a, b) => a + b, 0) / this.state.switchTimes.length)
+            : 0;
+          document.getElementById('avgSwitchTime').textContent = avgTime + 'ms';
+
+          // 性能评分计算
+          const performanceScore = Math.max(0, 100 - Math.floor(avgTime / 10));
+          document.getElementById('performanceScore').textContent = performanceScore;
+        }
+
+        startPerformanceMonitor() {
+          setInterval(() => {
+            this.updatePerformanceStats();
+          }, 1000);
+        }
+
+        updatePerformanceStats() {
+          // 内存使用情况
+          if (performance.memory) {
+            this.performance.memoryUsage = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+            document.getElementById('memoryUsage').textContent = this.performance.memoryUsage + 'MB';
+          }
+
+          // 事件监听器数量
+          document.getElementById('eventListeners').textContent = this.performance.eventListeners;
+
+          // FPS监控（简化版）
+          let lastTime = performance.now();
+          let frames = 0;
+          const measureFPS = () => {
+            frames++;
+            const currentTime = performance.now();
+            if (currentTime >= lastTime + 1000) {
+              this.performance.fps = Math.round((frames * 1000) / (currentTime - lastTime));
+              document.getElementById('fps').textContent = this.performance.fps;
+              frames = 0;
+              lastTime = currentTime;
+            }
+            requestAnimationFrame(measureFPS);
+          };
+          measureFPS();
+        }
+
+        dispatchEvent(eventName, detail) {
+          const event = new CustomEvent(eventName, { detail });
+          this.elements.container.dispatchEvent(event);
+        }
+
+        // 工具函数
+        throttle(func, delay) {
+          let timeoutId;
+          let lastExecTime = 0;
+          return function (...args) {
+            const currentTime = Date.now();
+            
+            if (currentTime - lastExecTime > delay) {
+              func.apply(this, args);
+              lastExecTime = currentTime;
+            } else {
+              clearTimeout(timeoutId);
+              timeoutId = setTimeout(() => {
+                func.apply(this, args);
+                lastExecTime = Date.now();
+              }, delay - (currentTime - lastExecTime));
+            }
+          };
+        }
+
+        debounce(func, delay) {
+          let timeoutId;
+          return function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(this, args), delay);
+          };
+        }
+
+        destroy() {
+          // 清理事件监听器
+          this.handlers.forEach((handler, key) => {
+            const [event, element] = key.split('_');
+            element.removeEventListener(event, handler);
+          });
+          this.handlers.clear();
+
+          // 清理状态
+          this.state = {};
+          this.elements = {};
+          
+          this.log('Tab组件已销毁');
+        }
+
+        log(...args) {
+          if (this.options.debug) {
+            console.log('[ModernSlidingTabs]', ...args);
+          }
+        }
+
+        warn(...args) {
+          console.warn('[ModernSlidingTabs]', ...args);
+        }
+
+        error(...args) {
+          console.error('[ModernSlidingTabs]', ...args);
         }
       }
 
-      // 初始化滑动横条位置
-      setTimeout(() => {
-        updateSlidingIndicator();
-      }, 100);
+      // 全局变量
+      let tabsInstance;
+      let debugMode = false;
+      let performanceMode = false;
 
-      // 监听窗口大小变化，重新计算滑动横条位置
-      window.addEventListener('resize', () => {
-        setTimeout(() => {
-          updateSlidingIndicator();
-        }, 100);
+      // 初始化
+      document.addEventListener("DOMContentLoaded", function () {
+        initTabs();
       });
 
-      // 监听容器滚动事件，实时更新滑动横条位置
-      tabsContainer.addEventListener('scroll', () => {
-        updateSlidingIndicator();
-      });
+      function initTabs() {
+        tabsInstance = new ModernSlidingTabs({
+          debug: debugMode,
+          enablePerformanceMonitor: performanceMode,
+        });
 
-      // 获取 URL 中的参数 tabValue
-      const urlParams = new URLSearchParams(window.location.search);
-      const tabValue = urlParams.get("tabValue");
-
-      if (tabValue) {
-        setActiveTabByValue(tabValue);
+        // 监听Tab切换事件
+        document.getElementById('tabsContainer').addEventListener('tabchange', (e) => {
+          console.log('Tab切换事件:', e.detail);
+        });
       }
 
-      // 点击 Tab 切换选中项
-      tabs.forEach((tab) => {
-        tab.addEventListener("click", function () {
-          activeItem.classList.remove("active");
-          activeItem = this;
-          activeItem.classList.add("active");
+      // 全局函数
+      function toggleDebugMode() {
+        debugMode = !debugMode;
+        const btn = document.getElementById('debugBtn');
+        btn.textContent = debugMode ? '🐛 调试模式 (开)' : '🐛 调试模式';
+        btn.classList.toggle('active', debugMode);
+        
+        // 重新初始化以应用调试模式
+        if (tabsInstance) {
+          tabsInstance.destroy();
+          initTabs();
+        }
+      }
 
-          // 立即更新滑动横条位置
-          updateSlidingIndicator();
+      function togglePerformanceMonitor() {
+        performanceMode = !performanceMode;
+        const btn = document.getElementById('perfBtn');
+        const panel = document.getElementById('performancePanel');
+        
+        btn.textContent = performanceMode ? '📊 性能监控 (开)' : '📊 性能监控';
+        btn.classList.toggle('active', performanceMode);
+        panel.classList.toggle('show', performanceMode);
+        
+        if (tabsInstance) {
+          tabsInstance.destroy();
+          initTabs();
+        }
+      }
 
-          // 然后滚动到新选中的 Tab
-          scrollToActiveTab();
-        });
-      });
-    });
-  </script>
-</body>
+      function addRandomTab() {
+        if (!tabsInstance) return;
+        
+        const names = ['新功能', '热门推荐', '最新资讯', '用户中心', '设置', '帮助'];
+        const randomName = names[Math.floor(Math.random() * names.length)];
+        const randomKey = `Tab${Date.now()}`;
+        
+        tabsInstance.addTab(randomName, randomKey);
+      }
 
+      function removeLastTab() {
+        if (!tabsInstance || tabsInstance.elements.tabs.length <= 1) return;
+        
+        const lastTab = tabsInstance.elements.tabs[tabsInstance.elements.tabs.length - 1];
+        tabsInstance.removeTab(lastTab);
+      }
+
+      function resetTabs() {
+        if (!tabsInstance) return;
+        
+        tabsInstance.destroy();
+        
+        // 重置HTML
+        document.getElementById('tabsInner').innerHTML = `
+          <div class="tab-item" data-key="Tab1">首页</div>
+          <div class="tab-item" data-key="Tab2">产品中心</div>
+          <div class="tab-item" data-key="Tab3">解决方案</div>
+          <div class="tab-item" data-key="Tab4">技术支持</div>
+          <div class="tab-item" data-key="Tab5">关于我们</div>
+          <div class="tab-item" data-key="Tab6">联系我们</div>
+        `;
+        
+        initTabs();
+      }
+    </script>
+  </body>
 </html>
