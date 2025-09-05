@@ -272,6 +272,8 @@
       box-sizing: border-box;
       margin: 20px;
       border-radius: 20px;
+      /* 添加边框动画效果 */
+      animation: borderPulse 2s ease-in-out infinite;
     }
 
     .drag-overlay.show {
@@ -292,6 +294,24 @@
 
       50% {
         opacity: 0.7;
+      }
+    }
+
+    /* 边框渐亮渐暗动画 */
+    @keyframes borderPulse {
+      0% {
+        border-color: rgba(79, 209, 197, 0.3);
+        box-shadow: 0 0 0 rgba(79, 209, 197, 0.3);
+      }
+
+      50% {
+        border-color: rgba(79, 209, 197, 1);
+        box-shadow: 0 0 20px rgba(79, 209, 197, 0.6);
+      }
+
+      100% {
+        border-color: rgba(79, 209, 197, 0.3);
+        box-shadow: 0 0 0 rgba(79, 209, 197, 0.3);
       }
     }
 
