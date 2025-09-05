@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>滑动横条Tab</title>
+  <style>
+    /* 设置 HTML 和 body 高度为 100%，确保页面充满屏幕 */
+    html {
+      height: 100%;
+    }
+
+    body {
+      height: 100%;
+      font-family: Arial, sans-serif;
+      background-color: #fff;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+
+    /* 让主体内容居中对齐 */
+    .body-box {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 标签容器，允许横向滚动，隐藏滚动条 */
+    .tabs-container {
+      width: 100%;
+      padding: 8%;
+      overflow-x: auto;
+      white-space: nowrap;
+      border-radius: 99px;
+      background: #212326;
+      padding: 4px;
+      display: flex;
+      align-items: flex-start;
+      scrollbar-width: none;
+      /* Firefox 隐藏滚动条 */
+      -ms-overflow-style: none;
+      /* IE/Edge 隐藏滚动条 */
+      position: relative;
+      /* 为滑动横条定位 */
+    }
+
+    /* Webkit 浏览器（如 Chrome, Safari）隐藏滚动条 */
+    .tabs-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* 滑动横条背景指示器 */
+    .sliding-indicator {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      height: calc(100% - 8px);
+      background: #009afe;
+      border-radius: 99px;
+      transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+      z-index: 1;
+      opacity: 1;
+    }
+
+    /* 内部容器，确保所有 tab 以一行显示 */
+    .tabs-inner {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* 单个标签样式 */
+    .tab-item {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+      padding: 12px 16px;
+      color: #ffffff73;
+      position: relative;
+      white-space: nowrap;
+      z-index: 3;
+    }
+
+    /* 悬停时高亮 */
+    .tab-item:hover {
+      color: #fffffff2;
+    }
+
+    /* 选中的 tab 高亮 - 移除背景色，因为现在用滑动横条 */
+    .tab-item.active {
+      color: rgba(255, 255, 255, 0.95);
+      font-weight: 600;
+    }
+
+    /* 移除分隔线，因为现在用滑动横条 */
+    .tab-item:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      width: 1px;
+      height: 16px;
+      background-color: #4a4a4f;
+      opacity: 0.5;
+    }
+
+    /* 当tab被选中时，隐藏相邻的分隔线 */
+    .tab-item.active::after,
+    .tab-item.active+.tab-item::before {
+      opacity: 0;
+    }
+
+    /* 为分隔线添加前置伪元素 */
+    .tab-item:not(:first-child)::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 1px;
+      height: 16px;
+      background-color: #4a4a4f;
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+    }
+
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+      .tabs-container {
+        padding: 6%;
+      }
+
+      .tab-item {
+        font-size: 12px;
+        padding: 10px 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .tabs-container {
+        padding: 4%;
+      }
+
+      .tab-item {
+        font-size: 11px;
+        padding: 8px 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="body-box">
+    <!-- 可滚动的 tab 容器 -->
+    <div class="tabs-container" id="tabsContainer">
+      <!-- 滑动横条指示器 -->
+      <div class="sliding-indicator" id="slidingIndicator"></div>
+
+      <div class="tabs-inner" id="tabsInner">
+        <!-- 每个 tab 具有唯一的 data-key 值 -->
+        <div class="tab-item" data-key="Tab1">Tab favorite 1</div>
+        <div class="tab-item" data-key="Tab2">Tab very good 2</div>
+        <div class="tab-item" data-key="Tab3">Tab you good 3</div>
+        <div class="tab-item" data-key="Tab4">Tab excellent 4</div>
+        <div class="tab-item" data-key="Tab5">Tab amazing 5</div>
+        <div class="tab-item" data-key="Tab6">Tab wonderful 6</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    //  url 可以控制哪个优先高亮 eg:?tabValue=3
+    document.addEventListener("DOMContentLoaded", function () {
+      const tabsContainer = document.getElementById("tabsContainer");
+      const tabsInnerEle = document.getElementById("tabsInner");
+      const slidingIndicator = document.getElementById("slidingIndicator");
+      const tabs = document.querySelectorAll(".tab-item");
+      let activeItem = tabs[0]; // 默认高亮第一个 Tab
+      activeItem.classList.add("active");
+
+      /**
+       * 更新滑动横条的位置和大小
+       */
+      function updateSlidingIndicator() {
+        if (!activeItem) return;
+
+        const containerRect = tabsContainer.getBoundingClientRect();
+        const activeRect = activeItem.getBoundingClientRect();
+
+        // 计算相对于容器的位置
+        const left = activeRect.left - containerRect.left - 4; // 减去容器的padding
+        const width = activeRect.width;
+
+        // 更新滑动横条的位置和大小
+        slidingIndicator.style.width = width + 'px';
+        slidingIndicator.style.transform = `translateX(${left}px)`;
+      }
+
+      /**
+       * 滚动到当前选中的 tab
+       */
+      function scrollToActiveTab() {
+        const containerRect = tabsContainer.getBoundingClientRect();
+        const computedStyle = window.getComputedStyle(tabsContainer);
+        const activeRect = activeItem.getBoundingClientRect();
+        const containerScrollLeft = tabsContainer.scrollLeft;
+        const containerScrollWidth = tabsContainer.scrollWidth;
+        const containerWidth = tabsContainer.clientWidth;
+        const activeWidth = activeItem.clientWidth;
+
+        let targetScrollLeft = containerScrollLeft;
+        const paddingLeft = parseInt(computedStyle.paddingLeft, 10) || 0;
+        const paddingRight = parseInt(computedStyle.paddingRight, 10) || 0;
+
+        if (activeRect.left <= containerRect.left + paddingLeft) {
+          // 如果选中项左侧超出容器可视范围
+          targetScrollLeft = activeItem.offsetLeft - paddingLeft;
+        } else if (activeRect.right > containerRect.right - paddingRight) {
+          // 如果选中项右侧超出容器可视范围
+          targetScrollLeft = activeItem.offsetLeft - containerWidth + activeWidth + paddingRight;
+        } else {
+          // 选中项在容器可视范围内，让其居中
+          targetScrollLeft = activeItem.offsetLeft - containerWidth / 2 + activeWidth / 2;
+        }
+
+        // 执行平滑滚动
+        tabsContainer.scrollTo({
+          left: targetScrollLeft,
+          behavior: "smooth",
+        });
+
+        // 滚动完成后更新滑动横条位置
+        setTimeout(() => {
+          updateSlidingIndicator();
+        }, 300);
+      }
+
+      /**
+       * 根据 URL 参数设置选中的 Tab
+       * @param {string} tabValue - 目标 Tab 的 data-key 值
+       */
+      function setActiveTabByValue(tabValue) {
+        const targetTab = [...tabs].find(
+          (tab) => tab.getAttribute("data-key") === `Tab${tabValue}`
+        );
+        if (targetTab) {
+          activeItem.classList.remove("active");
+          activeItem = targetTab;
+          activeItem.classList.add("active");
+          scrollToActiveTab();
+        }
+      }
+
+      // 初始化滑动横条位置
+      setTimeout(() => {
+        updateSlidingIndicator();
+      }, 100);
+
+      // 监听窗口大小变化，重新计算滑动横条位置
+      window.addEventListener('resize', () => {
+        setTimeout(() => {
+          updateSlidingIndicator();
+        }, 100);
+      });
+
+      // 监听容器滚动事件，实时更新滑动横条位置
+      tabsContainer.addEventListener('scroll', () => {
+        updateSlidingIndicator();
+      });
+
+      // 获取 URL 中的参数 tabValue
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabValue = urlParams.get("tabValue");
+
+      if (tabValue) {
+        setActiveTabByValue(tabValue);
+      }
+
+      // 点击 Tab 切换选中项
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", function () {
+          activeItem.classList.remove("active");
+          activeItem = this;
+          activeItem.classList.add("active");
+
+          // 立即更新滑动横条位置
+          updateSlidingIndicator();
+
+          // 然后滚动到新选中的 Tab
+          scrollToActiveTab();
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>
