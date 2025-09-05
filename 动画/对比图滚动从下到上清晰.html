@@ -291,14 +291,14 @@
                         progressFill.style.height = progressPercent + '%';
                         progressText.textContent = progressPercent + '%';
 
-                        // 使用 clip-path 实现无缝过渡效果
-                        // 模糊图片从下到上逐渐被裁剪掉
-                        const blurClipPercent = progress * 100;
-                        blurImage.style.clipPath = `inset(0% 0% ${blurClipPercent}% 0%)`;
-
-                        // 清晰图片从下到上逐渐显示
-                        const clearClipPercent = (1 - progress) * 100;
-                        clearImage.style.clipPath = `inset(${clearClipPercent}% 0% 0% 0%)`;
+                                                // 使用 clip-path polygon 实现无缝过渡效果
+                        // 模糊图片：显示从顶部到指定百分比的区域
+                        const blurShowPercent = (1 - progress) * 100;
+                        blurImage.style.clipPath = `polygon(0% 0%, 100% 0%, 100% ${blurShowPercent}%, 0% ${blurShowPercent}%)`;
+                        
+                        // 清晰图片：显示从指定百分比到底部的区域
+                        const clearShowPercent = (1 - progress) * 100;
+                        clearImage.style.clipPath = `polygon(0% ${clearShowPercent}%, 100% ${clearShowPercent}%, 100% 100%, 0% 100%)`;
 
                         // 根据进度更新说明文字
                         if (progressPercent < 25) {
