@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message 提醒框组件</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .demo-btn {
+            padding: 8px 16px;
+            border: 1px solid #d9d9d9;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .demo-btn:hover {
+            border-color: #1890ff;
+            color: #1890ff;
+        }
+
+        .demo-btn.success {
+            background: #52c41a;
+            color: white;
+            border-color: #52c41a;
+        }
+
+        .demo-btn.error {
+            background: #ff4d4f;
+            color: white;
+            border-color: #ff4d4f;
+        }
+
+        .demo-btn.warning {
+            background: #faad14;
+            color: white;
+            border-color: #faad14;
+        }
+
+        .demo-btn.info {
+            background: #1890ff;
+            color: white;
+            border-color: #1890ff;
+        }
+
+        /* Message 容器样式 */
+        .message-container {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        /* Message 项样式 */
+        .message-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.08), 0 9px 28px 0 rgba(0, 0, 0, 0.05), 0 3px 6px -4px rgba(0, 0, 0, 0.12);
+            font-size: 14px;
+            line-height: 1.5715;
+            pointer-events: auto;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+            transform: translateY(0);
+            opacity: 1;
+            max-width: 400px;
+            min-width: 200px;
+        }
+
+        /* 进入动画 */
+        .message-item.message-enter {
+            opacity: 0;
+            transform: translateY(-100%);
+        }
+
+        .message-item.message-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 退出动画 */
+        .message-item.message-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .message-item.message-exit-active {
+            opacity: 0;
+            transform: translateY(-100%);
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            max-height: 0;
+        }
+
+        /* 不同类型的消息样式 */
+        .message-item .message-icon {
+            margin-right: 8px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .message-item.success .message-icon {
+            color: #52c41a;
+        }
+
+        .message-item.error .message-icon {
+            color: #ff4d4f;
+        }
+
+        .message-item.warning .message-icon {
+            color: #faad14;
+        }
+
+        .message-item.info .message-icon {
+            color: #1890ff;
+        }
+
+        .message-content {
+            flex: 1;
+            color: rgba(0, 0, 0, 0.85);
+        }
+
+        /* 配置面板样式 */
+        .config-panel {
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .config-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .config-item label {
+            margin-right: 12px;
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        .config-item input {
+            padding: 4px 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            width: 100px;
+        }
+
+        .description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">Message 提醒框组件</h1>
+
+        <div class="config-panel">
+            <div class="config-item">
+                <label>最大显示数量：</label>
+                <input type="number" id="maxCount" value="3" min="1" max="10">
+            </div>
+            <div class="config-item">
+                <label>显示时长（秒）：</label>
+                <input type="number" id="duration" value="3" min="1" max="10" step="0.5">
+            </div>
+        </div>
+
+        <div class="demo-buttons">
+            <button class="demo-btn info" onclick="showMessage('info', '这是一条普通信息')">普通信息</button>
+            <button class="demo-btn success" onclick="showMessage('success', '操作成功！')">成功消息</button>
+            <button class="demo-btn error" onclick="showMessage('error', '操作失败，请重试')">错误消息</button>
+            <button class="demo-btn warning" onclick="showMessage('warning', '请注意检查输入内容')">警告消息</button>
+            <button class="demo-btn" onclick="showLongMessage()">长文本消息</button>
+            <button class="demo-btn" onclick="showMultipleMessages()">批量显示</button>
+        </div>
+
+        <div class="description">
+            <h3>功能特性：</h3>
+            <ul>
+                <li>支持多种消息类型：info、success、error、warning</li>
+                <li>可配置最大显示数量，超出时进入队列等待</li>
+                <li>自动上移动画，当上方消息消失时下方消息自动上移</li>
+                <li>可配置显示时长</li>
+                <li>语义化设计，易于迁移和封装</li>
+                <li>支持图标显示</li>
+                <li>流畅的进入和退出动画</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Message 容器 -->
+    <div class="message-container" id="messageContainer"></div>
+
+    <script>
+        /**
+         * Message 提醒框组件类
+         */
+        class Message {
+            constructor(options = {}) {
+                this.container = null;
+                this.messages = []; // 当前显示的消息
+                this.queue = []; // 等待队列
+                this.maxCount = options.maxCount || 3; // 最大显示数量
+                this.defaultDuration = options.duration || 3000; // 默认显示时长（毫秒）
+                this.messageId = 0; // 消息ID计数器
+
+                this.init();
+            }
+
+            /**
+             * 初始化容器
+             */
+            init() {
+                this.container = document.getElementById('messageContainer');
+                if (!this.container) {
+                    this.container = document.createElement('div');
+                    this.container.className = 'message-container';
+                    this.container.id = 'messageContainer';
+                    document.body.appendChild(this.container);
+                }
+            }
+
+            /**
+             * 显示消息
+             * @param {string} type - 消息类型：info, success, error, warning
+             * @param {string} content - 消息内容
+             * @param {number} duration - 显示时长（毫秒），0表示不自动关闭
+             */
+            show(type = 'info', content = '', duration = null) {
+                const messageData = {
+                    id: ++this.messageId,
+                    type,
+                    content,
+                    duration: duration !== null ? duration : this.defaultDuration
+                };
+
+                // 如果当前显示的消息数量已达到最大值，加入队列
+                if (this.messages.length >= this.maxCount) {
+                    this.queue.push(messageData);
+                    return messageData.id;
+                }
+
+                this.createMessage(messageData);
+                return messageData.id;
+            }
+
+            /**
+             * 创建消息元素
+             */
+            createMessage(messageData) {
+                const messageEl = document.createElement('div');
+                messageEl.className = `message-item ${messageData.type} message-enter`;
+                messageEl.dataset.id = messageData.id;
+
+                const icon = this.getIcon(messageData.type);
+                messageEl.innerHTML = `
+                    <span class="message-icon">${icon}</span>
+                    <span class="message-content">${messageData.content}</span>
+                `;
+
+                // 添加到容器
+                this.container.appendChild(messageEl);
+                this.messages.push({
+                    id: messageData.id,
+                    element: messageEl,
+                    timer: null
+                });
+
+                // 触发进入动画
+                setTimeout(() => {
+                    messageEl.classList.remove('message-enter');
+                    messageEl.classList.add('message-enter-active');
+                }, 10);
+
+                // 设置自动关闭
+                if (messageData.duration > 0) {
+                    const messageObj = this.messages.find(m => m.id === messageData.id);
+                    if (messageObj) {
+                        messageObj.timer = setTimeout(() => {
+                            this.remove(messageData.id);
+                        }, messageData.duration);
+                    }
+                }
+            }
+
+            /**
+             * 获取消息类型对应的图标
+             */
+            getIcon(type) {
+                const icons = {
+                    info: '&#8505;', // ℹ
+                    success: '&#10004;', // ✓
+                    error: '&#10006;', // ✖
+                    warning: '&#9888;' // ⚠
+                };
+                return icons[type] || icons.info;
+            }
+
+            /**
+             * 移除消息
+             */
+            remove(messageId) {
+                const messageIndex = this.messages.findIndex(m => m.id === messageId);
+                if (messageIndex === -1) return;
+
+                const messageObj = this.messages[messageIndex];
+                const messageEl = messageObj.element;
+
+                // 清除定时器
+                if (messageObj.timer) {
+                    clearTimeout(messageObj.timer);
+                }
+
+                // 添加退出动画
+                messageEl.classList.add('message-exit');
+                setTimeout(() => {
+                    messageEl.classList.add('message-exit-active');
+                }, 10);
+
+                // 动画完成后移除元素
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.parentNode.removeChild(messageEl);
+                    }
+
+                    // 从数组中移除
+                    this.messages.splice(messageIndex, 1);
+
+                    // 处理队列中的消息
+                    this.processQueue();
+                }, 300);
+            }
+
+            /**
+             * 处理等待队列
+             */
+            processQueue() {
+                if (this.queue.length > 0 && this.messages.length < this.maxCount) {
+                    const nextMessage = this.queue.shift();
+                    this.createMessage(nextMessage);
+                }
+            }
+
+            /**
+             * 设置最大显示数量
+             */
+            setMaxCount(count) {
+                this.maxCount = Math.max(1, count);
+            }
+
+            /**
+             * 设置默认显示时长
+             */
+            setDefaultDuration(duration) {
+                this.defaultDuration = Math.max(1000, duration);
+            }
+
+            /**
+             * 清空所有消息
+             */
+            clear() {
+                // 清空队列
+                this.queue = [];
+
+                // 移除所有显示中的消息
+                this.messages.forEach(messageObj => {
+                    if (messageObj.timer) {
+                        clearTimeout(messageObj.timer);
+                    }
+                    this.remove(messageObj.id);
+                });
+            }
+
+            // 便捷方法
+            info(content, duration) {
+                return this.show('info', content, duration);
+            }
+
+            success(content, duration) {
+                return this.show('success', content, duration);
+            }
+
+            error(content, duration) {
+                return this.show('error', content, duration);
+            }
+
+            warning(content, duration) {
+                return this.show('warning', content, duration);
+            }
+        }
+
+        // 创建全局实例
+        const message = new Message();
+
+        // 演示函数
+        function showMessage(type, content) {
+            const maxCount = parseInt(document.getElementById('maxCount').value) || 3;
+            const duration = (parseFloat(document.getElementById('duration').value) || 3) * 1000;
+
+            message.setMaxCount(maxCount);
+            message.setDefaultDuration(duration);
+
+            message.show(type, content);
+        }
+
+        function showLongMessage() {
+            message.info('这是一条比较长的消息内容，用来测试消息框在内容较多时的显示效果和自动换行功能。');
+        }
+
+        function showMultipleMessages() {
+            const messages = [
+                { type: 'info', content: '第一条消息' },
+                { type: 'success', content: '第二条消息' },
+                { type: 'warning', content: '第三条消息' },
+                { type: 'error', content: '第四条消息' },
+                { type: 'info', content: '第五条消息（队列中）' },
+                { type: 'success', content: '第六条消息（队列中）' }
+            ];
+
+            messages.forEach((msg, index) => {
+                setTimeout(() => {
+                    message.show(msg.type, msg.content);
+                }, index * 200);
+            });
+        }
+
+        // 监听配置变化
+        document.getElementById('maxCount').addEventListener('change', function () {
+            message.setMaxCount(parseInt(this.value) || 3);
+        });
+
+        document.getElementById('duration').addEventListener('change', function () {
+            message.setDefaultDuration((parseFloat(this.value) || 3) * 1000);
+        });
+    </script>
+</body>
+
+</html>
