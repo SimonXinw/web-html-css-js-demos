@@ -60,19 +60,16 @@
             display: block;
         }
 
-        /* 模糊图片（底层） - 添加模糊效果 */
-        .blur-image {
+        /* 清晰图片（底层） */
+        .clear-image {
             z-index: 1;
-            filter: blur(8px);
-            /* 初始状态显示完整图片 */
-            clip-path: inset(0% 0% 0% 0%);
+            /* 始终显示完整图片 */
         }
 
-        /* 清晰图片（上层） */
-        .clear-image {
+        /* 模糊图片（上层遮罩） */
+        .blur-image {
             z-index: 2;
-            /* 初始状态完全隐藏在底部 */
-            clip-path: inset(100% 0% 0% 0%);
+            /* 初始状态显示完整图片，随滚动从下到上消失 */
         }
 
         /* 进度指示器 */
@@ -207,13 +204,13 @@
     <!-- 图片对比区域 -->
     <section class="image-compare-container" id="imageCompare">
         <div class="image-wrapper">
-            <!-- 模糊图片（底层） -->
-            <img src="https://cdn.shopify.com/s/files/1/0668/4970/2037/files/Frame_2117130815_2.webp" alt="模糊图片"
-                class="compare-image blur-image" id="blurImage">
-
-            <!-- 清晰图片（上层） -->
+            <!-- 清晰图片（底层） -->
             <img src="https://cdn.shopify.com/s/files/1/0668/4970/2037/files/Frame_2117130815.webp" alt="清晰图片"
                 class="compare-image clear-image" id="clearImage">
+
+            <!-- 模糊图片（上层遮罩） -->
+            <img src="https://cdn.shopify.com/s/files/1/0668/4970/2037/files/Frame_2117130815_2.webp" alt="模糊图片"
+                class="compare-image blur-image" id="blurImage">
 
             <!-- 说明文字 -->
             <div class="description" id="description">
@@ -291,14 +288,13 @@
                         progressFill.style.height = progressPercent + '%';
                         progressText.textContent = progressPercent + '%';
 
-                                                // 使用 clip-path polygon 实现无缝过渡效果
-                        // 模糊图片：显示从顶部到指定百分比的区域
+                        // 使用 clip-path polygon 实现掀开效果
+                        // 模糊图片（上层遮罩）：随着滚动从下到上被裁剪掉，露出下面的清晰图片
                         const blurShowPercent = (1 - progress) * 100;
                         blurImage.style.clipPath = `polygon(0% 0%, 100% 0%, 100% ${blurShowPercent}%, 0% ${blurShowPercent}%)`;
-                        
-                        // 清晰图片：显示从指定百分比到底部的区域
-                        const clearShowPercent = (1 - progress) * 100;
-                        clearImage.style.clipPath = `polygon(0% ${clearShowPercent}%, 100% ${clearShowPercent}%, 100% 100%, 0% 100%)`;
+
+                        // 清晰图片（底层）：始终完整显示，不需要裁剪
+                        // clearImage.style.clipPath = 'none';
 
                         // 根据进度更新说明文字
                         if (progressPercent < 25) {
