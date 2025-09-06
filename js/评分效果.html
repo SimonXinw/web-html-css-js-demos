@@ -1,126 +1,457 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>31练习_评分效果</title>
+  <title>精细星星评分组件</title>
   <style>
-    #ul {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      display: inline-block;
-      vertical-align: middle;
-      height: 30px;
+    /* 评分容器样式 */
+    .star-rating {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: Arial, sans-serif;
     }
 
-    #div {
-      display: inline-block;
-      vertical-align: middle;
-      margin-left: 10px;
-      font-size: 16px;
-      color: #333;
+    /* 星星容器 */
+    .stars-container {
+      display: flex;
+      gap: 2px;
+      position: relative;
     }
 
-    #ul li {
-      float: left;
+    /* 单个星星样式 */
+    .star {
+      position: relative;
       width: 30px;
       height: 30px;
-      margin-right: 5px;
       cursor: pointer;
-      font-size: 24px;
-      color: #ddd;
-      text-align: center;
-      line-height: 30px;
-      transition: color 0.2s ease;
+      transition: transform 0.2s ease;
+      display: inline-block;
+      font-family: Arial, sans-serif;
+      font-weight: normal;
+      overflow: hidden;
     }
 
-    #ul li:before {
-      content: "★";
-    }
-
-    #ul li.active {
-      color: #ffd700;
-    }
-
-    #ul li:hover {
+    .star:hover {
       transform: scale(1.1);
+    }
+
+    /* 星星显示层 - 使用渐变背景实现百分比填充 */
+    .star-display {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      font-size: 24px;
+      font-family: Arial, sans-serif;
+      font-weight: normal;
+      line-height: 30px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      background: linear-gradient(to right,
+          #ffd700 0%,
+          #ffd700 var(--star-fill, 0%),
+          #ddd var(--star-fill, 0%),
+          #ddd 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      transition: background 0.2s ease;
+    }
+
+    /* 评分文字显示 */
+    .rating-text {
+      font-size: 16px;
+      color: #333;
+      min-width: 80px;
+    }
+
+    /* 评分数值显示 */
+    .rating-value {
+      font-size: 14px;
+      color: #666;
+      margin-left: 10px;
+    }
+
+    /* 配置面板样式 */
+    .config-panel {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+
+    .config-item {
+      margin-bottom: 10px;
+    }
+
+    .config-item label {
+      display: inline-block;
+      width: 120px;
+      font-weight: bold;
+    }
+
+    .config-item select,
+    .config-item input {
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    /* 示例容器 */
+    .example {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .example h3 {
+      margin-top: 0;
+      color: #333;
     }
   </style>
 </head>
 
 <body>
-  <ul id="ul">
-    <li data-index="0"></li>
-    <li data-index="1"></li>
-    <li data-index="2"></li>
-    <li data-index="3"></li>
-    <li data-index="4"></li>
-  </ul>
-  <div id="div"></div>
+  <!-- 配置面板 -->
+  <div class="config-panel">
+    <h2>星星评分配置</h2>
+    <div class="config-item">
+      <label>评分精度:</label>
+      <select id="precisionSelect">
+        <option value="1">1分精度 (1, 2, 3, 4, 5)</option>
+        <option value="0.1" selected>0.1分精度 (0.1, 0.2, 0.3...5.0)</option>
+      </select>
+    </div>
+    <div class="config-item">
+      <label>初始评分:</label>
+      <input type="number" id="initialRating" value="0" min="0" max="5" step="0.1">
+    </div>
+    <div class="config-item">
+      <label>星星数量:</label>
+      <input type="number" id="starCount" value="5" min="1" max="10">
+    </div>
+    <button onclick="initStarRating()">应用配置</button>
+  </div>
+
+  <!-- 示例1: 0.1分精度 -->
+  <div class="example">
+    <h3>示例1: 0.1分精度评分</h3>
+    <div class="star-rating" id="rating1">
+      <div class="stars-container"></div>
+      <div class="rating-text"></div>
+      <div class="rating-value"></div>
+    </div>
+  </div>
+
+  <!-- 示例2: 1分精度 -->
+  <div class="example">
+    <h3>示例2: 1分精度评分</h3>
+    <div class="star-rating" id="rating2">
+      <div class="stars-container"></div>
+      <div class="rating-text"></div>
+      <div class="rating-value"></div>
+    </div>
+  </div>
+
+  <!-- 示例3: 自定义初始值 -->
+  <div class="example">
+    <h3>示例3: 初始值3.7分</h3>
+    <div class="star-rating" id="rating3">
+      <div class="stars-container"></div>
+      <div class="rating-text"></div>
+      <div class="rating-value"></div>
+    </div>
+  </div>
 </body>
 <script>
-  var oLis = document.querySelectorAll('#ul li');
-  var oDiv = document.querySelector('#div');
-  var list = ['很差', '差', '一般', '好', '很好'];
-  var oUl = document.querySelector('#ul');
+  /**
+   * 精细星星评分组件
+   * 支持0.1分和1分两种精度模式
+   * 使用CSS实现星星的百分比填充效果
+   */
+  class StarRating {
+    constructor(container, options = {}) {
+      // 默认配置
+      this.options = {
+        starCount: 5,           // 星星数量
+        precision: 0.1,         // 评分精度 (0.1 或 1)
+        initialRating: 0,       // 初始评分
+        readonly: false,        // 是否只读
+        showText: true,         // 是否显示文字
+        showValue: true,        // 是否显示数值
+        ...options
+      };
 
-  var clickedRating = -1; // 记录点击固定的评分
+      this.container = typeof container === 'string' ? document.querySelector(container) : container;
+      this.currentRating = this.options.initialRating;
+      this.fixedRating = this.options.initialRating;
+      this.stars = [];
 
-  // 清除所有星星的active状态
-  function clearAllStars() {
-    for (var i = 0; i < oLis.length; i++) {
-      oLis[i].classList.remove('active');
+      // 评分文字映射
+      this.ratingTexts = {
+        0: '未评分',
+        0.5: '极差', 1: '很差', 1.5: '差',
+        2: '较差', 2.5: '一般', 3: '还行',
+        3.5: '不错', 4: '好', 4.5: '很好',
+        5: '完美'
+      };
+
+      this.init();
+    }
+
+    // 初始化组件
+    init() {
+      this.createStars();
+      this.bindEvents();
+      this.updateDisplay(this.currentRating);
+    }
+
+    // 创建星星DOM结构
+    createStars() {
+      const starsContainer = this.container.querySelector('.stars-container');
+      starsContainer.innerHTML = '';
+
+      for (let i = 0; i < this.options.starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.dataset.index = i;
+
+        // 创建星星显示层
+        const starDisplay = document.createElement('div');
+        starDisplay.className = 'star-display';
+        starDisplay.textContent = '★';
+
+        star.appendChild(starDisplay);
+        starsContainer.appendChild(star);
+        this.stars.push(star);
+      }
+    }
+
+    // 绑定事件
+    bindEvents() {
+      if (this.options.readonly) return;
+
+      const starsContainer = this.container.querySelector('.stars-container');
+
+      // 鼠标移动事件
+      starsContainer.addEventListener('mousemove', (e) => {
+        const rating = this.calculateRating(e);
+        this.updateDisplay(rating);
+      });
+
+      // 点击事件
+      starsContainer.addEventListener('click', (e) => {
+        const rating = this.calculateRating(e);
+        this.fixedRating = rating;
+        this.currentRating = rating;
+        this.updateDisplay(rating);
+        this.onRatingChange(rating);
+      });
+
+      // 鼠标离开事件
+      starsContainer.addEventListener('mouseleave', () => {
+        this.currentRating = this.fixedRating;
+        this.updateDisplay(this.fixedRating);
+      });
+    }
+
+    // 根据鼠标位置计算评分
+    calculateRating(e) {
+      const starsContainer = this.container.querySelector('.stars-container');
+      const rect = starsContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const starWidth = rect.width / this.options.starCount;
+
+      let rating = (x / starWidth);
+
+      if (this.options.precision === 1) {
+        // 1分精度：整数评分
+        rating = Math.ceil(rating);
+      } else {
+        // 0.1分精度：精确到0.1
+        rating = Math.round(rating * 10) / 10;
+      }
+
+      // 限制评分范围
+      return Math.max(0, Math.min(this.options.starCount, rating));
+    }
+
+    // 更新显示
+    updateDisplay(rating) {
+      this.updateStars(rating);
+      this.updateText(rating);
+      this.updateValue(rating);
+    }
+
+    // 更新星星显示
+    updateStars(rating) {
+      this.stars.forEach((star, index) => {
+        const starRating = index + 1;
+        let fillPercentage = 0;
+
+        if (rating >= starRating) {
+          // 完全填充
+          fillPercentage = 100;
+        } else if (rating > index) {
+          // 部分填充
+          fillPercentage = (rating - index) * 100;
+        }
+
+        // 使用CSS自定义属性控制填充百分比
+        star.style.setProperty('--star-fill', fillPercentage + '%');
+      });
+    }
+
+    // 更新文字显示
+    updateText(rating) {
+      if (!this.options.showText) return;
+
+      const textElement = this.container.querySelector('.rating-text');
+      if (textElement) {
+        const text = this.getRatingText(rating);
+        textElement.textContent = text;
+      }
+    }
+
+    // 更新数值显示
+    updateValue(rating) {
+      if (!this.options.showValue) return;
+
+      const valueElement = this.container.querySelector('.rating-value');
+      if (valueElement) {
+        valueElement.textContent = rating > 0 ? `${rating.toFixed(1)}分` : '';
+      }
+    }
+
+    // 获取评分对应的文字
+    getRatingText(rating) {
+      if (rating === 0) return this.ratingTexts[0];
+
+      // 找到最接近的评分文字
+      const keys = Object.keys(this.ratingTexts).map(Number).sort((a, b) => a - b);
+      let closestKey = keys[0];
+
+      for (let key of keys) {
+        if (rating >= key) {
+          closestKey = key;
+        } else {
+          break;
+        }
+      }
+
+      return this.ratingTexts[closestKey];
+    }
+
+    // 评分改变回调
+    onRatingChange(rating) {
+      // 可以在这里添加自定义回调
+      console.log('评分改变:', rating);
+    }
+
+    // 设置评分
+    setRating(rating) {
+      this.fixedRating = rating;
+      this.currentRating = rating;
+      this.updateDisplay(rating);
+    }
+
+    // 获取当前评分
+    getRating() {
+      return this.fixedRating;
+    }
+
+    // 重置评分
+    reset() {
+      this.setRating(0);
     }
   }
 
-  // 点亮指定数量的星星
-  function lightUpStars(count) {
-    clearAllStars();
-    for (var i = 0; i <= count; i++) {
-      oLis[i].classList.add('active');
+  // 页面加载时添加额外的CSS样式确保正确显示
+  document.addEventListener('DOMContentLoaded', function () {
+    // 确保CSS变量正确应用
+    const additionalStyle = document.createElement('style');
+    additionalStyle.textContent = `
+    .star {
+      --star-fill: 0%;
     }
+    .star-display {
+      font-family: Arial, sans-serif !important;
+      font-weight: normal !important;
+      font-size: 24px !important;
+      line-height: 30px !important;
+      text-align: center !important;
+      box-sizing: border-box !important;
+      background: linear-gradient(
+        to right,
+        #ffd700 0%,
+        #ffd700 var(--star-fill),
+        #ddd var(--star-fill),
+        #ddd 100%
+      ) !important;
+      -webkit-background-clip: text !important;
+      background-clip: text !important;
+      -webkit-text-fill-color: transparent !important;
+      color: transparent !important;
+    }
+  `;
+    document.head.appendChild(additionalStyle);
+  });
+
+  // 初始化示例
+  let rating1, rating2, rating3;
+
+  function initExamples() {
+    // 示例1: 0.1分精度
+    rating1 = new StarRating('#rating1', {
+      precision: 0.1,
+      initialRating: 0
+    });
+
+    // 示例2: 1分精度
+    rating2 = new StarRating('#rating2', {
+      precision: 1,
+      initialRating: 0
+    });
+
+    // 示例3: 初始值3.7分
+    rating3 = new StarRating('#rating3', {
+      precision: 0.1,
+      initialRating: 3.7
+    });
   }
 
-  // 显示已点击的评分
-  function showClickedRating() {
-    if (clickedRating >= 0) {
-      lightUpStars(clickedRating);
-    } else {
-      clearAllStars();
-    }
+  // 配置面板功能
+  function initStarRating() {
+    const precision = parseFloat(document.getElementById('precisionSelect').value);
+    const initialRating = parseFloat(document.getElementById('initialRating').value);
+    const starCount = parseInt(document.getElementById('starCount').value);
+
+    // 重新初始化示例1
+    rating1 = new StarRating('#rating1', {
+      precision: precision,
+      initialRating: initialRating,
+      starCount: starCount
+    });
   }
 
-  // 为每个星星绑定事件
-  for (var i = 0; i < oLis.length; i++) {
-    oLis[i].index = i;
+  // 页面加载完成后初始化
+  document.addEventListener('DOMContentLoaded', function () {
+    // 延迟初始化确保CSS完全加载
+    setTimeout(initExamples, 100);
+  });
 
-    // 鼠标移入星星
-    oLis[i].onmouseenter = function () {
-      lightUpStars(this.index);
-      oDiv.innerText = list[this.index];
-    }
-
-    // 鼠标点击星星
-    oLis[i].onclick = function () {
-      clickedRating = this.index;
-      lightUpStars(clickedRating);
-      oDiv.innerText = list[clickedRating];
-    }
-  }
-
-  // 鼠标离开整个星星容器时，显示已点击的评分
-  oUl.onmouseleave = function () {
-    if (clickedRating >= 0) {
-      showClickedRating();
-      oDiv.innerText = list[clickedRating];
-    } else {
-      clearAllStars();
-      oDiv.innerText = '';
-    }
-  }
+  // 兼容旧版本调用
+  window.StarRating = StarRating;
 </script>
 
 </html>
