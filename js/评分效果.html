@@ -13,80 +13,112 @@
       list-style: none;
       display: inline-block;
       vertical-align: middle;
-      height: 28px;
+      height: 30px;
     }
 
     #div {
       display: inline-block;
       vertical-align: middle;
       margin-left: 10px;
+      font-size: 16px;
+      color: #333;
     }
 
     #ul li {
       float: left;
-      background: url("source/star.gif") no-repeat 0 0;
-      width: 27px;
-      height: 28px;
+      width: 30px;
+      height: 30px;
+      margin-right: 5px;
+      cursor: pointer;
+      font-size: 24px;
+      color: #ddd;
+      text-align: center;
+      line-height: 30px;
+      transition: color 0.2s ease;
+    }
+
+    #ul li:before {
+      content: "★";
     }
 
     #ul li.active {
-      background: url("source/star.gif") no-repeat 0 -29px;
+      color: #ffd700;
+    }
+
+    #ul li:hover {
+      transform: scale(1.1);
     }
   </style>
 </head>
 
 <body>
-  <ul id="ul" data-index="0">
-    <li data-index="0" id="0">1</li>
-    <li>2</li>
-    <li>3</li>
-    <li>4</li>
-    <li>5</li>
+  <ul id="ul">
+    <li data-index="0"></li>
+    <li data-index="1"></li>
+    <li data-index="2"></li>
+    <li data-index="3"></li>
+    <li data-index="4"></li>
   </ul>
   <div id="div"></div>
 </body>
 <script>
   var oLis = document.querySelectorAll('#ul li');
   var oDiv = document.querySelector('#div');
-  var list = ['很差', '差', '一般', '好', '很好']
+  var list = ['很差', '差', '一般', '好', '很好'];
+  var oUl = document.querySelector('#ul');
 
+  var clickedRating = -1; // 记录点击固定的评分
 
-  var num = -1;
-  // 绑定下标
+  // 清除所有星星的active状态
+  function clearAllStars() {
+    for (var i = 0; i < oLis.length; i++) {
+      oLis[i].classList.remove('active');
+    }
+  }
+
+  // 点亮指定数量的星星
+  function lightUpStars(count) {
+    clearAllStars();
+    for (var i = 0; i <= count; i++) {
+      oLis[i].classList.add('active');
+    }
+  }
+
+  // 显示已点击的评分
+  function showClickedRating() {
+    if (clickedRating >= 0) {
+      lightUpStars(clickedRating);
+    } else {
+      clearAllStars();
+    }
+  }
+
+  // 为每个星星绑定事件
   for (var i = 0; i < oLis.length; i++) {
-    oLis[i].index = i; //绑定
+    oLis[i].index = i;
 
-    // 鼠标移入
+    // 鼠标移入星星
     oLis[i].onmouseenter = function () {
-      index = this.index;
-      // console.log(index);
-      for (var i = 0; i <= index; i++) {
-        // console.log(oLis[i])
-        oLis[i].classList.add('active');
-      }
-    }
-    // 鼠标移出
-    oLis[i].onmouseleave = function () {
-
-      index = this.index;
-      // 移出时全部取消active
-      for (var i = num + 1; i <= index; i++) {
-        oLis[i].classList.remove('active');
-      }
+      lightUpStars(this.index);
+      oDiv.innerText = list[this.index];
     }
 
-    // 鼠标点击
+    // 鼠标点击星星
     oLis[i].onclick = function () {
-      // 先判断下标有没有比之前点亮的星星下标大，不大不赋值div;
-      if (this.index > num) {
-        oDiv.innerText = list[this.index];
-      }
-      num = this.index; //点击时给移出函数设定清除起始值；让他无法清除之前的值
+      clickedRating = this.index;
+      lightUpStars(clickedRating);
+      oDiv.innerText = list[clickedRating];
+    }
+  }
 
-      for (var i = 0; i <= this.index; i++) {
-        oLis[this.index].onmouseleave = false;
-
-      }
+  // 鼠标离开整个星星容器时，显示已点击的评分
+  oUl.onmouseleave = function () {
+    if (clickedRating >= 0) {
+      showClickedRating();
+      oDiv.innerText = list[clickedRating];
+    } else {
+      clearAllStars();
+      oDiv.innerText = '';
     }
   }
 </script>
