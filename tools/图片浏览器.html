@@ -1,481 +1,1031 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>图片浏览器</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --primary-color: #007bff;
-        --secondary-color: #e6f7ff;
-        --bg-color: #f4f4f4;
-        --text-color: #333;
-        --button-hover-color: #0056b3;
-        --header-bg: #007bff;
-        --header-text: white;
-        --upload-area-border: #007bff;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>图片浏览器</title>
+  <link href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --primary-color: #007bff;
+      --secondary-color: #e6f7ff;
+      --bg-color: #f4f4f4;
+      --text-color: #333;
+      --button-hover-color: #0056b3;
+      --header-bg: #007bff;
+      --header-text: white;
+      --upload-area-border: #007bff;
+      --card-bg: #ffffff;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --border-radius: 8px;
+    }
+
+    [data-theme="dark"] {
+      --primary-color: #1e90ff;
+      --secondary-color: #2a2a2a;
+      --bg-color: #121212;
+      --text-color: #f4f4f4;
+      --button-hover-color: #0056b3;
+      --header-bg: #1a1a1a;
+      --header-text: #f4f4f4;
+      --upload-area-border: #1e90ff;
+      --card-bg: #1e1e1e;
+      --shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 12px 16px;
+      background-color: var(--header-bg);
+      color: var(--header-text);
+      position: relative;
+      flex-shrink: 0;
+      box-shadow: var(--shadow);
+      z-index: 100;
+    }
+
+    .header h1 {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .header .left {
+      flex: 1;
+    }
+
+    .header .right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .upload-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .upload-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border: 2px dashed var(--upload-area-border);
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      color: var(--primary-color);
+      font-size: 14px;
+      background-color: var(--card-bg);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      min-height: 36px;
+    }
+
+    .upload-area:hover {
+      background-color: var(--secondary-color);
+      transform: translateY(-1px);
+    }
+
+    .clear-cache-btn,
+    .theme-toggle-btn {
+      height: 36px;
+      padding: 0 12px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: var(--border-radius);
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .clear-cache-btn {
+      background-color: #ff4d4d;
+      color: white;
+    }
+
+    .clear-cache-btn:hover {
+      background-color: #cc0000;
+      transform: translateY(-1px);
+    }
+
+    .theme-toggle-btn {
+      background-color: var(--primary-color);
+      color: var(--header-text);
+    }
+
+    .theme-toggle-btn:hover {
+      background-color: var(--button-hover-color);
+      transform: translateY(-1px);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 0 16px;
+    }
+
+    .swiper-container {
+      width: 100%;
+      flex-grow: 1;
+      position: relative;
+      margin: 16px 0;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      background-color: var(--card-bg);
+      box-shadow: var(--shadow);
+    }
+
+    .swiper-slide {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--card-bg);
+    }
+
+    .swiper-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.3s ease;
+      border-radius: var(--border-radius);
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .swiper-slide-active img {
+      transform: scale(1.05);
+    }
+
+    .swiper-slide-prev img,
+    .swiper-slide-next img {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+
+    .image-info {
+      background-color: var(--card-bg);
+      padding: 16px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .image-info div {
+      margin: 4px 0;
+      font-size: 14px;
+      word-break: break-all;
+    }
+
+    .image-info #image-name {
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--primary-color);
+    }
+
+    .button-container {
+      text-align: center;
+      padding-bottom: 16px;
+    }
+
+    button {
+      padding: 12px 24px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: var(--border-radius);
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow);
+    }
+
+    button:hover {
+      background-color: var(--button-hover-color);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .arrow-buttons {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 48px;
+      width: 48px;
+      font-size: 20px;
+      color: #fff;
+      cursor: pointer;
+      border-radius: 50%;
+      background-color: rgba(0, 123, 255, 0.8);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      user-select: none;
+    }
+
+    .arrow-buttons:hover {
+      background-color: rgba(0, 123, 255, 1);
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .arrow-left {
+      left: 16px;
+    }
+
+    .arrow-right {
+      right: 16px;
+    }
+
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      color: white;
+      font-size: 18px;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 1s linear infinite;
+      margin-right: 12px;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
       }
 
-      [data-theme="dark"] {
-        --primary-color: #1e90ff;
-        --secondary-color: #2a2a2a;
-        --bg-color: #121212;
-        --text-color: #f4f4f4;
-        --button-hover-color: #0056b3;
-        --header-bg: #1a1a1a;
-        --header-text: #f4f4f4;
-        --upload-area-border: #1e90ff;
+      100% {
+        transform: rotate(360deg);
       }
+    }
 
-      html,
-      body {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        height: 100%; /* 确保 body 占据 100% 高度 */
-        overflow-x: hidden; /* 禁止横向滚动 */
-      }
-
-      body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        height: 100%; /* 使 body 占据 100% 高度 */
-        background-color: var(--bg-color);
-        color: var(--text-color);
-      }
-
+    /* 移动端适配 */
+    @media (max-width: 768px) {
       .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-        padding: 10px 0;
-        background-color: var(--header-bg);
-        color: var(--header-text);
-        position: relative;
+        padding: 8px 12px;
+        flex-wrap: wrap;
+        min-height: 60px;
       }
 
       .header h1 {
-        position: absolute;
-        left: 50%;
-        transform: translate(-50%);
-        justify-self: center;
-        margin: 0;
-      }
-
-      .header .right {
-        display: flex;
-        align-items: center;
-      }
-
-      .theme-toggle-btn {
-        background-color: var(--primary-color);
-        color: var(--header-text);
-        border: none;
-        cursor: pointer;
-        font-size: 14px;
-        border-radius: 5px;
-      }
-
-      .theme-toggle-btn:hover {
-        background-color: var(--button-hover-color);
-      }
-
-      .upload-container {
+        font-size: 16px;
+        position: static;
+        transform: none;
+        width: 100%;
         text-align: center;
-        flex-shrink: 0; /* 避免上传区在视口缩小时被挤压 */
+        order: -1;
+        margin-bottom: 8px;
+      }
+
+      .header .left,
+      .header .right {
+        flex: none;
+        width: 100%;
+        justify-content: space-between;
       }
 
       .upload-area {
-        display: inline-block;
-        padding: 10px 15px;
-        margin-right: 15px;
-        border: 2px dashed var(--upload-area-border);
-        border-radius: 8px;
-        cursor: pointer;
-        color: var(--primary-color);
-        font-size: 16px;
-        background-color: #fff;
+        font-size: 12px;
+        padding: 6px 8px;
+        min-height: 32px;
       }
 
-      .upload-area:hover {
-        background-color: var(--secondary-color);
-      }
-
-      .clear-cache-btn {
-        height: fit-content;
-        margin-right: 15px;
-
-        background-color: #ff4d4d;
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        border-radius: 5px;
-      }
-
-      .clear-cache-btn:hover {
-        background-color: #cc0000;
+      .clear-cache-btn,
+      .theme-toggle-btn {
+        height: 32px;
+        padding: 0 8px;
+        font-size: 12px;
       }
 
       .container {
-        width: 100%;
-        max-width: 1200px;
-        position: relative;
-        text-align: center;
-        flex-grow: 1; /* 使容器占据剩余的空间 */
+        padding: 0 8px;
       }
 
       .swiper-container {
-        width: 100%;
-        height: 100%; /* 确保 Swiper 容器高度占满父容器 */
-        position: relative;
+        margin: 8px 0;
       }
 
       .swiper-slide img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        transition: transform 0.3s ease;
-      }
-
-      .swiper-slide-active img {
-        transform: scale(1.2);
-      }
-
-      .swiper-slide-prev img,
-      .swiper-slide-next img {
-        transform: scale(0.8);
-      }
-
-      .image-info {
-        padding-top: 30px;
-        font-size: 16px;
-        color: var(--text-color);
-      }
-
-      .button-container {
-        padding-top: 10px;
-        padding-bottom: 10px;
-      }
-
-      button {
-        padding: 8px 15px;
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        border-radius: 5px;
-      }
-
-      button:hover {
-        background-color: var(--button-hover-color);
+        border-radius: 4px;
       }
 
       .arrow-buttons {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 10;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
         height: 40px;
         width: 40px;
-        font-size: 24px;
-        color: #fff;
-        cursor: pointer;
-
-        border-radius: 50%;
-        background-color: #ff4d4d;
+        font-size: 16px;
       }
 
       .arrow-left {
-        left: 10px;
+        left: 8px;
       }
 
       .arrow-right {
-        right: 10px;
+        right: 8px;
       }
-    </style>
-  </head>
-  <body>
-    <!-- Header with Folder Upload and Clear Cache -->
-    <div class="header">
-      <div class="left"></div>
-      <h1>图片浏览器</h1>
-      <div class="right">
-        <div class="upload-container">
-          <!-- File Upload Area -->
-          <div
-            class="upload-area"
-            id="upload-area"
-            onclick="triggerFileInput()"
-            ondrop="handleDrop(event)"
-            ondragover="handleDragOver(event)"
-          >
-            拖拽图片或选择文件夹
-          </div>
-          <input
-            type="file"
-            id="file-input"
-            multiple
-            webkitdirectory
-            mozdirectory
-            style="display: none"
-            onchange="handleFileSelect(event)"
-          />
+
+      .image-info {
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+
+      .image-info div {
+        font-size: 12px;
+      }
+
+      .image-info #image-name {
+        font-size: 14px;
+      }
+
+      button {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+
+      .button-container {
+        padding-bottom: 12px;
+      }
+
+      /* 移动端手势优化 */
+      .swiper-container {
+        touch-action: pan-y pinch-zoom;
+      }
+
+      .swiper-slide {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+      }
+    }
+
+    /* 超小屏幕适配 */
+    @media (max-width: 480px) {
+      .header .right {
+        flex-direction: column;
+        gap: 4px;
+        align-items: stretch;
+      }
+
+      .upload-container {
+        width: 100%;
+      }
+
+      .upload-area {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 4px;
+      }
+
+      .clear-cache-btn,
+      .theme-toggle-btn {
+        width: 100%;
+      }
+
+      .swiper-container {
+        margin: 4px 0;
+      }
+
+      .image-info {
+        padding: 8px;
+        margin-bottom: 8px;
+      }
+
+      .button-container {
+        padding-bottom: 8px;
+      }
+    }
+
+    /* 大屏幕优化 */
+    @media (min-width: 1200px) {
+      .container {
+        padding: 0 24px;
+      }
+
+      .swiper-container {
+        margin: 24px 0;
+      }
+
+      .header {
+        padding: 16px 24px;
+      }
+
+      .image-info {
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .button-container {
+        padding-bottom: 20px;
+      }
+
+      .arrow-buttons {
+        height: 56px;
+        width: 56px;
+        font-size: 24px;
+      }
+
+      .arrow-left {
+        left: 24px;
+      }
+
+      .arrow-right {
+        right: 24px;
+      }
+    }
+
+    /* 高分辨率屏幕优化 */
+    @media (min-resolution: 2dppx) {
+      .swiper-slide img {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+      }
+    }
+
+    /* 深色模式下的滚动条样式 */
+    [data-theme="dark"] ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    [data-theme="dark"] ::-webkit-scrollbar-track {
+      background: var(--bg-color);
+    }
+
+    [data-theme="dark"] ::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 4px;
+    }
+
+    [data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+      background: var(--button-hover-color);
+    }
+
+    /* 无障碍支持 */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* 焦点状态 */
+    button:focus-visible,
+    .upload-area:focus-visible,
+    .arrow-buttons:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header with Folder Upload and Clear Cache -->
+  <div class="header">
+    <div class="left"></div>
+    <h1>图片浏览器</h1>
+    <div class="right">
+      <div class="upload-container">
+        <!-- File Upload Area -->
+        <div class="upload-area" id="upload-area" onclick="triggerFileInput()" ondrop="handleDrop(event)"
+          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" tabindex="0" role="button"
+          aria-label="拖拽图片或选择文件夹">
+          📁 选择文件夹
         </div>
-        <button class="clear-cache-btn" id="clear-cache-btn">
-          清除所有缓存
-        </button>
-        <button class="theme-toggle-btn" id="theme-toggle-btn">切换主题</button>
+        <input type="file" id="file-input" multiple webkitdirectory mozdirectory style="display: none"
+          onchange="handleFileSelect(event)" accept="image/*" />
+      </div>
+      <button class="clear-cache-btn" id="clear-cache-btn" aria-label="清除所有缓存">
+        🗑️ 清除缓存
+      </button>
+      <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="切换主题">
+        🌙 切换主题
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Image Viewer -->
+  <div class="container">
+    <div class="swiper-container" id="swiper-container">
+      <div class="swiper-wrapper">
+        <!-- 图片列表通过 JavaScript 动态生成 -->
+      </div>
+
+      <!-- 左右箭头 -->
+      <div class="arrow-buttons arrow-left" tabindex="0" role="button" aria-label="上一张图片">&lt;</div>
+      <div class="arrow-buttons arrow-right" tabindex="0" role="button" aria-label="下一张图片">&gt;</div>
+
+      <!-- 加载状态 -->
+      <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <span>加载中...</span>
       </div>
     </div>
 
-    <!-- Main Image Viewer -->
-    <div class="container">
-      <div class="swiper-container">
-        <div class="swiper-wrapper">
-          <!-- 图片列表通过 JavaScript 动态生成 -->
-        </div>
-
-        <!-- 左右箭头 -->
-        <div class="arrow-buttons arrow-left">&lt;</div>
-        <div class="arrow-buttons arrow-right">&gt;</div>
-      </div>
-
-      <!-- 图片信息和下载按钮 -->
-      <div class="image-info">
-        <div id="image-name">文件名:</div>
-        <div id="image-path">路径:</div>
-      </div>
-      <div class="button-container">
-        <button id="download-button">下载当前图片</button>
-      </div>
+    <!-- 图片信息和下载按钮 -->
+    <div class="image-info">
+      <div id="image-name">请选择图片文件夹</div>
+      <div id="image-path">支持拖拽文件夹或点击选择</div>
+      <div id="image-stats" style="margin-top: 8px; font-size: 12px; opacity: 0.7;"></div>
     </div>
+    <div class="button-container">
+      <button id="download-button" disabled aria-label="下载当前图片">📥 下载当前图片</button>
+    </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 
-    <script>
-      let imagePaths = [];
+  <script>
+    let imagePaths = [];
+    let currentImageIndex = 0;
 
-      // 初始化 Swiper
-      const swiper = new Swiper(".swiper-container", {
-        slidesPerView: 3,
-        spaceBetween: 10,
-        centeredSlides: true,
-        loop: true,
-        navigation: {
-          nextEl: ".arrow-right",
-          prevEl: ".arrow-left",
+    // 初始化 Swiper
+    const swiper = new Swiper(".swiper-container", {
+      slidesPerView: 1,
+      spaceBetween: 10,
+      centeredSlides: true,
+      loop: false,
+      speed: 400,
+      navigation: {
+        nextEl: ".arrow-right",
+        prevEl: ".arrow-left",
+      },
+      keyboard: {
+        enabled: true,
+      },
+      mousewheel: {
+        enabled: true,
+        forceToAxis: true,
+      },
+      slideToClickedSlide: true,
+      lazy: {
+        loadPrevNext: true,
+        loadPrevNextAmount: 2,
+      },
+      breakpoints: {
+        480: {
+          slidesPerView: 1.2,
         },
-        slideToClickedSlide: true,
-        lazy: true, // 开启懒加载
-        on: {
-          slideChange: function () {
-            updateImageInfo();
-          },
+        768: {
+          slidesPerView: 2,
         },
-      });
-
-      const swiperWrapper = document.querySelector(".swiper-wrapper");
-      // 动态加载图片
-      function loadImages(paths) {
-        swiperWrapper.innerHTML = ""; // 清空现有图片
-        imagePaths = paths; // 更新图片路径数组
-
-        const imageLoadPromises = paths.map((imagePath) => {
-          return new Promise((resolve) => {
-            const slide = document.createElement("div");
-            slide.classList.add("swiper-slide");
-
-            const img = document.createElement("img");
-            img.src = imagePath;
-            img.alt = imagePath;
-
-            img.onload = () => resolve(); // 图片加载完成
-            slide.appendChild(img);
-            swiperWrapper.appendChild(slide);
-          });
-        });
-
-        // 等待所有图片加载完成后更新 Swiper
-        Promise.all(imageLoadPromises).then(() => {
-          swiper.update(); // 更新 Swiper
-          swiper.loopDestroy(); // 销毁并重新创建循环
-          swiper.loopCreate();
-          swiper.slideTo(0); // 滑动到第一个页面
-          swiper.emit("slideChange"); // 手动触发事件
+        1024: {
+          slidesPerView: 3,
+        },
+      },
+      on: {
+        slideChange: function () {
+          currentImageIndex = this.realIndex;
           updateImageInfo();
+          updateDownloadButton();
+        },
+        init: function () {
           updateSwiperHeight();
-        });
+        },
+      },
+    });
+
+    const swiperWrapper = document.querySelector(".swiper-wrapper");
+    const loadingOverlay = document.getElementById("loading-overlay");
+
+    // 显示加载状态
+    function showLoading() {
+      loadingOverlay.style.display = "flex";
+    }
+
+    // 隐藏加载状态
+    function hideLoading() {
+      loadingOverlay.style.display = "none";
+    }
+
+    // 动态加载图片
+    async function loadImages(paths) {
+      if (paths.length === 0) {
+        swiperWrapper.innerHTML = "";
+        imagePaths = [];
+        updateImageInfo();
+        updateDownloadButton();
+        hideLoading();
+        return;
       }
 
-      // 处理拖放事件
-      function handleDragOver(event) {
-        event.preventDefault(); // 阻止默认行为
-        event.stopPropagation();
-        const uploadArea = document.querySelector(".upload-area");
-        uploadArea.style.backgroundColor = "#e6f7ff"; // 提示用户可以拖放
-      }
+      showLoading();
+      swiperWrapper.innerHTML = "";
+      imagePaths = paths;
+      currentImageIndex = 0;
 
-      // 将文件处理转换为 Promise
-      function readFileAsPromise(item) {
-        return new Promise((resolve, reject) => {
-          try {
-            if (item.isFile) {
-              item.file((file) => {
-                if (file.type.startsWith("image/")) {
-                  resolve(URL.createObjectURL(file)); // 返回图片文件的路径
-                } else {
-                  resolve(null); // 不是图片文件，返回 null
-                }
-              }, reject);
-            } else {
-              resolve(null); // 不是文件，返回 null
+      try {
+        // 分批加载图片以提高性能
+        const batchSize = 10;
+        for (let i = 0; i < paths.length; i += batchSize) {
+          const batch = paths.slice(i, i + batchSize);
+          await loadImageBatch(batch, i);
+
+          // 首批加载完成后立即更新 Swiper
+          if (i === 0) {
+            swiper.update();
+            updateImageInfo();
+            updateDownloadButton();
+            updateSwiperHeight();
+            hideLoading();
+          }
+        }
+
+        // 所有图片加载完成后最终更新
+        swiper.update();
+      } catch (error) {
+        console.error("加载图片时出错:", error);
+        hideLoading();
+      }
+    }
+
+    // 批量加载图片
+    function loadImageBatch(paths, startIndex) {
+      return new Promise((resolve) => {
+        let loadedCount = 0;
+
+        paths.forEach((imagePath, index) => {
+          const slide = document.createElement("div");
+          slide.classList.add("swiper-slide");
+
+          const img = document.createElement("img");
+          img.src = imagePath;
+          img.alt = `图片 ${startIndex + index + 1}`;
+          img.loading = "lazy";
+
+          img.onload = () => {
+            loadedCount++;
+            if (loadedCount === paths.length) {
+              resolve();
             }
-          } catch (error) {
-            reject(error);
-          }
-        });
-      }
+          };
 
-      // 将目录读取转换为 Promise
-      function readDirectoryAsPromise(item) {
-        return new Promise((resolve, reject) => {
-          try {
-            const dirReader = item.createReader();
-            dirReader.readEntries((entries) => resolve(entries), reject);
-          } catch (error) {
-            reject(error);
-          }
-        });
-      }
+          img.onerror = () => {
+            loadedCount++;
+            if (loadedCount === paths.length) {
+              resolve();
+            }
+          };
 
-      // 遍历文件夹的文件树
-      async function traverseFileTree(item, fileList) {
+          slide.appendChild(img);
+          swiperWrapper.appendChild(slide);
+        });
+      });
+    }
+
+    // 处理拖放事件
+    function handleDragOver(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      const uploadArea = document.querySelector(".upload-area");
+      uploadArea.style.backgroundColor = "var(--secondary-color)";
+      uploadArea.style.borderColor = "var(--primary-color)";
+      uploadArea.style.transform = "scale(1.05)";
+    }
+
+    function handleDragLeave(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      const uploadArea = document.querySelector(".upload-area");
+      uploadArea.style.backgroundColor = "var(--card-bg)";
+      uploadArea.style.borderColor = "var(--upload-area-border)";
+      uploadArea.style.transform = "scale(1)";
+    }
+
+    // 将文件处理转换为 Promise
+    function readFileAsPromise(item) {
+      return new Promise((resolve, reject) => {
         try {
           if (item.isFile) {
-            const filePath = await readFileAsPromise(item);
-            if (filePath) fileList.push(filePath);
-          } else if (item.isDirectory) {
-            const entries = await readDirectoryAsPromise(item);
-            await Promise.all(
-              entries.map((entry) => traverseFileTree(entry, fileList))
-            );
+            item.file((file) => {
+              if (file.type.startsWith("image/")) {
+                resolve(URL.createObjectURL(file));
+              } else {
+                resolve(null);
+              }
+            }, reject);
+          } else {
+            resolve(null);
           }
         } catch (error) {
-          console.error("遍历文件树时出错:", error);
+          reject(error);
         }
+      });
+    }
+
+    // 将目录读取转换为 Promise
+    function readDirectoryAsPromise(item) {
+      return new Promise((resolve, reject) => {
+        try {
+          const dirReader = item.createReader();
+          dirReader.readEntries((entries) => resolve(entries), reject);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    }
+
+    // 遍历文件夹的文件树
+    async function traverseFileTree(item, fileList) {
+      try {
+        if (item.isFile) {
+          const filePath = await readFileAsPromise(item);
+          if (filePath) fileList.push(filePath);
+        } else if (item.isDirectory) {
+          const entries = await readDirectoryAsPromise(item);
+          await Promise.all(
+            entries.map((entry) => traverseFileTree(entry, fileList))
+          );
+        }
+      } catch (error) {
+        console.error("遍历文件树时出错:", error);
       }
+    }
 
-      // 处理拖拽的事件
-      async function handleDrop(event) {
-        event.preventDefault(); // 阻止默认行为
-        event.stopPropagation();
-        const uploadArea = document.querySelector(".upload-area");
-        uploadArea.style.backgroundColor = "#fff"; // 恢复背景颜色
+    // 处理拖拽的事件
+    async function handleDrop(event) {
+      event.preventDefault();
+      event.stopPropagation();
 
-        const items = event.dataTransfer.items;
-        const files = [];
+      const uploadArea = document.querySelector(".upload-area");
+      uploadArea.style.backgroundColor = "var(--card-bg)";
+      uploadArea.style.borderColor = "var(--upload-area-border)";
+      uploadArea.style.transform = "scale(1)";
 
-        if (items) {
-          for (let i = 0; i < items.length; i++) {
-            const item = items[i].webkitGetAsEntry();
-            if (item) {
-              await traverseFileTree(item, files);
-            }
+      const items = event.dataTransfer.items;
+      const files = [];
+
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i].webkitGetAsEntry();
+          if (item) {
+            await traverseFileTree(item, files);
           }
         }
-
-        // 文件路径完全加载后更新图片
-        loadImages(files);
       }
 
-      // 更新当前图片信息
-      function updateImageInfo() {
-        const activeSlide = swiper.slides[swiper.activeIndex];
-        const imageSrc = activeSlide.querySelector("img").src;
-        const fileName = imageSrc.split("/").pop();
-        const filePath = imageSrc.split("/").slice(0, -1).join("/");
+      // 排序文件名
+      files.sort((a, b) => {
+        const nameA = a.split('/').pop().toLowerCase();
+        const nameB = b.split('/').pop().toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
 
-        document.getElementById("image-name").innerText = `文件名: ${fileName}`;
-        document.getElementById("image-path").innerText = `路径: ${filePath}`;
+      loadImages(files);
+    }
+
+    // 更新当前图片信息
+    function updateImageInfo() {
+      if (imagePaths.length === 0) {
+        document.getElementById("image-name").innerText = "请选择图片文件夹";
+        document.getElementById("image-path").innerText = "支持拖拽文件夹或点击选择";
+        document.getElementById("image-stats").innerText = "";
+        return;
       }
 
-      function updateSwiperHeight() {
-        const header = document.querySelector(".header");
-        const imageInfo = document.querySelector(".image-info");
-        const buttonContainer = document.querySelector(".button-container");
+      const imageSrc = imagePaths[currentImageIndex];
+      if (!imageSrc) return;
 
-        const computeHeightWithMargin = (element) => {
-          const style = window.getComputedStyle(element);
-          return (
-            element.offsetHeight +
-            parseInt(style.marginTop, 10) +
-            parseInt(style.marginBottom, 10)
-          );
-        };
+      const fileName = imageSrc.split("/").pop() || '未知文件';
+      const currentNum = currentImageIndex + 1;
+      const totalNum = imagePaths.length;
 
-        const headerHeight = computeHeightWithMargin(header);
-        const imageInfoHeight = computeHeightWithMargin(imageInfo);
-        const buttonContainerHeight = computeHeightWithMargin(buttonContainer);
+      document.getElementById("image-name").innerText = `${fileName}`;
+      document.getElementById("image-path").innerText = `第 ${currentNum} 张，共 ${totalNum} 张`;
+      document.getElementById("image-stats").innerText = `${((currentNum / totalNum) * 100).toFixed(1)}%`;
+    }
 
-        const availableHeight =
-          window.innerHeight -
-          headerHeight -
-          imageInfoHeight -
-          buttonContainerHeight;
+    // 更新下载按钮状态
+    function updateDownloadButton() {
+      const downloadBtn = document.getElementById("download-button");
+      downloadBtn.disabled = imagePaths.length === 0;
+    }
 
-        document.querySelector(
-          ".swiper-container"
-        ).style.height = `${availableHeight}px`;
+    // 更新 Swiper 高度
+    function updateSwiperHeight() {
+      const header = document.querySelector(".header");
+      const imageInfo = document.querySelector(".image-info");
+      const buttonContainer = document.querySelector(".button-container");
+
+      const computeHeightWithMargin = (element) => {
+        const style = window.getComputedStyle(element);
+        return (
+          element.offsetHeight +
+          parseInt(style.marginTop, 10) +
+          parseInt(style.marginBottom, 10)
+        );
+      };
+
+      const headerHeight = computeHeightWithMargin(header);
+      const imageInfoHeight = computeHeightWithMargin(imageInfo);
+      const buttonContainerHeight = computeHeightWithMargin(buttonContainer);
+
+      const availableHeight =
+        window.innerHeight -
+        headerHeight -
+        imageInfoHeight -
+        buttonContainerHeight -
+        32; // 额外的边距
+
+      document.querySelector(".swiper-container").style.height = `${Math.max(availableHeight, 300)}px`;
+    }
+
+    // 处理文件夹拖拽上传
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files)
+        .filter((file) => file.type.startsWith("image/"))
+        .map((file) => URL.createObjectURL(file));
+
+      // 排序文件名
+      files.sort((a, b) => {
+        const nameA = a.split('/').pop().toLowerCase();
+        const nameB = b.split('/').pop().toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+
+      loadImages(files);
+    }
+
+    // 触发文件选择器
+    function triggerFileInput() {
+      document.getElementById("file-input").click();
+    }
+
+    // 下载当前图片
+    function downloadCurrentImage() {
+      if (imagePaths.length === 0) return;
+
+      const currentImageSrc = imagePaths[currentImageIndex];
+      const fileName = currentImageSrc.split("/").pop() || `image_${currentImageIndex + 1}`;
+
+      const link = document.createElement("a");
+      link.href = currentImageSrc;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // 键盘快捷键支持
+    document.addEventListener("keydown", (event) => {
+      if (imagePaths.length === 0) return;
+
+      switch (event.key) {
+        case "ArrowLeft":
+          event.preventDefault();
+          swiper.slidePrev();
+          break;
+        case "ArrowRight":
+          event.preventDefault();
+          swiper.slideNext();
+          break;
+        case "Home":
+          event.preventDefault();
+          swiper.slideTo(0);
+          break;
+        case "End":
+          event.preventDefault();
+          swiper.slideTo(imagePaths.length - 1);
+          break;
+        case "s":
+        case "S":
+          if (event.ctrlKey || event.metaKey) {
+            event.preventDefault();
+            downloadCurrentImage();
+          }
+          break;
       }
-      window.addEventListener("resize", updateSwiperHeight);
+    });
 
-      // 处理文件夹拖拽上传
-      function handleFileSelect(event) {
-        const files = event.target.files;
-        const imagePaths = Array.from(files)
-          .filter((file) => file.type.startsWith("image/"))
-          .map((file) => URL.createObjectURL(file));
-        loadImages(imagePaths);
+    // 事件监听器
+    window.addEventListener("resize", updateSwiperHeight);
+
+    document.getElementById("clear-cache-btn").addEventListener("click", () => {
+      imagePaths.forEach(path => {
+        if (path.startsWith('blob:')) {
+          URL.revokeObjectURL(path);
+        }
+      });
+      imagePaths = [];
+      loadImages([]);
+      if ('vibrate' in navigator) {
+        navigator.vibrate(50);
       }
+    });
 
-      // 触发文件选择框
-      function triggerFileInput() {
-        document.getElementById("file-input").click();
+    document.getElementById("download-button").addEventListener("click", downloadCurrentImage);
+
+    // 主题切换
+    document.getElementById("theme-toggle-btn").addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const newTheme = currentTheme === "dark" ? "" : "dark";
+      const themeBtn = document.getElementById("theme-toggle-btn");
+
+      document.documentElement.setAttribute("data-theme", newTheme);
+      themeBtn.innerText = newTheme === "dark" ? "☀️ 切换主题" : "🌙 切换主题";
+
+      // 保存主题偏好
+      localStorage.setItem("preferred-theme", newTheme);
+
+      if ('vibrate' in navigator) {
+        navigator.vibrate(30);
       }
+    });
 
-      // 清除缓存
-      document
-        .getElementById("clear-cache-btn")
-        .addEventListener("click", () => {
-          imagePaths = [];
-          loadImages([]);
-          alert("缓存已清除！");
-        });
+    // 加载保存的主题偏好
+    const savedTheme = localStorage.getItem("preferred-theme");
+    if (savedTheme) {
+      document.documentElement.setAttribute("data-theme", savedTheme);
+      const themeBtn = document.getElementById("theme-toggle-btn");
+      themeBtn.innerText = savedTheme === "dark" ? "☀️ 切换主题" : "🌙 切换主题";
+    }
 
-      // 切换主题
-      document
-        .getElementById("theme-toggle-btn")
-        .addEventListener("click", () => {
-          const currentTheme =
-            document.documentElement.getAttribute("data-theme");
-          const newTheme = currentTheme === "dark" ? "" : "dark";
-          document.documentElement.setAttribute("data-theme", newTheme);
-        });
+    // 箭头按钮键盘支持
+    document.querySelector(".arrow-left").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        swiper.slidePrev();
+      }
+    });
 
-      updateSwiperHeight();
-    </script>
-  </body>
+    document.querySelector(".arrow-right").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        swiper.slideNext();
+      }
+    });
+
+    // 文件上传区域键盘支持
+    document.getElementById("upload-area").addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        triggerFileInput();
+      }
+    });
+
+    // 初始化
+    updateSwiperHeight();
+    updateImageInfo();
+    updateDownloadButton();
+  </script>
+</body>
+
 </html>
