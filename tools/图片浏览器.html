@@ -259,29 +259,81 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 48px;
-      width: 48px;
-      font-size: 20px;
-      color: #fff;
+      height: 56px;
+      width: 56px;
       cursor: pointer;
       border-radius: 50%;
-      background-color: rgba(0, 123, 255, 0.8);
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       user-select: none;
     }
 
+    .arrow-buttons::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .arrow-left::before {
+      transform: translate(-25%, -50%) rotate(45deg);
+      border-right: none;
+      border-top: none;
+    }
+
+    .arrow-right::before {
+      transform: translate(-75%, -50%) rotate(45deg);
+      border-left: none;
+      border-bottom: none;
+    }
+
     .arrow-buttons:hover {
-      background-color: rgba(0, 123, 255, 1);
-      transform: translateY(-50%) scale(1.1);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+      transform: translateY(-50%) scale(1.15);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+    }
+
+    .arrow-buttons:hover::before {
+      border-color: var(--primary-color);
+      transform: scale(1.1) translate(-50%, -50%) rotate(45deg);
+    }
+
+    .arrow-left:hover::before {
+      transform: scale(1.1) translate(-25%, -50%) rotate(45deg);
+    }
+
+    .arrow-right:hover::before {
+      transform: scale(1.1) translate(-75%, -50%) rotate(45deg);
+    }
+
+    .arrow-buttons:active {
+      transform: translateY(-50%) scale(0.95);
     }
 
     .arrow-left {
-      left: 16px;
+      left: 20px;
     }
 
     .arrow-right {
-      right: 16px;
+      right: 20px;
+    }
+
+    /* 深色主题下的箭头样式 */
+    [data-theme="dark"] .arrow-buttons {
+      background: linear-gradient(135deg, rgba(30, 30, 30, 0.8), rgba(60, 60, 60, 0.6));
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    [data-theme="dark"] .arrow-buttons:hover {
+      background: linear-gradient(135deg, rgba(50, 50, 50, 0.9), rgba(80, 80, 80, 0.7));
     }
 
     .loading-overlay {
@@ -370,17 +422,22 @@
       }
 
       .arrow-buttons {
-        height: 40px;
-        width: 40px;
-        font-size: 16px;
+        height: 44px;
+        width: 44px;
+      }
+
+      .arrow-buttons::before {
+        width: 12px;
+        height: 12px;
+        border-width: 1.5px;
       }
 
       .arrow-left {
-        left: 8px;
+        left: 12px;
       }
 
       .arrow-right {
-        right: 8px;
+        right: 12px;
       }
 
       .image-info {
@@ -478,17 +535,22 @@
       }
 
       .arrow-buttons {
-        height: 56px;
-        width: 56px;
-        font-size: 24px;
+        height: 64px;
+        width: 64px;
+      }
+
+      .arrow-buttons::before {
+        width: 20px;
+        height: 20px;
+        border-width: 3px;
       }
 
       .arrow-left {
-        left: 24px;
+        left: 28px;
       }
 
       .arrow-right {
-        right: 24px;
+        right: 28px;
       }
     }
 
@@ -570,8 +632,8 @@
       </div>
 
       <!-- 左右箭头 -->
-      <div class="arrow-buttons arrow-left" tabindex="0" role="button" aria-label="上一张图片">&lt;</div>
-      <div class="arrow-buttons arrow-right" tabindex="0" role="button" aria-label="下一张图片">&gt;</div>
+      <div class="arrow-buttons arrow-left" tabindex="0" role="button" aria-label="上一张图片"></div>
+      <div class="arrow-buttons arrow-right" tabindex="0" role="button" aria-label="下一张图片"></div>
 
       <!-- 加载状态 -->
       <div class="loading-overlay" id="loading-overlay" style="display: none;">
