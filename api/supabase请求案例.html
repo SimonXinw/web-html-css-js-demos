@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase 请求案例</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .form-section {
+            padding: 40px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .result-section {
+            padding: 40px;
+            background: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .json-preview {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+
+        .json-preview:empty::before {
+            content: "等待请求数据...";
+            color: #888;
+            font-style: italic;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #f44336;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .result-header h3 {
+            color: #333;
+            font-size: 1.5em;
+        }
+
+        .copy-btn {
+            padding: 8px 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #1976D2;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .form-section {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+                padding: 30px 20px;
+            }
+
+            .result-section {
+                padding: 30px 20px;
+            }
+
+            .json-preview {
+                font-size: 12px;
+                max-height: 300px;
+            }
+
+            .result-header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .form-section,
+            .result-section {
+                padding: 20px 15px;
+            }
+
+            .form-group input,
+            .form-group select,
+            .btn-primary {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .json-preview {
+                padding: 15px;
+                font-size: 11px;
+            }
+        }
+
+        /* JSON 语法高亮 */
+        .json-key {
+            color: #9cdcfe;
+        }
+
+        .json-string {
+            color: #ce9178;
+        }
+
+        .json-number {
+            color: #b5cea8;
+        }
+
+        .json-boolean {
+            color: #569cd6;
+        }
+
+        .json-null {
+            color: #569cd6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Supabase 数据请求工具</h1>
+            <p>快速测试和预览 Supabase 数据库数据</p>
+        </div>
+
+        <div class="main-content">
+            <div class="form-section">
+                <form id="supabaseForm">
+                    <div class="form-group">
+                        <label for="supabaseUrl">Supabase URL</label>
+                        <input type="url" id="supabaseUrl" value="https://lvsyycnybkwbrvvmshfb.supabase.co"
+                            placeholder="https://你的项目.supabase.co" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apiKey">API 密钥 (anon key)</label>
+                        <input type="text" id="apiKey"
+                            value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2c3l5Y255Ymt3YnJ2dm1zaGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNTU5NjMsImV4cCI6MjA3MjgzMTk2M30.Ot7-h6nbAhIkUOGoqAv8diUBW6-Llhh8MtA6bJMXbeA"
+                            placeholder="anon key or service role key" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tableName">表名</label>
+                        <input type="text" id="tableName" value="gold_price" placeholder="users" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="limitRows">查询行数</label>
+                        <select id="limitRows">
+                            <option value="5">5 行</option>
+                            <option value="10" selected>10 行</option>
+                            <option value="20">20 行</option>
+                            <option value="50">50 行</option>
+                            <option value="100">100 行</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="selectFields">选择字段 (可选)</label>
+                        <input type="text" id="selectFields" placeholder="id,name,email 或留空查询所有字段">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="orderBy">排序字段 (可选)</label>
+                        <input type="text" id="orderBy" placeholder="created_at 或 id">
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        发起请求
+                    </button>
+                </form>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>正在请求数据...</p>
+                </div>
+            </div>
+
+            <div class="result-section">
+                <div class="result-header">
+                    <h3>JSON 数据预览</h3>
+                    <button class="copy-btn" id="copyBtn" style="display: none;">复制 JSON</button>
+                </div>
+
+                <div class="error" id="errorMsg"></div>
+                <div class="success" id="successMsg"></div>
+
+                <div class="json-preview" id="jsonPreview"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase 请求管理类
+        class SupabaseClient {
+            constructor(url, apiKey) {
+                this.url = url.replace(/\/$/, ''); // 去除末尾斜杠
+                this.apiKey = apiKey;
+                this.baseHeaders = {
+                    'apikey': apiKey,
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                };
+            }
+
+            // 构建查询 URL
+            buildQueryUrl(tableName, options = {}) {
+                const { limit, select, orderBy } = options;
+                let url = `${this.url}/rest/v1/${tableName}`;
+                const params = new URLSearchParams();
+
+                if (select && select.trim()) {
+                    params.append('select', select.trim());
+                }
+
+                if (limit) {
+                    params.append('limit', limit);
+                }
+
+                if (orderBy && orderBy.trim()) {
+                    params.append('order', `${orderBy.trim()}.desc`);
+                }
+
+                const queryString = params.toString();
+                return queryString ? `${url}?${queryString}` : url;
+            }
+
+            // 发起数据请求
+            async fetchData(tableName, options = {}) {
+                const url = this.buildQueryUrl(tableName, options);
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: this.baseHeaders
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    }
+
+                    const data = await response.json();
+                    return {
+                        success: true,
+                        data,
+                        url,
+                        count: Array.isArray(data) ? data.length : 1
+                    };
+                } catch (error) {
+                    return {
+                        success: false,
+                        error: error.message,
+                        url
+                    };
+                }
+            }
+        }
+
+        // JSON 格式化和语法高亮
+        class JsonFormatter {
+            static format(obj) {
+                try {
+                    const jsonString = JSON.stringify(obj, null, 2);
+                    return this.syntaxHighlight(jsonString);
+                } catch (error) {
+                    return `<span style="color: #f44336;">JSON 格式化错误: ${error.message}</span>`;
+                }
+            }
+
+            static syntaxHighlight(json) {
+                json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                    let cls = 'json-number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key';
+                        } else {
+                            cls = 'json-string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'json-boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'json-null';
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+            }
+        }
+
+        // UI 控制器
+        class UIController {
+            constructor() {
+                this.form = document.getElementById('supabaseForm');
+                this.submitBtn = document.getElementById('submitBtn');
+                this.loading = document.getElementById('loading');
+                this.errorMsg = document.getElementById('errorMsg');
+                this.successMsg = document.getElementById('successMsg');
+                this.jsonPreview = document.getElementById('jsonPreview');
+                this.copyBtn = document.getElementById('copyBtn');
+                this.currentJsonData = null;
+
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                this.form.addEventListener('submit', this.handleSubmit.bind(this));
+                this.copyBtn.addEventListener('click', this.copyJson.bind(this));
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this.form);
+                const config = {
+                    url: document.getElementById('supabaseUrl').value.trim(),
+                    apiKey: document.getElementById('apiKey').value.trim(),
+                    tableName: document.getElementById('tableName').value.trim(),
+                    limit: document.getElementById('limitRows').value,
+                    select: document.getElementById('selectFields').value.trim(),
+                    orderBy: document.getElementById('orderBy').value.trim()
+                };
+
+                if (!this.validateConfig(config)) {
+                    return;
+                }
+
+                await this.performRequest(config);
+            }
+
+            validateConfig(config) {
+                this.hideMessages();
+
+                if (!config.url || !config.apiKey || !config.tableName) {
+                    this.showError('请填写所有必填字段');
+                    return false;
+                }
+
+                // URL 格式验证
+                try {
+                    new URL(config.url);
+                } catch {
+                    this.showError('请输入有效的 Supabase URL');
+                    return false;
+                }
+
+                // API 密钥格式简单验证
+                if (config.apiKey.length < 50) {
+                    this.showError('API 密钥格式不正确');
+                    return false;
+                }
+
+                return true;
+            }
+
+            async performRequest(config) {
+                this.setLoading(true);
+                this.hideMessages();
+
+                try {
+                    const client = new SupabaseClient(config.url, config.apiKey);
+                    const result = await client.fetchData(config.tableName, {
+                        limit: config.limit,
+                        select: config.select,
+                        orderBy: config.orderBy
+                    });
+
+                    if (result.success) {
+                        this.showSuccess(`成功获取 ${result.count} 条数据`);
+                        this.displayJson(result.data);
+                        this.currentJsonData = result.data;
+                        this.copyBtn.style.display = 'inline-block';
+                    } else {
+                        this.showError(`请求失败: ${result.error}`);
+                        this.clearJson();
+                    }
+                } catch (error) {
+                    this.showError(`请求异常: ${error.message}`);
+                    this.clearJson();
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            setLoading(isLoading) {
+                this.submitBtn.disabled = isLoading;
+                this.loading.classList.toggle('show', isLoading);
+                this.submitBtn.textContent = isLoading ? '请求中...' : '发起请求';
+            }
+
+            showError(message) {
+                this.errorMsg.textContent = message;
+                this.errorMsg.classList.add('show');
+                this.successMsg.classList.remove('show');
+            }
+
+            showSuccess(message) {
+                this.successMsg.textContent = message;
+                this.successMsg.classList.add('show');
+                this.errorMsg.classList.remove('show');
+            }
+
+            hideMessages() {
+                this.errorMsg.classList.remove('show');
+                this.successMsg.classList.remove('show');
+            }
+
+            displayJson(data) {
+                const formattedJson = JsonFormatter.format(data);
+                this.jsonPreview.innerHTML = formattedJson;
+            }
+
+            clearJson() {
+                this.jsonPreview.innerHTML = '';
+                this.currentJsonData = null;
+                this.copyBtn.style.display = 'none';
+            }
+
+            async copyJson() {
+                if (!this.currentJsonData) return;
+
+                try {
+                    const jsonString = JSON.stringify(this.currentJsonData, null, 2);
+                    await navigator.clipboard.writeText(jsonString);
+
+                    const originalText = this.copyBtn.textContent;
+                    this.copyBtn.textContent = '已复制!';
+                    this.copyBtn.style.background = '#4CAF50';
+
+                    setTimeout(() => {
+                        this.copyBtn.textContent = originalText;
+                        this.copyBtn.style.background = '#2196F3';
+                    }, 2000);
+                } catch (error) {
+                    this.showError('复制失败，请手动选择复制');
+                }
+            }
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            new UIController();
+        });
+
+        // 添加一些示例数据填充功能（仅用于演示）
+        window.fillExample = function () {
+            document.getElementById('supabaseUrl').value = 'https://your-project.supabase.co';
+            document.getElementById('apiKey').value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+            document.getElementById('tableName').value = 'users';
+            document.getElementById('selectFields').value = 'id,name,email';
+            document.getElementById('orderBy').value = 'created_at';
+        };
+    </script>
+</body>
+
+</html>
