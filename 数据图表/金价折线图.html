@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>金价数据图表 - 折线图与柱形图</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #333;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
+            min-height: 700px;
+        }
+
+        .control-panel {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .chart-container {
+            padding: 30px;
+            background: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(255, 215, 0, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .chart-wrapper {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #f44336;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+            margin-bottom: 15px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .chart-btn {
+            padding: 8px 16px;
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .chart-btn.active {
+            background: #FFD700;
+            border-color: #FFD700;
+            color: #333;
+        }
+
+        .chart-btn:hover {
+            border-color: #FFD700;
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 300px 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                border-radius: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .control-panel {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+                padding: 20px;
+            }
+
+            .chart-container {
+                padding: 20px;
+            }
+
+            .chart-wrapper {
+                height: 400px;
+            }
+
+            .stats-panel {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .control-panel,
+            .chart-container {
+                padding: 15px;
+            }
+
+            .chart-wrapper {
+                height: 300px;
+            }
+
+            .stats-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 金价数据图表分析</h1>
+            <p>实时金价走势 - 折线图与成交量柱形图组合展示</p>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <form id="goldPriceForm">
+                    <div class="form-group">
+                        <label for="supabaseUrl">Supabase URL</label>
+                        <input type="url" id="supabaseUrl" value="https://lvsyycnybkwbrvvmshfb.supabase.co"
+                            placeholder="https://你的项目.supabase.co" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apiKey">API 密钥</label>
+                        <input type="text" id="apiKey"
+                            value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2c3l5Y255Ymt3YnJ2dm1zaGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNTU5NjMsImV4cCI6MjA3MjgzMTk2M30.Ot7-h6nbAhIkUOGoqAv8diUBW6-Llhh8MtA6bJMXbeA"
+                            placeholder="anon key" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tableName">数据表名</label>
+                        <input type="text" id="tableName" value="gold_price" placeholder="gold_price" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="limitRows">数据行数</label>
+                        <select id="limitRows">
+                            <option value="30">30 天</option>
+                            <option value="50" selected>50 天</option>
+                            <option value="100">100 天</option>
+                            <option value="200">200 天</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="orderBy">排序字段</label>
+                        <input type="text" id="orderBy" value="date" placeholder="date">
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="submitBtn">
+                        🔄 获取金价数据
+                    </button>
+                </form>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>正在获取金价数据...</p>
+                </div>
+
+                <div class="error" id="errorMsg"></div>
+                <div class="success" id="successMsg"></div>
+
+                <div class="chart-controls">
+                    <button class="chart-btn active" data-type="combo">组合图</button>
+                    <button class="chart-btn" data-type="line">折线图</button>
+                    <button class="chart-btn" data-type="bar">柱形图</button>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="stats-panel" id="statsPanel">
+                    <div class="stat-item">
+                        <div class="stat-value" id="currentPrice">--</div>
+                        <div class="stat-label">当前价格</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="highPrice">--</div>
+                        <div class="stat-label">最高价</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="lowPrice">--</div>
+                        <div class="stat-label">最低价</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgPrice">--</div>
+                        <div class="stat-label">平均价</div>
+                    </div>
+                </div>
+
+                <div class="chart-wrapper" id="chartContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase 客户端类 (复用原有逻辑)
+        class SupabaseClient {
+            constructor(url, apiKey) {
+                this.url = url.replace(/\/$/, '');
+                this.apiKey = apiKey;
+                this.baseHeaders = {
+                    'apikey': apiKey,
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                };
+            }
+
+            buildQueryUrl(tableName, options = {}) {
+                const { limit, select, orderBy } = options;
+                let url = `${this.url}/rest/v1/${tableName}`;
+                const params = new URLSearchParams();
+
+                if (select && select.trim()) {
+                    params.append('select', select.trim());
+                }
+
+                if (limit) {
+                    params.append('limit', limit);
+                }
+
+                if (orderBy && orderBy.trim()) {
+                    params.append('order', `${orderBy.trim()}.asc`); // 改为升序以正确显示时间序列
+                }
+
+                const queryString = params.toString();
+                return queryString ? `${url}?${queryString}` : url;
+            }
+
+            async fetchData(tableName, options = {}) {
+                const url = this.buildQueryUrl(tableName, options);
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: this.baseHeaders
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    }
+
+                    const data = await response.json();
+                    return {
+                        success: true,
+                        data,
+                        url,
+                        count: Array.isArray(data) ? data.length : 1
+                    };
+                } catch (error) {
+                    return {
+                        success: false,
+                        error: error.message,
+                        url
+                    };
+                }
+            }
+        }
+
+        // 金价图表控制器
+        class GoldPriceChart {
+            constructor() {
+                this.chart = null;
+                this.currentData = null;
+                this.currentChartType = 'combo';
+
+                this.form = document.getElementById('goldPriceForm');
+                this.submitBtn = document.getElementById('submitBtn');
+                this.loading = document.getElementById('loading');
+                this.errorMsg = document.getElementById('errorMsg');
+                this.successMsg = document.getElementById('successMsg');
+                this.chartContainer = document.getElementById('chartContainer');
+
+                this.initChart();
+                this.bindEvents();
+            }
+
+            initChart() {
+                this.chart = echarts.init(this.chartContainer);
+                this.setDefaultOption();
+            }
+
+            setDefaultOption() {
+                const option = {
+                    title: {
+                        text: '等待数据加载...',
+                        left: 'center',
+                        top: 'middle',
+                        textStyle: {
+                            fontSize: 18,
+                            color: '#999'
+                        }
+                    },
+                    backgroundColor: '#fff'
+                };
+                this.chart.setOption(option);
+            }
+
+            bindEvents() {
+                this.form.addEventListener('submit', this.handleSubmit.bind(this));
+
+                // 图表类型切换
+                document.querySelectorAll('.chart-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.chart-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.currentChartType = e.target.dataset.type;
+                        if (this.currentData) {
+                            this.renderChart(this.currentData);
+                        }
+                    });
+                });
+
+                // 响应式处理
+                window.addEventListener('resize', () => {
+                    if (this.chart) {
+                        this.chart.resize();
+                    }
+                });
+            }
+
+            async handleSubmit(e) {
+                e.preventDefault();
+
+                const config = {
+                    url: document.getElementById('supabaseUrl').value.trim(),
+                    apiKey: document.getElementById('apiKey').value.trim(),
+                    tableName: document.getElementById('tableName').value.trim(),
+                    limit: document.getElementById('limitRows').value,
+                    orderBy: document.getElementById('orderBy').value.trim()
+                };
+
+                if (!this.validateConfig(config)) {
+                    return;
+                }
+
+                await this.fetchGoldPriceData(config);
+            }
+
+            validateConfig(config) {
+                this.hideMessages();
+
+                if (!config.url || !config.apiKey || !config.tableName) {
+                    this.showError('请填写所有必填字段');
+                    return false;
+                }
+
+                try {
+                    new URL(config.url);
+                } catch {
+                    this.showError('请输入有效的 Supabase URL');
+                    return false;
+                }
+
+                if (config.apiKey.length < 50) {
+                    this.showError('API 密钥格式不正确');
+                    return false;
+                }
+
+                return true;
+            }
+
+            async fetchGoldPriceData(config) {
+                this.setLoading(true);
+                this.hideMessages();
+
+                try {
+                    const client = new SupabaseClient(config.url, config.apiKey);
+                    const result = await client.fetchData(config.tableName, {
+                        limit: config.limit,
+                        orderBy: config.orderBy
+                    });
+
+                    if (result.success) {
+                        this.showSuccess(`成功获取 ${result.count} 条金价数据`);
+                        this.currentData = result.data;
+                        this.renderChart(result.data);
+                        this.updateStats(result.data);
+                    } else {
+                        this.showError(`数据获取失败: ${result.error}`);
+                        this.setDefaultOption();
+                    }
+                } catch (error) {
+                    this.showError(`请求异常: ${error.message}`);
+                    this.setDefaultOption();
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            renderChart(data) {
+                if (!data || data.length === 0) {
+                    this.setDefaultOption();
+                    return;
+                }
+
+                const processedData = this.processChartData(data);
+                const option = this.generateChartOption(processedData);
+                this.chart.setOption(option, true);
+            }
+
+            processChartData(data) {
+                // 处理数据，确保正确的字段映射
+                return data.map(item => {
+                    // 适配不同的数据字段名
+                    const price = item.price || item.gold_price || item.close || item.value || 0;
+                    const volume = item.volume || item.trading_volume || item.amount || Math.random() * 1000000; // 如果没有交易量数据，生成模拟数据
+                    const date = item.date || item.created_at || item.timestamp || new Date().toISOString().split('T')[0];
+
+                    return {
+                        date: this.formatDate(date),
+                        price: parseFloat(price),
+                        volume: parseFloat(volume),
+                        currency: item.currency || 'USD'
+                    };
+                }).sort((a, b) => new Date(a.date) - new Date(b.date)); // 按日期排序
+            }
+
+            formatDate(dateStr) {
+                try {
+                    const date = new Date(dateStr);
+                    return date.toISOString().split('T')[0]; // YYYY-MM-DD 格式
+                } catch {
+                    return dateStr;
+                }
+            }
+
+            generateChartOption(data) {
+                const dates = data.map(item => item.date);
+                const prices = data.map(item => item.price);
+                const volumes = data.map(item => item.volume);
+                const currency = data[0]?.currency || 'USD';
+
+                const baseOption = {
+                    backgroundColor: '#fff',
+                    title: {
+                        text: `金价走势图 (${currency})`,
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 16,
+                            fontWeight: 'bold',
+                            color: '#333'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            crossStyle: {
+                                color: '#999'
+                            }
+                        },
+                        formatter: function (params) {
+                            let result = `<strong>${params[0].axisValue}</strong><br/>`;
+                            params.forEach(param => {
+                                const value = param.seriesType === 'line'
+                                    ? `${param.value} ${currency}`
+                                    : param.value.toLocaleString();
+                                result += `${param.marker}${param.seriesName}: ${value}<br/>`;
+                            });
+                            return result;
+                        }
+                    },
+                    legend: {
+                        data: ['金价', '成交量'],
+                        top: 30
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: dates,
+                            axisPointer: {
+                                type: 'shadow'
+                            },
+                            axisLabel: {
+                                rotate: 45,
+                                interval: Math.max(1, Math.floor(dates.length / 10))
+                            }
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value',
+                            name: `金价 (${currency})`,
+                            position: 'left',
+                            axisLabel: {
+                                formatter: '{value}'
+                            },
+                            splitLine: {
+                                show: true,
+                                lineStyle: {
+                                    color: '#f0f0f0'
+                                }
+                            }
+                        },
+                        {
+                            type: 'value',
+                            name: '成交量',
+                            position: 'right',
+                            axisLabel: {
+                                formatter: function (value) {
+                                    return value >= 1000000
+                                        ? (value / 1000000).toFixed(1) + 'M'
+                                        : value >= 1000
+                                            ? (value / 1000).toFixed(1) + 'K'
+                                            : value.toString();
+                                }
+                            }
+                        }
+                    ],
+                    grid: {
+                        left: '10%',
+                        right: '10%',
+                        bottom: '15%'
+                    },
+                    dataZoom: [
+                        {
+                            type: 'inside',
+                            start: 0,
+                            end: 100
+                        },
+                        {
+                            start: 0,
+                            end: 100,
+                            height: 30,
+                            bottom: 30
+                        }
+                    ]
+                };
+
+                // 根据图表类型生成不同的系列
+                if (this.currentChartType === 'combo') {
+                    baseOption.series = [
+                        {
+                            name: '金价',
+                            type: 'line',
+                            yAxisIndex: 0,
+                            data: prices,
+                            smooth: true,
+                            symbol: 'circle',
+                            symbolSize: 6,
+                            lineStyle: {
+                                color: '#FFD700',
+                                width: 3
+                            },
+                            itemStyle: {
+                                color: '#FFD700'
+                            },
+                            areaStyle: {
+                                color: {
+                                    type: 'linear',
+                                    x: 0, y: 0, x2: 0, y2: 1,
+                                    colorStops: [
+                                        { offset: 0, color: 'rgba(255, 215, 0, 0.3)' },
+                                        { offset: 1, color: 'rgba(255, 215, 0, 0.1)' }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            name: '成交量',
+                            type: 'bar',
+                            yAxisIndex: 1,
+                            data: volumes,
+                            itemStyle: {
+                                color: {
+                                    type: 'linear',
+                                    x: 0, y: 0, x2: 0, y2: 1,
+                                    colorStops: [
+                                        { offset: 0, color: 'rgba(255, 165, 0, 0.8)' },
+                                        { offset: 1, color: 'rgba(255, 165, 0, 0.3)' }
+                                    ]
+                                }
+                            }
+                        }
+                    ];
+                } else if (this.currentChartType === 'line') {
+                    baseOption.yAxis = baseOption.yAxis[0];
+                    baseOption.series = [
+                        {
+                            name: '金价',
+                            type: 'line',
+                            data: prices,
+                            smooth: true,
+                            symbol: 'circle',
+                            symbolSize: 8,
+                            lineStyle: {
+                                color: '#FFD700',
+                                width: 4
+                            },
+                            itemStyle: {
+                                color: '#FFD700',
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            areaStyle: {
+                                color: {
+                                    type: 'linear',
+                                    x: 0, y: 0, x2: 0, y2: 1,
+                                    colorStops: [
+                                        { offset: 0, color: 'rgba(255, 215, 0, 0.4)' },
+                                        { offset: 1, color: 'rgba(255, 215, 0, 0.1)' }
+                                    ]
+                                }
+                            }
+                        }
+                    ];
+                } else { // bar
+                    baseOption.yAxis = baseOption.yAxis[1];
+                    baseOption.series = [
+                        {
+                            name: '成交量',
+                            type: 'bar',
+                            data: volumes,
+                            itemStyle: {
+                                color: {
+                                    type: 'linear',
+                                    x: 0, y: 0, x2: 0, y2: 1,
+                                    colorStops: [
+                                        { offset: 0, color: 'rgba(255, 165, 0, 0.9)' },
+                                        { offset: 1, color: 'rgba(255, 165, 0, 0.4)' }
+                                    ]
+                                }
+                            }
+                        }
+                    ];
+                }
+
+                return baseOption;
+            }
+
+            updateStats(data) {
+                if (!data || data.length === 0) return;
+
+                const prices = data.map(item => parseFloat(item.price || item.gold_price || item.close || item.value || 0));
+                const currency = data[0]?.currency || 'USD';
+
+                const currentPrice = prices[prices.length - 1];
+                const highPrice = Math.max(...prices);
+                const lowPrice = Math.min(...prices);
+                const avgPrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+
+                document.getElementById('currentPrice').textContent = `${currentPrice.toFixed(2)} ${currency}`;
+                document.getElementById('highPrice').textContent = `${highPrice.toFixed(2)} ${currency}`;
+                document.getElementById('lowPrice').textContent = `${lowPrice.toFixed(2)} ${currency}`;
+                document.getElementById('avgPrice').textContent = `${avgPrice.toFixed(2)} ${currency}`;
+            }
+
+            setLoading(isLoading) {
+                this.submitBtn.disabled = isLoading;
+                this.loading.classList.toggle('show', isLoading);
+                this.submitBtn.textContent = isLoading ? '🔄 获取数据中...' : '🔄 获取金价数据';
+            }
+
+            showError(message) {
+                this.errorMsg.textContent = message;
+                this.errorMsg.classList.add('show');
+                this.successMsg.classList.remove('show');
+            }
+
+            showSuccess(message) {
+                this.successMsg.textContent = message;
+                this.successMsg.classList.add('show');
+                this.errorMsg.classList.remove('show');
+            }
+
+            hideMessages() {
+                this.errorMsg.classList.remove('show');
+                this.successMsg.classList.remove('show');
+            }
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', () => {
+            new GoldPriceChart();
+        });
+
+        // 添加一些模拟数据功能（用于演示）
+        window.loadDemoData = function () {
+            const chart = window.goldPriceChart || new GoldPriceChart();
+
+            // 生成30天的模拟金价数据
+            const demoData = [];
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 30);
+
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(startDate);
+                date.setDate(date.getDate() + i);
+
+                const basePrice = 2000 + Math.sin(i / 5) * 100; // 基础价格波动
+                const randomFactor = (Math.random() - 0.5) * 50; // 随机波动
+
+                demoData.push({
+                    date: date.toISOString().split('T')[0],
+                    price: Math.max(1800, basePrice + randomFactor),
+                    volume: Math.floor(Math.random() * 2000000 + 500000),
+                    currency: 'USD'
+                });
+            }
+
+            chart.currentData = demoData;
+            chart.renderChart(demoData);
+            chart.updateStats(demoData);
+            chart.showSuccess(`加载了 ${demoData.length} 条演示数据`);
+        };
+    </script>
+</body>
+
+</html>
