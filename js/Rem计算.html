@@ -1,145 +1,469 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>排序算法</title>
-    <link rel="stylesheet" href="./reset.css" />
-    <style>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Rem计算器</title>
+  <link rel="stylesheet" href="./reset.css" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .page {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: calc(100vh - 40px);
+      width: 100%;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #333;
+      font-size: 28px;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      color: #333;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    input {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: #fff;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    input:read-only {
+      background: #f8f9fa;
+      color: #495057;
+      cursor: default;
+    }
+
+    .result-input {
+      font-weight: 600;
+      color: #28a745;
+    }
+
+    .calculate-section {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .calculate-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+      min-width: 120px;
+    }
+
+    .calculate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .calculate-btn:active {
+      transform: translateY(0);
+    }
+
+    .time-display {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #6c757d;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #28a745;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(10px);
+    }
+
+    /* 移动端优化 */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+
+      .container {
+        padding: 25px 20px;
+        border-radius: 16px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
       input {
-        width: 500px;
-        height: 30px;
-        box-sizing: border-box;
-        padding-left: 8px;
-        border-radius: 4px;
-        border: 1px solid skyblue;
-      }
-      p {
-        display: flex;
-        margin: 10px 0;
-      }
-      .form-label {
-        display: inline-block;
-        width: 90px;
-        margin-right: 16px;
+        height: 44px;
+        font-size: 16px;
+        /* 防止iOS缩放 */
       }
 
-
-      .page {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+      .calculate-btn {
         width: 100%;
-        height: 100%;
-        background-color: #eee;
-        overflow: hidden;
+        padding: 16px;
+        font-size: 16px;
       }
-      .box {
-        width: 660px;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
       }
-      .arr-text {
-        border: 0;
+
+      .container {
+        padding: 20px 15px;
       }
-      .current-vw{
-        border: none;
+
+      .header h1 {
+        font-size: 22px;
       }
-      .time-text {
-        width: 500px;
-        height: 30px;
-        color: red;
-        font-size: 14px;
+
+      .form-label {
+        font-size: 13px;
       }
-      .dialog-wrap {
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    }
+
+    /* 暗色模式支持 */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      }
+
+      .container {
+        background: rgba(44, 62, 80, 0.95);
+        color: #ecf0f1;
+      }
+
+      .header h1 {
+        color: #ecf0f1;
+      }
+
+      .header p {
+        color: #bdc3c7;
+      }
+
+      .form-label {
+        color: #ecf0f1;
+      }
+
+      input {
+        background: #34495e;
+        border-color: #4a5f7a;
+        color: #ecf0f1;
+      }
+
+      input:read-only {
+        background: #2c3e50;
+        color: #bdc3c7;
+      }
+
+      .time-display {
+        background: #2c3e50;
+        color: #bdc3c7;
+      }
+    }
+
+    /* 动画效果 */
+    @keyframes fadeInUp {
+      from {
         opacity: 0;
-        transition: all 0.5s;
-        width: 150px;
-        position: fixed;
-        top: 0;
-        left: 50%;
-        margin-left: -50px;
-        border-radius: 4px;
-        background-color: greenyellow;
-        box-shadow: 1px 1px 4px;
+        transform: translateY(30px);
       }
-    </style>
-  </head>
-  <body>
-    <div class="page">
-      <div class="box">
-        <p>
-          <span class="form-label"> 基准像素:</span
-          ><input
-            class="base-px"
-            type="text"
-            placeholder="请加入需要排序的数字"
-          />
-        </p>
-        <p>
-          <span class="form-label">模板 Width:</span
-          ><input class="template-px" type="text" />
-        </p>
-        <p>
-          <span class="form-label">开发像素:</span
-          ><input class="current-px" type="text" />
-        </p>
-        <p>
-          <span class="form-label">VW/H 比例:</span
-          ><input readonly class="current-vw" type="text" />
-        </p>
-        <p>
-          <span class="form-label">耗时:</span
-          ><span class="time-text">xxx</span>
-          <button class="caculate-btn">计算</button>
-        </p>
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .container {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* 高对比度模式支持 */
+    @media (prefers-contrast: high) {
+      input {
+        border-width: 3px;
+      }
+
+      .calculate-btn {
+        border: 2px solid #000;
+      }
+    }
+
+    /* 减少动画模式支持 */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="container">
+      <div class="header">
+        <h1>Rem 计算器</h1>
+        <p>快速计算 rem 和 vw 单位转换</p>
       </div>
-      <div class="dialog-wrap">已复制到剪切板</div>
+
+      <div class="form-group">
+        <label class="form-label">基准像素 (px)</label>
+        <div class="input-wrapper">
+          <input class="base-px" type="number" placeholder="请输入基准像素值，如 750" inputmode="numeric" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">模板宽度 (px)</label>
+        <div class="input-wrapper">
+          <input class="template-px" type="number" placeholder="请输入模板宽度，如 375" inputmode="numeric" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">开发像素 (px)</label>
+        <div class="input-wrapper">
+          <input class="current-px" type="number" placeholder="请输入需要转换的像素值" inputmode="numeric" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">VW 比例结果</label>
+        <div class="input-wrapper">
+          <input readonly class="current-vw result-input" type="text" placeholder="计算结果将显示在这里" />
+        </div>
+      </div>
+
+      <div class="calculate-section">
+        <button class="calculate-btn">开始计算</button>
+        <div class="time-display">
+          计算耗时: <span class="time-text">0 ms</span>
+        </div>
+      </div>
     </div>
 
-    <script>
-      var arrText = "";
-      var newArrText = "";
-      // 快捷取 DOM
-      function $(name) {
-        return document.querySelector(name);
-      }
-      // 测试算法时间
-      function testCostTime(fn) {
-        var startTime = new Date().getTime();
-        fn();
-        var endTime = new Date().getTime();
-        var costTime = endTime - startTime;
-        $(".time-text").innerText = costTime + " ms";
-      }
-      $(".base-px").value = 750;
-      $(".template-px").value = 375;
+    <div class="toast">已复制到剪贴板 ✓</div>
+  </div>
 
-      // 快速升序
-      $(".caculate-btn").onclick = () => {
-        const animate = (className) => {
-          $(className).style.opacity = "0.8";
-          $(className).style.top = "100px";
-          setTimeout(() => {
-            $(className).style.opacity = "0";
-          }, 1000);
-        };
-        const textTimes = () => {
-          var basePx = parseInt($(".base-px").value);
-          var templatePx = parseInt($(".template-px").value);
-          var currentPx = parseInt($(".current-px").value);
-          var multiple = parseInt((basePx / templatePx).toFixed(2));
-          var newArr = [];
+  <script>
+    // 快捷取 DOM
+    function $(selector) {
+      return document.querySelector(selector);
+    }
 
-          $(".current-vw").value = (currentPx / basePx) * 100 + "vw";
-          $(".current-vw").select();
-          document.execCommand("copy");
-          animate(".dialog-wrap");
-        };
-        testCostTime(textTimes);
+    // 测试算法时间
+    function testCostTime(fn) {
+      const startTime = performance.now();
+      fn();
+      const endTime = performance.now();
+      const costTime = (endTime - startTime).toFixed(2);
+      $(".time-text").textContent = costTime + " ms";
+    }
+
+    // 显示提示消息
+    function showToast(message) {
+      const toast = $(".toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2000);
+    }
+
+    // 复制到剪贴板
+    async function copyToClipboard(text) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          // 降级方案
+          const textArea = document.createElement("textarea");
+          textArea.value = text;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          textArea.style.top = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand('copy');
+          textArea.remove();
+        }
+        showToast("已复制到剪贴板 ✓");
+      } catch (err) {
+        showToast("复制失败，请手动复制");
+        console.error('复制失败:', err);
+      }
+    }
+
+    // 输入验证
+    function validateInputs() {
+      const basePx = parseFloat($(".base-px").value);
+      const templatePx = parseFloat($(".template-px").value);
+      const currentPx = parseFloat($(".current-px").value);
+
+      if (!basePx || basePx <= 0) {
+        showToast("请输入有效的基准像素值");
+        return false;
+      }
+      if (!templatePx || templatePx <= 0) {
+        showToast("请输入有效的模板宽度");
+        return false;
+      }
+      if (!currentPx || currentPx < 0) {
+        showToast("请输入有效的开发像素值");
+        return false;
+      }
+      return true;
+    }
+
+    // 初始化默认值
+    $(".base-px").value = 750;
+    $(".template-px").value = 375;
+
+    // 计算功能
+    $(".calculate-btn").addEventListener("click", () => {
+      const calculate = () => {
+        if (!validateInputs()) return;
+
+        const basePx = parseFloat($(".base-px").value);
+        const templatePx = parseFloat($(".template-px").value);
+        const currentPx = parseFloat($(".current-px").value);
+
+        const vwValue = ((currentPx / basePx) * 100).toFixed(4);
+        const result = vwValue + "vw";
+
+        $(".current-vw").value = result;
+
+        // 自动复制结果
+        copyToClipboard(result);
       };
-    </script>
-  </body>
+
+      testCostTime(calculate);
+    });
+
+    // 回车键计算
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        $(".calculate-btn").click();
+      }
+    });
+
+    // 实时计算（可选）
+    const inputs = [".base-px", ".template-px", ".current-px"];
+    inputs.forEach(selector => {
+      $(selector).addEventListener("input", () => {
+        const basePx = parseFloat($(".base-px").value);
+        const currentPx = parseFloat($(".current-px").value);
+
+        if (basePx && currentPx >= 0) {
+          const vwValue = ((currentPx / basePx) * 100).toFixed(4);
+          $(".current-vw").value = vwValue + "vw";
+        } else {
+          $(".current-vw").value = "";
+        }
+      });
+    });
+
+    // 点击结果输入框自动复制
+    $(".current-vw").addEventListener("click", () => {
+      const value = $(".current-vw").value;
+      if (value) {
+        copyToClipboard(value);
+      }
+    });
+
+    // 防止页面缩放（移动端）
+    document.addEventListener('gesturestart', function (e) {
+      e.preventDefault();
+    });
+  </script>
+</body>
+
 </html>
