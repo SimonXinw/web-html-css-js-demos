@@ -246,69 +246,73 @@
     }
 
     function convertNYGoldPrice() {
-      // 通用的 query 参数对象转 URL 查询字符串方法
-      function translateQuery(params) {
-        return (
-          "?" +
-          Object.entries(params)
-            .map(
-              ([key, value]) =>
-                encodeURIComponent(key) + "=" + encodeURIComponent(value)
-            )
-            .join("&")
-        );
-      }
+      // Supabase 配置
+      const supabaseUrl = 'https://lvsyycnybkwbrvvmshfb.supabase.co';
+      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2c3l5Y255Ymt3YnJ2dm1zaGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNTU5NjMsImV4cCI6MjA3MjgzMTk2M30.Ot7-h6nbAhIkUOGoqAv8diUBW6-Llhh8MtA6bJMXbeA';
 
-      // 构建 API 请求参数对象
-      const queryParams = {
-        api_key: "c0f82a209af9860048b0e666f905ab8e",
-        base: 'USD',
-        currencies: 'CNY,HKD,GBP,JPY,XAU,XAG'
+      // 构建 Supabase API URL，获取最新的金价数据
+      const supabaseApiUrl = `${supabaseUrl}/rest/v1/gold_price?order=created_at.desc&limit=1`;
+
+      // 请求头设置
+      const headers = {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json'
       };
 
-      const url =
-        "https://api.metalpriceapi.com/v1/latest" +
-        translateQuery(queryParams);
+      // 从 Supabase 获取金价数据
+      fetch(supabaseApiUrl, { headers })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          return response.json();
+        })
+        .then((goldData) => {
+          console.log('Supabase 金价数据 >>>>>>>>>>>>>>>', goldData);
 
-
-      fetch(url)
-        .then((response) => response.json())
-        .then((result) => {
-          // 兼容返回数据结构
-          console.log('result >>>>>>>>>>>>>>>', result);
-
-          if (!result?.rates?.USDXAU) {
-            return document.getElementById("ny-gold-price").textContent =
-              "未获取到纽约金价格";
-
+          // 检查是否有数据
+          if (!goldData || goldData.length === 0) {
+            document.getElementById("ny-gold-price").textContent = "未获取到金价数据";
+            return;
           }
 
-          let nyGoldPrice = result.rates.USDXAU;
+          const latestGoldData = goldData[0];
+          let nyGoldPrice = latestGoldData.price; // 从数据库获取价格
 
+          // 如果数据库中的价格是每盎司，转换为每克
           const nyGoldPerGram = nyGoldPrice / 31.1034768;
 
-          document.getElementById(
-            "ny-gold-price"
-          ).textContent = `$${nyGoldPrice.toFixed(2)}`;
+          // 显示原始金价（假设数据库中存的是每盎司价格）
+          document.getElementById("ny-gold-price").textContent =
+            `$${nyGoldPrice.toFixed(2)} ${latestGoldData.currency}/盎司`;
 
-          fetch(
-            `https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`
-          )
+          // 获取汇率进行货币转换
+          fetch(`https://v6.exchangerate-api.com/v6/d94ed89febed2314b93bdda8/latest/USD`)
             .then((response) => response.json())
             .then((exchangeData) => {
-              const compareCurrency =
-                document.getElementById("compare-currency").value;
+              const compareCurrency = document.getElementById("compare-currency").value;
               const rate = exchangeData.conversion_rates[compareCurrency];
-              const convertedNYPrice = (nyGoldPerGram * rate).toFixed(2);
 
-              document.getElementById(
-                "converted-ny-gold-price"
-              ).textContent = `${convertedNYPrice} ${compareCurrency}/g`;
+              if (rate) {
+                const convertedNYPrice = (nyGoldPerGram * rate).toFixed(2);
+                document.getElementById("converted-ny-gold-price").textContent =
+                  `${convertedNYPrice} ${compareCurrency}/g`;
+              } else {
+                document.getElementById("converted-ny-gold-price").textContent =
+                  `汇率获取失败 (${compareCurrency})`;
+              }
+            })
+            .catch((error) => {
+              console.error('汇率获取错误:', error);
+              document.getElementById("converted-ny-gold-price").textContent =
+                "汇率获取失败: " + error.message;
             });
         })
         .catch((error) => {
+          console.error('Supabase 请求错误:', error);
           document.getElementById("ny-gold-price").textContent =
-            "错误：" + error.message;
+            "数据获取错误: " + error.message;
         });
     }
 
