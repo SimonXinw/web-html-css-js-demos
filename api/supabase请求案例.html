@@ -166,6 +166,8 @@
             max-height: 500px;
             overflow-y: auto;
             border: 1px solid #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .json-preview:empty::before {
@@ -464,16 +466,18 @@
         class JsonFormatter {
             static format(obj) {
                 try {
-                    const jsonString = JSON.stringify(obj, null, 2);
-                    return this.syntaxHighlight(jsonString);
+                    // 使用自定义的树形格式化方法
+                    return this.formatWithTree(obj);
                 } catch (error) {
                     return `<span style="color: #f44336;">JSON 格式化错误: ${error.message}</span>`;
                 }
             }
 
             static syntaxHighlight(json) {
+                // 转义 HTML 字符
                 json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
+                
+                // 语法高亮
                 return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
                     let cls = 'json-number';
                     if (/^"/.test(match)) {
@@ -489,6 +493,69 @@
                     }
                     return '<span class="' + cls + '">' + match + '</span>';
                 });
+            }
+            
+            // 更强大的格式化方法，使用树形结构
+            static formatWithTree(obj, indent = 0) {
+                const indentStr = '  '.repeat(indent);
+                const nextIndentStr = '  '.repeat(indent + 1);
+                
+                if (obj === null) {
+                    return '<span class="json-null">null</span>';
+                }
+                
+                if (typeof obj === 'boolean') {
+                    return `<span class="json-boolean">${obj}</span>`;
+                }
+                
+                if (typeof obj === 'number') {
+                    return `<span class="json-number">${obj}</span>`;
+                }
+                
+                if (typeof obj === 'string') {
+                    const escaped = obj.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                    return `<span class="json-string">"${escaped}"</span>`;
+                }
+                
+                if (Array.isArray(obj)) {
+                    if (obj.length === 0) {
+                        return '[]';
+                    }
+                    
+                    let result = '[\n';
+                    for (let i = 0; i < obj.length; i++) {
+                        result += nextIndentStr + this.formatWithTree(obj[i], indent + 1);
+                        if (i < obj.length - 1) {
+                            result += ',';
+                        }
+                        result += '\n';
+                    }
+                    result += indentStr + ']';
+                    return result;
+                }
+                
+                if (typeof obj === 'object') {
+                    const keys = Object.keys(obj);
+                    if (keys.length === 0) {
+                        return '{}';
+                    }
+                    
+                    let result = '{\n';
+                    for (let i = 0; i < keys.length; i++) {
+                        const key = keys[i];
+                        const escapedKey = key.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                        result += nextIndentStr + `<span class="json-key">"${escapedKey}"</span>: `;
+                        result += this.formatWithTree(obj[key], indent + 1);
+                        if (i < keys.length - 1) {
+                            result += ',';
+                        }
+                        result += '\n';
+                    }
+                    result += indentStr + '}';
+                    return result;
+                }
+                
+                return String(obj);
             }
         }
 
