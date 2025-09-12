@@ -331,7 +331,7 @@
     <div class="container">
         <div class="header">
             <h1>📈 金价数据图表分析</h1>
-            <p>实时金价走势 - 折线图与成交量柱形图组合展示</p>
+            <p>实时金价走势 - 基于时间序列的折线图展示</p>
         </div>
 
         <div class="main-content">
@@ -359,15 +359,19 @@
                         <label for="limitRows">数据行数</label>
                         <select id="limitRows">
                             <option value="30">30 天</option>
-                            <option value="50" selected>50 天</option>
+                            <option value="50">50 天</option>
                             <option value="100">100 天</option>
-                            <option value="200">200 天</option>
+                            <option value="200" selected>200 天</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <label for="orderBy">排序字段</label>
-                        <input type="text" id="orderBy" value="date" placeholder="date">
+                        <select id="orderBy">
+                            <option value="created_at" selected>created_at (创建时间)</option>
+                            <option value="id">id (ID排序)</option>
+                            <option value="time_period">time_period (时间周期)</option>
+                        </select>
                     </div>
 
                     <button type="submit" class="btn-primary" id="submitBtn">
@@ -384,10 +388,14 @@
                 <div class="success" id="successMsg"></div>
 
                 <div class="chart-controls">
-                    <button class="chart-btn active" data-type="combo">组合图</button>
-                    <button class="chart-btn" data-type="line">折线图</button>
-                    <button class="chart-btn" data-type="bar">柱形图</button>
+                    <button class="chart-btn active" data-type="line">折线图</button>
+                    <button class="chart-btn" data-type="area">面积图</button>
+                    <button class="chart-btn" data-type="smooth">平滑曲线</button>
                 </div>
+
+                <button type="button" class="btn-primary" onclick="loadDemoData()" style="margin-top: 10px;">
+                    🎯 加载演示数据
+                </button>
             </div>
 
             <div class="chart-container">
@@ -485,7 +493,7 @@
             constructor() {
                 this.chart = null;
                 this.currentData = null;
-                this.currentChartType = 'combo';
+                this.currentChartType = 'line';
 
                 this.form = document.getElementById('goldPriceForm');
                 this.submitBtn = document.getElementById('submitBtn');
@@ -496,6 +504,9 @@
 
                 this.initChart();
                 this.bindEvents();
+
+                // 页面加载时自动请求数据
+                this.autoLoadData();
             }
 
             initChart() {
@@ -589,19 +600,48 @@
 
                 try {
                     const client = new SupabaseClient(config.url, config.apiKey);
-                    const result = await client.fetchData(config.tableName, {
-                        limit: config.limit,
-                        orderBy: config.orderBy
-                    });
 
-                    if (result.success) {
-                        this.showSuccess(`成功获取 ${result.count} 条金价数据`);
-                        this.currentData = result.data;
-                        this.renderChart(result.data);
-                        this.updateStats(result.data);
+                    // 首先尝试获取表结构
+                    const schemaResult = await this.getTableSchema(client, config.tableName);
+                    if (schemaResult.success) {
+                        this.showSuccess(`检测到表字段: ${schemaResult.columns.join(', ')}`);
+
+                        // 智能选择排序字段
+                        const orderField = this.selectBestOrderField(schemaResult.columns, config.orderBy);
+                        if (orderField !== config.orderBy) {
+                            this.showSuccess(`自动调整排序字段: ${config.orderBy} → ${orderField}`);
+                        }
+
+                        const result = await client.fetchData(config.tableName, {
+                            limit: config.limit,
+                            orderBy: orderField
+                        });
+
+                        if (result.success) {
+                            this.showSuccess(`成功获取 ${result.count} 条金价数据`);
+                            this.currentData = result.data;
+                            this.renderChart(result.data);
+                            this.updateStats(result.data);
+                        } else {
+                            this.showError(`数据获取失败: ${result.error}`);
+                            this.setDefaultOption();
+                        }
                     } else {
-                        this.showError(`数据获取失败: ${result.error}`);
-                        this.setDefaultOption();
+                        // 如果无法获取表结构，直接尝试获取数据
+                        const result = await client.fetchData(config.tableName, {
+                            limit: config.limit
+                            // 不使用排序以避免字段不存在的错误
+                        });
+
+                        if (result.success) {
+                            this.showSuccess(`成功获取 ${result.count} 条金价数据`);
+                            this.currentData = result.data;
+                            this.renderChart(result.data);
+                            this.updateStats(result.data);
+                        } else {
+                            this.showError(`数据获取失败: ${result.error}`);
+                            this.setDefaultOption();
+                        }
                     }
                 } catch (error) {
                     this.showError(`请求异常: ${error.message}`);
@@ -609,6 +649,40 @@
                 } finally {
                     this.setLoading(false);
                 }
+            }
+
+            // 获取表结构的方法
+            async getTableSchema(client, tableName) {
+                try {
+                    // 先尝试获取一条数据来了解字段结构
+                    const result = await client.fetchData(tableName, { limit: 1 });
+                    if (result.success && result.data.length > 0) {
+                        const columns = Object.keys(result.data[0]);
+                        return { success: true, columns };
+                    }
+                    return { success: false, error: '无法获取表结构' };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+
+            // 智能选择最佳排序字段（根据实际表结构）
+            selectBestOrderField(columns, preferredField) {
+                // 如果首选字段存在，直接使用
+                if (columns.includes(preferredField)) {
+                    return preferredField;
+                }
+
+                // 根据实际表结构按优先级查找字段
+                const timeFields = ['created_at', 'time_period', 'id'];
+                for (const field of timeFields) {
+                    if (columns.includes(field)) {
+                        return field;
+                    }
+                }
+
+                // 如果没有找到合适的字段，返回第一个字段
+                return columns[0] || preferredField;
             }
 
             renderChart(data) {
@@ -623,20 +697,23 @@
             }
 
             processChartData(data) {
-                // 处理数据，确保正确的字段映射
+                // 处理数据，根据实际表结构映射字段
                 return data.map(item => {
-                    // 适配不同的数据字段名
-                    const price = item.price || item.gold_price || item.close || item.value || 0;
-                    const volume = item.volume || item.trading_volume || item.amount || Math.random() * 1000000; // 如果没有交易量数据，生成模拟数据
-                    const date = item.date || item.created_at || item.timestamp || new Date().toISOString().split('T')[0];
+                    // 使用实际的字段名
+                    const price = parseFloat(item.price) || 0; // price 字段 (real)
+
+                    // 使用 created_at 作为时间轴
+                    const dateValue = item.created_at || new Date().toISOString();
 
                     return {
-                        date: this.formatDate(date),
-                        price: parseFloat(price),
-                        volume: parseFloat(volume),
-                        currency: item.currency || 'USD'
+                        date: this.formatDateTime(dateValue), // 保留时间信息
+                        price: price,
+                        currency: item.currency || 'USD', // currency 字段 (text)
+                        source: item.source || 'Unknown', // source 字段 (text) 
+                        id: item.id,
+                        originalData: item // 保留原始数据用于调试
                     };
-                }).sort((a, b) => new Date(a.date) - new Date(b.date)); // 按日期排序
+                }).sort((a, b) => new Date(a.date) - new Date(b.date)); // 按时间排序
             }
 
             formatDate(dateStr) {
@@ -648,11 +725,35 @@
                 }
             }
 
+            formatDateTime(dateStr) {
+                try {
+                    const date = new Date(dateStr);
+                    // 返回更详细的时间格式，用于时间序列
+                    return date.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                } catch {
+                    return dateStr;
+                }
+            }
+
             generateChartOption(data) {
                 const dates = data.map(item => item.date);
                 const prices = data.map(item => item.price);
-                const volumes = data.map(item => item.volume);
                 const currency = data[0]?.currency || 'USD';
+
+                // 动态计算Y轴范围
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+                const yAxisMin = Math.max(0, minPrice - 100); // 确保不小于0
+                const yAxisMax = maxPrice + 100;
+
+                console.log(`价格范围: ${minPrice.toFixed(2)} - ${maxPrice.toFixed(2)}`);
+                console.log(`Y轴范围: ${yAxisMin.toFixed(2)} - ${yAxisMax.toFixed(2)}`);
 
                 const baseOption = {
                     backgroundColor: '#fff',
@@ -675,66 +776,54 @@
                         },
                         formatter: function (params) {
                             let result = `<strong>${params[0].axisValue}</strong><br/>`;
-                            params.forEach(param => {
-                                const value = param.seriesType === 'line'
-                                    ? `${param.value} ${currency}`
-                                    : param.value.toLocaleString();
-                                result += `${param.marker}${param.seriesName}: ${value}<br/>`;
-                            });
+                            const param = params[0];
+                            result += `${param.marker}${param.seriesName}: ${param.value} ${currency}<br/>`;
+
+                            // 显示数据来源信息
+                            const dataIndex = param.dataIndex;
+                            const originalData = data[dataIndex]?.originalData;
+                            if (originalData?.source) {
+                                result += `<br/><span style="color: #666;">数据来源: ${originalData.source}</span>`;
+                            }
                             return result;
                         }
                     },
                     legend: {
-                        data: ['金价', '成交量'],
+                        data: ['金价'],
                         top: 30
                     },
-                    xAxis: [
-                        {
-                            type: 'category',
-                            data: dates,
-                            axisPointer: {
-                                type: 'shadow'
-                            },
-                            axisLabel: {
-                                rotate: 45,
-                                interval: Math.max(1, Math.floor(dates.length / 10))
-                            }
-                        }
-                    ],
-                    yAxis: [
-                        {
-                            type: 'value',
-                            name: `金价 (${currency})`,
-                            position: 'left',
-                            axisLabel: {
-                                formatter: '{value}'
-                            },
-                            splitLine: {
-                                show: true,
-                                lineStyle: {
-                                    color: '#f0f0f0'
-                                }
-                            }
+                    xAxis: {
+                        type: 'category',
+                        data: dates,
+                        axisPointer: {
+                            type: 'line'
                         },
-                        {
-                            type: 'value',
-                            name: '成交量',
-                            position: 'right',
-                            axisLabel: {
-                                formatter: function (value) {
-                                    return value >= 1000000
-                                        ? (value / 1000000).toFixed(1) + 'M'
-                                        : value >= 1000
-                                            ? (value / 1000).toFixed(1) + 'K'
-                                            : value.toString();
-                                }
+                        axisLabel: {
+                            rotate: 45,
+                            interval: Math.max(0, Math.floor(dates.length / 8)),
+                            fontSize: 11
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: `金价 (${currency})`,
+                        min: yAxisMin,  // 动态计算的最小值
+                        max: yAxisMax,  // 动态计算的最大值
+                        axisLabel: {
+                            formatter: '{value}'
+                        },
+                        splitLine: {
+                            show: true,
+                            lineStyle: {
+                                color: '#f0f0f0'
                             }
                         }
-                    ],
+                    },
                     grid: {
                         left: '10%',
-                        right: '10%',
-                        bottom: '15%'
+                        right: '5%',
+                        bottom: '15%',
+                        top: '15%'
                     },
                     dataZoom: [
                         {
@@ -752,14 +841,33 @@
                 };
 
                 // 根据图表类型生成不同的系列
-                if (this.currentChartType === 'combo') {
+                if (this.currentChartType === 'line') {
                     baseOption.series = [
                         {
                             name: '金价',
                             type: 'line',
-                            yAxisIndex: 0,
                             data: prices,
-                            smooth: true,
+                            smooth: false,
+                            symbol: 'circle',
+                            symbolSize: 6,
+                            lineStyle: {
+                                color: '#FFD700',
+                                width: 3
+                            },
+                            itemStyle: {
+                                color: '#FFD700',
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            }
+                        }
+                    ];
+                } else if (this.currentChartType === 'area') {
+                    baseOption.series = [
+                        {
+                            name: '金价',
+                            type: 'line',
+                            data: prices,
+                            smooth: false,
                             symbol: 'circle',
                             symbolSize: 6,
                             lineStyle: {
@@ -774,42 +882,25 @@
                                     type: 'linear',
                                     x: 0, y: 0, x2: 0, y2: 1,
                                     colorStops: [
-                                        { offset: 0, color: 'rgba(255, 215, 0, 0.3)' },
+                                        { offset: 0, color: 'rgba(255, 215, 0, 0.4)' },
                                         { offset: 1, color: 'rgba(255, 215, 0, 0.1)' }
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            name: '成交量',
-                            type: 'bar',
-                            yAxisIndex: 1,
-                            data: volumes,
-                            itemStyle: {
-                                color: {
-                                    type: 'linear',
-                                    x: 0, y: 0, x2: 0, y2: 1,
-                                    colorStops: [
-                                        { offset: 0, color: 'rgba(255, 165, 0, 0.8)' },
-                                        { offset: 1, color: 'rgba(255, 165, 0, 0.3)' }
                                     ]
                                 }
                             }
                         }
                     ];
-                } else if (this.currentChartType === 'line') {
-                    baseOption.yAxis = baseOption.yAxis[0];
+                } else if (this.currentChartType === 'smooth') {
                     baseOption.series = [
                         {
                             name: '金价',
                             type: 'line',
                             data: prices,
-                            smooth: true,
+                            smooth: true, // 平滑曲线
                             symbol: 'circle',
-                            symbolSize: 8,
+                            symbolSize: 6,
                             lineStyle: {
                                 color: '#FFD700',
-                                width: 4
+                                width: 3
                             },
                             itemStyle: {
                                 color: '#FFD700',
@@ -821,27 +912,8 @@
                                     type: 'linear',
                                     x: 0, y: 0, x2: 0, y2: 1,
                                     colorStops: [
-                                        { offset: 0, color: 'rgba(255, 215, 0, 0.4)' },
-                                        { offset: 1, color: 'rgba(255, 215, 0, 0.1)' }
-                                    ]
-                                }
-                            }
-                        }
-                    ];
-                } else { // bar
-                    baseOption.yAxis = baseOption.yAxis[1];
-                    baseOption.series = [
-                        {
-                            name: '成交量',
-                            type: 'bar',
-                            data: volumes,
-                            itemStyle: {
-                                color: {
-                                    type: 'linear',
-                                    x: 0, y: 0, x2: 0, y2: 1,
-                                    colorStops: [
-                                        { offset: 0, color: 'rgba(255, 165, 0, 0.9)' },
-                                        { offset: 1, color: 'rgba(255, 165, 0, 0.4)' }
+                                        { offset: 0, color: 'rgba(255, 215, 0, 0.3)' },
+                                        { offset: 1, color: 'rgba(255, 215, 0, 0.05)' }
                                     ]
                                 }
                             }
@@ -855,7 +927,8 @@
             updateStats(data) {
                 if (!data || data.length === 0) return;
 
-                const prices = data.map(item => parseFloat(item.price || item.gold_price || item.close || item.value || 0));
+                // 使用实际的 price 字段
+                const prices = data.map(item => parseFloat(item.price) || 0);
                 const currency = data[0]?.currency || 'USD';
 
                 const currentPrice = prices[prices.length - 1];
@@ -867,6 +940,12 @@
                 document.getElementById('highPrice').textContent = `${highPrice.toFixed(2)} ${currency}`;
                 document.getElementById('lowPrice').textContent = `${lowPrice.toFixed(2)} ${currency}`;
                 document.getElementById('avgPrice').textContent = `${avgPrice.toFixed(2)} ${currency}`;
+
+                // 在控制台输出数据源信息
+                const sources = [...new Set(data.map(item => item.source))];
+                console.log(`数据来源: ${sources.join(', ')}`);
+                console.log(`数据条数: ${data.length}`);
+                console.log(`时间范围: ${data[0]?.date} 至 ${data[data.length - 1]?.date}`);
             }
 
             setLoading(isLoading) {
@@ -890,6 +969,29 @@
             hideMessages() {
                 this.errorMsg.classList.remove('show');
                 this.successMsg.classList.remove('show');
+            }
+
+            // 自动加载数据
+            autoLoadData() {
+                // 延迟500ms执行，确保页面完全加载
+                setTimeout(() => {
+                    const config = {
+                        url: document.getElementById('supabaseUrl').value.trim(),
+                        apiKey: document.getElementById('apiKey').value.trim(),
+                        tableName: document.getElementById('tableName').value.trim(),
+                        limit: document.getElementById('limitRows').value,
+                        orderBy: document.getElementById('orderBy').value.trim()
+                    };
+
+                    // 检查配置是否完整
+                    if (config.url && config.apiKey && config.tableName) {
+                        console.log('页面加载完成，自动请求金价数据...');
+                        this.fetchGoldPriceData(config);
+                    } else {
+                        console.log('配置不完整，跳过自动请求');
+                        this.showError('请检查Supabase配置信息');
+                    }
+                }, 500);
             }
         }
 
