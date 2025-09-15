@@ -278,7 +278,7 @@
           }
 
           const latestGoldData = goldData[0];
-          let nyGoldPrice = latestGoldData.price; // 从数据库获取价格
+          let nyGoldPrice = latestGoldData.ny_price; // 从数据库获取价格
 
           // 如果数据库中的价格是每盎司，转换为每克
           const nyGoldPerGram = nyGoldPrice / 31.1034768;
