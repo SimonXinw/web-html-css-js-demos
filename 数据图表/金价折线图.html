@@ -684,17 +684,21 @@
           // 处理数据，根据实际表结构映射字段
           return data
             .map((item) => {
-              // 使用实际的字段名
-              const price = parseFloat(item.price) || 0; // price 字段 (real)
+              // 使用新的字段名：xau_price, sh_price, ny_price
+              const xauPrice = parseFloat(item.xau_price) || 0; // 伦敦现货金价
+              const shPrice = parseFloat(item.sh_price) || 0; // 沪金现货价格
+              const nyPrice = parseFloat(item.ny_price) || 0; // 纽约期货金价
 
               // 使用 created_at 作为时间轴
               const dateValue = item.created_at || new Date().toISOString();
 
               return {
                 date: this.formatDateTime(dateValue), // 保留时间信息
-                price: price,
-                currency: item.currency || "USD", // currency 字段 (text)
-                source: item.source || "Unknown", // source 字段 (text)
+                xauPrice: xauPrice, // 伦敦现货金价
+                shPrice: shPrice, // 沪金现货价格  
+                nyPrice: nyPrice, // 纽约期货金价
+                currency: item.currency || "USD", // 默认USD
+                source: item.source || "东方财富", // 默认东方财富
                 id: item.id,
                 originalData: item, // 保留原始数据用于调试
               };
@@ -729,12 +733,17 @@
 
         generateChartOption(data) {
           const dates = data.map((item) => item.date);
-          const prices = data.map((item) => item.price);
+          const xauPrices = data.map((item) => item.xauPrice);
+          const shPrices = data.map((item) => item.shPrice);
+          const nyPrices = data.map((item) => item.nyPrice);
           const currency = data[0]?.currency || "USD";
 
+          // 获取所有价格用于计算Y轴范围
+          const allPrices = [...xauPrices, ...shPrices, ...nyPrices].filter(p => p > 0);
+          
           // 动态计算Y轴范围
-          const minPrice = Math.min(...prices);
-          const maxPrice = Math.max(...prices);
+          const minPrice = Math.min(...allPrices);
+          const maxPrice = Math.max(...allPrices);
           const yAxisMin = Math.max(0, minPrice - 50); // 确保不小于0
           const yAxisMax = maxPrice + 50;
 
@@ -748,7 +757,7 @@
           const baseOption = {
             backgroundColor: "#fff",
             title: {
-              text: `纽约期货金价走势图 (${currency})`,
+              text: `全球金价走势对比图 (${currency})`,
               left: "center",
               textStyle: {
                 fontSize: 16,
@@ -766,11 +775,16 @@
               },
               formatter: function (params) {
                 let result = `<strong>${params[0].axisValue}</strong><br/>`;
-                const param = params[0];
-                result += `${param.marker}${param.seriesName}: ${param.value} ${currency}<br/>`;
+                
+                // 显示所有系列的数据
+                params.forEach(param => {
+                  if (param.value > 0) { // 只显示有效价格
+                    result += `${param.marker}${param.seriesName}: ${param.value} ${currency}<br/>`;
+                  }
+                });
 
                 // 显示数据来源信息
-                const dataIndex = param.dataIndex;
+                const dataIndex = params[0].dataIndex;
                 const originalData = data[dataIndex]?.originalData;
                 if (originalData?.source) {
                   result += `<br/><span style="color: #666;">数据来源: ${originalData.source}</span>`;
@@ -779,7 +793,7 @@
               },
             },
             legend: {
-              data: ["纽约期货金价"],
+              data: ["纽约期货金价", "伦敦现货金价", "沪金现货价格"],
               top: 30,
             },
             xAxis: {
@@ -796,7 +810,7 @@
             },
             yAxis: {
               type: "value",
-              name: `纽约期货金价 (${currency})`,
+              name: `金价 (${currency})`,
               min: yAxisMin, // 动态计算的最小值
               max: yAxisMax, // 动态计算的最大值
               axisLabel: {
@@ -831,91 +845,108 @@
           };
 
           // 根据图表类型生成不同的系列
-          if (this.currentChartType === "line") {
-            baseOption.series = [
-              {
-                name: "金价",
-                type: "line",
-                data: prices,
-                smooth: false,
-                symbol: "circle",
-                symbolSize: 6,
-                lineStyle: {
-                  color: "#DC143C",
-                  width: 3,
-                },
-                itemStyle: {
-                  color: "#DC143C",
-                  borderColor: "#fff",
-                  borderWidth: 2,
-                },
+          const series = [];
+          
+          // 纽约期货金价系列
+          if (nyPrices.some(p => p > 0)) {
+            series.push({
+              name: "纽约期货金价",
+              type: "line",
+              data: nyPrices,
+              smooth: this.currentChartType === "smooth",
+              symbol: "circle",
+              symbolSize: 4,
+              lineStyle: {
+                color: "#DC143C", // 红色
+                width: 2,
               },
-            ];
-          } else if (this.currentChartType === "area") {
-            baseOption.series = [
-              {
-                name: "纽约期货金价",
-                type: "line",
-                data: prices,
-                smooth: false,
-                symbol: "circle",
-                symbolSize: 6,
-                lineStyle: {
-                  color: "#DC143C",
-                  width: 3,
-                },
-                itemStyle: {
-                  color: "#DC143C",
-                },
+              itemStyle: {
+                color: "#DC143C",
+                borderColor: "#fff",
+                borderWidth: 1,
+              },
+              ...(this.currentChartType === "area" || this.currentChartType === "smooth" ? {
                 areaStyle: {
                   color: {
                     type: "linear",
-                    x: 0,
-                    y: 0,
-                    x2: 0,
-                    y2: 1,
-                    colorStops: [
-                      { offset: 0, color: "rgba(220, 20, 60, 0.4)" },
-                      { offset: 1, color: "rgba(220, 20, 60, 0.1)" },
-                    ],
-                  },
-                },
-              },
-            ];
-          } else if (this.currentChartType === "smooth") {
-            baseOption.series = [
-              {
-                name: "纽约期货金价",
-                type: "line",
-                data: prices,
-                smooth: true, // 平滑曲线
-                symbol: "circle",
-                symbolSize: 6,
-                lineStyle: {
-                  color: "#DC143C",
-                  width: 3,
-                },
-                itemStyle: {
-                  color: "#DC143C",
-                  borderColor: "#fff",
-                  borderWidth: 2,
-                },
-                areaStyle: {
-                  color: {
-                    type: "linear",
-                    x: 0,
-                    y: 0,
-                    x2: 0,
-                    y2: 1,
+                    x: 0, y: 0, x2: 0, y2: 1,
                     colorStops: [
                       { offset: 0, color: "rgba(220, 20, 60, 0.3)" },
                       { offset: 1, color: "rgba(220, 20, 60, 0.05)" },
                     ],
                   },
-                },
-              },
-            ];
+                }
+              } : {})
+            });
           }
+          
+          // 伦敦现货金价系列
+          if (xauPrices.some(p => p > 0)) {
+            series.push({
+              name: "伦敦现货金价",
+              type: "line",
+              data: xauPrices,
+              smooth: this.currentChartType === "smooth",
+              symbol: "circle",
+              symbolSize: 4,
+              lineStyle: {
+                color: "#FFD700", // 金色
+                width: 2,
+              },
+              itemStyle: {
+                color: "#FFD700",
+                borderColor: "#fff",
+                borderWidth: 1,
+              },
+              ...(this.currentChartType === "area" || this.currentChartType === "smooth" ? {
+                areaStyle: {
+                  color: {
+                    type: "linear",
+                    x: 0, y: 0, x2: 0, y2: 1,
+                    colorStops: [
+                      { offset: 0, color: "rgba(255, 215, 0, 0.3)" },
+                      { offset: 1, color: "rgba(255, 215, 0, 0.05)" },
+                    ],
+                  },
+                }
+              } : {})
+            });
+          }
+          
+          // 沪金现货价格系列
+          if (shPrices.some(p => p > 0)) {
+            series.push({
+              name: "沪金现货价格",
+              type: "line",
+              data: shPrices,
+              smooth: this.currentChartType === "smooth",
+              symbol: "circle",
+              symbolSize: 4,
+              lineStyle: {
+                color: "#1E90FF", // 蓝色
+                width: 2,
+              },
+              itemStyle: {
+                color: "#1E90FF",
+                borderColor: "#fff",
+                borderWidth: 1,
+              },
+              ...(this.currentChartType === "area" || this.currentChartType === "smooth" ? {
+                areaStyle: {
+                  color: {
+                    type: "linear",
+                    x: 0, y: 0, x2: 0, y2: 1,
+                    colorStops: [
+                      { offset: 0, color: "rgba(30, 144, 255, 0.3)" },
+                      { offset: 1, color: "rgba(30, 144, 255, 0.05)" },
+                    ],
+                  },
+                }
+              } : {})
+            });
+          }
+          
+          baseOption.series = series;
 
           return baseOption;
         }
@@ -923,36 +954,59 @@
         updateStats(data) {
           if (!data || data.length === 0) return;
 
-          // 使用实际的 price 字段
-          const prices = data.map((item) => parseFloat(item.price) || 0);
+          // 获取三个价格数组
+          const xauPrices = data.map((item) => parseFloat(item.xauPrice) || 0).filter(p => p > 0);
+          const shPrices = data.map((item) => parseFloat(item.shPrice) || 0).filter(p => p > 0);
+          const nyPrices = data.map((item) => parseFloat(item.nyPrice) || 0).filter(p => p > 0);
           const currency = data[0]?.currency || "USD";
 
-          const currentPrice = prices[prices.length - 1];
-          const highPrice = Math.max(...prices);
-          const lowPrice = Math.min(...prices);
-          const avgPrice =
-            prices.reduce((sum, price) => sum + price, 0) / prices.length;
+          // 计算各自的统计信息
+          const stats = {
+            ny: this.calculatePriceStats(nyPrices, "纽约期货"),
+            xau: this.calculatePriceStats(xauPrices, "伦敦现货"),
+            sh: this.calculatePriceStats(shPrices, "沪金现货")
+          };
 
-          document.getElementById(
-            "currentPrice"
-          ).textContent = `${currentPrice.toFixed(2)} ${currency}`;
-          document.getElementById(
-            "highPrice"
-          ).textContent = `${highPrice.toFixed(2)} ${currency}`;
-          document.getElementById("lowPrice").textContent = `${lowPrice.toFixed(
-            2
-          )} ${currency}`;
-          document.getElementById("avgPrice").textContent = `${avgPrice.toFixed(
-            2
-          )} ${currency}`;
+          // 更新显示 - 显示最新的有效价格
+          const latestData = data[data.length - 1];
+          
+          document.getElementById("currentPrice").innerHTML = `
+            <div style="font-size: 0.8em; margin-bottom: 5px;">
+              NY: ${latestData.nyPrice || '--'}<br/>
+              XAU: ${latestData.xauPrice || '--'}<br/>
+              SH: ${latestData.shPrice || '--'}
+            </div>
+          `;
+          
+          // 显示全局最高价
+          const allPrices = [...xauPrices, ...shPrices, ...nyPrices];
+          const globalHigh = allPrices.length > 0 ? Math.max(...allPrices) : 0;
+          const globalLow = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+          const globalAvg = allPrices.length > 0 ? allPrices.reduce((sum, price) => sum + price, 0) / allPrices.length : 0;
+
+          document.getElementById("highPrice").textContent = `${globalHigh.toFixed(2)} ${currency}`;
+          document.getElementById("lowPrice").textContent = `${globalLow.toFixed(2)} ${currency}`;
+          document.getElementById("avgPrice").textContent = `${globalAvg.toFixed(2)} ${currency}`;
 
           // 在控制台输出数据源信息
           const sources = [...new Set(data.map((item) => item.source))];
           console.log(`数据来源: ${sources.join(", ")}`);
           console.log(`数据条数: ${data.length}`);
-          console.log(
-            `时间范围: ${data[0]?.date} 至 ${data[data.length - 1]?.date}`
-          );
+          console.log(`纽约期货有效数据: ${nyPrices.length}条`);
+          console.log(`伦敦现货有效数据: ${xauPrices.length}条`);
+          console.log(`沪金现货有效数据: ${shPrices.length}条`);
+          console.log(`时间范围: ${data[0]?.date} 至 ${data[data.length - 1]?.date}`);
+        }
+
+        calculatePriceStats(prices, name) {
+          if (prices.length === 0) return { current: 0, high: 0, low: 0, avg: 0 };
+          
+          return {
+            current: prices[prices.length - 1],
+            high: Math.max(...prices),
+            low: Math.min(...prices),
+            avg: prices.reduce((sum, price) => sum + price, 0) / prices.length
+          };
         }
 
         setLoading(isLoading) {
@@ -1013,25 +1067,35 @@
       window.loadDemoData = function () {
         const chart = window.goldPriceChart || new GoldPriceChart();
 
-        // 生成30天的模拟金价数据
-        const demoData = [];
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 30);
+                  // 生成30天的模拟金价数据
+          const demoData = [];
+          const startDate = new Date();
+          startDate.setDate(startDate.getDate() - 30);
 
-        for (let i = 0; i < 30; i++) {
-          const date = new Date(startDate);
-          date.setDate(date.getDate() + i);
+          for (let i = 0; i < 30; i++) {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + i);
 
-          const basePrice = 2000 + Math.sin(i / 5) * 100; // 基础价格波动
-          const randomFactor = (Math.random() - 0.5) * 50; // 随机波动
+            const basePrice = 2000 + Math.sin(i / 5) * 100; // 基础价格波动
+            const randomFactor = (Math.random() - 0.5) * 50; // 随机波动
 
-          demoData.push({
-            date: date.toISOString().split("T")[0],
-            price: Math.max(1800, basePrice + randomFactor),
-            volume: Math.floor(Math.random() * 2000000 + 500000),
-            currency: "USD",
-          });
-        }
+            // 生成三个不同的价格
+            const nyPrice = Math.max(1800, basePrice + randomFactor);
+            const xauPrice = Math.max(1800, nyPrice + (Math.random() - 0.5) * 30); // 伦敦价格略有差异
+            const shPrice = Math.max(400, (nyPrice / 7.2) + (Math.random() - 0.5) * 20); // 沪金价格（人民币）
+
+            demoData.push({
+              id: i + 1,
+              created_at: date.toISOString(),
+              time_period: "realtime",
+              price: null, // 保持兼容性
+              source: "东方财富",
+              currency: "USD",
+              xau_price: xauPrice,
+              sh_price: shPrice,
+              ny_price: nyPrice
+            });
+          }
 
         chart.currentData = demoData;
         chart.renderChart(demoData);
