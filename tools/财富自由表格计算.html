@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>财富自由指南表格计算</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow-x: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .input_section {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .input_group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .input_group label {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .input_group input {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      width: 150px;
+    }
+
+    .input_group input:focus {
+      outline: none;
+      border-color: #4CAF50;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 12px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      min-width: 80px;
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #FFE599;
+      font-weight: bold;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    td:first-child, th:first-child {
+      background-color: #B4C7E7;
+      font-weight: bold;
+      position: sticky;
+      left: 0;
+      z-index: 5;
+    }
+
+    th:first-child {
+      z-index: 15;
+    }
+
+    .result_cell {
+      font-weight: 500;
+    }
+
+    .result_cell.forever {
+      background-color: #C6E0B4;
+      color: #2E7D32;
+    }
+
+    .result_cell.years_1_5 {
+      background-color: #FF6B6B;
+      color: white;
+    }
+
+    .result_cell.years_6_10 {
+      background-color: #FFA500;
+      color: white;
+    }
+
+    .result_cell.years_11_30 {
+      background-color: #FFD966;
+      color: #333;
+    }
+
+    .result_cell.years_31_plus {
+      background-color: #9BC2E6;
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      .input_section {
+        flex-direction: column;
+      }
+
+      table {
+        font-size: 10px;
+      }
+
+      th, td {
+        padding: 5px;
+        min-width: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>财富自由指南 - 本金（年利率 <span id="rate_display">2.0</span>%）</h1>
+    
+    <div class="input_section">
+      <div class="input_group">
+        <label for="annual_rate">年利率（%）：</label>
+        <input type="number" id="annual_rate" value="2.0" step="0.1" min="0" max="100">
+      </div>
+      
+      <div class="input_group">
+        <label for="annual_income">每年收入（万元）：</label>
+        <input type="number" id="annual_income" value="0" step="1" min="0">
+      </div>
+    </div>
+
+    <table id="wealth_table">
+      <!-- 表格内容将通过 JavaScript 动态生成 -->
+    </table>
+  </div>
+
+  <script>
+    // 第一行：本金数据（万元）
+    const PRINCIPAL_AMOUNTS = [100, 150, 300, 500, 1000, 2000, 3000, 5000, 10000, 20000, 30000];
+
+    // 第一列：每年消费数据（万元）
+    const ANNUAL_EXPENSES = [2, 3.5, 5, 10, 20, 30, 50, 75, 100, 150, 200, 250, 300, 500];
+
+    // 默认配置
+    const DEFAULT_RATE = 2.0;
+    const DEFAULT_INCOME = 0;
+
+    /**
+     * 格式化本金显示
+     * @param {number} amount - 金额（万元）
+     * @returns {string} 格式化后的字符串
+     */
+    const formatPrincipal = (amount) => {
+      if (amount >= 10000) {
+        return `${amount / 10000}亿元`;
+      }
+      return `${amount}万`;
+    };
+
+    /**
+     * 计算在给定条件下能消费多少年
+     * @param {number} initialPrincipal - 初始本金（万元）
+     * @param {number} annualIncome - 每年收入（万元）
+     * @param {number} annualExpense - 每年消费（万元）
+     * @param {number} annualRate - 年利率（百分比）
+     * @returns {number|string} 可消费年数，或 "forever" 表示永远花不完
+     */
+    const calculateYearsUntilBroke = (initialPrincipal, annualIncome, annualExpense, annualRate) => {
+      // 转换利率为小数
+      const rateDecimal = annualRate / 100;
+      
+      // 当前本金
+      let currentPrincipal = initialPrincipal;
+      
+      // 年份计数器
+      let years = 0;
+      
+      // 最大计算年限（防止无限循环）
+      const MAX_YEARS = 1000;
+      
+      // 持续计算直到钱花完或超过最大年限
+      while (years < MAX_YEARS) {
+        // 计算年初可用金额
+        const availableAmount = currentPrincipal + annualIncome - annualExpense;
+        
+        // 判断是否永远花不完：如果年初金额大于等于初始本金，说明钱越来越多
+        if (availableAmount >= initialPrincipal && years === 0) {
+          return "forever";
+        }
+        
+        // 判断是否这一年就花完了
+        if (availableAmount <= 0) {
+          return years + 1;
+        }
+        
+        // 计算年底本金（加上利息）
+        currentPrincipal = availableAmount * (1 + rateDecimal);
+        
+        // 年份加一
+        years++;
+      }
+      
+      // 如果超过最大年限，也认为是永远花不完
+      return "forever";
+    };
+
+    /**
+     * 格式化结果显示
+     * @param {number|string} years - 年数或 "forever"
+     * @returns {string} 格式化后的显示文本
+     */
+    const formatResult = (years) => {
+      if (years === "forever") {
+        return "永远花不完";
+      }
+      return `第${years}年花完`;
+    };
+
+    /**
+     * 根据年数获取对应的样式类名
+     * @param {number|string} years - 年数或 "forever"
+     * @returns {string} CSS 类名
+     */
+    const getResultClass = (years) => {
+      if (years === "forever") {
+        return "forever";
+      }
+      if (years <= 5) {
+        return "years_1_5";
+      }
+      if (years <= 10) {
+        return "years_6_10";
+      }
+      if (years <= 30) {
+        return "years_11_30";
+      }
+      return "years_31_plus";
+    };
+
+    /**
+     * 生成表格 HTML
+     * @param {number} annualRate - 年利率（百分比）
+     * @param {number} annualIncome - 每年收入（万元）
+     */
+    const generateTable = (annualRate, annualIncome) => {
+      const table = document.getElementById("wealth_table");
+      let html = "";
+
+      // 生成表头
+      html += "<thead><tr>";
+      html += "<th>每年花费</th>";
+      PRINCIPAL_AMOUNTS.forEach(amount => {
+        html += `<th>${formatPrincipal(amount)}</th>`;
+      });
+      html += "</tr></thead>";
+
+      // 生成表格内容
+      html += "<tbody>";
+      ANNUAL_EXPENSES.forEach(expense => {
+        html += "<tr>";
+        html += `<td>每年花${expense}万</td>`;
+        
+        PRINCIPAL_AMOUNTS.forEach(principal => {
+          const years = calculateYearsUntilBroke(principal, annualIncome, expense, annualRate);
+          const resultText = formatResult(years);
+          const resultClass = getResultClass(years);
+          html += `<td class="result_cell ${resultClass}">${resultText}</td>`;
+        });
+        
+        html += "</tr>";
+      });
+      html += "</tbody>";
+
+      table.innerHTML = html;
+    };
+
+    /**
+     * 更新页面显示的利率
+     */
+    const updateRateDisplay = () => {
+      const rateInput = document.getElementById("annual_rate");
+      const rateDisplay = document.getElementById("rate_display");
+      rateDisplay.textContent = parseFloat(rateInput.value).toFixed(1);
+    };
+
+    /**
+     * 处理输入变化并重新计算表格
+     */
+    const handleInputChange = () => {
+      const annualRate = parseFloat(document.getElementById("annual_rate").value) || DEFAULT_RATE;
+      const annualIncome = parseFloat(document.getElementById("annual_income").value) || DEFAULT_INCOME;
+      
+      updateRateDisplay();
+      generateTable(annualRate, annualIncome);
+    };
+
+    /**
+     * 初始化页面
+     */
+    const initPage = () => {
+      // 绑定输入框事件
+      document.getElementById("annual_rate").addEventListener("input", handleInputChange);
+      document.getElementById("annual_income").addEventListener("input", handleInputChange);
+      
+      // 初始化表格
+      generateTable(DEFAULT_RATE, DEFAULT_INCOME);
+    };
+
+    // 页面加载完成后初始化
+    document.addEventListener("DOMContentLoaded", initPage);
+  </script>
+</body>
+</html>
+
