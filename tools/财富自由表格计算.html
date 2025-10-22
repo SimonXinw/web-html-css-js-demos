@@ -140,11 +140,17 @@
             font-style: italic;
         }
 
+        .table_wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 20px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
             font-size: 12px;
+            min-width: 800px;
         }
 
         th,
@@ -206,7 +212,125 @@
             color: #333;
         }
 
+        .description_section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .description_title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .description_content {
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .description_content h3 {
+            font-size: 16px;
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .description_content h3:first-child {
+            margin-top: 0;
+        }
+
+        .description_content p {
+            margin-bottom: 12px;
+        }
+
+        .description_content ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .description_content li {
+            margin-bottom: 8px;
+        }
+
+        .description_content code {
+            background-color: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #e91e63;
+            font-family: "Courier New", monospace;
+            border: 1px solid #e0e0e0;
+        }
+
+        .formula_box {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #4CAF50;
+            margin: 15px 0;
+            font-family: "Courier New", monospace;
+        }
+
+        .color_legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .color_item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color_box {
+            width: 30px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+
+        .color_box.forever {
+            background-color: #C6E0B4;
+        }
+
+        .color_box.years_1_5 {
+            background-color: #FF6B6B;
+        }
+
+        .color_box.years_6_10 {
+            background-color: #FFA500;
+        }
+
+        .color_box.years_11_30 {
+            background-color: #FFD966;
+        }
+
+        .color_box.years_31_plus {
+            background-color: #9BC2E6;
+        }
+
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 18px;
+                margin-bottom: 15px;
+            }
+
             .basic_inputs {
                 flex-direction: column;
             }
@@ -216,14 +340,50 @@
                 align-items: flex-start;
             }
 
+            .income_config_section {
+                padding: 10px;
+            }
+
+            .income_config_title {
+                font-size: 14px;
+            }
+
             table {
                 font-size: 10px;
+                min-width: 600px;
             }
 
             th,
             td {
                 padding: 5px;
-                min-width: 60px;
+                min-width: 50px;
+            }
+
+            .description_section {
+                padding: 15px;
+                margin-top: 20px;
+            }
+
+            .description_title {
+                font-size: 16px;
+            }
+
+            .description_content {
+                font-size: 14px;
+            }
+
+            .description_content h3 {
+                font-size: 15px;
+            }
+
+            .color_legend {
+                gap: 10px;
+            }
+
+            .formula_box {
+                padding: 10px;
+                font-size: 12px;
+                overflow-x: auto;
             }
         }
     </style>
@@ -249,9 +409,95 @@
             </div>
         </div>
 
-        <table id="wealth_table">
-            <!-- 表格内容将通过 JavaScript 动态生成 -->
-        </table>
+        <div class="table_wrapper">
+            <table id="wealth_table">
+                <!-- 表格内容将通过 JavaScript 动态生成 -->
+            </table>
+        </div>
+
+        <div class="description_section">
+            <div class="description_title">📊 计算逻辑说明</div>
+            <div class="description_content">
+                <h3>💡 工具用途</h3>
+                <p>这个工具帮助你计算在不同本金、消费水平和收入条件下，你的资产能够维持多少年，从而规划财富自由之路。</p>
+
+                <h3>🧮 核心计算公式</h3>
+                <div class="formula_box">
+                    <strong>第N年年底本金 = (第N年年初本金 + 第N年收入 - 第N年消费) × (1 + 年利率)</strong>
+                </div>
+                <p>计算过程：</p>
+                <ul>
+                    <li><strong>年初本金：</strong>上一年年底剩余的本金</li>
+                    <li><strong>第N年收入：</strong>根据分段配置获取该年的收入金额</li>
+                    <li><strong>第N年消费：</strong>表格第一列对应的每年消费金额</li>
+                    <li><strong>年利率：</strong>页面顶部输入的年利率（如2%表示0.02）</li>
+                </ul>
+
+                <h3>🔄 计算流程</h3>
+                <p>对于每个本金和消费组合，系统会进行以下计算：</p>
+                <ul>
+                    <li><strong>第1步：</strong>计算第1年年初可用金额 = 初始本金 + 第1年收入 - 第1年消费</li>
+                    <li><strong>第2步：</strong>如果可用金额 ≥ 初始本金，判定为"永远花不完"（钱越来越多）</li>
+                    <li><strong>第3步：</strong>如果可用金额 ≤ 0，记录为"第1年花完"</li>
+                    <li><strong>第4步：</strong>否则，计算年底本金 = 可用金额 × (1 + 年利率)</li>
+                    <li><strong>第5步：</strong>进入第2年，重复以上步骤，直到钱花完或超过1000年</li>
+                </ul>
+
+                <h3>💰 分段收入配置</h3>
+                <p>支持为不同年份段设置不同的收入，模拟真实的人生财务规划：</p>
+                <ul>
+                    <li><strong>工作期：</strong>例如1-30年，每年有稳定收入</li>
+                    <li><strong>退休期：</strong>例如31-50年，收入降低或为0</li>
+                    <li>可添加多个时间段，最多配置到第50年</li>
+                </ul>
+
+                <h3>🎨 结果颜色说明</h3>
+                <div class="color_legend">
+                    <div class="color_item">
+                        <div class="color_box years_1_5"></div>
+                        <span>1-5年花完（红色）- 风险极高</span>
+                    </div>
+                    <div class="color_item">
+                        <div class="color_box years_6_10"></div>
+                        <span>6-10年花完（橙色）- 风险较高</span>
+                    </div>
+                    <div class="color_item">
+                        <div class="color_box years_11_30"></div>
+                        <span>11-30年花完（黄色）- 中等风险</span>
+                    </div>
+                    <div class="color_item">
+                        <div class="color_box years_31_plus"></div>
+                        <span>31年以上花完（蓝色）- 相对安全</span>
+                    </div>
+                    <div class="color_item">
+                        <div class="color_box forever"></div>
+                        <span>永远花不完（绿色）- 财富自由</span>
+                    </div>
+                </div>
+
+                <h3>📝 使用示例</h3>
+                <p><strong>场景：</strong>本金100万，每年消费10万，年利率2%，前30年每年收入20万</p>
+                <ul>
+                    <li><strong>第1年初：</strong>可用 = 100 + 20 - 10 = 110万 ≥ 100万 → 判定为"永远花不完"</li>
+                </ul>
+                <p><strong>场景：</strong>本金100万，每年消费20万，年利率2%，无收入</p>
+                <ul>
+                    <li><strong>第1年初：</strong>可用 = 100 + 0 - 20 = 80万</li>
+                    <li><strong>第1年底：</strong>本金 = 80 × 1.02 = 81.6万</li>
+                    <li><strong>第2年初：</strong>可用 = 81.6 + 0 - 20 = 61.6万</li>
+                    <li><strong>第2年底：</strong>本金 = 61.6 × 1.02 = 62.832万</li>
+                    <li>...以此类推，直到某年可用金额 ≤ 0</li>
+                </ul>
+
+                <h3>⚠️ 注意事项</h3>
+                <ul>
+                    <li>计算结果基于理想化假设，不考虑通货膨胀、税收、医疗等额外支出</li>
+                    <li>年利率应根据实际投资收益率设置（如国债2%、理财4%、股票8%等）</li>
+                    <li>建议在实际规划时预留一定的安全边际</li>
+                    <li>本工具仅供参考，不构成投资建议</li>
+                </ul>
+            </div>
+        </div>
     </div>
 
     <script>
