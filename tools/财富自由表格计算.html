@@ -399,10 +399,14 @@
                     <label for="annual_rate">年利率（%）：</label>
                     <input type="number" id="annual_rate" value="2.0" step="0.1" min="0" max="100">
                 </div>
+                <div class="input_group">
+                    <label for="max_years">计算年份：</label>
+                    <input type="number" id="max_years" value="50" step="1" min="10" max="200">
+                </div>
             </div>
 
             <div class="income_config_section">
-                <div class="income_config_title">💰 分段收入配置（最多50年）</div>
+                <div class="income_config_title">💰 分段收入配置（最多<span id="max_years_display">50</span>年）</div>
                 <div id="income_segments" class="income_segments">
                     <!-- 收入段将动态生成 -->
                 </div>
@@ -509,11 +513,12 @@
 
         // 默认配置
         const DEFAULT_RATE = 2.0;
-        const MAX_YEARS = 50;
+        const DEFAULT_MAX_YEARS = 50;
+        let MAX_YEARS = DEFAULT_MAX_YEARS;
 
         // 收入段配置数组
         let incomeSegments = [
-            { startYear: 1, endYear: 50, income: 0 }
+            { startYear: 1, endYear: DEFAULT_MAX_YEARS, income: 0 }
         ];
 
         /**
@@ -559,21 +564,13 @@
             // 年份计数器
             let years = 0;
 
-            // 最大计算年限（防止无限循环）
-            const MAX_CALCULATION_YEARS = 1000;
-
-            // 持续计算直到钱花完或超过最大年限
-            while (years < MAX_CALCULATION_YEARS) {
+            // 持续计算直到钱花完或超过设定的最大年限
+            while (years < MAX_YEARS) {
                 // 获取当前年份的收入
                 const currentYearIncome = getIncomeByYear(years + 1);
 
                 // 计算年初可用金额
                 const availableAmount = currentPrincipal + currentYearIncome - annualExpense;
-
-                // 判断是否永远花不完：如果年初金额大于等于初始本金，说明钱越来越多
-                if (availableAmount >= initialPrincipal && years === 0) {
-                    return "forever";
-                }
 
                 // 判断是否这一年就花完了
                 if (availableAmount <= 0) {
@@ -587,7 +584,7 @@
                 years++;
             }
 
-            // 如果超过最大年限，也认为是永远花不完
+            // 如果超过设定的最大年限还没花完，认为是永远花不完
             return "forever";
         };
 
@@ -667,6 +664,30 @@
             const rateInput = document.getElementById("annual_rate");
             const rateDisplay = document.getElementById("rate_display");
             rateDisplay.textContent = parseFloat(rateInput.value).toFixed(1);
+        };
+
+        /**
+         * 更新最大年份配置
+         */
+        const updateMaxYears = () => {
+            const maxYearsInput = document.getElementById("max_years");
+            const maxYearsDisplay = document.getElementById("max_years_display");
+            const newMaxYears = parseInt(maxYearsInput.value) || DEFAULT_MAX_YEARS;
+            
+            MAX_YEARS = newMaxYears;
+            maxYearsDisplay.textContent = MAX_YEARS;
+            
+            // 更新收入段配置
+            const lastSegment = incomeSegments[incomeSegments.length - 1];
+            if (lastSegment.endYear > MAX_YEARS) {
+                lastSegment.endYear = MAX_YEARS;
+                // 删除超出范围的段
+                incomeSegments = incomeSegments.filter(seg => seg.startYear <= MAX_YEARS);
+            } else if (lastSegment.endYear < MAX_YEARS) {
+                lastSegment.endYear = MAX_YEARS;
+            }
+            
+            renderIncomeSegments();
         };
 
         /**
@@ -792,11 +813,22 @@
         };
 
         /**
+         * 处理最大年份变化
+         */
+        const handleMaxYearsChange = () => {
+            updateMaxYears();
+            handleInputChange();
+        };
+
+        /**
          * 初始化页面
          */
         const initPage = () => {
             // 绑定利率输入框事件
             document.getElementById("annual_rate").addEventListener("input", handleInputChange);
+
+            // 绑定最大年份输入框事件
+            document.getElementById("max_years").addEventListener("input", handleMaxYearsChange);
 
             // 渲染收入段配置
             renderIncomeSegments();
