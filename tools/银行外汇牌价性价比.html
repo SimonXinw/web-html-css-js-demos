@@ -280,6 +280,10 @@
                 差额
                 <input type="number" name="difference${bankGroupId}" placeholder="自动计算" readonly>
               </label>
+              <label>
+                汇兑损失百分比
+                <input type="text" name="lossPercentage${bankGroupId}" placeholder="自动计算" readonly style="color: green;">
+              </label>
             `;
         container.appendChild(group);
         updateContainerWidth();
@@ -327,6 +331,15 @@
           group.querySelector(`input[name^="difference"]`).value = parseFloat(
             diff.toFixed(10)
           );
+
+          // 计算汇兑损失百分比并显示（差额 / 现汇买入价 * 100%）
+          const lossPercentageInput = group.querySelector(`input[name^="lossPercentage"]`);
+          if (buyPrice && diff) {
+            const lossPercentage = ((diff / buyPrice) * 100).toFixed(4);
+            lossPercentageInput.value = `${lossPercentage}%`;
+          } else {
+            lossPercentageInput.value = "";
+          }
 
           // 找出最低的卖出价
           if (sellPrice && sellPrice < lowestSell.value) {
