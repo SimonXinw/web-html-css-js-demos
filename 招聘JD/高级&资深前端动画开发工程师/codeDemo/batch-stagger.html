@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo 7: Batch Animation & Stagger (批量动画性能优化)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #111;
+            color: white;
+            padding: 20px;
+        }
+        
+        .controls {
+            margin-bottom: 20px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            background: #111;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        button {
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 5px;
+        }
+
+        .item {
+            width: 100%;
+            padding-bottom: 100%; /* 1:1 Aspect Ratio */
+            background-color: #333;
+            border-radius: 4px;
+            /* 初始状态：缩小且透明 */
+            opacity: 0;
+            transform: scale(0.5); 
+            
+            /* 
+             * 优化点 1: 
+             * 仅对 transform 和 opacity 进行 GPU 加速
+             * 避免使用 top/left 或 width/height
+             */
+            will-change: transform, opacity;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2>Batch Animation (2000 Elements)</h2>
+        <p>比较“一次性渲染”与“Stagger 错峰渲染”的性能差异。</p>
+        <button id="btn-sync">Sync Play (卡顿)</button>
+        <button id="btn-stagger">Stagger Play (流畅)</button>
+        <button id="btn-reset">Reset</button>
+        <span id="status">Ready</span>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <script>
+        /**
+         * 演示：批量动画性能优化
+         * 难度：中等 (Medium)
+         * 对应面试题：第八题：滚动监听的性能瓶颈 / 批量初始化
+         * 
+         * 考察点：
+         * 1. 批量 DOM 操作：使用 DocumentFragment 减少 Reflow。
+         * 2. Stagger (交错) 原理：避免 2000 个元素在同一帧进行 Paint/Composite。
+         * 3. requestAnimationFrame 分片：将繁重任务拆分到多个帧。
+         */
+
+        const grid = document.getElementById('grid');
+        const count = 2000; // 元素数量
+        const items = [];
+
+        // 1. 初始化 DOM (使用 Fragment 优化)
+        function init() {
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < count; i++) {
+                const div = document.createElement('div');
+                div.className = 'item';
+                // 随机颜色
+                div.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                fragment.appendChild(div);
+                items.push(div);
+            }
+            grid.appendChild(fragment);
+        }
+        init();
+
+        function reset() {
+            items.forEach(item => {
+                // 直接操作 Style，去除 Transition 以便瞬间复位
+                item.style.transition = 'none';
+                item.style.opacity = '0';
+                item.style.transform = 'scale(0.5)';
+            });
+            // 强制回流，确保 transition removed 生效
+            document.body.offsetHeight; 
+        }
+
+        // 方案 A: 同步播放 (压力测试)
+        // 所有 2000 个元素在同一时刻启动 transition，会导致主线程瞬间拥堵
+        document.getElementById('btn-sync').addEventListener('click', () => {
+            reset();
+            
+            requestAnimationFrame(() => {
+                const start = performance.now();
+                
+                items.forEach(item => {
+                    item.style.transition = 'all 0.5s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'scale(1)';
+                });
+
+                console.log(`Sync Trigger Time: ${performance.now() - start}ms`);
+            });
+        });
+
+        // 方案 B: Stagger (错峰) 播放 —— 推荐做法
+        // 利用 JS 循环添加 delay，或者分批次执行
+        document.getElementById('btn-stagger').addEventListener('click', () => {
+            reset();
+
+            // 简单的 Stagger 逻辑：
+            // 我们不一次性设置所有 Style，而是每帧处理一部分
+            // 或者给每个元素设置不同的 transition-delay
+            
+            // 方法 1: 使用 transition-delay (最简单，但 CSS 样式表会很大)
+            // 方法 2: JS 驱动的分时任务 (Time Slicing) —— 这里演示这个，因为它更通用
+
+            let index = 0;
+            const batchSize = 50; // 每帧处理 50 个
+
+            function animateBatch() {
+                // 在这一帧处理 batchSize 个元素
+                const limit = Math.min(index + batchSize, count);
+                
+                for (let i = index; i < limit; i++) {
+                    const item = items[i];
+                    item.style.transition = 'all 0.5s ease'; // 恢复过渡
+                    item.style.opacity = '1';
+                    item.style.transform = 'scale(1)';
+                }
+                
+                index = limit;
+
+                if (index < count) {
+                    requestAnimationFrame(animateBatch);
+                }
+            }
+
+            requestAnimationFrame(animateBatch);
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', reset);
+
+    </script>
+</body>
+</html>
