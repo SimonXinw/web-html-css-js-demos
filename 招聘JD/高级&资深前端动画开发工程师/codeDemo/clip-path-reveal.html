@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo 5: Clip-Path Reveal (遮罩放大转场)</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* 页面容器： absolute 叠放 */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: clip-path 0.8s cubic-bezier(0.645, 0.045, 0.355, 1); /* 优雅的缓动 */
+        }
+
+        /* 页面 1：初始页面 */
+        .page-1 {
+            background-color: #f0f0f0;
+            z-index: 1;
+        }
+
+        /* 页面 2：待揭示页面 */
+        .page-2 {
+            background-color: #2c3e50;
+            color: white;
+            z-index: 2;
+            /* 
+             * 核心技巧：初始 clip-path 为一个半径为 0 的圆，位于屏幕中心 (或者按钮位置)
+             * 这里我们先设置为 0%，等待 JS 动态计算
+             */
+            clip-path: circle(0% at 50% 50%);
+            pointer-events: none; /* 防止遮挡底层点击 */
+        }
+
+        /* 激活状态：铺满全屏 */
+        .page-2.active {
+            pointer-events: auto;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            outline: none;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .back-btn {
+            background: white;
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 初始页面 -->
+    <div class="page page-1">
+        <h1>Page One</h1>
+        <!-- 点击此按钮触发转场 -->
+        <button id="trigger-btn">Reveal Next Page</button>
+    </div>
+
+    <!-- 被遮罩的页面 -->
+    <div class="page page-2" id="reveal-page">
+        <h1>Page Two</h1>
+        <p>Smooth Material Design Reveal</p>
+        <button class="back-btn" id="reset-btn">Go Back</button>
+    </div>
+
+    <script>
+        /**
+         * 演示：遮罩放大转场 (Clip-Path Reveal)
+         * 难度：进阶 (Advanced)
+         * 对应面试题：第四题：遮罩放大转场 (Clip-Path Reveal)
+         * 
+         * 考察点：
+         * 1. 空间几何 (勾股定理)：计算点击点到屏幕最远角的距离，作为最终半径。
+         * 2. 坐标转换：获取鼠标点击位置 (clientX, clientY) 作为圆心。
+         * 3. CSS clip-path：高性能的遮罩动画属性。
+         */
+
+        const triggerBtn = document.getElementById('trigger-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const revealPage = document.getElementById('reveal-page');
+
+        // 核心逻辑：计算覆盖全屏所需的最小半径
+        function calculateRadius(x, y) {
+            // 获取视口尺寸
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // 计算点击点到四个角的距离
+            // 勾股定理: c = sqrt(a^2 + b^2)
+            const distTopLeft = Math.hypot(x, y);
+            const distTopRight = Math.hypot(width - x, y);
+            const distBottomLeft = Math.hypot(x, height - y);
+            const distBottomRight = Math.hypot(width - x, height - y);
+
+            // 取最大值作为半径，确保完全覆盖
+            return Math.max(distTopLeft, distTopRight, distBottomLeft, distBottomRight);
+        }
+
+        triggerBtn.addEventListener('click', (e) => {
+            // 1. 获取点击坐标
+            const x = e.clientX;
+            const y = e.clientY;
+
+            // 2. 计算最终半径
+            const finalRadius = calculateRadius(x, y);
+
+            // 3. 设置初始状态：圆心在点击位置，半径为 0
+            // 使用 px 单位更精确
+            revealPage.style.clipPath = `circle(0px at ${x}px ${y}px)`;
+            
+            // 强制重绘 (Reflow)，确保初始状态被应用
+            revealPage.getBoundingClientRect();
+
+            // 4. 激活 CSS transition
+            revealPage.classList.add('active');
+            
+            // 5. 设置最终状态：半径铺满
+            revealPage.style.clipPath = `circle(${finalRadius}px at ${x}px ${y}px)`;
+        });
+
+        resetBtn.addEventListener('click', () => {
+            // 收缩回原来位置 (这里简化为收缩回中心，也可以记录上次坐标)
+            // 为了演示方便，我们简单地让它收缩为 0
+            // 如果要完美复原，需要全局变量存储上次的 x, y
+            
+            // 读取当前 clip-path 的圆心 (这需要正则解析，略复杂) 
+            // 简单处理：移除 active 类，让它回到 CSS 默认状态 (如果有定义)
+            // 或者：手动设置回 0
+            
+            revealPage.style.clipPath = `circle(0px at 50% 50%)`;
+            
+            // 监听 transition 结束清理类名，防止 pointer-events 问题
+            const cleanup = () => {
+                revealPage.classList.remove('active');
+                revealPage.removeEventListener('transitionend', cleanup);
+            };
+            revealPage.addEventListener('transitionend', cleanup);
+        });
+
+    </script>
+</body>
+</html>

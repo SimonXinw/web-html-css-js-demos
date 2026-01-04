@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo 2: Apple-style Scroll Sequence (Canvas 序列帧)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: sans-serif;
+            /* 确保页面有足够的滚动空间 */
+            height: 500vh; 
+        }
+
+        .sticky-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+
+        canvas {
+            /* 保持宽高比或覆盖整个屏幕，类似 object-fit: contain */
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        .scroll-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            opacity: 0.7;
+            font-size: 14px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateX(-50%) translateY(0);}
+            40% {transform: translateX(-50%) translateY(-10px);}
+            60% {transform: translateX(-50%) translateY(-5px);}
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loading" id="loading">Loading Assets...</div>
+    
+    <div class="sticky-container">
+        <canvas id="hero-lightpass"></canvas>
+    </div>
+
+    <div class="scroll-hint">Scroll Down to Play Animation</div>
+
+    <script>
+        /**
+         * 演示：Apple 官网风格的 Canvas 序列帧滚动动画
+         * 难度：复杂 (Complex)
+         * 
+         * 考察点：
+         * 1. 资源预加载：必须等待图片加载完成才能渲染，否则会闪烁。
+         * 2. 滚动映射：ScrollTop -> Frame Index 的精准映射。
+         * 3. Canvas 性能：使用 requestAnimationFrame 避免过度重绘。
+         * 4. 响应式：Canvas 的宽高比保持。
+         */
+
+        // 模拟配置
+        const frameCount = 120; // 总帧数
+        const images = []; // 图片缓存池
+        const canvas = document.getElementById("hero-lightpass");
+        const context = canvas.getContext("2d");
+        const loadingEl = document.getElementById("loading");
+
+        // 设定 Canvas 尺寸 (高清屏适配)
+        canvas.width = 1920;
+        canvas.height = 1080;
+
+        // 状态
+        const state = {
+            frame: 0,
+            maxScroll: 0 // 动态计算
+        };
+
+        // 1. 模拟生成图片资源 (实际项目中这里是 URL 数组)
+        // 为了演示，我们动态创建 120 个 Canvas 图像数据作为"图片"
+        function preloadImages() {
+            let loadedCount = 0;
+
+            return new Promise((resolve) => {
+                for (let i = 0; i < frameCount; i++) {
+                    // 创建离屏 Canvas 生成模拟图像
+                    const offCanvas = document.createElement('canvas');
+                    offCanvas.width = 1920;
+                    offCanvas.height = 1080;
+                    const ctx = offCanvas.getContext('2d');
+
+                    // 绘制背景 (渐变)
+                    const hue = (i / frameCount) * 360;
+                    ctx.fillStyle = `hsl(${hue}, 50%, 10%)`;
+                    ctx.fillRect(0, 0, 1920, 1080);
+
+                    // 绘制一个移动的球体 (模拟 3D 旋转物体)
+                    const x = 960 + Math.sin(i * 0.1) * 400;
+                    const y = 540 + Math.cos(i * 0.1) * 200;
+                    const size = 100 + i * 2;
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsl(${hue + 180}, 70%, 60%)`;
+                    ctx.fill();
+
+                    // 绘制文字帧号
+                    ctx.font = "bold 100px Arial";
+                    ctx.fillStyle = "white";
+                    ctx.textAlign = "center";
+                    ctx.fillText(`Frame ${i + 1}`, 960, 540);
+
+                    // 创建 Image 对象
+                    const img = new Image();
+                    img.src = offCanvas.toDataURL(); // 模拟加载
+                    img.onload = () => {
+                        loadedCount++;
+                        if (loadedCount === frameCount) {
+                            resolve();
+                        }
+                    };
+                    images.push(img);
+                }
+            });
+        }
+
+        // 2. 渲染特定帧
+        function renderFrame(index) {
+            if (index >= 0 && index < frameCount) {
+                // 清除画布
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                // 绘制新帧
+                context.drawImage(images[index], 0, 0);
+            }
+
+        }
+
+        // 3. 核心滚动监听
+        function handleScroll() {
+            const html = document.documentElement;
+            const scrollTop = html.scrollTop;
+            const maxScrollTop = html.scrollHeight - window.innerHeight;
+            
+            // 计算滚动百分比 (0 - 1)
+            const scrollFraction = scrollTop / maxScrollTop;
+            
+            // 映射到帧索引
+            // Math.min 确保不超过最后一帧
+            const frameIndex = Math.min(
+                frameCount - 1,
+                Math.ceil(scrollFraction * frameCount)
+            );
+
+            // 性能优化：只有帧变化时才请求重绘
+            if (frameIndex !== state.frame) {
+                state.frame = frameIndex;
+                requestAnimationFrame(() => renderFrame(frameIndex));
+            }
+        }
+
+        // 初始化
+        (async function init() {
+            try {
+                await preloadImages();
+                loadingEl.style.display = 'none';
+                
+                // 初始渲染
+                renderFrame(0);
+
+                // 绑定事件
+                // 实际生产中建议使用 Lodash throttle 节流，或者 IntersectionObserver 优化
+                window.addEventListener('scroll', handleScroll);
+                
+                console.log("Sequence Loaded. Ready to scroll.");
+            } catch (e) {
+                console.error("Failed to load images", e);
+                loadingEl.textContent = "Error Loading Assets";
+            }
+        })();
+
+    </script>
+</body>
+</html>
+

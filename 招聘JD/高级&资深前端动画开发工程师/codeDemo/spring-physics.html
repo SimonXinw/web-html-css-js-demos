@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo 6: Spring Physics vs Easing (弹簧物理 vs 贝塞尔)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #1e1e1e;
+            color: #eee;
+            gap: 50px;
+        }
+
+        .track {
+            width: 80%;
+            height: 60px;
+            background: #333;
+            border-radius: 30px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            color: #aaa;
+        }
+
+        .ball {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #3498db;
+            /* 初始位置 */
+            transform: translateX(0);
+        }
+
+        /* 
+         * 1. CSS Easing 实现 
+         * 优点：简单，GPU 加速
+         * 缺点：无法中断（Interruption），一旦开始必须走完，中途反悔会“瞬移”或不自然
+         */
+        .ball-css {
+            background: #e74c3c;
+            transition: transform 1s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button id="move-left">Move Left (0%)</button>
+        <button id="move-right">Move Right (80%)</button>
+        <button id="interrupt">Interrupt! (Quick Click)</button>
+    </div>
+
+    <!-- 轨道 1: CSS Easing -->
+    <div class="track">
+        <span class="label">CSS Cubic-Bezier (Fixed Duration) - 红色</span>
+        <div class="ball ball-css" id="ball-css"></div>
+    </div>
+
+    <!-- 轨道 2: JS Spring Physics -->
+    <div class="track">
+        <span class="label">JS Spring Physics (Mass/Tension/Friction) - 蓝色</span>
+        <div class="ball ball-spring" id="ball-spring"></div>
+    </div>
+
+    <script>
+        /**
+         * 演示：弹簧物理 (Spring) vs 传统缓动 (Easing)
+         * 难度：进阶 (Advanced)
+         * 对应面试题：第三题：弹簧物理 (Spring Physics) 的质感
+         * 
+         * 考察点：
+         * 1. 物理模型：模拟 F = -kx - cv (胡克定律 + 阻尼)。
+         * 2. 交互中断 (Interruption)：弹簧可以继承当前的 velocity，而 CSS transition 很难。
+         * 3. 渲染循环：需要每一帧计算位置和速度。
+         */
+
+        // --- CSS Easing 控制 ---
+        const ballCss = document.getElementById('ball-css');
+        let cssTargetX = 0;
+
+        function updateCssBall(percent) {
+            // CSS 只需要设置终点，浏览器负责插值
+            // 缺点：如果你在运动中改变目标，它会重新计算曲线，导致速度不连续
+            ballCss.style.transform = `translateX(${percent}vw)`; 
+        }
+
+
+        // --- JS Spring Physics 控制 ---
+        // 简易弹簧解算器
+        const springSystem = {
+            position: 0,      // 当前位置
+            target: 0,        // 目标位置
+            velocity: 0,      // 当前速度 (这是实现动量连续的关键)
+            
+            // 物理参数 (类似 React-Spring / Framer Motion 的配置)
+            tension: 180,     // 张力 (拉力) - 越大越快
+            friction: 12,     // 摩擦力 - 越小越弹
+            mass: 1,          // 质量
+            
+            lastTime: 0
+        };
+
+        const ballSpring = document.getElementById('ball-spring');
+
+        function updateSpring(timestamp) {
+            if (!springSystem.lastTime) springSystem.lastTime = timestamp;
+            // 计算时间差 (秒)
+            const dt = Math.min((timestamp - springSystem.lastTime) / 1000, 0.1); 
+            springSystem.lastTime = timestamp;
+
+            // 物理步进 (多次迭代提高精度)
+            const steps = 2;
+            const stepDt = dt / steps;
+
+            for (let i = 0; i < steps; i++) {
+                // 1. 弹力 = -张力 * 位移
+                const forceSpring = -springSystem.tension * (springSystem.position - springSystem.target);
+                
+                // 2. 阻力 = -摩擦 * 速度
+                const forceDamping = -springSystem.friction * springSystem.velocity;
+                
+                // 3. 加速度 = 总力 / 质量
+                const acceleration = (forceSpring + forceDamping) / springSystem.mass;
+                
+                // 4. 更新速度
+                springSystem.velocity += acceleration * stepDt;
+                
+                // 5. 更新位置
+                springSystem.position += springSystem.velocity * stepDt;
+            }
+
+            // 渲染
+            ballSpring.style.transform = `translateX(${springSystem.position}vw)`;
+
+            // 继续循环
+            // 生产环境中，当 velocity 和 displacement 极小时可以停止循环以省电
+            requestAnimationFrame(updateSpring);
+        }
+
+        // 启动物理引擎
+        requestAnimationFrame(updateSpring);
+
+
+        // --- 交互绑定 ---
+        // 假设轨道宽度对应 60vw 的移动范围
+        document.getElementById('move-left').addEventListener('click', () => {
+            updateCssBall(0);
+            springSystem.target = 0;
+        });
+
+        document.getElementById('move-right').addEventListener('click', () => {
+            updateCssBall(60);
+            springSystem.target = 60;
+        });
+
+        // 模拟频繁点击中断
+        document.getElementById('interrupt').addEventListener('click', () => {
+            // 随机设置一个目标，模拟用户疯狂点击
+            const randomTarget = Math.random() * 60;
+            
+            updateCssBall(randomTarget);
+            springSystem.target = randomTarget;
+            
+            // 观察点：
+            // 蓝色球 (Spring) 会顺滑地改变方向，因为它继承了当前的 velocity。
+            // 红色球 (CSS) 每次点击都会感觉“顿”一下，因为新曲线是从 0 速度开始的。
+        });
+
+    </script>
+</body>
+</html>
