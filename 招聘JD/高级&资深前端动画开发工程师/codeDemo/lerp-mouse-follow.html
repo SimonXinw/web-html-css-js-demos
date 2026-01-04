@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo 1: High Performance Lerp Mouse Follow (物理平滑跟随)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #0e0e0e;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            cursor: none; /* 隐藏默认光标 */
+        }
+
+        .content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            opacity: 0.5;
+        }
+
+        /* 
+         * 核心动画元素 
+         * 使用 will-change 提示浏览器提升为合成层 (Composite Layer)
+         * 避免修改 top/left 触发 Layout (重排)，只使用 transform
+         */
+        .cursor-follower {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            will-change: transform; /* 性能优化关键点 */
+            /* 初始隐藏，由 JS 接管位置 */
+            opacity: 0; 
+        }
+
+        .cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            will-change: transform;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="content">
+        <div>
+            <h1>Lerp Mouse Follow Demo</h1>
+            <p>Move your mouse. Note the smooth damping.</p>
+        </div>
+    </div>
+
+    <!-- 两个元素：一个实时的点，一个带阻尼的圈 -->
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-follower" id="cursor-follower"></div>
+
+    <script>
+        /**
+         * 演示：简单但极其实用的 Lerp (Linear Interpolation) 动画
+         * 难度：简单 (Simple) - 但包含核心性能优化点
+         * 
+         * 考察点：
+         * 1. 数学公式：current = current + (target - current) * ease
+         * 2. 渲染循环：requestAnimationFrame
+         * 3. 性能优化：transform translate3d (启用GPU加速)
+         */
+
+        // 状态管理
+        const state = {
+            mouseX: window.innerWidth / 2,
+            mouseY: window.innerHeight / 2,
+            // 实时点坐标
+            dotX: window.innerWidth / 2,
+            dotY: window.innerWidth / 2,
+            // 跟随圈坐标
+            followerX: window.innerWidth / 2,
+            followerY: window.innerWidth / 2,
+            // 阻尼系数 (0.1 = 慢, 0.9 = 快)
+            ease: 0.1
+        };
+
+        // DOM 元素缓存
+        const cursorDot = document.querySelector('#cursor-dot');
+        const cursorFollower = document.querySelector('#cursor-follower');
+
+        // 初始化显示
+        cursorDot.style.opacity = 1;
+        cursorFollower.style.opacity = 1;
+
+        // 核心数学函数：线性插值
+        function lerp(start, end, factor) {
+            return start + (end - start) * factor;
+        }
+
+        // 事件监听：只负责更新目标数据 (Model)，不直接操作 DOM (View)
+        window.addEventListener('mousemove', (e) => {
+            state.mouseX = e.clientX;
+            state.mouseY = e.clientY;
+        });
+
+        // 渲染循环 (Render Loop)
+        function render() {
+            // 1. 实时点逻辑：直接赋值，无延迟 (或者极小延迟)
+            state.dotX = state.mouseX;
+            state.dotY = state.mouseY;
+
+            // 2. 跟随圈逻辑：使用 Lerp 计算下一帧位置
+            // 公式：当前位置 += (目标位置 - 当前位置) * 缓动系数
+            state.followerX = lerp(state.followerX, state.mouseX, state.ease);
+            state.followerY = lerp(state.followerY, state.mouseY, state.ease);
+
+            // 3. 渲染 DOM
+            // 使用 translate3d 开启硬件加速，避免 Sub-pixel 渲染问题
+            // 减去宽高的一半以居中
+            const dotTransform = `translate3d(${state.dotX - 4}px, ${state.dotY - 4}px, 0)`;
+            const followerTransform = `translate3d(${state.followerX - 20}px, ${state.followerY - 20}px, 0)`;
+
+            cursorDot.style.transform = dotTransform;
+            cursorFollower.style.transform = followerTransform;
+
+            // 4. 循环调用
+            requestAnimationFrame(render);
+        }
+
+        // 启动循环
+        requestAnimationFrame(render);
+
+        // 额外优化：窗口大小改变时处理
+        window.addEventListener('resize', () => {
+            // 可选：重置位置或重新计算边界
+        });
+
+        console.log("Animation System Initialized. 60FPS target.");
+    </script>
+</body>
+</html>

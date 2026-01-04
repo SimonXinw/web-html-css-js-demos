@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo 3: SVG Path Drawing (SVG 描边动画)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+            color: #333;
+        }
+
+        .section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spacer {
+            background-color: #fff;
+        }
+
+        .draw-container {
+            position: relative;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        svg {
+            width: 100%;
+            height: auto;
+            overflow: visible;
+        }
+
+        /* 
+         * 关键样式 
+         * 初始状态由 JS 设置，或者在这里设置为 stroke-dasharray: length; stroke-dashoffset: length;
+         * 但为了通用性，通常在 JS 中动态计算 length
+         */
+        path {
+            fill: none;
+            stroke: #ff4757;
+            stroke-width: 5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        h2 {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="section spacer">
+        <h1>Scroll Down ↓</h1>
+    </div>
+
+    <div class="section" id="target-section">
+        <h2>SVG Signature Animation</h2>
+        <div class="draw-container">
+            <svg viewBox="0 0 400 200">
+                <!-- 一个复杂的路径，模拟签名或 Logo -->
+                <path id="my-path" d="M 50 100 Q 100 50 150 100 T 250 100 T 350 100 M 50 150 L 350 50" />
+            </svg>
+        </div>
+        <p style="margin-top: 20px; opacity: 0.6;">(Keep scrolling to draw)</p>
+    </div>
+
+    <div class="section spacer">
+        <h1>End</h1>
+    </div>
+
+    <script>
+        /**
+         * 演示：SVG 路径描边动画 (Scroll-driven SVG Drawing)
+         * 难度：中等 (Medium)
+         * 
+         * 考察点：
+         * 1. 核心原理：stroke-dasharray 和 stroke-dashoffset
+         * 2. API：getTotalLength() 获取路径长度
+         * 3. 交互：将滚动位置映射到 dashoffset
+         */
+
+        const path = document.getElementById('my-path');
+        const section = document.getElementById('target-section');
+        
+        // 1. 获取路径总长度
+        const pathLength = path.getTotalLength();
+
+        // 2. 初始化样式：将虚线间隔设置为全长，并偏移全长 -> 从而实现"隐藏"
+        path.style.strokeDasharray = pathLength;
+        path.style.strokeDashoffset = pathLength;
+
+        console.log(`Path Length: ${pathLength}`);
+
+        // 3. 滚动监听
+        function handleScroll() {
+            // 获取容器相对于视口的位置
+            const rect = section.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+
+            // 计算动画进度
+            // 当元素进入视口底部时开始 (progress = 0)
+            // 当元素到达视口顶部时结束 (progress = 1) -> 可根据需求调整区间
+            
+            const start = windowHeight * 0.8; // 进入 80% 处开始
+            const end = windowHeight * 0.2;   // 到达 20% 处结束
+            
+            // 归一化进度 0 -> 1
+            // rect.top 变小意味着向上滚动
+            let progress = (start - rect.top) / (start - end);
+            
+            // 限制在 0 到 1 之间
+            progress = Math.max(0, Math.min(1, progress));
+
+            // 4. 核心计算：根据进度减少 offset
+            // progress 0 -> offset = length (隐藏)
+            // progress 1 -> offset = 0 (完全显示)
+            const drawLength = pathLength * (1 - progress);
+            
+            path.style.strokeDashoffset = drawLength;
+        }
+
+        window.addEventListener('scroll', handleScroll);
+        // 初始化一次以防刷新在中间位置
+        handleScroll();
+
+    </script>
+</body>
+</html>
