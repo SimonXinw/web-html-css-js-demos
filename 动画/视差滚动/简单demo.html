@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单视差滚动 Demo (Rellax.js)</title>
+    <!-- 引入经典视差库 Rellax.js (轻量级，无依赖) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rellax/1.12.1/rellax.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            /* 足够的高度产生滚动 */
+            height: 200vh;
+            padding-top: 100px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 100px;
+            color: #333;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.9;
+            /* 稍微增加不透明度以看清文字 */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+
+            /* 新增：文字居中样式 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        /* 
+         * 不同的元素设置不同的样式 
+         */
+        .circle-1 {
+            width: 100px;
+            height: 100px;
+            background: #ff7675;
+            left: 10%;
+            top: 200px;
+        }
+
+        .circle-2 {
+            width: 150px;
+            height: 150px;
+            background: #74b9ff;
+            right: 15%;
+            top: 400px;
+        }
+
+        .circle-3 {
+            width: 80px;
+            height: 80px;
+            background: #55efc4;
+            left: 40%;
+            top: 600px;
+        }
+
+        .content-card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            width: 60%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+            /* 确保内容在某些视差元素上方 */
+            margin-top: 200px;
+        }
+
+        .scroll-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Scroll Down for Parallax</h1>
+
+        <!-- 
+            data-rellax-speed: 视差速度
+            正数 = 比滚动快 (看起来像在前景)
+            负数 = 比滚动慢 (看起来像在背景)
+            0 = 跟随正常滚动
+        -->
+
+        <!-- 速度慢，像在远景 -->
+        <div class="shape circle-1 rellax" data-rellax-speed="-2">
+            Speed: -2
+        </div>
+
+        <!-- 速度快，像在近景 -->
+        <div class="shape circle-2 rellax" data-rellax-speed="4">
+            Speed: 4
+        </div>
+
+        <!-- 极慢，像在非常远的地方 -->
+        <div class="shape circle-3 rellax" data-rellax-speed="-5">
+            Speed: -5
+        </div>
+
+        <div class="content-card">
+            <h2>Static Content</h2>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et
+                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+                ex ea commodo consequat.</p>
+            <br>
+            <p>注意观察周围圆球的移动速度与文字滚动的速度差异，这就是视差效果。</p>
+        </div>
+    </div>
+
+    <div class="scroll-hint">Scroll ↓</div>
+
+    <script>
+        // 初始化 Rellax
+        // 查找所有带有 .rellax 类的元素并应用视差效果
+        var rellax = new Rellax('.rellax', {
+            center: true // 让元素在视口中心时对齐初始位置
+        });
+    </script>
+</body>
+
+</html>
