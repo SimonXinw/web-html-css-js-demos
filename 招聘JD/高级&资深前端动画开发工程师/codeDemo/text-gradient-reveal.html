@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo 8: Apple Style Text Gradient Reveal (文字渐变显现)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+        }
+
+        .spacer {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.5;
+        }
+
+        /* 
+         * 核心容器：足够的高度来产生滚动行程
+         */
+        .text-reveal-section {
+            height: 300vh;
+            position: relative;
+        }
+
+        .sticky-wrapper {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /*
+         * 核心技术：background-clip: text
+         * 1. 设置背景为 "灰色 + 彩色/亮色" 的渐变
+         * 2. 初始 background-position 让文字只显示灰色部分
+         * 3. 滚动时移动 background-position 让亮色部分划过文字
+         */
+        .gradient-text {
+            font-size: 8vw;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.2;
+            max-width: 80%;
+            
+            /* 定义渐变：左边是暗色(未激活)，右边是亮色(激活) */
+            /* 关键在于 color-stop 的控制 */
+            background-image: linear-gradient(
+                115deg, 
+                #333 0%, 
+                #333 45%, 
+                #fff 55%, 
+                #fff 100%
+            );
+            
+            /* 将背景拉伸到足够大，以便我们通过 position 移动它 */
+            background-size: 250% 100%;
+            background-position: 0% 50%; /* 初始位置：显示左边的暗色 */
+            
+            /* 文字遮罩 */
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            
+            /* 性能优化 */
+            will-change: background-position;
+        }
+
+        .sub-text {
+            margin-top: 30px;
+            font-size: 24px;
+            color: #666;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .sub-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="spacer">
+        <p>Scroll Down ↓</p>
+    </div>
+
+    <div class="text-reveal-section" id="reveal-section">
+        <div class="sticky-wrapper">
+            <div class="gradient-text" id="target-text">
+                Pro Display XDR<br>
+                Believing is seeing.
+            </div>
+            <div class="sub-text" id="sub-text">
+                Extreme Dynamic Range.
+            </div>
+        </div>
+    </div>
+
+    <div class="spacer">
+        <p>End of Section</p>
+    </div>
+
+    <script>
+        /**
+         * 演示：文字渐变滚动点亮效果 (Apple "Big Sur" / "iPhone" 常见文案效果)
+         * 难度：中等 (Medium)
+         * 
+         * 考察点：
+         * 1. CSS background-clip: text 的高级应用。
+         * 2. 滚动进度的归一化计算 (Normalization)。
+         * 3. 性能：background-position 动画通常比较消耗，但在高配设备上效果极佳。
+         *    更高效的替代方案是使用两个重叠的 span (一个灰一个白) 控制 opacity，但 clip 方案代码更少。
+         */
+
+        const section = document.getElementById('reveal-section');
+        const text = document.getElementById('target-text');
+        const subText = document.getElementById('sub-text');
+
+        window.addEventListener('scroll', () => {
+            const rect = section.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            // 计算进度：元素进入视口 -> 元素离开视口
+            // 我们希望在 sticky 期间完成动画
+            // 简单算法：当 section.top 从 0 变到 -height + viewportHeight
+            
+            const scrollDistance = rect.height - viewportHeight;
+            let progress = -rect.top / scrollDistance;
+
+            // 限制 0 - 1
+            progress = Math.max(0, Math.min(1, progress));
+
+            // 映射到 background-position
+            // 0% -> 0% (暗色)
+            // 100% -> 100% (亮色)
+            // 实际上我们需要反向移动背景，或者根据渐变定义调整
+            // 在 CSS 中: 0% 对应左边(#333), 100% 对应右边(#fff)
+            // 我们希望随着滚动，背景从左向右移，显示出白色的部分
+            
+            // 我们的 gradient 是 [暗 0% ... 暗 45% ... 白 55% ... 白 100%]
+            // background-size: 250%
+            // position 100% 时，背景的最右端对齐文字的最右端 -> 显示白色
+            
+            const bgPosition = progress * 100;
+            text.style.backgroundPosition = `${bgPosition}% 50%`;
+
+            // 副标题视差淡入
+            if (progress > 0.8) {
+                subText.classList.add('visible');
+            } else {
+                subText.classList.remove('visible');
+            }
+        });
+    </script>
+</body>
+</html>
+
