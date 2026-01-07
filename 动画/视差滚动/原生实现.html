@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原生 JS 实现视差滚动 (性能优化版)</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: sans-serif;
+            background-color: #f4f4f4;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            /* 足够的高度产生滚动 */
+            height: 200vh;
+            padding-top: 100px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 100px;
+            color: #333;
+        }
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.9;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+
+            /* 文字居中样式 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            text-align: center;
+
+            /* 关键性能优化：告诉浏览器这些元素会发生 transform 变化，启用硬件加速 */
+            will-change: transform;
+        }
+
+        /* 元素样式 */
+        .circle-1 {
+            width: 100px;
+            height: 100px;
+            background: #ff7675;
+            left: 10%;
+            top: 200px;
+            /* 初始位置 */
+        }
+
+        .circle-2 {
+            width: 150px;
+            height: 150px;
+            background: #74b9ff;
+            right: 15%;
+            top: 400px;
+        }
+
+        .circle-3 {
+            width: 80px;
+            height: 80px;
+            background: #55efc4;
+            left: 40%;
+            top: 600px;
+        }
+
+        .content-card {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            width: 60%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+            margin-top: 200px;
+            opacity: 0.3;
+
+        }
+
+        .scroll-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Vanilla JS Parallax (Optimized)</h1>
+
+        <!-- 
+            data-speed: 自定义属性，模仿 Rellax 的 API
+            负数 = 慢于滚动 (背景感)
+            正数 = 快于滚动 (前景感)
+        -->
+
+        <div class="shape circle-1 parallax-el" data-speed="-0.2">
+            Speed: -0.2
+        </div>
+
+        <div class="shape circle-2 parallax-el" data-speed="0.4">
+            Speed: 0.4
+        </div>
+
+        <div class="shape circle-3 parallax-el" data-speed="-0.5">
+            Speed: -0.5
+        </div>
+
+        <div class="content-card">
+            <h2>Native Implementation</h2>
+            <p>这是一个不依赖任何第三方库的视差实现。核心原理是监听 scroll 事件，并动态计算 transform: translateY。</p>
+            <br>
+            <p>公式：translateY = scrolled * speed</p>
+        </div>
+    </div>
+
+    <div class="scroll-hint">Scroll ↓</div>
+
+    <script>
+        /**
+         * 原生 JS 视差滚动实现
+         * 
+         *          * 核心原理：
+         * 监听滚动事件，根据当前滚动距离 (scrollTop) 和元素设定的速度系数 (speed)，
+         * 计算出元素应该偏移的距离 (translateY)。
+         * 现有的优化：
+         * 1. RequestAnimationFrame: 节流渲染，确保动画在每一帧重绘时才执行，避免高频计算。
+         * 2. Translate3d: 开启 GPU 硬件加速 (Composite Layer)，避免触发重排 (Reflow)。
+         * 3. Will-change: 提前告知浏览器优化合成层策略。
+         * 4. Cache Selectors: 缓存 DOM 节点，避免在滚动循环中查询 DOM。
+         * 
+         * 新增的优化 (针对 "还有性能优化空间吗" 的回答)：
+         * 5. Passive Event Listener: 明确告诉浏览器 scroll 事件不会调用 preventDefault()，
+         *    允许浏览器合成线程在 JS 执行前就开始滚动页面，消除滚动延迟。
+         * 6. IntersectionObserver (离屏剔除): 
+         *    只计算当前视口内 (Visible) 元素的位移。对于几十个元素的页面可能不明显，
+         *    但如果页面有上百个视差元素，这个优化能节省 90% 以上的 CPU 计算量。
+         */
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // 1. 获取所有需要视差效果的元素
+            const parallaxElements = document.querySelectorAll('.parallax-el');
+
+            // 2. 预处理：缓存每个元素的速度配置，避免在滚动时频繁读取 DOM 属性
+            const elementsData = Array.from(parallaxElements).map(el => {
+                return {
+                    element: el,
+                    speed: parseFloat(el.getAttribute('data-speed') || 0),
+                    isVisible: true // 默认为 true，IntersectionObserver 会随后更新它
+                };
+            });
+
+            // 【新增优化】IntersectionObserver 实现离屏剔除
+            // 如果元素不在视口附近，就不需要计算它的 translate
+            if ('IntersectionObserver' in window) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        // 找到对应的 elementData
+                        const targetData = elementsData.find(item => item.element === entry.target);
+                        if (targetData) {
+                            targetData.isVisible = entry.isIntersecting;
+                        }
+                    });
+                }, {
+                    rootMargin: "200px 0px" // 预加载范围：上下各扩展 200px，防止刚进入视口时闪烁
+                });
+
+                elementsData.forEach(item => observer.observe(item.element));
+            }
+
+            // 3. 滚动处理函数
+            function handleScroll() {
+                const scrollTop = window.scrollY || window.pageYOffset;
+
+                elementsData.forEach(item => {
+                                        // 核心计算公式：
+                    // 位移 = 滚动距离 * 速度系数
+                    // 速度 > 0: 元素向下移动 (看起来比页面滚得快 -> 前景)
+                    // 速度 < 0: 元素向上移动 (看起来比页面滚得慢 -> 背景)
+                    // 【新增优化】如果元素不可见，跳过计算和 DOM 操作
+                    if (!item.isVisible) return;
+
+                    const yPos = scrollTop * item.speed;
+
+                    // 使用 translate3d 开启 GPU 加速
+                    // toFixed(2) 减少小数点后位数，微小的精度优化
+                    item.element.style.transform = `translate3d(0, ${yPos.toFixed(2)}px, 0)`;
+                });
+            }
+
+            // 4. 性能优化：使用 requestAnimationFrame 节流
+            // 避免 scroll 事件触发频率过高导致的主线程阻塞
+            // requestAnimationFrame 的作用：让 handleScroll() 的执行频率与屏幕刷新率同步，避免 scroll 事件触发太频繁导致页面卡顿，有效提升性能
+            let ticking = false;
+
+            window.addEventListener("scroll", () => {
+                if (!ticking) {
+                    window.requestAnimationFrame(() => {
+                        handleScroll();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            }, { 
+                passive: true // 【新增优化】告诉浏览器：我不会阻止滚动，请放心大胆地滚！
+            });
+
+            // 初始化调用一次，防止刷新后位置不对
+            handleScroll();
+        });
+    </script>
+</body>
+
+</html>
