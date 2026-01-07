@@ -19,12 +19,20 @@
         width: 400px;
         height: 400px;
         background-color: red;
+        /* 
+         * 关键属性：sticky
+         * 左侧红色方块会随着页面滚动，到达顶部时固定住
+         */
         position: sticky;
         top: 0; /* Fixed distance from the top */
       }
       .right-column {
         flex-grow: 1;
         background-color: blue;
+        /* 
+         * 关键属性：overflow-y: scroll
+         * 右侧容器本身是可以内部滚动的，JS 将会控制这个滚动位置
+         */
         overflow-y: scroll;
         height: 2000px; /* Adjust the height as needed */
       }
@@ -51,28 +59,34 @@
 
     <script>
       // JavaScript to handle custom scroll behavior
+      // 脚本功能：监听外部页面的滚动，同步控制右侧容器内部的滚动条
       document.addEventListener("DOMContentLoaded", function () {
         const rightColumn = document.querySelector(".right-column");
         const content = document.querySelector(".content");
-        let isRightColumnAtTop = true;
+        let isRightColumnAtTop = true; // 标志位：判断右侧内容是否处于起始位置
 
         window.addEventListener("scroll", function () {
-          const scrollY = window.scrollY;
-          const rightColumnScrollHeight = rightColumn.scrollHeight;
-          const rightColumnOffsetTop = rightColumn.offsetTop;
+          const scrollY = window.scrollY; // 当前浏览器窗口的滚动距离
+          const rightColumnScrollHeight = rightColumn.scrollHeight; // 右侧容器内容的总高度
+          const rightColumnOffsetTop = rightColumn.offsetTop; // 右侧容器距离页面顶部的距离
 
+          // 核心逻辑：判断当前页面滚动到了哪里
           if (
-            scrollY >= rightColumnOffsetTop &&
+            scrollY >= rightColumnOffsetTop && // 已经滚到了容器位置
             scrollY <=
               rightColumnOffsetTop +
                 rightColumnScrollHeight -
-                window.innerHeight
+                window.innerHeight // 且没有滚出容器底部
           ) {
+            // 进入“联动区域”，解除顶部锁定
             isRightColumnAtTop = false;
           } else if (scrollY < rightColumnOffsetTop) {
+            // 还在容器上方，保持锁定
             isRightColumnAtTop = true;
           }
 
+          // 如果进入了联动区域，手动计算右侧容器应该滚动的距离
+          // 计算公式：(页面当前滚动值 - 容器起始位置) = 右侧内部应该滚动的距离
           if (!isRightColumnAtTop) {
             rightColumn.scrollTop = scrollY - rightColumnOffsetTop;
           }
