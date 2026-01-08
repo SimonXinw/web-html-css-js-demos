@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +15,8 @@
             background-color: #0e0e0e;
             color: #fff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            cursor: none; /* 隐藏默认光标 */
+            cursor: none;
+            /* 隐藏默认光标 */
         }
 
         .content {
@@ -48,9 +50,10 @@
             border-radius: 50%;
             pointer-events: none;
             z-index: 9999;
-            will-change: transform; /* 性能优化关键点 */
+            will-change: transform;
+            /* 性能优化关键点 */
             /* 初始隐藏，由 JS 接管位置 */
-            opacity: 0; 
+            opacity: 0;
         }
 
         .cursor-dot {
@@ -67,12 +70,20 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="content">
         <div>
-            <h1>Lerp Mouse Follow Demo</h1>
-            <p>Move your mouse. Note the smooth damping.</p>
+            <h1>Lerp 鼠标跟随演示</h1>
+            <p>移动你的鼠标，观察平滑的阻尼效果。</p>
+            <div style="text-align: left;">
+                <p>1.动画原理？</p>
+                <p>2.怎么让圆圈自动更随到圆点的外围？</p>
+                <p>3.怎么让动画流畅？</p>
+                <p>4.流畅的原因是？</p>
+                <p>5.动画多久执行一次，怎么优化？</p>
+            </div>
         </div>
     </div>
 
@@ -107,6 +118,7 @@
 
         // DOM 元素缓存
         const cursorDot = document.querySelector('#cursor-dot');
+
         const cursorFollower = document.querySelector('#cursor-follower');
 
         // 初始化显示
@@ -122,6 +134,9 @@
         window.addEventListener('mousemove', (e) => {
             state.mouseX = e.clientX;
             state.mouseY = e.clientY;
+            // 启动循环
+            requestAnimationFrame(render);
+
         });
 
         // 渲染循环 (Render Loop)
@@ -145,11 +160,10 @@
             cursorFollower.style.transform = followerTransform;
 
             // 4. 循环调用
-            requestAnimationFrame(render);
+            // requestAnimationFrame(render);
         }
 
-        // 启动循环
-        requestAnimationFrame(render);
+
 
         // 额外优化：窗口大小改变时处理
         window.addEventListener('resize', () => {
@@ -159,4 +173,5 @@
         console.log("Animation System Initialized. 60FPS target.");
     </script>
 </body>
+
 </html>
