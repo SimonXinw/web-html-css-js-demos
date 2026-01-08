@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>无限无缝滚动动画</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px;
+        }
+
+        .container {
+            width: 600px;
+            overflow: hidden;
+            background: white;
+            padding: 20px 0;
+            margin-bottom: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 
+         * 方案一：纯 CSS 实现
+         * 原理：复制一份内容，通过 translateX(-50%) 移动
+         */
+        .marquee-wrapper {
+            display: flex;
+            width: fit-content;
+            /* 关键：动画时间 = 总宽度 / 速度 */
+            animation: scroll 10s linear infinite; 
+        }
+
+        .marquee-wrapper:hover {
+            animation-play-state: paused; /* 悬停暂停 */
+        }
+
+        .item {
+            width: 100px;
+            height: 60px;
+            background: #3498db;
+            color: white;
+            margin: 0 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } /* 移动总宽度的一半（即一组内容的宽度） */
+        }
+
+        /* 面试题部分样式 */
+        .interview-box {
+            width: 600px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>CSS 实现 (悬停暂停)</h2>
+        <div class="marquee-wrapper">
+            <!-- 第一组内容 -->
+            <div class="item">1</div>
+            <div class="item">2</div>
+            <div class="item">3</div>
+            <div class="item">4</div>
+            <div class="item">5</div>
+            <!-- 第二组内容 (复制一份用于无缝衔接) -->
+            <div class="item">1</div>
+            <div class="item">2</div>
+            <div class="item">3</div>
+            <div class="item">4</div>
+            <div class="item">5</div>
+        </div>
+    </div>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 如何实现“无缝”滚动的视觉效果？核心原理是什么？</strong></p>
+        <!-- 
+            答案：
+            核心原理是“视觉欺骗”和“位置重置”。
+            1. 内容复制：必须将滚动内容复制一份（如果是向左滚动，就跟在后面）。
+            2. 动画移动：让容器向左移动，直到第一组内容完全移出视口（此时第二组内容刚好填补了第一组的位置）。
+            3. 瞬间重置：当移动距离达到一组内容的宽度时，瞬间将位置重置为 0。
+            4. 因为重置前后的画面完全一致，用户察觉不到跳变，从而产生无限循环的错觉。
+        -->
+
+        <p><strong>2. 使用 CSS 动画实现时，transform: translateX(-50%) 的前提是什么？</strong></p>
+        <!-- 
+            答案：
+            前提是容器内包含了**两份完全一样**的内容。
+            - 容器总宽度 = 单组宽度 * 2
+            - translateX(-50%) 刚好移动了容器总宽度的一半，也就是移动了一组内容的宽度。
+            - 此时画面显示的是第二组内容（它现在位于起始位置）。
+            - 下一帧动画循环开始（0%），位置重置为 0（显示第一组内容），画面无缝衔接。
+        -->
+
+        <p><strong>3. 如果内容宽度是不确定的（动态获取），如何用 JS 实现高性能滚动？</strong></p>
+        <!-- 
+            答案：
+            JS 实现步骤：
+            1. 获取内容宽度 `contentWidth`。
+            2. 使用 `requestAnimationFrame` 更新 `transform` 偏移量 `offset`。
+            3. 每一帧：`offset -= speed`。
+            4. 边界检查：`if (Math.abs(offset) >= contentWidth) offset = 0;`（重置）。
+            5. 使用 `transform: translate3d(${offset}px, 0, 0)` 确保 GPU 加速。
+            
+            不要使用 `setInterval` 或直接修改 `left` 属性，会引起掉帧和重排。
+        -->
+    </div>
+</body>
+</html>
