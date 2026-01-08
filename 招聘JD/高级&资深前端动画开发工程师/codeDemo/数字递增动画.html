@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数字递增动画</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; color: white; margin: 0; }
+        .counter { font-size: 6rem; font-weight: bold; font-variant-numeric: tabular-nums; /* 等宽数字，防止抖动 */ }
+        .btn { margin-top: 30px; padding: 10px 25px; font-size: 1.2rem; cursor: pointer; background: #fff; border: none; border-radius: 50px; font-weight: bold; }
+        .interview-box { width: 600px; margin-top: 50px; background: #222; padding: 20px; border-radius: 8px; color: #ccc; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <div class="counter" id="counter">0</div>
+    <button class="btn" onclick="startCount()">Start Animation</button>
+
+    <script>
+        const targetNumber = 123456;
+        const duration = 2000; // 2秒
+        const counterEl = document.getElementById('counter');
+
+        // 缓动函数：easeOutExpo (一开始快，后面慢)
+        // t: current time, b: start value, c: change in value, d: duration
+        function easeOutExpo(t, b, c, d) {
+            return (t === d) ? b + c : c * (-Math.pow(2, -10 * t / d) + 1) + b;
+        }
+
+        function startCount() {
+            let startTime = null;
+            const startValue = 0;
+
+            function step(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const progress = timestamp - startTime;
+
+                // 计算当前数值
+                // 注意：progress 不能超过 duration
+                const currentValue = easeOutExpo(Math.min(progress, duration), startValue, targetNumber, duration);
+
+                // 更新 DOM (加上千分位分隔符)
+                counterEl.textContent = Math.floor(currentValue).toLocaleString();
+
+                if (progress < duration) {
+                    requestAnimationFrame(step);
+                } else {
+                    counterEl.textContent = targetNumber.toLocaleString(); // 确保最终值准确
+                }
+            }
+
+            requestAnimationFrame(step);
+        }
+    </script>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 为什么用 requestAnimationFrame 而不是 setInterval 来做数字动画？</strong></p>
+        <!-- 
+            答案：
+            1. 帧率同步：rAF 会自动跟随屏幕刷新率（通常 60Hz），setInterval 时间不准，容易丢帧或卡顿。
+            2. 性能：页面不可见时 rAF 会自动暂停，setInterval 会一直跑，浪费资源。
+            3. 流畅度：rAF 避免了在一帧内多次修改 DOM 的问题，确保渲染时机最佳。
+        -->
+
+        <p><strong>2. font-variant-numeric: tabular-nums 的作用是什么？</strong></p>
+        <!-- 
+            答案：
+            数字动画中，不同数字（如 1 和 8）的宽度可能不同。
+            如果使用默认字体，数字变化时会导致整个字符串宽度跳动，视觉体验很差。
+            tabular-nums 强制所有数字等宽（像表格一样），保证动画过程中数字位置固定，不会左右抖动。
+        -->
+
+        <p><strong>3. 如果要实现类似“老虎机”或“里程表”的滚动效果（数字纵向滚动），思路是什么？</strong></p>
+        <!-- 
+            答案：
+            这就不再是修改 innerText 了。
+            思路：
+            1. 每一位数字（个位、十位...）都是一个独立的竖向列表（0-9-0）。
+            2. 使用 `background-position-y` 或者 `transform: translateY` 来移动这个列表。
+            3. 根据最终数字计算偏移量。例如数字是 5，就移动到显示 5 的位置。
+            4. 给不同位设置不同的动画延迟（transition-delay），产生阶梯式停止的效果。
+        -->
+    </div>
+</body>
+</html>
