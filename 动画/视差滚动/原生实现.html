@@ -123,10 +123,229 @@
         </div>
 
         <div class="content-card">
-            <h2>Native Implementation</h2>
-            <p>这是一个不依赖任何第三方库的视差实现。核心原理是监听 scroll 事件，并动态计算 transform: translateY。</p>
-            <br>
-            <p>公式：translateY = scrolled * speed</p>
+            <h2>原生 JS 视差滚动实现</h2>
+            <div style="line-height: 1.8;">
+                <h3>面试问题：</h3>
+                <p><strong>1. 动画原理是什么？</strong></p>
+                <!-- 
+                    答案：
+                    视差滚动的核心原理是：监听页面滚动事件，根据滚动距离 (scrollTop) 和每个元素设定的速度系数 (speed)，
+                    动态计算元素应该偏移的距离，使用 transform: translateY 来移动元素。
+                    
+                    公式：translateY = scrollTop * speed
+                    
+                    speed 的含义：
+                    - speed > 0：元素移动速度比页面滚动快，产生前景感（向前突出）
+                    - speed < 0：元素移动速度比页面滚动慢，产生背景感（向后凹陷）
+                    - speed = 0：元素不移动，跟随页面正常滚动
+                    
+                    例如：speed = -0.5 表示元素移动速度是页面滚动的 50%，看起来像背景层。
+                -->
+
+                <p><strong>2. 可以有哪些办法实现位置移动，区别是什么？</strong></p>
+                <!-- 
+                    答案：
+                    1. 性能差异：
+                       - top/left：触发 Layout（重排）→ 重新计算元素位置 → 触发 Paint（重绘）→ Composite（合成）
+                       - transform：只触发 Composite（合成层），跳过 Layout 和 Paint
+                    
+                    2. 渲染流程：
+                       - top/left 修改：JS → Layout → Paint → Composite（3 个步骤）
+                       - transform 修改：JS → Composite（1 个步骤）
+                    
+                    3. 性能提升：
+                       - transform 操作在 GPU 的合成层进行，不占用主线程
+                       - 60FPS 下，每帧只有 16.6ms，transform 可以节省 10-15ms
+                    
+                    4. 实际影响：
+                       - 修改 top/left：可能导致页面卡顿、掉帧
+                       - 使用 transform：动画流畅，CPU 占用低
+                -->
+
+                <p><strong>3. scroll 事件触发频率很高，如何优化避免页面卡顿？</strong></p>
+                <!-- 
+                    答案：
+                    1. 问题：scroll 事件在快速滚动时可能每秒触发 100+ 次，远超屏幕刷新率（60Hz）
+                    
+                    2. 优化方案：使用 requestAnimationFrame 节流
+                       - 原理：将 scroll 事件的处理延迟到浏览器下一次重绘之前
+                       - 效果：无论 scroll 触发多少次，render 函数最多每秒执行 60 次（与屏幕刷新率同步）
+                    
+                    3. 实现方式：
+                       let ticking = false;
+                       window.addEventListener('scroll', () => {
+                           if (!ticking) {
+                               requestAnimationFrame(() => {
+                                   handleScroll(); // 实际处理逻辑
+                                   ticking = false;
+                               });
+                               ticking = true;
+                           }
+                       });
+                    
+                    4. 作用：
+                       - 节流：限制执行频率，避免过度计算
+                       - 同步：与浏览器渲染时机同步，避免不必要的渲染
+                       - 性能：减少 CPU 占用，提升滚动流畅度
+                -->
+
+                <p><strong>4. 怎么开启 GPU 硬件加速，原理是什么？</strong></p>
+                <!-- 
+                    答案：
+                    1. translate3d vs translateY：
+                       - translateY：可能在某些浏览器中不会强制开启 GPU 加速
+                       - translate3d(0, y, 0)：明确告诉浏览器这是一个 3D 变换，强制创建合成层（Composite Layer）
+                    
+                    2. GPU 硬件加速原理：
+                       - 浏览器检测到 3D transform → 将元素提升到独立的合成层
+                       - 合成层在 GPU 中处理，不占用主线程（CPU）
+                       - GPU 并行处理能力强，适合处理大量图形变换
+                    
+                    3. 合成层的好处：
+                       - 独立渲染：不影响其他元素的重排/重绘
+                       - GPU 加速：利用显卡的并行计算能力
+                       - 性能提升：动画更流畅，CPU 占用更低
+                    
+                    4. 注意事项：
+                       - 合成层会占用 GPU 内存，过多会导致内存压力
+                       - 使用 will-change: transform 可以提前创建合成层，避免首次动画时的延迟
+                -->
+
+                <p><strong>5.scroll 事件监听器可以优化吗，有什么问题？</strong></p>
+                <!-- 
+                    答案：
+                    1. passive: true 的作用：
+                       - 明确告诉浏览器：这个事件监听器不会调用 preventDefault()
+                       - 允许浏览器在 JS 执行前就开始滚动页面（合成线程优化）
+                       - 提升滚动响应速度，消除滚动延迟
+                    
+                    2. 不加 passive: true 的问题：
+                       - 浏览器必须等待 JS 执行完毕，确认没有调用 preventDefault() 后才开始滚动
+                       - 导致滚动延迟（TouchEvent 延迟可达 300ms+）
+                       - 在移动设备上尤其明显，影响用户体验
+                    
+                    3. 性能对比：
+                       - 不加 passive：滚动延迟 50-300ms（取决于 JS 执行时间）
+                       - 加 passive: true：滚动延迟 < 16ms（几乎无延迟）
+                    
+                    4. 兼容性：
+                       - 现代浏览器都支持（Chrome 51+, Firefox 49+, Safari 10+）
+                       - 不支持时自动降级，不影响功能
+                    
+                    5. 使用场景：
+                       - scroll、touchstart、touchmove 等事件都应该使用 passive: true
+                       - 除非确实需要 preventDefault()，否则都应该加 passive
+                -->
+
+                <p><strong>6. IntersectionObserver 在视差滚动中如何优化性能？什么时候需要用到？</strong></p>
+                <!-- 
+                    答案：
+                    1. 优化原理：
+                       - 只计算视口内（或附近）元素的位移
+                       - 对于离屏元素，跳过计算和 DOM 操作
+                       - 大幅减少不必要的计算量
+                    
+                    2. 性能提升：
+                       - 10 个元素：提升不明显（~10%）
+                       - 100 个元素：CPU 占用减少 70-90%
+                       - 1000 个元素：从卡顿到流畅的关键优化
+                    
+                    3. 实现方式：
+                       const observer = new IntersectionObserver((entries) => {
+                           entries.forEach(entry => {
+                               elementData.isVisible = entry.isIntersecting;
+                           });
+                       }, {
+                           rootMargin: "200px 0px" // 预加载范围，防止闪烁
+                       });
+                       
+                       // 在 handleScroll 中：
+                       if (!item.isVisible) return; // 跳过不可见元素
+                    
+                    4. 什么时候需要：
+                       - 页面有大量视差元素（50+）
+                       - 元素分布在长页面中
+                       - 移动设备性能有限
+                       - 需要极致性能优化
+                    
+                    5. 注意事项：
+                       - rootMargin 设置预加载范围，避免元素刚进入视口时的闪烁
+                       - 元素重新进入视口时需要重新计算初始位置
+                -->
+
+                <p><strong>7. will-change 属性应该如何使用？过度使用会有什么副作用？</strong></p>
+                <!-- 
+                    答案：
+                    1. will-change 的作用：
+                       - 提前告诉浏览器元素将要发生的变化
+                       - 浏览器可以提前创建合成层，优化渲染策略
+                       - 避免首次动画时的延迟和卡顿
+                    
+                    2. 正确使用：
+                       - 只对确实会发生动画的元素使用
+                       - 值应该精确：will-change: transform（而不是 will-change: auto）
+                       - 在动画开始前设置，动画结束后移除
+                    
+                    3. 过度使用的副作用：
+                       - 内存占用：每个 will-change 元素都会创建合成层，占用 GPU 内存
+                       - 性能下降：过多合成层会导致 GPU 内存压力，反而降低性能
+                       - 电池消耗：移动设备上会加速电量消耗
+                    
+                    4. 最佳实践：
+                       - 只对动画元素使用：.parallax-el { will-change: transform; }
+                       - 动画结束后移除：element.style.willChange = 'auto';
+                       - 不要全局设置：* { will-change: transform; } ❌
+                    
+                    5. 性能建议：
+                       - 10 个以下元素：可以全部使用
+                       - 10-50 个元素：只对可见元素使用
+                       - 50+ 个元素：结合 IntersectionObserver 动态添加/移除
+                -->
+
+                <p><strong>8. 如果页面有 100+ 个视差元素，还有哪些性能优化手段？</strong></p>
+                <!-- 
+                    答案：
+                    1. 对象池（Object Pooling）：
+                       - 复用元素数据对象，避免频繁创建/销毁
+                       - 减少内存分配和垃圾回收压力
+                    
+                    2. 批量更新 DOM：
+                       - 使用 DocumentFragment 批量操作
+                       - 或者使用 requestAnimationFrame 分批处理（每帧处理 10-20 个）
+                    
+                    3. 减少精度计算：
+                       - translateY 值使用 toFixed(2) 限制小数位数
+                       - 避免过度精确的计算（用户感知不到差异）
+                    
+                    4. 缓存计算结果：
+                       - 缓存 scrollTop 值，避免重复读取
+                       - 缓存元素位置信息（getBoundingClientRect）
+                    
+                    5. 使用 CSS Containment：
+                       - contain: layout style paint
+                       - 限制浏览器重排/重绘的范围
+                    
+                    6. 虚拟滚动（Virtual Scrolling）：
+                       - 只渲染视口内的元素
+                       - 离屏元素不创建 DOM，或使用占位符
+                    
+                    7. Web Workers：
+                       - 将复杂计算移到 Worker 线程
+                       - 主线程只负责 DOM 更新
+                    
+                    8. 降低动画复杂度：
+                       - 简化动画效果（减少变换类型）
+                       - 使用 CSS 动画替代 JS 动画（可能的话）
+                    
+                    9. 性能监控：
+                       - 使用 Performance API 监控帧率
+                       - 动态调整元素数量或动画强度
+                    
+                    10. 移动端特殊优化：
+                        - 降低移动端的元素数量
+                        - 使用媒体查询：@media (max-width: 768px) { .parallax-el { display: none; } }
+                -->
+            </div>
         </div>
     </div>
 
@@ -189,7 +408,7 @@
                 const scrollTop = window.scrollY || window.pageYOffset;
 
                 elementsData.forEach(item => {
-                                        // 核心计算公式：
+                    // 核心计算公式：
                     // 位移 = 滚动距离 * 速度系数
                     // 速度 > 0: 元素向下移动 (看起来比页面滚得快 -> 前景)
                     // 速度 < 0: 元素向上移动 (看起来比页面滚得慢 -> 背景)
@@ -217,7 +436,7 @@
                     });
                     ticking = true;
                 }
-            }, { 
+            }, {
                 passive: true // 【新增优化】告诉浏览器：我不会阻止滚动，请放心大胆地滚！
             });
 
