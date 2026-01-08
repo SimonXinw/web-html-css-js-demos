@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Canvas 粒子爆炸 (对象池优化)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #111; display: flex; flex-direction: column; align-items: center; }
+        canvas { display: block; }
+        .hint { position: absolute; top: 20px; color: #fff; font-family: sans-serif; pointer-events: none; }
+        .interview-box { position: absolute; bottom: 20px; width: 600px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 20px; border-radius: 8px; color: #eee; line-height: 1.6; font-size: 14px; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div class="hint">点击屏幕任意位置触发爆炸</div>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        // 对象池：复用粒子对象，减少垃圾回收 (GC)
+        const particlePool = [];
+        const particles = []; // 当前活动的粒子
+        const maxParticles = 1000; // 池子大小
+
+        // 初始化对象池
+        for (let i = 0; i < maxParticles; i++) {
+            particlePool.push({
+                x: 0, y: 0,
+                vx: 0, vy: 0,
+                life: 0,
+                color: '#fff',
+                active: false
+            });
+        }
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 从池子中获取一个粒子
+        function spawnParticle(x, y) {
+            // 找一个不活跃的粒子
+            // 简单实现：遍历池子（生产环境可用链表或索引优化）
+            const p = particlePool.find(p => !p.active);
+            if (!p) return; // 池子满了，不生成
+
+            p.active = true;
+            p.x = x;
+            p.y = y;
+            // 随机速度（圆形扩散）
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 5 + 2;
+            p.vx = Math.cos(angle) * speed;
+            p.vy = Math.sin(angle) * speed;
+            p.life = 1.0; // 生命值 1.0 -> 0
+            p.color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+            
+            particles.push(p);
+        }
+
+        function update() {
+            ctx.fillStyle = 'rgba(17, 17, 17, 0.2)'; // 拖尾效果
+            ctx.fillRect(0, 0, width, height);
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                
+                // 物理更新
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1; // 重力
+                p.vx *= 0.99; // 摩擦力
+                p.life -= 0.01; // 生命衰减
+
+                // 绘制
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // 移除死亡粒子
+                if (p.life <= 0) {
+                    p.active = false; // 归还对象池
+                    particles.splice(i, 1); // 从活动数组移除
+                }
+            }
+            ctx.globalAlpha = 1;
+
+            requestAnimationFrame(update);
+        }
+
+        window.addEventListener('click', (e) => {
+            for (let i = 0; i < 50; i++) {
+                spawnParticle(e.clientX, e.clientY);
+            }
+        });
+
+        update();
+    </script>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 什么是“对象池” (Object Pool)？为什么在粒子系统中要用它？</strong></p>
+        <!-- 
+            答案：
+            - 问题：如果在每一帧都 `new Particle()` 创建新对象，当粒子消失时又被销毁，会导致 JS 引擎频繁进行垃圾回收 (Garbage Collection)，引起页面卡顿（GC Pause）。
+            - 解决方案：对象池技术。预先创建好一批对象（如 1000 个），存放在数组中。
+            - 使用时：从池中标记一个对象为“活跃”并初始化属性。
+            - 销毁时：不真正删除，只是标记为“不活跃”，等待下次复用。
+            - 结果：内存占用稳定，没有频繁的内存分配和回收，动画极度流畅。
+        -->
+
+        <p><strong>2. 代码中的 `ctx.fillStyle = 'rgba(0,0,0,0.2)'` 有什么作用？</strong></p>
+        <!-- 
+            答案：
+            这是实现“拖尾效果” (Trails) 的经典技巧。
+            如果不清除画布（clearRect），轨迹会一直保留。
+            如果完全清除，就没有轨迹。
+            用半透明的黑色覆盖上一帧，会使之前的轨迹逐渐变暗直到消失，从而产生动态的拖尾视觉效果。
+        -->
+    </div>
+</body>
+</html>
