@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -40,7 +41,8 @@
             right: 0;
             background: #000;
             overflow: hidden;
-            box-sizing: border-box;/*中间添加一条水平折线*/
+            box-sizing: border-box;
+            /*中间添加一条水平折线*/
         }
 
         /* 上半部分 */
@@ -48,7 +50,8 @@
             top: 0;
             bottom: 50%;
             border-radius: 10px 10px 0 0;
-            border-bottom: solid 1px #666; /*中间添加一条水平折线*/
+            border-bottom: solid 1px #666;
+            /*中间添加一条水平折线*/
         }
 
         /* 下半部分 */
@@ -56,17 +59,21 @@
             top: 50%;
             bottom: 0;
             border-radius: 0 0 10px 10px;
-            line-height: 0; /*下半部分对着最上方对齐*/
+            line-height: 0;
+            /*下半部分对着最上方对齐*/
         }
 
         /*向下翻start*/
         .flip.down .front:before {
-            z-index: 3;/*处于最上层*/
+            z-index: 3;
+            /*处于最上层*/
         }
 
         .flip.down .back:after {
-            z-index: 2;/*处于第二层*/
-            transform-origin: 50% 0%;/*折叠起来(竖起来的背面部分) 看动图*/
+            z-index: 2;
+            /*处于第二层*/
+            transform-origin: 50% 0%;
+            /*折叠起来(竖起来的背面部分) 看动图*/
             transform: perspective(160px) rotateX(180deg);
         }
 
@@ -89,6 +96,7 @@
         .flip.down.go .back:after {
             animation: backFlipDown 0.6s ease-in-out both;
         }
+
         /*向下翻end*/
 
         /*向上翻start*/
@@ -117,6 +125,7 @@
         .flip.up.go .back:before {
             animation: backFlipUp 0.6s ease-in-out both;
         }
+
         /*向上翻end*/
 
         /* 向下翻动画 从上往下翻 */
@@ -215,7 +224,6 @@
 
         .clock {
             text-align: center;
-            margin-bottom: 200px;
         }
 
         .clock em {
@@ -227,7 +235,8 @@
         }
     </style>
 </head>
-<body>
+
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh;">
     <div class="clock" id="clock">
         <!-- front: 表示位于前面的纸牌   back: 表示位于后面的纸牌 -->
         <div class="flip down">
@@ -259,167 +268,470 @@
     </div>
 
 </body>
+
 </html>
 <script>
-        // 时钟翻牌
-        function Flipper(config) {
-            // 默认配置
-            this.config = {
-                // 时钟模块的节点
-                node: null,
-                // 初始前牌文字
-                frontText: 'number0',
-                // 初始后牌文字
-                backText: 'number1',
-                // 翻转动画时间（毫秒，与翻转动画CSS 设置的animation-duration时间要一致）
-                duration: 600
-            }
-            // 节点的原本class，与html对应，方便后面添加/删除新的class
-            this.nodeClass = {
-                flip: 'flip',
-                front: 'digital front',
-                back: 'digital back'
-            }
-            // 覆盖默认配置
-            Object.assign(this.config, config)
-            // 定位前后两个牌的DOM节点
-            this.frontNode = this.config.node.querySelector('.front')
-            this.backNode = this.config.node.querySelector('.back')
-            // 是否处于翻牌动画过程中（防止动画未完成就进入下一次翻牌）
-            this.isFlipping = false
-            // 初始化
-            this._init()
+    // 时钟翻牌
+    function Flipper(config) {
+        // 默认配置
+        this.config = {
+            // 时钟模块的节点
+            node: null,
+            // 初始前牌文字
+            frontText: 'number0',
+            // 初始后牌文字
+            backText: 'number1',
+            // 翻转动画时间（毫秒，与翻转动画CSS 设置的animation-duration时间要一致）
+            duration: 600
         }
-        Flipper.prototype = {
-            constructor: Flipper,
-            // 初始化
-            _init: function () {
-                // 设置初始牌面字符
-                this._setFront(this.config.frontText)
-                this._setBack(this.config.backText)
-            },
+        // 节点的原本class，与html对应，方便后面添加/删除新的class
+        this.nodeClass = {
+            flip: 'flip',
+            front: 'digital front',
+            back: 'digital back'
+        }
+        // 覆盖默认配置
+        Object.assign(this.config, config)
+        // 定位前后两个牌的DOM节点
+        this.frontNode = this.config.node.querySelector('.front')
+        this.backNode = this.config.node.querySelector('.back')
+        // 是否处于翻牌动画过程中（防止动画未完成就进入下一次翻牌）
+        this.isFlipping = false
+        // 初始化
+        this._init()
+    }
+    Flipper.prototype = {
+        constructor: Flipper,
+        // 初始化
+        _init: function () {
+            // 设置初始牌面字符
+            this._setFront(this.config.frontText)
+            this._setBack(this.config.backText)
+        },
+        // 设置前牌文字
+        _setFront: function (className) {
+            this.frontNode.setAttribute('class', this.nodeClass.front + ' ' + className)
+        },
+        // 设置后牌文字
+        _setBack: function (className) {
+            this.backNode.setAttribute('class', this.nodeClass.back + ' ' + className)
+        },
+        _flip: function (type, front, back) {
+            // 如果处于翻转中，则不执行
+            if (this.isFlipping) {
+                return false
+            }
+            // 设置翻转状态为true
+            this.isFlipping = true
             // 设置前牌文字
-            _setFront: function (className) {
-                this.frontNode.setAttribute('class', this.nodeClass.front + ' ' + className)
-            },
+            this._setFront(front)
             // 设置后牌文字
-            _setBack: function (className) {
-                this.backNode.setAttribute('class', this.nodeClass.back + ' ' + className)
-            },
-            _flip: function (type, front, back) {
-                // 如果处于翻转中，则不执行
-                if (this.isFlipping) {
-                    return false
-                }
-                // 设置翻转状态为true
-                this.isFlipping = true
-                // 设置前牌文字
-                this._setFront(front)
-                // 设置后牌文字
-                this._setBack(back)
-                // 根据传递过来的type设置翻转方向
-                let flipClass = this.nodeClass.flip;
-                if (type === 'down') {
-                    flipClass += ' down'
-                } else {
-                    flipClass += ' up'
-                }
-                // 添加翻转方向和执行动画的class，执行翻转动画
-                this.config.node.setAttribute('class', flipClass + ' go')
-                // 根据设置的动画时间，在动画结束后，还原class并更新前牌文字
-                setTimeout(() => {
-                    // 还原class
-                    this.config.node.setAttribute('class', flipClass)
-                    // 设置翻转状态为false
-                    this.isFlipping = false
-                    // 将前牌文字设置为当前新的数字，后牌因为被前牌挡住了，就不用设置了。
-                    this._setFront(back)
-                }, this.config.duration)
-            },
-            // 下翻牌
-            flipDown: function (front, back) {
-                this._flip('down', front, back)
-            },
-            // 上翻牌
-            flipUp: function (front, back) {
-                this._flip('up', front, back)
+            this._setBack(back)
+            // 根据传递过来的type设置翻转方向
+            let flipClass = this.nodeClass.flip;
+            if (type === 'down') {
+                flipClass += ' down'
+            } else {
+                flipClass += ' up'
             }
+            // 添加翻转方向和执行动画的class，执行翻转动画
+            this.config.node.setAttribute('class', flipClass + ' go')
+            // 根据设置的动画时间，在动画结束后，还原class并更新前牌文字
+            setTimeout(() => {
+                // 还原class
+                this.config.node.setAttribute('class', flipClass)
+                // 设置翻转状态为false
+                this.isFlipping = false
+                // 将前牌文字设置为当前新的数字，后牌因为被前牌挡住了，就不用设置了。
+                this._setFront(back)
+            }, this.config.duration)
+        },
+        // 下翻牌
+        flipDown: function (front, back) {
+            this._flip('down', front, back)
+        },
+        // 上翻牌
+        flipUp: function (front, back) {
+            this._flip('up', front, back)
         }
+    }
 
-        // 定位时钟模块
-        let clock = document.getElementById('clock')
-        // 定位6个翻板
-        let flips = clock.querySelectorAll('.flip')
+    // 定位时钟模块
+    let clock = document.getElementById('clock')
+    // 定位6个翻板
+    let flips = clock.querySelectorAll('.flip')
+    // 获取当前时间
+    let now = new Date()
+    // 格式化当前时间，例如现在是20:30:10，则输出"203010"字符串
+    let nowTimeStr = formatDate(now, 'hhiiss')
+    // 格式化下一秒的时间
+    let nextTimeStr = formatDate(new Date(now.getTime() + 1000), 'hhiiss')
+    // 定义牌板数组，用来存储6个Flipper翻板对象
+    let flipObjs = []
+    for (let i = 0; i < flips.length; i++) {
+        // 创建6个Flipper实例，并初始化
+        flipObjs.push(new Flipper({
+            // 每个flipper实例按数组顺序与翻板DOM的顺序一一对应
+            node: flips[i],
+            // 按数组顺序取时间字符串对应位置的数字
+            frontText: 'number' + nowTimeStr[i],
+            backText: 'number' + nextTimeStr[i]
+        }))
+    }
+
+
+    // 开始计时
+    setInterval(function () {
         // 获取当前时间
         let now = new Date()
-        // 格式化当前时间，例如现在是20:30:10，则输出"203010"字符串
-        let nowTimeStr = formatDate(now, 'hhiiss')
-        // 格式化下一秒的时间
-        let nextTimeStr = formatDate(new Date(now.getTime() + 1000), 'hhiiss')
-        // 定义牌板数组，用来存储6个Flipper翻板对象
-        let flipObjs = []
-        for (let i = 0; i < flips.length; i++) {
-            // 创建6个Flipper实例，并初始化
-            flipObjs.push(new Flipper({
-                // 每个flipper实例按数组顺序与翻板DOM的顺序一一对应
-                node: flips[i],
-                // 按数组顺序取时间字符串对应位置的数字
-                frontText: 'number' + nowTimeStr[i],
-                backText: 'number' + nextTimeStr[i]
-            }))
+        let nowTimeStr = formatDate(new Date(now.getTime() - 1000), 'hhiiss')
+        let nextTimeStr = formatDate(now, 'hhiiss')
+        for (let i = 0; i < flipObjs.length; i++) {
+            if (nowTimeStr[i] === nextTimeStr[i]) {
+                continue
+            }
+            flipObjs[i].flipDown('number' + nowTimeStr[i], 'number' + nextTimeStr[i])
         }
+    }, 1000)
 
-
-        // 开始计时
-        setInterval(function () {
-            // 获取当前时间
-            let now = new Date()
-            let nowTimeStr = formatDate(new Date(now.getTime() - 1000), 'hhiiss')
-            let nextTimeStr = formatDate(now, 'hhiiss')
-            for (let i = 0; i < flipObjs.length; i++) {
-                if (nowTimeStr[i] === nextTimeStr[i]) {
-                    continue
-                }
-                flipObjs[i].flipDown('number' + nowTimeStr[i], 'number' + nextTimeStr[i])
-            }
-        }, 1000)
-
-        //正则格式化日期
-        function formatDate(date, dateFormat) {
-            /* 单独格式化年份，根据y的字符数量输出年份
-             * 例如：yyyy => 2019
-                    yy => 19
-                    y => 9
-             */
-            if (/(y+)/.test(dateFormat)) {
-                dateFormat = dateFormat.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
-            }
-            // 格式化月、日、时、分、秒
-            let o = {
-                'm+': date.getMonth() + 1,
-                'd+': date.getDate(),
-                'h+': date.getHours(),
-                'i+': date.getMinutes(),
-                's+': date.getSeconds()
-            };
-            for (let k in o) {
-                if (new RegExp(`(${k})`).test(dateFormat)) {
-                    // 取出对应的值
-                    let str = o[k] + '';
-                    /* 根据设置的格式，输出对应的字符
-                     * 例如: 早上8时，hh => 08，h => 8
-                     * 但是，当数字>=10时，无论格式为一位还是多位，不做截取，这是与年份格式化不一致的地方
-                     * 例如: 下午15时，hh => 15, h => 15
-                     */
-                    dateFormat = dateFormat.replace(RegExp.$1, (RegExp.$1.length === 1) ? str : padLeftZero(str));
-                }
-            }
-            return dateFormat;
+    //正则格式化日期
+    function formatDate(date, dateFormat) {
+        /* 单独格式化年份，根据y的字符数量输出年份
+         * 例如：yyyy => 2019
+                yy => 19
+                y => 9
+         */
+        if (/(y+)/.test(dateFormat)) {
+            dateFormat = dateFormat.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
+        }
+        // 格式化月、日、时、分、秒
+        let o = {
+            'm+': date.getMonth() + 1,
+            'd+': date.getDate(),
+            'h+': date.getHours(),
+            'i+': date.getMinutes(),
+            's+': date.getSeconds()
         };
-
-        //日期时间补零
-        function padLeftZero(str) {
-            return ('00' + str).substr(str.length);
+        for (let k in o) {
+            if (new RegExp(`(${k})`).test(dateFormat)) {
+                // 取出对应的值
+                let str = o[k] + '';
+                /* 根据设置的格式，输出对应的字符
+                 * 例如: 早上8时，hh => 08，h => 8
+                 * 但是，当数字>=10时，无论格式为一位还是多位，不做截取，这是与年份格式化不一致的地方
+                 * 例如: 下午15时，hh => 15, h => 15
+                 */
+                dateFormat = dateFormat.replace(RegExp.$1, (RegExp.$1.length === 1) ? str : padLeftZero(str));
+            }
         }
+        return dateFormat;
+    };
+
+    //日期时间补零
+    function padLeftZero(str) {
+        return ('00' + str).substr(str.length);
+    }
 
 </script>
+
+<!-- ==================== 面试考察点 ==================== -->
+<div style="max-width: 800px; margin: 50px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <h2 style="text-align: center; color: #333; margin-bottom: 30px;">面试考察点</h2>
+    
+    <div style="line-height: 1.8; color: #555;">
+        <p><strong>1. 这个翻牌倒计时的动画原理是什么？如何实现"翻页"效果？</strong></p>
+        <!-- 
+            答案：
+            核心原理是利用 CSS 3D 变换和伪元素 ::before 和 ::after 来模拟"纸牌"的上下两半部分。
+            
+            结构拆解：
+            1. 每个翻牌由两个 DOM 元素组成：.front（前牌）和 .back（后牌）
+            2. 每个元素通过 ::before 和 ::after 伪元素分别显示上半部分和下半部分
+            3. 翻牌时，前牌的上半部分向下翻转（rotateX -180deg），后牌的下半部分从背面翻回正面（rotateX 180deg → 0deg）
+            
+            关键技术点：
+            - transform-origin: 50% 100%（向下翻）或 50% 0%（向上翻）：设置旋转轴在元素的上边缘或下边缘
+            - perspective(160px)：设置 3D 透视距离，让翻转效果更真实
+            - backface-visibility: hidden：隐藏元素背面，避免翻转到 90 度时出现穿帮
+            - z-index 层级控制：确保正确的翻牌顺序（前牌上半部分 z-index: 3，后牌下半部分 z-index: 2）
+            
+            动画流程（向下翻）：
+            1. 初始状态：前牌显示当前数字（如 0），后牌被前牌完全遮挡，显示下一个数字（如 1）
+            2. 添加 .go 类，触发动画
+            3. 前牌上半部分（::before）向下翻转 180 度，逐渐露出后牌的下半部分
+            4. 后牌下半部分（::after）从背面（rotateX 180deg）翻转到正面（rotateX 0deg）
+            5. 动画结束后，移除 .go 类，更新前牌数字为新数字，后牌被遮挡不可见
+        -->
+
+        <p><strong>2. 上下翻页的元素怎么优化？</strong></p>
+        <!-- 
+            答案：
+            作用：模拟"纸牌"的上半部分和下半部分。
+            
+            为什么用伪元素：
+            1. 减少 DOM 节点：不需要在 HTML 中额外创建元素来表示上下两半
+            2. 内容复用：::before 和 ::after 都使用 content 属性显示相同的数字，通过不同的定位和裁剪来显示上半部分或下半部分
+            3. 便于控制：可以独立为上半部分和下半部分设置动画和样式
+            
+            关键 CSS：
+            .flip .digital:before {
+                top: 0;
+                bottom: 50%;  // 只显示上半部分
+                border-radius: 10px 10px 0 0;  // 上圆角
+            }
+            
+            .flip .digital:after {
+                top: 50%;
+                bottom: 0;  // 只显示下半部分
+                line-height: 0;  // 让文字对齐到上边缘，配合 top: 50% 实现下半部分显示
+                border-radius: 0 0 10px 10px;  // 下圆角
+            }
+        -->
+
+        <p><strong>3.层级是如何设计的？</strong></p>
+        <!-- 
+            答案：
+            z-index 控制元素的层叠顺序，确保翻牌时的遮挡关系正确。
+            
+            向下翻的层级设计：
+            - 前牌上半部分（.front::before）z-index: 3（最上层）
+              原因：翻转时需要覆盖在所有元素上方
+            
+            - 后牌下半部分（.back::after）z-index: 2（第二层）
+              原因：需要在前牌上半部分翻转时逐渐显露出来
+            
+            - 前牌下半部分（.front::after）和后牌上半部分（.back::before）z-index: 1（底层）
+              原因：这两部分在动画过程中不参与翻转，始终被遮挡
+            
+            如果层级设置错误：
+            - 后牌可能遮挡前牌，导致数字闪烁
+            - 翻转时元素穿帮，破坏视觉连续性
+        -->
+
+        <p><strong>4. 什么css 实现翻页？</strong></p>
+        <!-- 
+            答案：
+            transform-origin 定义 3D 变换的原点（旋转轴位置）。
+            
+            默认值是 50% 50%（元素中心点），但翻牌效果需要旋转轴在元素的边缘。
+            
+            向下翻（从上往下）：
+            transform-origin: 50% 100%;
+            - 50%：水平方向居中
+            - 100%：垂直方向在元素的**底部边缘**
+            - 效果：元素绕底部边缘旋转，上半部分向下翻
+            
+            向上翻（从下往上）：
+            transform-origin: 50% 0%;
+            - 50%：水平方向居中
+            - 0%：垂直方向在元素的**顶部边缘**
+            - 效果：元素绕顶部边缘旋转，下半部分向上翻
+            
+            如果不设置 transform-origin：
+            元素会绕中心点旋转，无法实现"纸牌翻页"的效果。
+        -->
+
+        <p><strong>5. 背面的纸牌还在吗？</strong></p>
+        <!-- 
+            答案：
+            backface-visibility 控制元素背面是否可见，默认值是 visible。
+            
+            在翻牌动画中的作用：
+            当元素旋转到 90 度以上时，会显示元素的背面。如果不隐藏背面，会出现以下问题：
+            
+            1. 数字镜像显示：旋转到背面时，数字会反转（镜像），破坏视觉效果
+            2. 重叠闪烁：前后两张牌的背面可能同时可见，导致数字重叠
+            
+            设置 backface-visibility: hidden 后：
+            - 元素旋转到 90 度后，背面不可见，直接"消失"
+            - 这时后牌的正面开始显露，实现无缝过渡
+            
+            关键时刻：
+            - 0-90 度：前牌上半部分可见（正面）
+            - 90 度：前牌背面被隐藏，后牌正面开始显示（视觉上的"接力"）
+            - 90-180 度：后牌下半部分可见（正面）
+        -->
+
+        <p><strong>6. 怎么优化重复翻牌？</strong></p>
+        <!-- 
+            答案：
+            isFlipping 是一个"锁"，防止在动画执行过程中触发新的翻牌。
+            
+            问题场景：
+            假设翻牌动画持续 600ms，如果在 300ms 时又触发了一次翻牌：
+            
+            1. 没有 isFlipping 锁：
+               - 新动画会立即开始，打断当前动画
+               - 前后牌的状态混乱（前牌还没翻完，又开始翻下一个数字）
+               - 视觉上会出现跳帧、闪烁、数字错乱
+            
+            2. 有 isFlipping 锁：
+               - 检测到正在翻牌，忽略新的翻牌请求
+               - 等待当前动画完成（600ms 后 isFlipping 重置为 false）
+               - 下一个数字变化时才能触发新的翻牌
+            
+            代码实现：
+            _flip: function (type, front, back) {
+                if (this.isFlipping) {
+                    return false;  // 正在翻牌，直接返回
+                }
+                this.isFlipping = true;  // 设置锁
+                
+                // ... 执行翻牌动画 ...
+                
+                setTimeout(() => {
+                    this.isFlipping = false;  // 动画结束，释放锁
+                }, this.config.duration);
+            }
+        -->
+
+        <p><strong>7. 怎么做动画？</strong></p>
+        <!-- 
+            答案：
+            两种方式都可以，但各有优缺点：
+            
+            当前代码使用 setTimeout：
+            优点：
+            1. 简单直接，不需要绑定事件监听器
+            2. 时间可控，与 CSS animation-duration 保持一致即可
+            3. 兼容性好，所有浏览器都支持
+            
+            缺点：
+            1. 时间必须与 CSS 动画时间严格一致，不够灵活
+            2. 如果动画被中断（如 DOM 移除），setTimeout 仍会执行
+            
+            使用 animationend 事件：
+            优点：
+            1. 动态感知动画真正结束的时机，更准确
+            2. 如果 CSS 动画时间改变，JS 不需要修改
+            
+            缺点：
+            1. 需要绑定和移除事件监听器，代码更复杂
+            2. 有些旧浏览器可能需要加前缀（webkitAnimationEnd）
+            
+            实际项目建议：
+            如果动画时间固定，用 setTimeout 更简洁。
+            如果动画时间可能动态调整，或需要响应动画中断，用 animationend。
+        -->
+
+        <p><strong>8. 正则表达式在日期格式化中的作用是什么？这种实现方式有什么优势？</strong></p>
+        <!-- 
+            答案：
+            formatDate 函数使用正则表达式来实现灵活的日期格式化。
+            
+            实现原理：
+            1. 定义格式模板，如 'hhiiss' 表示 时时分分秒秒
+            2. 使用正则匹配模板中的占位符（y 年、m 月、d 日、h 时、i 分、s 秒）
+            3. 替换占位符为实际的日期数值
+            
+            关键代码：
+            if (/(y+)/.test(dateFormat)) {
+                // 匹配一个或多个 y，如 yyyy、yy、y
+                dateFormat = dateFormat.replace(RegExp.$1, ...);
+            }
+            
+            RegExp.$1：正则捕获组，表示匹配到的第一个括号内的内容。
+            
+            优势：
+            1. 灵活性：支持任意格式组合，如 'yyyy-mm-dd hh:ii:ss' 或 'hhiiss'
+            2. 可扩展：可以轻松添加新的占位符（如星期 w、毫秒 ms）
+            3. 自动补零：通过 padLeftZero 函数，确保个位数前面补 0（如 08:05:09）
+            
+            补零逻辑：
+            function padLeftZero(str) {
+                return ('00' + str).substr(str.length);
+            }
+            // 例如：str = '5'，'00' + '5' = '005'，substr(1) = '05'
+            // 例如：str = '15'，'00' + '15' = '0015'，substr(2) = '15'
+            
+            这种实现比手动拼接字符串更优雅、更易维护。
+        -->
+
+        <p><strong>9. 如何优化这个倒计时的性能？有哪些可能的性能瓶颈？</strong></p>
+        <!-- 
+            答案：
+            当前代码已经做得不错，但仍有优化空间：
+            
+            1. 减少不必要的翻牌：
+               当前代码在每次 setInterval 时会检查所有 6 个翻板，只翻转数字改变的那些。
+               优化：已经实现（第 390-392 行）
+            
+            2. 使用 requestAnimationFrame 替代 setInterval：
+               setInterval(function() { ... }, 1000);
+               
+               改为：
+               let lastTime = Date.now();
+               function tick() {
+                   const now = Date.now();
+                   if (now - lastTime >= 1000) {
+                       // 更新逻辑
+                       lastTime = now;
+                   }
+                   requestAnimationFrame(tick);
+               }
+               tick();
+               
+               原因：rAF 与浏览器渲染同步，避免不必要的重绘。
+            
+            3. 避免重复查询 DOM：
+               当前代码已经缓存了 flipObjs 数组，避免每次都查询 DOM。✅
+            
+            4. 使用 CSS will-change 提示浏览器：
+               .flip {
+                   will-change: transform;
+               }
+               告诉浏览器这个元素会发生变换，提前优化合成层。
+            
+            5. 页面不可见时暂停倒计时：
+               使用 Page Visibility API：
+               document.addEventListener('visibilitychange', () => {
+                   if (document.hidden) {
+                       // 暂停倒计时
+                   } else {
+                       // 恢复倒计时
+                   }
+               });
+               避免在后台标签页浪费资源。
+            
+            6. 动画结束后移除 will-change：
+               过度使用 will-change 会占用内存，应该在动画结束后移除。
+        -->
+
+        <p><strong>10. 如果要实现"向上翻"和"向下翻"自动切换（如个位数向上翻，十位数向下翻），如何实现？</strong></p>
+        <!-- 
+            答案：
+            需要判断数字是递增还是递减，然后选择不同的翻转方向。
+            
+            实现思路：
+            setInterval(function () {
+                let now = new Date();
+                let nowTimeStr = formatDate(new Date(now.getTime() - 1000), 'hhiiss');
+                let nextTimeStr = formatDate(now, 'hhiiss');
+                
+                for (let i = 0; i < flipObjs.length; i++) {
+                    if (nowTimeStr[i] === nextTimeStr[i]) {
+                        continue;
+                    }
+                    
+                    // 判断数字是递增还是递减
+                    const currentNum = parseInt(nowTimeStr[i]);
+                    const nextNum = parseInt(nextTimeStr[i]);
+                    
+                    if (nextNum > currentNum || (currentNum === 9 && nextNum === 0)) {
+                        // 递增：向下翻
+                        flipObjs[i].flipDown('number' + nowTimeStr[i], 'number' + nextTimeStr[i]);
+                    } else {
+                        // 递减：向上翻
+                        flipObjs[i].flipUp('number' + nowTimeStr[i], 'number' + nextTimeStr[i]);
+                    }
+                }
+            }, 1000);
+            
+            注意边界情况：
+            - 9 → 0：是递增（进位），应该向下翻
+            - 0 → 9：是递减（借位），应该向上翻
+        -->
+    </div>
+</div>
+
+</html>
