@@ -435,9 +435,10 @@
 </script>
 
 <!-- ==================== 面试考察点 ==================== -->
-<div style="max-width: 800px; margin: 50px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+<div
+    style="max-width: 800px; margin: 50px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
     <h2 style="text-align: center; color: #333; margin-bottom: 30px;">面试考察点</h2>
-    
+
     <div style="line-height: 1.8; color: #555;">
         <p><strong>1. 这个翻牌倒计时的动画原理是什么？如何实现"翻页"效果？</strong></p>
         <!-- 
@@ -585,7 +586,7 @@
             }
         -->
 
-        <p><strong>7. 怎么做动画？</strong></p>
+        <p><strong>7. 动画和时间变化怎么同步？</strong></p>
         <!-- 
             答案：
             两种方式都可以，但各有优缺点：
@@ -614,7 +615,7 @@
             如果动画时间可能动态调整，或需要响应动画中断，用 animationend。
         -->
 
-        <p><strong>8. 正则表达式在日期格式化中的作用是什么？这种实现方式有什么优势？</strong></p>
+        <p><strong>8. 日期格式化怎么实现？</strong></p>
         <!-- 
             答案：
             formatDate 函数使用正则表达式来实现灵活的日期格式化。
@@ -647,90 +648,8 @@
             这种实现比手动拼接字符串更优雅、更易维护。
         -->
 
-        <p><strong>9. 如何优化这个倒计时的性能？有哪些可能的性能瓶颈？</strong></p>
-        <!-- 
-            答案：
-            当前代码已经做得不错，但仍有优化空间：
-            
-            1. 减少不必要的翻牌：
-               当前代码在每次 setInterval 时会检查所有 6 个翻板，只翻转数字改变的那些。
-               优化：已经实现（第 390-392 行）
-            
-            2. 使用 requestAnimationFrame 替代 setInterval：
-               setInterval(function() { ... }, 1000);
-               
-               改为：
-               let lastTime = Date.now();
-               function tick() {
-                   const now = Date.now();
-                   if (now - lastTime >= 1000) {
-                       // 更新逻辑
-                       lastTime = now;
-                   }
-                   requestAnimationFrame(tick);
-               }
-               tick();
-               
-               原因：rAF 与浏览器渲染同步，避免不必要的重绘。
-            
-            3. 避免重复查询 DOM：
-               当前代码已经缓存了 flipObjs 数组，避免每次都查询 DOM。✅
-            
-            4. 使用 CSS will-change 提示浏览器：
-               .flip {
-                   will-change: transform;
-               }
-               告诉浏览器这个元素会发生变换，提前优化合成层。
-            
-            5. 页面不可见时暂停倒计时：
-               使用 Page Visibility API：
-               document.addEventListener('visibilitychange', () => {
-                   if (document.hidden) {
-                       // 暂停倒计时
-                   } else {
-                       // 恢复倒计时
-                   }
-               });
-               避免在后台标签页浪费资源。
-            
-            6. 动画结束后移除 will-change：
-               过度使用 will-change 会占用内存，应该在动画结束后移除。
-        -->
 
-        <p><strong>10. 如果要实现"向上翻"和"向下翻"自动切换（如个位数向上翻，十位数向下翻），如何实现？</strong></p>
-        <!-- 
-            答案：
-            需要判断数字是递增还是递减，然后选择不同的翻转方向。
-            
-            实现思路：
-            setInterval(function () {
-                let now = new Date();
-                let nowTimeStr = formatDate(new Date(now.getTime() - 1000), 'hhiiss');
-                let nextTimeStr = formatDate(now, 'hhiiss');
-                
-                for (let i = 0; i < flipObjs.length; i++) {
-                    if (nowTimeStr[i] === nextTimeStr[i]) {
-                        continue;
-                    }
-                    
-                    // 判断数字是递增还是递减
-                    const currentNum = parseInt(nowTimeStr[i]);
-                    const nextNum = parseInt(nextTimeStr[i]);
-                    
-                    if (nextNum > currentNum || (currentNum === 9 && nextNum === 0)) {
-                        // 递增：向下翻
-                        flipObjs[i].flipDown('number' + nowTimeStr[i], 'number' + nextTimeStr[i]);
-                    } else {
-                        // 递减：向上翻
-                        flipObjs[i].flipUp('number' + nowTimeStr[i], 'number' + nextTimeStr[i]);
-                    }
-                }
-            }, 1000);
-            
-            注意边界情况：
-            - 9 → 0：是递增（进位），应该向下翻
-            - 0 → 9：是递减（借位），应该向上翻
-        -->
+
     </div>
 </div>
 

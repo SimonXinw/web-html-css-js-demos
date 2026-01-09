@@ -53,7 +53,7 @@
             line-height: 1.2;
             max-width: 80%;
             
-            /* 定义渐变：左边是暗色(未激活)，右边是亮色(激活) */
+            /* 定义渐变：左边是暗色(未激活),右边是亮色(激活) */
             /* 关键在于 color-stop 的控制 */
             background-image: linear-gradient(
                 115deg, 
@@ -63,7 +63,7 @@
                 #fff 100%
             );
             
-            /* 将背景拉伸到足够大，以便我们通过 position 移动它 */
+            /* 将背景拉伸到足够大,以便我们通过 position 移动它 */
             background-size: 250% 100%;
             background-position: 0% 50%; /* 初始位置：显示左边的暗色 */
             
@@ -125,15 +125,15 @@
          * 考察点：
          * 1. CSS background-clip: text 的高级应用。
          * 2. 滚动进度的归一化计算 (Normalization)。
-         * 3. 性能：background-position 动画通常比较消耗，但在高配设备上效果极佳。
-         *    更高效的替代方案是使用两个重叠的 span (一个灰一个白) 控制 opacity，但 clip 方案代码更少。
+         * 3. 性能：background-position 动画通常比较消耗,但在高配设备上效果极佳。
+         *    更高效的替代方案是使用两个重叠的 span (一个灰一个白) 控制 opacity,但 clip 方案代码更少。
          */
 
-        const section = document.getElementById('reveal-section');
-        const text = document.getElementById('target-text');
-        const subText = document.getElementById('sub-text');
+        const section = document.getElementById("reveal-section");
+        const text = document.getElementById("target-text");
+        const subText = document.getElementById("sub-text");
 
-        window.addEventListener('scroll', () => {
+        window.addEventListener("scroll", () => {
             const rect = section.getBoundingClientRect();
             const viewportHeight = window.innerHeight;
             
@@ -150,22 +150,22 @@
             // 映射到 background-position
             // 0% -> 0% (暗色)
             // 100% -> 100% (亮色)
-            // 实际上我们需要反向移动背景，或者根据渐变定义调整
+            // 实际上我们需要反向移动背景,或者根据渐变定义调整
             // 在 CSS 中: 0% 对应左边(#333), 100% 对应右边(#fff)
-            // 我们希望随着滚动，背景从左向右移，显示出白色的部分
+            // 我们希望随着滚动,背景从左向右移,显示出白色的部分
             
             // 我们的 gradient 是 [暗 0% ... 暗 45% ... 白 55% ... 白 100%]
             // background-size: 250%
-            // position 100% 时，背景的最右端对齐文字的最右端 -> 显示白色
+            // position 100% 时,背景的最右端对齐文字的最右端 -> 显示白色
             
             const bgPosition = progress * 100;
             text.style.backgroundPosition = `${bgPosition}% 50%`;
 
             // 副标题视差淡入
             if (progress > 0.8) {
-                subText.classList.add('visible');
+                subText.classList.add("visible");
             } else {
-                subText.classList.remove('visible');
+                subText.classList.remove("visible");
             }
         });
     </script>
