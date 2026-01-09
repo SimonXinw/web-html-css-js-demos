@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -144,33 +145,35 @@
         }
     </style>
 </head>
+
 <body>
-<h1>卡片列表</h1>
-<p>鼠标移入查看不同效果.</p>
+    <h1>卡片列表</h1>
+    <p>鼠标移入查看不同效果.</p>
 
-<section class="main">
+    <section class="main">
 
-    <div class="wrap wrap--1">
-        <div class="container container--1">
-            <p>标准</p>
+        <div class="wrap wrap--1">
+            <div class="container container--1">
+                <p>标准</p>
+            </div>
         </div>
-    </div>
 
-    <div class="wrap wrap--2">
-        <div class="container container--2">
-            <p>反方向</p>
+        <div class="wrap wrap--2">
+            <div class="container container--2">
+                <p>反方向</p>
+            </div>
         </div>
-    </div>
 
-    <div class="wrap wrap--3">
-        <div class="container container--3">
-            <p>标准</p>
+        <div class="wrap wrap--3">
+            <div class="container container--3">
+                <p>标准</p>
+            </div>
         </div>
-    </div>
-    
-</section>
 
-<a href="https://abubakersaeed.netlify.app/designs/d10-parallax-tilt-effect-cards" class="abs-site-link" rel="nofollow noreferrer" target="_blank">abs/designs/d10-parallax-tilt-effect-cards</a>
+    </section>
+
+    <a href="https://abubakersaeed.netlify.app/designs/d10-parallax-tilt-effect-cards" class="abs-site-link"
+        rel="nofollow noreferrer" target="_blank">abs/designs/d10-parallax-tilt-effect-cards</a>
 </body>
 <script>
 
@@ -180,7 +183,7 @@
 
     class parallaxTiltEffect {
 
-        constructor({element, tiltEffect}) {
+        constructor({ element, tiltEffect }) {
 
             this.element = element;
             this.container = this.element.querySelector(".container");
@@ -202,26 +205,26 @@
         }
 
         handleMouseMove(event) {
-            const {offsetX, offsetY} = event;
+            const { offsetX, offsetY } = event;
 
             let X;
             let Y;
 
             if (this.tiltEffect === "reverse") {
-                X = ((offsetX - (this.w/2)) / 3) / 3;
-                Y = (-(offsetY - (this.h/2)) / 3) / 3;
+                X = ((offsetX - (this.w / 2)) / 3) / 3;
+                Y = (-(offsetY - (this.h / 2)) / 3) / 3;
             }
 
             else if (this.tiltEffect === "normal") {
-                X = (-(offsetX - (this.w/2)) / 3) / 3;
-                Y = ((offsetY - (this.h/2)) / 3) / 3;
+                X = (-(offsetX - (this.w / 2)) / 3) / 3;
+                Y = ((offsetY - (this.h / 2)) / 3) / 3;
             }
 
             this.setProperty('--rY', X.toFixed(2));
             this.setProperty('--rX', Y.toFixed(2));
 
-            this.setProperty('--bY', (80 - (X/4).toFixed(2)) + '%');
-            this.setProperty('--bX', (50 - (Y/4).toFixed(2)) + '%');
+            this.setProperty('--bY', (80 - (X / 4).toFixed(2)) + '%');
+            this.setProperty('--bX', (50 - (Y / 4).toFixed(2)) + '%');
         }
 
         handleMouseEnter() {
@@ -261,7 +264,7 @@
         tiltEffect: 'reverse'
     });
 
-   //反转控制
+    //反转控制
     const wrap2 = new parallaxTiltEffect({
         element: $('.wrap--2'),
         tiltEffect: 'normal'
@@ -272,6 +275,147 @@
         element: $('.wrap--3'),
         tiltEffect: 'reverse'
     });
-    
+
 </script>
+
+<!-- ==================== 面试考察点 ==================== -->
+<div
+    style="max-width: 800px; margin: 50px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+    <h2 style="text-align: center; color: #333; margin-bottom: 30px;">面试考察点</h2>
+
+    <div style="line-height: 1.8; color: #555;">
+        <p><strong>1. 这个动画的原理是什么？</strong></p>
+        <!-- 
+            答案：
+            - transform-style: preserve-3d 让子元素保留 3D 变换，不会被压平成 2D。必须加在父元素上。
+            - transform: perspective(100rem) 设置 3D 透视效果，控制近大远小的视觉深度。
+            - perspective 作为 CSS 属性加在父元素，作为 transform 函数加在当前元素。
+            - 区别：CSS 属性影响所有子元素，transform 函数只影响当前元素。
+            
+            示例：
+            .wrap {
+                transform-style: preserve-3d; // 子元素保持 3D
+                transform: perspective(100rem); // 设置透视距离
+            }
+        -->
+
+        <p><strong>2. CSS 自定义属性（CSS Variables）--rX, --rY, --bX, --bY 的作用是什么？为什么要用它们？</strong></p>
+        <!-- 
+            答案：
+            CSS 自定义属性（CSS Variables）允许通过 JavaScript 动态修改 CSS 值。
+            
+            优势：
+            1. 性能：直接修改 CSS 变量比修改 style 属性更高效。
+            2. 解耦：CSS 中定义计算逻辑，JS 只负责更新数值。
+            3. 复用：多个 CSS 属性可以引用同一个变量。
+            4. 过渡：可以对变量值应用 transition 动画。
+            
+            本例中：
+            - --rX, --rY 控制卡片的旋转角度（rotateX/rotateY）
+            - --bX, --bY 控制背景图片的位置（background-position）
+            
+            JS 修改方式：
+            element.style.setProperty('--rX', '10');
+        -->
+
+        <p><strong>3. 代码中 offsetX 和 offsetY 的含义是什么？和 clientX/clientY 有什么区别？</strong></p>
+        <!-- 
+            答案：
+            - offsetX/offsetY：鼠标相对于**当前元素**左上角的坐标（局部坐标）
+            - clientX/clientY：鼠标相对于**浏览器视口**左上角的坐标（全局坐标）
+            - pageX/pageY：鼠标相对于**整个文档**左上角的坐标（包含滚动）
+            
+            本例使用 offsetX/offsetY 的原因：
+            需要计算鼠标在卡片内的相对位置，以此计算旋转角度。
+            如果用 clientX，还需要减去元素的 getBoundingClientRect() 才能得到相对位置。
+            
+            计算逻辑：
+            X = (offsetX - 卡片宽度/2) / 3 / 3  // 中心点为原点，除以 3 减小旋转幅度
+        -->
+
+        <p><strong>4. 同一卡片的不同颜色怎么区分？</strong></p>
+        <!-- 
+            答案：
+            CSS filter 滤镜可以对元素应用图形效果：
+            - hue-rotate(80deg)：色相旋转 80 度，改变颜色（0-360deg）
+            - saturate(140%)：饱和度提升到 140%，颜色更鲜艳
+            
+            其他常用滤镜：
+            - blur(5px)：模糊
+            - brightness(150%)：亮度
+            - contrast(200%)：对比度
+            - grayscale(100%)：灰度
+            - opacity(50%)：透明度
+            
+            性能：
+            filter 会创建合成层，由 GPU 处理，性能较好。
+            但过度使用或动画 filter 可能导致性能问题（尤其是 blur）。
+            
+            本例用途：
+            通过色相旋转让三张卡片显示不同的颜色主题，避免重复设计多个颜色方案。
+        -->
+
+        <p><strong>5. 如何优化这个 3D 卡片效果的性能？</strong></p>
+        <!-- 
+            答案：
+            当前代码已经做得不错，进一步优化可以考虑：
+            
+            1. 使用 requestAnimationFrame 节流 mousemove 事件：
+               let ticking = false;
+               handleMouseMove(event) {
+                   if (!ticking) {
+                       requestAnimationFrame(() => {
+                           // 更新逻辑
+                           ticking = false;
+                       });
+                       ticking = true;
+                   }
+               }
+            
+            2. 添加 will-change 提示浏览器：
+               .container {
+                   will-change: transform;
+               }
+               注意：不要滥用，只在需要时添加。
+            
+            3. 使用 translate3d 替代 rotateX/rotateY（如果只需要平移）：
+               transform: translate3d(x, y, 0) // 强制开启 GPU 加速
+            
+            4. 减少 DOM 查询：
+               本例已经缓存了 this.container，避免重复查询。
+            
+            5. 使用 Passive Event Listener：
+               element.addEventListener('mousemove', handler, { passive: true });
+               告诉浏览器不会调用 preventDefault()，提升滚动性能。
+        -->
+
+        <p><strong>6. 这种 3D 倾斜效果的数学原理是什么？</strong></p>
+        <!-- 
+            答案：
+            核心原理：将鼠标在卡片上的位置映射为旋转角度。
+            
+            步骤 1：计算鼠标相对于卡片中心的偏移
+            offsetX - (width / 2)  // 鼠标距离中心的 X 轴距离
+            // 范围：[-150, 150]（假设卡片宽 300px）
+            
+            步骤 2：除以 3 减小旋转幅度
+            (offsetX - (width / 2)) / 3  // 范围：[-50, 50]
+            
+            步骤 3：再除以 3 进一步减小
+            ((offsetX - (width / 2)) / 3) / 3  // 范围：[-16.67, 16.67] 度
+            
+            为什么除以 3 两次？
+            1. 第一次除以 3：将像素偏移转换为合理的旋转角度范围。
+            2. 第二次除以 3：让旋转更加细腻，避免过度倾斜（太大会失真）。
+            
+            reverse vs normal：
+            - reverse：鼠标往右，卡片往右倾斜（跟随效果）
+            - normal：鼠标往右，卡片往左倾斜（反向效果）
+            
+            背景位置计算：
+            --bX: 50 - (Y/4)%  // 旋转时，背景也跟着移动，产生视差效果
+        -->
+    </div>
+</div>
+
 </html>
