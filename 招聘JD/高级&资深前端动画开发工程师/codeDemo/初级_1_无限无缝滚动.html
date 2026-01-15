@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,7 +21,7 @@
             background: white;
             padding: 20px 0;
             margin-bottom: 50px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
 
@@ -38,11 +39,12 @@
             display: flex;
             width: fit-content;
             /* 关键：动画时间 = 总宽度 / 速度 */
-            animation: scroll 10s linear infinite; 
+            animation: scroll 10s linear infinite;
         }
 
         .marquee-wrapper:hover {
-            animation-play-state: paused; /* 悬停暂停 */
+            animation-play-state: paused;
+            /* 悬停暂停 */
         }
 
         .item {
@@ -60,8 +62,15 @@
         }
 
         @keyframes scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); } /* 移动总宽度的一半(即一组内容的宽度) */
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+
+            /* 移动总宽度的一半(即一组内容的宽度) */
         }
 
         /* 面试题部分样式 */
@@ -74,10 +83,11 @@
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
-        <h2>CSS 实现 (悬停暂停)</h2>
+        <h2>CSS JS 分别怎么实现无线滚动？</h2>
         <div class="marquee-wrapper">
             <!-- 第一组内容 -->
             <div class="item">1</div>
@@ -106,7 +116,7 @@
             4. 因为重置前后的画面完全一致,用户察觉不到跳变,从而产生无限循环的错觉。
         -->
 
-        <p><strong>2. 使用 CSS 动画实现时,transform: translateX(-50%) 的前提是什么？</strong></p>
+        <p><strong>2. 使用 CSS 动画实现时，要注意什么问题？</strong></p>
         <!-- 
             答案：
             前提是容器内包含了**两份完全一样**的内容。
@@ -130,5 +140,5 @@
         -->
     </div>
 </body>
-</html>
 
+</html>
