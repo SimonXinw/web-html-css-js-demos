@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初级_10_进度条动画</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+            gap: 40px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .demo-container {
+            width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .progress-item {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 方案1: 基础进度条 */
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            transition: width 1s ease-out;
+            width: 0%;
+        }
+
+        /* 方案2: 条纹动画 */
+        .progress-bar-striped {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background-size: 30px 30px;
+            animation: stripe 1s linear infinite;
+        }
+
+        @keyframes stripe {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 30px 0;
+            }
+        }
+
+        /* 方案3: 闪烁效果 */
+        .progress-bar-shine {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar-shine::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .interview-box {
+            width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h2>进度条动画效果</h2>
+
+    <div class="demo-container">
+        <div class="progress-item">
+            <div class="progress-label">
+                <span>基础进度条</span>
+                <span id="percent-1">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-1"></div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <div class="progress-label">
+                <span>条纹动画</span>
+                <span id="percent-2">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar progress-bar-striped" id="progress-2"></div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <div class="progress-label">
+                <span>闪烁效果</span>
+                <span id="percent-3">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar progress-bar-shine" id="progress-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button onclick="startProgress()">开始进度</button>
+        <button onclick="resetProgress()">重置</button>
+    </div>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 如何实现流畅的进度条动画？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 width 或 transform: scaleX() 改变进度
+            2. 使用 transition 或 animation 实现平滑过渡
+            3. transform: scaleX() 性能更好，但需要设置 transform-origin
+            4. 使用 ease-out 缓动函数更符合用户预期
+        -->
+
+        <p><strong>2.背景动画的原理怎么实现？</strong></p>
+        <!-- 
+            答案：
+            通过改变 background-position 可以让背景图片移动，创建条纹、波浪等效果。
+            配合 background-size 可以控制移动的步长和速度。
+        -->
+
+        <p><strong>3. 如何实现数字递增配合进度条？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 requestAnimationFrame 同步更新数字和进度条
+            2. 使用缓动函数让数字变化更自然
+            3. 确保数字和进度条使用相同的进度值
+            4. 可以使用 Intersection Observer 在进入视口时触发动画
+        -->
+    </div>
+
+    <script>
+        const progressBars = [
+            { el: document.getElementById("progress-1"), percent: document.getElementById("percent-1") },
+            { el: document.getElementById("progress-2"), percent: document.getElementById("percent-2") },
+            { el: document.getElementById("progress-3"), percent: document.getElementById("percent-3") }
+        ];
+
+        function startProgress() {
+            progressBars.forEach((bar, index) => {
+                const target = 75 + Math.random() * 20; // 75-95%
+                animateProgress(bar, target, 2000 + index * 200);
+            });
+        }
+
+        function animateProgress(bar, target, duration) {
+            const startTime = performance.now();
+            const startValue = parseFloat(bar.el.style.width) || 0;
+
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // 使用 ease-out 缓动
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const current = startValue + (target - startValue) * eased;
+
+                bar.el.style.width = current + "%";
+                bar.percent.textContent = Math.round(current) + "%";
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    bar.el.style.width = target + "%";
+                    bar.percent.textContent = Math.round(target) + "%";
+                }
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function resetProgress() {
+            progressBars.forEach(bar => {
+                bar.el.style.width = "0%";
+                bar.percent.textContent = "0%";
+            });
+        }
+    </script>
+</body>
+</html>

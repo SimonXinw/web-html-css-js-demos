@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级_6_流体动画</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #0a0a0a;
+            font-family: sans-serif;
+        }
+
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .interview-box {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #ccc;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h3>流体动画效果</h3>
+        <p>点击或移动鼠标查看交互</p>
+    </div>
+
+    <canvas id="fluid-canvas"></canvas>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 流体动画的物理模拟原理？</strong></p>
+        <!-- 
+            答案：
+            1. 使用网格或粒子系统表示流体
+            2. 应用物理方程（如 Navier-Stokes）计算速度和压力
+            3. 使用数值方法（如有限差分）求解
+            4. 每帧更新位置和速度
+        -->
+
+        <p><strong>2. 如何优化流体模拟性能？</strong></p>
+        <!-- 
+            答案：
+            1. 降低网格分辨率
+            2. 使用 GPU 计算（WebGL compute shader 或 WebGPU）
+            3. 简化物理模型
+            4. 使用多线程（Web Workers）
+            5. 限制更新区域
+        -->
+
+        <p><strong>3. Metaball 效果的实现？</strong></p>
+        <!-- 
+            答案：
+            1. 计算每个像素到多个球心的距离
+            2. 使用距离场（distance field）计算
+            3. 设置阈值决定是否绘制
+            4. 使用 marching squares 算法生成轮廓
+        -->
+    </div>
+
+    <script>
+        const canvas = document.getElementById("fluid-canvas");
+        const ctx = canvas.getContext("2d");
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        class Blob {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.radius = 50 + Math.random() * 30;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < this.radius || this.x > canvas.width - this.radius) {
+                    this.vx *= -1;
+                }
+                if (this.y < this.radius || this.y > canvas.height - this.radius) {
+                    this.vy *= -1;
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const blobs = [];
+        for (let i = 0; i < 5; i++) {
+            blobs.push(new Blob(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height
+            ));
+        }
+
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+
+        canvas.addEventListener("mousemove", (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        canvas.addEventListener("click", (e) => {
+            blobs.push(new Blob(e.clientX, e.clientY));
+        });
+
+        function drawMetaball() {
+            const imageData = ctx.createImageData(canvas.width, canvas.height);
+            const data = imageData.data;
+
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    let sum = 0;
+                    
+                    // 计算到所有 blob 的距离
+                    for (const blob of blobs) {
+                        const dx = x - blob.x;
+                        const dy = y - blob.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        sum += blob.radius / distance;
+                    }
+
+                    // 鼠标交互
+                    const dx = x - mouseX;
+                    const dy = y - mouseY;
+                    const mouseDist = Math.sqrt(dx * dx + dy * dy);
+                    sum += 30 / (mouseDist + 1);
+
+                    const index = (y * canvas.width + x) * 4;
+                    const alpha = Math.min(255, sum * 20);
+                    
+                    if (sum > 1) {
+                        // 流体内部
+                        data[index] = 100;
+                        data[index + 1] = 150;
+                        data[index + 2] = 255;
+                        data[index + 3] = alpha;
+                    } else {
+                        // 背景
+                        data[index] = 10;
+                        data[index + 1] = 10;
+                        data[index + 2] = 10;
+                        data[index + 3] = 255;
+                    }
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        function animate() {
+            blobs.forEach(blob => blob.update());
+
+            drawMetaball();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级_8_手势拖拽</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        h2 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .draggable-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .draggable-item {
+            width: 150px;
+            height: 150px;
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            transition: box-shadow 0.2s;
+            position: relative;
+        }
+
+        .draggable-item:active {
+            cursor: grabbing;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .draggable-item.dragging {
+            opacity: 0.8;
+            transform: scale(1.1);
+            z-index: 1000;
+        }
+
+        .drop-zone {
+            width: 200px;
+            height: 200px;
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            border-color: white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .interview-box {
+            width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h2>手势拖拽交互</h2>
+
+    <div class="draggable-container">
+        <div class="draggable-item" draggable="true" data-id="1">🎨</div>
+        <div class="draggable-item" draggable="true" data-id="2">💻</div>
+        <div class="draggable-item" draggable="true" data-id="3">🚀</div>
+        <div class="draggable-item" draggable="true" data-id="4">⭐</div>
+    </div>
+
+    <div class="drop-zone" id="drop-zone">拖放到这里</div>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 拖拽事件的处理流程？</strong></p>
+        <!-- 
+            答案：
+            1. dragstart: 开始拖拽，设置 dataTransfer
+            2. drag: 拖拽过程中
+            3. dragover: 在目标元素上，需要 preventDefault
+            4. drop: 放下，获取数据并处理
+            5. dragend: 拖拽结束
+        -->
+
+        <p><strong>2. 如何实现平滑的拖拽跟随？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 transform 而非 top/left
+            2. 使用 requestAnimationFrame 更新位置
+            3. 使用 lerp 实现平滑跟随
+            4. 考虑使用 pointer events 处理触摸
+        -->
+
+        <p><strong>3. 移动端拖拽的注意事项？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 touchstart/touchmove/touchend
+            2. 阻止默认滚动行为
+            3. 处理多点触控
+            4. 考虑惯性滚动
+            5. 使用 passive 事件监听器优化性能
+        -->
+    </div>
+
+    <script>
+        const draggableItems = document.querySelectorAll(".draggable-item");
+        const dropZone = document.getElementById("drop-zone");
+
+        draggableItems.forEach(item => {
+            item.addEventListener("dragstart", (e) => {
+                e.dataTransfer.setData("text/plain", item.dataset.id);
+                item.classList.add("dragging");
+                e.dataTransfer.effectAllowed = "move";
+            });
+
+            item.addEventListener("dragend", (e) => {
+                item.classList.remove("dragging");
+            });
+        });
+
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.classList.add("drag-over");
+            e.dataTransfer.dropEffect = "move";
+        });
+
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.classList.remove("drag-over");
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            const id = e.dataTransfer.getData("text/plain");
+            const item = document.querySelector(`[data-id="${id}"]`);
+            
+            dropZone.classList.remove("drag-over");
+            dropZone.textContent = `已接收: ${item.textContent}`;
+            
+            setTimeout(() => {
+                dropZone.textContent = "拖放到这里";
+            }, 2000);
+        });
+
+        // 触摸拖拽支持
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let currentElement = null;
+
+        draggableItems.forEach(item => {
+            item.addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                currentElement = item;
+                const touch = e.touches[0];
+                touchStartX = touch.clientX - item.offsetLeft;
+                touchStartY = touch.clientY - item.offsetTop;
+                item.classList.add("dragging");
+            });
+        });
+
+        document.addEventListener("touchmove", (e) => {
+            if (currentElement) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                currentElement.style.position = "fixed";
+                currentElement.style.left = touch.clientX - touchStartX + "px";
+                currentElement.style.top = touch.clientY - touchStartY + "px";
+            }
+        });
+
+        document.addEventListener("touchend", () => {
+            if (currentElement) {
+                currentElement.classList.remove("dragging");
+                currentElement.style.position = "";
+                currentElement.style.left = "";
+                currentElement.style.top = "";
+                currentElement = null;
+            }
+        });
+    </script>
+</body>
+</html>

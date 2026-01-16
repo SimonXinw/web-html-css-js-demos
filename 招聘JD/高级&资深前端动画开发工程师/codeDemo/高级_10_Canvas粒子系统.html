@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级_10_Canvas粒子系统</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+            font-family: sans-serif;
+        }
+
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .interview-box {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #ccc;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h3>高级 Canvas 粒子系统</h3>
+        <p>移动鼠标查看交互效果</p>
+    </div>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 高性能粒子系统的设计？</strong></p>
+        <!-- 
+            答案：
+            1. 使用对象池复用粒子对象
+            2. 批量绘制操作
+            3. 使用 TypedArray 存储数据
+            4. 减少 Canvas API 调用
+            5. 使用离屏 Canvas 缓存
+            6. 考虑使用 WebGL 处理大量粒子
+        -->
+
+        <p><strong>2. 粒子系统的物理模拟？</strong></p>
+        <!-- 
+            答案：
+            1. 速度 = 速度 + 加速度 * 时间
+            2. 位置 = 位置 + 速度 * 时间
+            3. 应用力（重力、阻力、斥力等）
+            4. 碰撞检测和响应
+            5. 生命周期管理
+        -->
+
+        <p><strong>3. 如何优化大量粒子的渲染？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 requestAnimationFrame 控制帧率
+            2. 只渲染可见区域的粒子
+            3. 使用 LOD（细节层次）系统
+            4. 合并绘制调用
+            5. 使用 Web Workers 计算物理
+            6. 考虑使用 WebGL 或 WebGPU
+        -->
+    </div>
+
+    <script>
+        const canvas = document.getElementById("particle-canvas");
+        const ctx = canvas.getContext("2d");
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        // 对象池
+        class ParticlePool {
+            constructor(size) {
+                this.pool = [];
+                this.active = [];
+                for (let i = 0; i < size; i++) {
+                    this.pool.push(new Particle());
+                }
+            }
+
+            get() {
+                const particle = this.pool.pop() || new Particle();
+                this.active.push(particle);
+                return particle;
+            }
+
+            release(particle) {
+                const index = this.active.indexOf(particle);
+                if (index > -1) {
+                    this.active.splice(index, 1);
+                    this.pool.push(particle);
+                }
+            }
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.02 + 0.005;
+                this.size = Math.random() * 3 + 1;
+                this.color = `hsl(${Math.random() * 60 + 200}, 70%, 60%)`;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= this.decay;
+
+                // 边界反弹
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                // 鼠标交互
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 100) {
+                    const force = (100 - distance) / 100;
+                    this.vx -= (dx / distance) * force * 0.05;
+                    this.vy -= (dy / distance) * force * 0.05;
+                }
+
+                // 速度衰减
+                this.vx *= 0.99;
+                this.vy *= 0.99;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            isDead() {
+                return this.life <= 0;
+            }
+        }
+
+        const pool = new ParticlePool(500);
+        const particles = [];
+
+        // 初始化粒子
+        for (let i = 0; i < 200; i++) {
+            particles.push(pool.get());
+        }
+
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+
+        canvas.addEventListener("mousemove", (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function drawConnections() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 120) {
+                        ctx.save();
+                        ctx.strokeStyle = `rgba(102, 126, 234, ${(1 - distance / 120) * 0.3})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 更新和绘制粒子
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.update();
+                particle.draw();
+
+                if (particle.isDead()) {
+                    pool.release(particle);
+                    particles.splice(i, 1);
+                    // 补充新粒子
+                    if (particles.length < 200) {
+                        particles.push(pool.get());
+                    }
+                }
+            }
+
+            drawConnections();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初级_6_按钮波纹效果</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            gap: 40px;
+            padding: 40px;
+        }
+
+        h2 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn {
+            position: relative;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* 波纹效果 */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .interview-box {
+            width: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>按钮波纹点击效果</h2>
+
+    <button class="btn" id="ripple-btn">点击我</button>
+    <button class="btn" id="ripple-btn-2">另一个按钮</button>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 如何实现 Material Design 风格的波纹效果？</strong></p>
+        <!-- 
+            答案：
+            1. 获取点击位置相对于按钮的坐标
+            2. 创建一个圆形元素，定位在点击位置
+            3. 使用 CSS 动画让圆形放大并淡出
+            4. 动画结束后移除元素
+            5. 关键：使用 transform: scale() 而非 width/height，性能更好
+        -->
+
+        <p><strong>2. 为什么使用绝对定位和 transform？</strong></p>
+        <!-- 
+            答案：
+            1. 绝对定位可以精确控制波纹位置
+            2. transform: scale() 使用 GPU 加速，性能更好
+            3. 避免使用 width/height 动画，会触发重排
+            4. opacity 动画也是合成层优化，不会触发重绘
+        -->
+
+        <p><strong>3. 如何优化多个波纹同时出现的情况？</strong></p>
+        <!-- 
+            答案：
+            1. 限制同时存在的波纹数量
+            2. 使用对象池复用 DOM 元素
+            3. 及时清理动画结束的元素
+            4. 使用 CSS 动画而非 JS 逐帧动画
+        -->
+    </div>
+
+    <script>
+        const buttons = document.querySelectorAll(".btn");
+
+        buttons.forEach(btn => {
+            // 为每个按钮注册点击事件，产生波纹效果
+            btn.addEventListener("click", function (e) {
+                // 第一步：获取按钮的尺寸和位置
+                // rect 对象包含按钮相对于视口的 left/top/width/height 等信息
+                const rect = this.getBoundingClientRect();
+
+                // 第二步：计算点击位置相对于按钮左上角的坐标
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // 第三步：创建一个用于展示波纹的 span 元素
+                const ripple = document.createElement("span");
+                ripple.classList.add("ripple");
+
+                // 第四步：计算波纹需要覆盖的最大尺寸，通常取按钮的最大边长
+                const size = Math.max(rect.width, rect.height);
+
+                // 设置波纹的宽高，使其足够大能扩散覆盖按钮
+                ripple.style.width = ripple.style.height = `${size}px`;
+
+                // 设置波纹的起始位置，使圆心位于点击点
+                ripple.style.left = `${x - size / 2}px`;
+                ripple.style.top = `${y - size / 2}px`;
+
+                // 第五步：将波纹元素添加到按钮中
+                this.appendChild(ripple);
+
+                // 第六步：监听动画结束事件，移除波纹元素，避免堆积
+                ripple.addEventListener("animationend", () => {
+                    ripple.remove();
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

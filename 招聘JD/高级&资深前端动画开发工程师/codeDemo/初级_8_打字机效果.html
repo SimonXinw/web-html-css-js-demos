@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初级_8_呼吸灯脉冲动画</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+            gap: 60px;
+        }
+
+        h2 {
+            color: white;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .demo-container {
+            display: flex;
+            flex-direction: column;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .demo-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        h3 {
+            margin: 0;
+            color: #ccc;
+            font-size: 1.1rem;
+        }
+
+        /* 方案1: 基础呼吸灯 */
+        .breathing-light {
+            width: 100px;
+            height: 100px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: breathing 2s ease-in-out infinite;
+            box-shadow: 0 0 20px #667eea;
+        }
+
+        @keyframes breathing {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 20px #667eea, 0 0 40px #667eea;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.7;
+                box-shadow: 0 0 40px #667eea, 0 0 60px #667eea;
+            }
+        }
+
+        /* 方案2: 脉冲扩散效果 */
+        .pulse-ring {
+            width: 100px;
+            height: 100px;
+            position: relative;
+        }
+
+        .pulse-ring::before,
+        .pulse-ring::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            animation: pulse 2s ease-out infinite;
+        }
+
+        .pulse-ring::after {
+            animation-delay: 1s;
+        }
+
+        .pulse-ring-inner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        /* 方案3: 渐变呼吸 */
+        .gradient-breathing {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            animation: gradientBreathing 3s ease-in-out infinite;
+        }
+
+        @keyframes gradientBreathing {
+            0%, 100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            50% {
+                transform: scale(1.15);
+                filter: brightness(1.3);
+            }
+        }
+
+        /* 方案4: 多色呼吸 */
+        .multi-color-breathing {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #667eea 0deg,
+                #764ba2 90deg,
+                #f093fb 180deg,
+                #4facfe 270deg,
+                #667eea 360deg
+            );
+            animation: multiColorBreathing 2.5s ease-in-out infinite;
+            position: relative;
+        }
+
+        .multi-color-breathing::before {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: calc(100% - 20px);
+            height: calc(100% - 20px);
+            background: #1a1a1a;
+            border-radius: 50%;
+        }
+
+        @keyframes multiColorBreathing {
+            0%, 100% {
+                transform: scale(1) rotate(0deg);
+                filter: hue-rotate(0deg);
+            }
+            50% {
+                transform: scale(1.2) rotate(180deg);
+                filter: hue-rotate(90deg);
+            }
+        }
+
+        /* 方案5: 心跳效果 */
+        .heartbeat {
+            width: 80px;
+            height: 80px;
+            background: #e74c3c;
+            border-radius: 50%;
+            animation: heartbeat 1.5s ease-in-out infinite;
+            box-shadow: 0 0 30px #e74c3c;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% {
+                transform: scale(1);
+            }
+            10%, 20% {
+                transform: scale(1.1);
+            }
+            15%, 25% {
+                transform: scale(1.05);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .interview-box {
+            width: 600px;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #ccc;
+            border: 1px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <h2>呼吸灯脉冲动画效果</h2>
+
+    <div class="demo-container">
+        <div class="demo-item">
+            <h3>基础呼吸灯</h3>
+            <div class="breathing-light"></div>
+        </div>
+
+        <div class="demo-item">
+            <h3>脉冲扩散效果</h3>
+            <div class="pulse-ring">
+                <div class="pulse-ring-inner"></div>
+            </div>
+        </div>
+
+        <div class="demo-item">
+            <h3>渐变呼吸</h3>
+            <div class="gradient-breathing"></div>
+        </div>
+
+        <div class="demo-item">
+            <h3>多色呼吸</h3>
+            <div class="multi-color-breathing"></div>
+        </div>
+
+        <div class="demo-item">
+            <h3>心跳效果</h3>
+            <div class="heartbeat"></div>
+        </div>
+    </div>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 呼吸灯动画的实现原理？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 scale 变换改变元素大小
+            2. 使用 opacity 改变透明度
+            3. 使用 box-shadow 创建光晕效果
+            4. 使用 ease-in-out 缓动函数让动画更自然
+            5. 设置 infinite 让动画循环播放
+        -->
+
+        <p><strong>2. 如何实现平滑的呼吸效果？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 ease-in-out 缓动函数，让开始和结束更平滑
+            2. 控制动画时长，通常 2-3 秒比较自然
+            3. 同时改变多个属性（scale、opacity、shadow）增强效果
+            4. 使用 transform 而非 width/height，性能更好
+        -->
+
+        <p><strong>3. box-shadow 在动画中的作用？</strong></p>
+        <!-- 
+            答案：
+            1. 创建光晕效果，增强视觉冲击
+            2. 可以通过改变 shadow 的 blur 和 spread 创建扩散效果
+            3. 多层 shadow 可以创建更丰富的光效
+            4. 注意性能：过多的 shadow 可能影响性能
+        -->
+
+        <p><strong>4. 如何优化呼吸灯动画性能？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 transform 和 opacity，这些属性会触发合成层
+            2. 使用 will-change: transform 提示浏览器优化
+            3. 避免在动画中改变 layout 属性（width、height、top、left）
+            4. 使用 filter 时要谨慎，可能触发重绘
+            5. 对于复杂动画，考虑使用 Canvas 或 WebGL
+        -->
+    </div>
+</body>
+</html>
