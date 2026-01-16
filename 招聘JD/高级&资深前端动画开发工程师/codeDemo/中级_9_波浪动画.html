@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中级_9_波浪动画</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #0a1929;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+            gap: 40px;
+        }
+
+        h2 {
+            color: white;
+        }
+
+        .wave-container {
+            width: 100%;
+            max-width: 800px;
+            height: 300px;
+            position: relative;
+            background: linear-gradient(180deg, #0a1929 0%, #1a2f4a 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 40px;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            opacity: 0.8;
+        }
+
+        /* 方案1: 基础波浪 */
+        .wave-1 {
+            animation: wave-animation 3s ease-in-out infinite;
+            border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+        }
+
+        @keyframes wave-animation {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-20px);
+            }
+        }
+
+        /* 方案2: SVG 波浪 */
+        .wave-svg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 150px;
+        }
+
+        .wave-path {
+            fill: #667eea;
+            opacity: 0.6;
+            animation: wave-svg 4s ease-in-out infinite;
+        }
+
+        .wave-path-2 {
+            fill: #764ba2;
+            opacity: 0.4;
+            animation: wave-svg 3s ease-in-out infinite reverse;
+        }
+
+        @keyframes wave-svg {
+            0%, 100% {
+                d: path("M0,75 Q200,25 400,75 T800,75 L800,150 L0,150 Z");
+            }
+            50% {
+                d: path("M0,75 Q200,125 400,75 T800,75 L800,150 L0,150 Z");
+            }
+        }
+
+        /* 方案3: Canvas 波浪 */
+        .wave-canvas {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+        }
+
+        .demo-section {
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 40px;
+        }
+
+        .interview-box {
+            width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #ccc;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <h2>波浪动画效果集合</h2>
+
+    <div class="demo-section">
+        <h3>CSS 波浪动画</h3>
+        <div class="wave-container">
+            <div class="wave wave-1"></div>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h3>SVG 波浪动画</h3>
+        <div class="wave-container">
+            <svg class="wave-svg" viewBox="0 0 800 150" preserveAspectRatio="none">
+                <path class="wave-path" d="M0,75 Q200,25 400,75 T800,75 L800,150 L0,150 Z"></path>
+                <path class="wave-path-2" d="M0,75 Q200,125 400,75 T800,75 L800,150 L0,150 Z"></path>
+            </svg>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h3>Canvas 波浪动画</h3>
+        <div class="wave-container">
+            <canvas class="wave-canvas" id="wave-canvas"></canvas>
+        </div>
+    </div>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 如何实现流畅的波浪动画？</strong></p>
+        <!-- 
+            答案：
+            1. 使用正弦函数计算波浪形状
+            2. 通过时间参数让波浪动态变化
+            3. Canvas 或 SVG 可以精确控制波浪路径
+            4. CSS 动画适合简单波浪，复杂波浪需要 JS
+        -->
+
+        <p><strong>2. Canvas vs SVG 实现波浪的优劣？</strong></p>
+        <!-- 
+            答案：
+            Canvas:
+            - 优点：性能好，适合复杂动画，可以精确控制每个像素
+            - 缺点：缩放会失真，需要手动处理响应式
+            
+            SVG:
+            - 优点：矢量图形，缩放不失真，可以 CSS 控制
+            - 缺点：复杂动画性能较差，DOM 操作开销大
+        -->
+
+        <p><strong>3. 如何优化波浪动画性能？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 requestAnimationFrame 控制帧率
+            2. 减少重绘区域，只更新变化部分
+            3. 使用离屏 Canvas 缓存静态部分
+            4. 控制波浪复杂度，平衡效果和性能
+            5. 使用 Web Workers 计算复杂数学函数
+        -->
+    </div>
+
+    <script>
+        const canvas = document.getElementById("wave-canvas");
+        const ctx = canvas.getContext("2d");
+        
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        let time = 0;
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = "#667eea";
+            ctx.beginPath();
+            
+            const waveHeight = 30;
+            const waveLength = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            ctx.moveTo(0, centerY);
+            
+            for (let x = 0; x <= canvas.width; x++) {
+                const y = centerY + Math.sin((x / waveLength + time) * Math.PI * 2) * waveHeight;
+                ctx.lineTo(x, y);
+            }
+            
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.closePath();
+            ctx.fill();
+            
+            time += 0.02;
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中级_7_鼠标跟随粒子轨迹</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #0a0a0a;
+            font-family: sans-serif;
+            cursor: none;
+        }
+
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            pointer-events: none;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .interview-box {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #ccc;
+            max-width: 800px;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h3>鼠标跟随粒子轨迹</h3>
+        <p>移动鼠标查看粒子轨迹效果</p>
+    </div>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 如何实现平滑的鼠标跟随效果？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 lerp（线性插值）算法实现平滑跟随
+            2. 公式：current = current + (target - current) * factor
+            3. 使用 requestAnimationFrame 控制更新频率
+            4. 使用 transform 而非 top/left，利用 GPU 加速
+            5. 可以创建多个跟随点，形成轨迹链
+        -->
+
+        <p><strong>2. 粒子轨迹的实现原理？</strong></p>
+        <!-- 
+            答案：
+            1. 维护一个粒子数组，每个粒子记录位置和历史位置
+            2. 使用队列或数组存储历史位置点
+            3. 每帧更新粒子位置，添加到历史记录
+            4. 限制历史记录长度，实现渐隐效果
+            5. 使用 Canvas 绘制连接线或点
+        -->
+
+        <p><strong>3. 如何优化大量粒子的性能？</strong></p>
+        <!-- 
+            答案：
+            1. 使用对象池复用粒子对象
+            2. 限制粒子数量，超出时移除最旧的
+            3. 使用 requestAnimationFrame 控制帧率
+            4. 批量绘制操作，减少 Canvas API 调用
+            5. 使用离屏 Canvas 缓存静态部分
+            6. 考虑使用 WebGL 处理超大量粒子
+        -->
+
+        <p><strong>4. 如何实现渐隐轨迹效果？</strong></p>
+        <!-- 
+            答案：
+            1. 根据粒子在轨迹中的位置计算透明度
+            2. 使用线性或指数衰减函数
+            3. 可以配合颜色渐变增强视觉效果
+            4. 使用 Canvas 的 globalAlpha 或 rgba 颜色
+            5. 限制轨迹点数量，避免内存泄漏
+        -->
+    </div>
+
+    <script>
+        const canvas = document.getElementById("particle-canvas");
+        const ctx = canvas.getContext("2d");
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        // 鼠标位置
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+
+        // 粒子类
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.targetX = x;
+                this.targetY = y;
+                this.history = [];
+                this.maxHistory = 30;
+                this.ease = 0.1;
+            }
+
+            update() {
+                // Lerp 平滑跟随
+                this.x += (this.targetX - this.x) * this.ease;
+                this.y += (this.targetY - this.y) * this.ease;
+
+                // 添加到历史记录
+                this.history.push({ x: this.x, y: this.y });
+                
+                // 限制历史记录长度
+                if (this.history.length > this.maxHistory) {
+                    this.history.shift();
+                }
+            }
+
+            draw() {
+                // 绘制轨迹
+                if (this.history.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.history[0].x, this.history[0].y);
+                    
+                    for (let i = 1; i < this.history.length; i++) {
+                        const point = this.history[i];
+                        const progress = i / this.history.length;
+                        
+                        // 渐隐效果
+                        const alpha = progress * 0.8;
+                        const lineWidth = progress * 3 + 1;
+                        
+                        ctx.lineTo(point.x, point.y);
+                        ctx.strokeStyle = `rgba(102, 126, 234, ${alpha})`;
+                        ctx.lineWidth = lineWidth;
+                        ctx.stroke();
+                        
+                        // 重新开始路径以实现渐变
+                        ctx.beginPath();
+                        ctx.moveTo(point.x, point.y);
+                    }
+                }
+
+                // 绘制粒子
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = "#667eea";
+                ctx.fill();
+                
+                // 绘制外圈
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(102, 126, 234, 0.5)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        // 创建粒子链
+        const particles = [];
+        const particleCount = 8;
+
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle(mouseX, mouseY));
+        }
+
+        // 鼠标移动事件
+        let targetX = mouseX;
+        let targetY = mouseY;
+
+        document.addEventListener("mousemove", (e) => {
+            targetX = e.clientX;
+            targetY = e.clientY;
+        });
+
+        // 触摸支持
+        document.addEventListener("touchmove", (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            targetX = touch.clientX;
+            targetY = touch.clientY;
+        });
+
+        // 动画循环
+        function animate() {
+            // 清空画布（使用半透明实现拖尾效果）
+            ctx.fillStyle = "rgba(10, 10, 10, 0.1)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 更新鼠标位置（平滑）
+            mouseX += (targetX - mouseX) * 0.1;
+            mouseY += (targetY - mouseY) * 0.1;
+
+            // 更新粒子链
+            particles.forEach((particle, index) => {
+                if (index === 0) {
+                    // 第一个粒子跟随鼠标
+                    particle.targetX = mouseX;
+                    particle.targetY = mouseY;
+                } else {
+                    // 其他粒子跟随前一个粒子
+                    const prevParticle = particles[index - 1];
+                    particle.targetX = prevParticle.x;
+                    particle.targetY = prevParticle.y;
+                }
+                
+                particle.update();
+                particle.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

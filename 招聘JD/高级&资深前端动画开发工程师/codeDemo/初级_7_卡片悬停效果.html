@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初级_7_卡片悬停效果</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+            gap: 40px;
+        }
+
+        .card-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .card {
+            width: 280px;
+            height: 350px;
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 方案1: 提升阴影 */
+        .card-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 方案2: 缩放效果 */
+        .card-scale:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        /* 方案3: 倾斜效果 */
+        .card-tilt {
+            transform-style: preserve-3d;
+        }
+
+        .card-tilt:hover {
+            transform: perspective(1000px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .card-desc {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .interview-box {
+            width: 800px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <h2>卡片悬停效果集合</h2>
+
+    <div class="card-container">
+        <div class="card card-lift">
+            <div class="card-image"></div>
+            <div class="card-title">提升效果</div>
+            <div class="card-desc">鼠标悬停时卡片向上提升，阴影加深</div>
+        </div>
+
+        <div class="card card-scale">
+            <div class="card-image"></div>
+            <div class="card-title">缩放效果</div>
+            <div class="card-desc">鼠标悬停时卡片轻微放大</div>
+        </div>
+
+        <div class="card card-tilt">
+            <div class="card-image"></div>
+            <div class="card-title">3D倾斜</div>
+            <div class="card-desc">鼠标悬停时卡片3D倾斜效果</div>
+        </div>
+    </div>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 如何实现流畅的卡片悬停动画？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 transform 而非 top/left，利用 GPU 加速
+            2. 使用 transition 定义动画时长和缓动函数
+            3. 使用 cubic-bezier 自定义缓动曲线
+            4. 避免在悬停时改变布局属性（width/height）
+        -->
+
+        <p><strong>2. 3D倾斜效果是怎么实现的？</strong></p>
+        <!-- 
+            答案：
+            preserve-3d 允许子元素在3D空间中变换，而不是被压平到父元素的平面上。
+            这对于实现3D卡片翻转、倾斜等效果非常重要。
+        -->
+
+        <p><strong>3. 如何优化多个卡片的性能？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 will-change: transform 提示浏览器优化
+            2. 避免同时动画过多元素
+            3. 使用 transform 和 opacity 等合成层属性
+            4. 考虑使用 CSS containment 限制重排范围
+        -->
+    </div>
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中级_10_粒子背景</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #0a0a0a;
+            color: white;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            padding: 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        h2 {
+            color: white;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .interview-box {
+            width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #ccc;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <canvas class="particle-canvas" id="particle-canvas"></canvas>
+
+    <div class="content">
+        <h2>粒子背景动画</h2>
+        <p>移动鼠标查看交互效果</p>
+
+        <div class="interview-box">
+            <h3>面试考察点：</h3>
+            <p><strong>1. 如何实现高性能的粒子系统？</strong></p>
+            <!-- 
+                答案：
+                1. 使用 Canvas 或 WebGL 而非 DOM
+                2. 对象池复用粒子对象，减少内存分配
+                3. 使用 requestAnimationFrame 控制帧率
+                4. 批量绘制操作，减少 draw call
+                5. 使用离屏 Canvas 缓存静态部分
+            -->
+
+            <p><strong>2. 粒子系统的核心数据结构？</strong></p>
+            <!-- 
+                答案：
+                1. 粒子对象：位置(x,y)、速度(vx,vy)、生命周期、颜色等
+                2. 粒子数组：存储所有活跃粒子
+                3. 对象池：存储可复用的粒子对象
+                4. 使用 TypedArray 可以进一步提升性能
+            -->
+
+            <p><strong>3. 如何实现粒子连线效果？</strong></p>
+            <!-- 
+                答案：
+                1. 计算粒子之间的距离
+                2. 距离小于阈值时绘制连线
+                3. 使用距离计算连线透明度（距离越远越透明）
+                4. 优化：使用空间分割（四叉树）减少计算量
+                5. 限制最大连线数量，避免性能问题
+            -->
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("particle-canvas");
+        const ctx = canvas.getContext("2d");
+        
+        let mouseX = 0;
+        let mouseY = 0;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        
+        resizeCanvas();
+        window.addEventListener("resize", resizeCanvas);
+
+        canvas.addEventListener("mousemove", (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = Math.random() * 2 + 1;
+                this.alpha = Math.random() * 0.5 + 0.5;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // 边界检测
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                // 鼠标交互
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 100) {
+                    const force = (100 - distance) / 100;
+                    this.vx -= (dx / distance) * force * 0.01;
+                    this.vy -= (dy / distance) * force * 0.01;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = "#667eea";
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        const particles = [];
+        const particleCount = 100;
+
+        // 初始化粒子
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        function drawLines() {
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 150) {
+                        ctx.save();
+                        ctx.strokeStyle = `rgba(102, 126, 234, ${1 - distance / 150})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            drawLines();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

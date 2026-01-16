@@ -1,15 +1,52 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <title>数字递增动画</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #000; color: white; margin: 0; }
-        .counter { font-size: 6rem; font-weight: bold; font-variant-numeric: tabular-nums; /* 等宽数字,防止抖动 */ }
-        .btn { margin-top: 30px; padding: 10px 25px; font-size: 1.2rem; cursor: pointer; background: #fff; border: none; border-radius: 50px; font-weight: bold; }
-        .interview-box { width: 600px; margin-top: 50px; background: #222; padding: 20px; border-radius: 8px; color: #ccc; line-height: 1.6; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #000;
+            color: white;
+            margin: 0;
+        }
+
+        .counter {
+            font-size: 6rem;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+            /* 等宽数字,防止抖动 */
+        }
+
+        .btn {
+            margin-top: 30px;
+            padding: 10px 25px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: #fff;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+        }
+
+        .interview-box {
+            width: 600px;
+            margin-top: 50px;
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            color: #ccc;
+            line-height: 1.6;
+        }
     </style>
 </head>
+
 <body>
 
     <div class="counter" id="counter">0</div>
@@ -22,23 +59,64 @@
 
         // 缓动函数：easeOutExpo (一开始快,后面慢)
         // t: current time, b: start value, c: change in value, d: duration
+        /**
+         * easeOutExpo 函数是“指数缓出”动画缓动函数之一。
+         * 它的数学公式为：
+         * 
+         *   easeOutExpo(t, b, c, d) = (t === d) ? b + c : c * ( -2^(-10 * t/d) + 1 ) + b
+         * 
+         * 含义解释如下：
+         * - t：当前已经消耗的时间（从动画开始到当前帧，单位毫秒）
+         * - b：动画的起始值（begin）
+         * - c：变化的总量（change = 终值 - 起始值）
+         * - d：动画总时长（duration）
+         * 
+         * 公式原理：
+         * - 指数曲线“缓出”，即动画一开始变化很快，随后速度逐渐变慢，最后渐近终点。
+         * - 当t=d时，返回最终值 b+c，确保动画结束时不会出现精度误差。
+         * - 其他时候，通过 2 的幂函数制造加速到减速的效果（指数型减速）。
+         * 
+         * 使用场景：
+         * - 适合数字递增动画、滚动、移动等一开始冲刺、后期丝滑收敛的视觉体验。
+         */
         function easeOutExpo(t, b, c, d) {
-            return (t === d) ? b + c : c * (-Math.pow(2, -10 * t / d) + 1) + b;
+            if (t === d) {
+                // 处理最后一帧，确保精度到达目标值
+                return b + c;
+            } else {
+                // 指数型逐步递减，先快后慢
+                // 解释：
+                // -Math.pow(2, -10 * t / d) + 1 会在 t 由 0 慢慢增大到 d 的过程中，把结果从 0 平滑递增到 1（刚开始增长很快，越接近结尾越慢）
+                // c 是变化的总值，把变化区间拉伸/缩放到最终目标
+                // b 是初始值，决定动画从哪里开始
+                // 返回的就是当前动画对应的数值
+                // 例如动画开始时 t=0，有 Math.pow(2, 0) = 1，所以 -1+1=0，结果就是 b；
+                // 动画结束时 t=d，有 Math.pow(2, -10)=接近0，所以结果趋近于c+b（即目标值）
+                return c * (-Math.pow(2, -10 * t / d) + 1) + b;
+            }
         }
 
         function startCount() {
             let startTime = null;
             const startValue = 0;
 
+            // timestamp 是 requestAnimationFrame 回调自动传入的高精度时间戳（单位：毫秒），它表示当前帧被调用时距离页面加载完成的毫秒数。通常用它来做动画的时间计算。
             function step(timestamp) {
+                console.log('timestamp', timestamp, 'startTime', startTime);
+
                 if (!startTime) startTime = timestamp;
+
                 const progress = timestamp - startTime;
 
-                // 计算当前数值
-                // 注意：progress 不能超过 duration
-                const currentValue = easeOutExpo(Math.min(progress, duration), startValue, targetNumber, duration);
+                // 计算当前数值，progress 最大为 duration
+                const currentValue = easeOutExpo(
+                    Math.min(progress, duration),
+                    startValue,
+                    targetNumber,
+                    duration
+                );
 
-                // 更新 DOM (加上千分位分隔符)
+                // 更新 DOM，使用千分位分隔符
                 counterEl.textContent = Math.floor(currentValue).toLocaleString();
 
                 if (progress < duration) {
@@ -48,13 +126,14 @@
                 }
             }
 
+            // requestAnimationFrame 的 step 回调参数 timestamp 就是高精度时间戳
             requestAnimationFrame(step);
         }
     </script>
 
     <div class="interview-box">
         <h3>面试考察点：</h3>
-        <p><strong>1. 为什么用 requestAnimationFrame 而不是 setInterval 来做数字动画？</strong></p>
+        <p><strong>1. 这个数字变动是怎么实现的，是动画吗？是的话是哪种动画？</strong></p>
         <!-- 
             答案：
             1. 帧率同步：rAF 会自动跟随屏幕刷新率(通常 60Hz),setInterval 时间不准,容易丢帧或卡顿。
@@ -62,7 +141,7 @@
             3. 流畅度：rAF 避免了在一帧内多次修改 DOM 的问题,确保渲染时机最佳。
         -->
 
-        <p><strong>2. font-variant-numeric: tabular-nums 的作用是什么？</strong></p>
+        <p><strong>2. 怎么让数字不抖动？</strong></p>
         <!-- 
             答案：
             数字动画中,不同数字(如 1 和 8)的宽度可能不同。
@@ -70,7 +149,7 @@
             tabular-nums 强制所有数字等宽(像表格一样),保证动画过程中数字位置固定,不会左右抖动。
         -->
 
-        <p><strong>3. 如果要实现类似"老虎机"或"里程表"的滚动效果(数字纵向滚动),思路是什么？</strong></p>
+        <p><strong>3. 怎么优化这个性能？</strong></p>
         <!-- 
             答案：
             这就不再是修改 innerText 了。
@@ -82,5 +161,5 @@
         -->
     </div>
 </body>
-</html>
 
+</html>

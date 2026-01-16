@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中级_8_卡片翻转</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+            gap: 40px;
+        }
+
+        h2 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .flip-card {
+            width: 300px;
+            height: 400px;
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flip-card-front,
+        .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .flip-card-front {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .flip-card-back {
+            background: white;
+            color: #333;
+            transform: rotateY(180deg);
+        }
+
+        .card-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .card-desc {
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* 垂直翻转 */
+        .flip-card-vertical:hover .flip-card-inner {
+            transform: rotateX(180deg);
+        }
+
+        .flip-card-vertical .flip-card-back {
+            transform: rotateX(180deg);
+        }
+
+        .interview-box {
+            width: 800px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h2>3D 卡片翻转效果</h2>
+
+    <div class="card-container">
+        <div class="flip-card">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">🎨</div>
+                    <div class="card-title">前端设计</div>
+                    <div class="card-desc">悬停查看详情</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-title">前端设计</div>
+                    <div class="card-desc">
+                        专注于创造美观、易用的用户界面，
+                        结合最新的设计趋势和用户体验原则。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flip-card flip-card-vertical">
+            <div class="flip-card-inner">
+                <div class="flip-card-front">
+                    <div class="card-icon">💻</div>
+                    <div class="card-title">代码开发</div>
+                    <div class="card-desc">悬停查看详情</div>
+                </div>
+                <div class="flip-card-back">
+                    <div class="card-title">代码开发</div>
+                    <div class="card-desc">
+                        使用现代前端技术栈，
+                        编写高质量、可维护的代码。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. 3D 翻转效果的实现原理？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 perspective 创建 3D 空间
+            2. 使用 transform-style: preserve-3d 保持 3D 变换
+            3. 使用 rotateY 或 rotateX 实现翻转
+            4. 使用 backface-visibility: hidden 隐藏背面
+            5. 前后两个面都需要绝对定位并设置相反的 transform
+        -->
+
+        <p><strong>2. perspective 的作用？</strong></p>
+        <!-- 
+            答案：
+            perspective 定义 3D 元素的透视距离，值越大，3D 效果越不明显。
+            它创建了一个观察点，让元素看起来有深度感。
+            通常设置在父容器上。
+        -->
+
+        <p><strong>3. 如何优化 3D 动画性能？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 transform 而非其他属性
+            2. 使用 will-change: transform 提示浏览器
+            3. 避免在动画过程中改变其他属性
+            4. 考虑使用 CSS containment
+            5. 对于复杂场景，考虑使用 WebGL
+        -->
+    </div>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初级_9_淡入淡出</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px;
+            gap: 40px;
+        }
+
+        h2 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .demo-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .fade-box {
+            width: 300px;
+            height: 200px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 方案1: 淡入 */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 1s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* 方案2: 淡出 */
+        .fade-out {
+            opacity: 1;
+            animation: fadeOut 1s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* 方案3: 淡入+上移 */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 方案4: 淡入+缩放 */
+        .fade-in-scale {
+            opacity: 0;
+            transform: scale(0.8);
+            animation: fadeInScale 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeInScale {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .interview-box {
+            width: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h2>淡入淡出动画效果</h2>
+
+    <div class="demo-container">
+        <div class="fade-box" id="demo-box">动画演示区域</div>
+
+        <div class="controls">
+            <button onclick="playFadeIn()">淡入</button>
+            <button onclick="playFadeOut()">淡出</button>
+            <button onclick="playFadeInUp()">淡入+上移</button>
+            <button onclick="playFadeInScale()">淡入+缩放</button>
+        </div>
+    </div>
+
+    <div class="interview-box">
+        <h3>面试考察点：</h3>
+        <p><strong>1. opacity 动画的性能优势？</strong></p>
+        <!-- 
+            答案：
+            opacity 是合成层属性，动画时不会触发重排和重绘，只触发合成。
+            浏览器可以将元素提升到合成层，使用 GPU 加速，性能非常好。
+        -->
+
+        <p><strong>2. 如何实现更流畅的淡入淡出？</strong></p>
+        <!-- 
+            答案：
+            1. 使用 transform 配合 opacity，两者都是合成层属性
+            2. 使用 will-change: opacity, transform 提示浏览器优化
+            3. 选择合适的缓动函数（ease-out 通常更自然）
+            4. 避免在动画过程中改变布局属性
+        -->
+
+        <p><strong>3. forwards 关键字的作用？</strong></p>
+        <!-- 
+            答案：
+            animation-fill-mode: forwards 让元素在动画结束后保持最后一帧的状态。
+            如果不设置，动画结束后元素会回到初始状态（opacity: 0）。
+        -->
+    </div>
+
+    <script>
+        const box = document.getElementById("demo-box");
+
+        function resetBox() {
+            box.className = "fade-box";
+            box.style.opacity = "";
+            box.style.transform = "";
+        }
+
+        function playFadeIn() {
+            resetBox();
+            setTimeout(() => {
+                box.classList.add("fade-in");
+            }, 10);
+        }
+
+        function playFadeOut() {
+            resetBox();
+            box.style.opacity = "1";
+            setTimeout(() => {
+                box.classList.add("fade-out");
+            }, 10);
+        }
+
+        function playFadeInUp() {
+            resetBox();
+            setTimeout(() => {
+                box.classList.add("fade-in-up");
+            }, 10);
+        }
+
+        function playFadeInScale() {
+            resetBox();
+            setTimeout(() => {
+                box.classList.add("fade-in-scale");
+            }, 10);
+        }
+
+        // 初始淡入
+        playFadeIn();
+    </script>
+</body>
+</html>
