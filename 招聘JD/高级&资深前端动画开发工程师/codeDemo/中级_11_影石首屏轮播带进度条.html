@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中级_11_首屏轮播带进度条</title>
+    <!-- 引入 Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f0f0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 
+         * 编码规范遵循：
+         * 1. 外层语义化 naming: .hero_slider_container
+         * 2. 子级通用: .slide_content, .title, etc.
+         */
+        .hero_slider_container {
+            width: 100%;
+            height: 100vh;
+            /* 首屏全屏 */
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .hero_slider_container .swiper {
+            width: 100%;
+            height: 100%;
+        }
+
+        .hero_slider_container .swiper-slide {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 视频背景层 */
+        .hero_slider_container .slide_video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            transition: transform 6s ease;
+        }
+
+        .hero_slider_container .swiper-slide-active .slide_video {
+            transform: scale(1.1);
+        }
+
+        /* 遮罩层 */
+        .hero_slider_container .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            /* 降低一点透明度让视频更清晰 */
+            z-index: 2;
+        }
+
+        /* 内容层 */
+        .hero_slider_container .content_wrapper {
+            position: relative;
+            z-index: 3;
+            color: #fff;
+            text-align: center;
+            max-width: 800px;
+            padding: 0 20px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        /* 激活时的动画 */
+        .hero_slider_container .swiper-slide-active .content_wrapper {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.3s;
+        }
+
+        .hero_slider_container .title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero_slider_container .subtitle {
+            font-size: 1.2rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        .hero_slider_container .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border: 2px solid #fff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .hero_slider_container .btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        /* 自定义分段进度条 (替代原有小圆点和圆形进度) */
+        .hero_slider_container .swiper-pagination {
+            position: absolute;
+            bottom: 40px !important;
+            /* 覆盖默认 */
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .hero_slider_container .swiper-pagination-bullet {
+            width: 80px;
+            /* 进度条宽度 */
+            height: 4px;
+            /* 进度条高度 */
+            background: rgba(255, 255, 255, 0.3);
+            /* 轨道颜色 */
+            border-radius: 2px;
+            margin: 0 8px !important;
+            opacity: 1;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        /* 激活状态的轨道稍微亮一点 */
+        .hero_slider_container .swiper-pagination-bullet-active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* 内部填充条 */
+        .hero_slider_container .swiper-pagination-bullet .fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background: #fff;
+            /* width: 0%;  移除 width 控制 */
+            width: 100%; /* 宽度固定为 100% */
+            transform-origin: left center;
+            transform: scaleX(0); /* 使用 scaleX 控制进度 */
+            will-change: transform; /* 性能优化提示 */
+        }
+
+        /* 导航按钮 */
+        .hero_slider_container .swiper-button-next,
+        .hero_slider_container .swiper-button-prev {
+            color: #fff;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .hero_slider_container .swiper-button-next:hover,
+        .hero_slider_container .swiper-button-prev:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .hero_slider_container .swiper-button-next:after,
+        .hero_slider_container .swiper-button-prev:after {
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="hero_slider_container">
+        <!-- Swiper -->
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+
+                <!-- Slide 1 -->
+                <div class="swiper-slide">
+                    <video class="slide_video" autoplay muted loop playsinline poster="">
+                        <source src="https://media.insta360.com/static/b1fda0be1668fd1ff340ffb83697087f/3840-1760.mp4"
+                            type="video/mp4">
+                    </video>
+                    <div class="overlay"></div>
+                    <div class="content_wrapper">
+                        <h2 class="title">极致影像体验</h2>
+                        <p class="subtitle">记录每一个精彩瞬间，突破视觉边界，体验前所未有的全景震撼。</p>
+                        <a href="#" class="btn">立即探索</a>
+                    </div>
+                </div>
+
+                <!-- Slide 2 -->
+                <div class="swiper-slide">
+                    <video class="slide_video" autoplay muted loop playsinline poster="">
+                        <source
+                            src="https://media.insta360.com/static/68cdce61a9ac52c76d192812a36b0762/Banner_3840x1760_revised_PC.c.mp4"
+                            type="video/mp4">
+                    </video>
+                    <div class="overlay"></div>
+                    <div class="content_wrapper">
+                        <h2 class="title">创意无限可能</h2>
+                        <p class="subtitle">无论是运动、旅行还是日常生活，释放你的创造力，捕捉生活中的每一个奇迹。</p>
+                        <a href="#" class="btn">了解更多</a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 导航按钮 -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+
+            <!-- 分页器 (新进度条位置) -->
+            <div class="swiper-pagination"></div>
+
+        </div>
+    </div>
+
+    <!-- 引入 Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <script>
+        // 缓存 DOM 元素，避免在高频回调中重复查询
+        let bulletsFills = [];
+
+        // 初始化 Swiper
+        const swiper = new Swiper(".mySwiper", {
+            spaceBetween: 0,
+            centeredSlides: true,
+            loop: true, // 开启循环模式，更符合轮播直觉
+            speed: 1000, // 切换速度
+            effect: "fade", // 淡入淡出效果
+            fadeEffect: {
+                crossFade: true
+            },
+            autoplay: {
+                delay: 10000, // 停留时间
+                disableOnInteraction: false
+            },
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev"
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+                renderBullet: function (index, className) {
+                    // 自定义渲染 Bullet，内部包含一个 fill 层
+                    return '<span class="' + className + '"><span class="fill"></span></span>';
+                }
+            },
+            on: {
+                // 初始化和更新时重新获取 bullet 元素
+                init: function () {
+                    bulletsFills = document.querySelectorAll(".hero_slider_container .swiper-pagination-bullet .fill");
+                },
+                paginationUpdate: function () {
+                    bulletsFills = document.querySelectorAll(".hero_slider_container .swiper-pagination-bullet .fill");
+                },
+                // 监听 autoplayTimeLeft 事件来更新进度条
+                // Swiper 内部使用 requestAnimationFrame 来触发此事件，因此频率通常为 60fps
+                autoplayTimeLeft(s, time, progress) {
+                    // 如果 DOM 元素未缓存，则获取一次
+                    if (bulletsFills.length === 0) {
+                        bulletsFills = document.querySelectorAll(".hero_slider_container .swiper-pagination-bullet .fill");
+                    }
+
+                    const activeIndex = s.realIndex;
+
+                    // 使用缓存的 DOM 元素进行更新，大幅提升性能
+                    bulletsFills.forEach((fill, index) => {
+                        if (index < activeIndex) {
+                            // 已经播放过的，进度条填满
+                            fill.style.transform = "scaleX(1)";
+                        } else if (index > activeIndex) {
+                            // 未播放的，进度条为空
+                            fill.style.transform = "scaleX(0)";
+                        } else {
+                            // progress 倒计时：1 -> 0
+                            // 使用 scaleX 替代 width，避免 Layout Thrashing，启用 GPU 加速
+                            // 修正：scaleX 接受 0-1 的值
+                            const scale = 1 - progress;
+                            fill.style.transform = `scaleX(${scale})`;
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
