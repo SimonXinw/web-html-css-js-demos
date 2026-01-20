@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百叶窗图片展开动画</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #1a1a1a;
+            /* 深色背景更能突显图片 */
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            display: flex;
+            width: 90vw;
+            max-width: 1200px;
+            height: 80vh;
+            /* 容器高度 */
+            gap: 10px;
+            /* 图片之间的间隙 */
+        }
+
+        .item {
+            position: relative;
+            height: 100%;
+            flex: 1;
+            /* 默认每个占据 1 份 */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            cursor: pointer;
+            transition: flex 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+            /* 平滑过渡 */
+            overflow: hidden;
+            position: relative;
+        }
+
+        .item::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 50%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .item.active {
+            flex: 5;
+            /* 激活状态占据 5 份，展开 */
+        }
+
+        .item.active::before {
+            opacity: 1;
+        }
+
+        .item h3 {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 24px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.5s ease;
+            white-space: nowrap;
+            z-index: 1;
+        }
+
+        .item.active h3 {
+            opacity: 1;
+            transform: translateX(0);
+            transition-delay: 0.3s;
+            /* 文字稍微延迟显示 */
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 100vw;
+                height: 60vh;
+            }
+
+            .item:nth-child(4) {
+                display: none;
+                /* 移动端可能显示不下太多，隐藏一个 */
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- 图片 1 -->
+        <div class="item active"
+            style="background-image: url('https://cdn.shopify.com/s/files/1/0517/6767/3016/files/fe7513ca-a26e-4b76-b976-b241987fb806_Frame_2121235140_3840x.png?v=1749545090')">
+            <h3>探索未知</h3>
+        </div>
+
+        <!-- 图片 2 -->
+        <div class="item"
+            style="background-image: url('https://cdn.shopify.com/s/files/1/0517/6767/3016/files/a09afd77-9a88-4c79-be49-e893a21fe87a_20220530_090927_000_3_3840x.png?v=1749545208')">
+            <h3>极致视界</h3>
+        </div>
+
+        <!-- 图片 3 -->
+        <div class="item"
+            style="background-image: url('https://cdn.shopify.com/s/files/1/0517/6767/3016/files/fe7513ca-a26e-4b76-b976-b241987fb806_Frame_2121235140_3840x.png?v=1749545090')">
+            <h3>沉浸体验</h3>
+        </div>
+
+        <!-- 图片 4 -->
+        <div class="item"
+            style="background-image: url('https://cdn.shopify.com/s/files/1/0517/6767/3016/files/a09afd77-9a88-4c79-be49-e893a21fe87a_20220530_090927_000_3_3840x.png?v=1749545208')">
+            <h3>光影随行</h3>
+        </div>
+    </div>
+
+    <script>
+        // 获取所有的 item
+        const items = document.querySelectorAll('.item');
+
+        // 遍历每个 item，添加鼠标移入事件
+        items.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                removeActiveClasses(); // 先移除所有 active
+                item.classList.add('active'); // 给当前移入的 item 添加 active
+            });
+
+            // 兼容移动端点击体验
+            item.addEventListener('click', () => {
+                removeActiveClasses();
+                item.classList.add('active');
+            });
+        });
+
+        // 移除所有 item 的 active 类
+        const removeActiveClasses = () => {
+            items.forEach(item => {
+                item.classList.remove('active');
+            });
+        };
+    </script>
+
+</body>
+
+</html>
