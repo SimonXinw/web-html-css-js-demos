@@ -1,48 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Three.js OBJ+MTL+TGA 模型加载</title>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      canvas {
-        display: block;
-      }
-      #resetBtn {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 1;
-        padding: 6px 12px;
-        background: white;
-        border: 1px solid #ccc;
-        cursor: pointer;
-        font-size: 14px;
-      }
 
-      #loadingText {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 20px;
-        font-weight: bold;
-        color: #333;
-        background-color: rgba(255, 255, 255, 0.8);
-        padding: 12px 24px;
-        border-radius: 8px;
-        z-index: 999;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="loadingText">加载中 0%</div>
-    <button id="resetBtn">重置视角</button>
+<head>
+  <meta charset="UTF-8" />
+  <title>Three.js OBJ+MTL+TGA 模型加载</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
 
-    <script type="importmap">
+    canvas {
+      display: block;
+    }
+
+    #resetBtn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1;
+      padding: 6px 12px;
+      background: white;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #loadingText {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 12px 24px;
+      border-radius: 8px;
+      z-index: 999;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loadingText">加载中 0%</div>
+  <button id="resetBtn">重置视角</button>
+
+  <script type="importmap">
       {
         "imports": {
           "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -51,162 +55,182 @@
       }
     </script>
 
-    <script type="module">
-      import * as THREE from "three";
-      import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-      import { MTLLoader } from "three/addons/loaders/MTLLoader.js";
-      import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
-      import { TGALoader } from "three/addons/loaders/TGALoader.js";
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { MTLLoader } from "three/addons/loaders/MTLLoader.js";
+    import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
+    import { TGALoader } from "three/addons/loaders/TGALoader.js";
 
-      // 添加 TGA Loader 支持
-      THREE.Loader.Handlers.add(/\.tga$/i, new TGALoader());
+    // 创建 LoadingManager 并注册 TGALoader
+    const manager = new THREE.LoadingManager();
+    manager.addHandler(/\.tga$/i, new TGALoader());
 
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0xf0f0f0);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0);
 
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.set(3, 3, 7);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.1;
+    controls.minDistance = 2;
+    controls.maxDistance = 20;
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    const light = new THREE.DirectionalLight(0xffffff, 0.8);
+    light.position.set(5, 10, 7);
+    scene.add(light);
+
+    // 地面
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(50, 50),
+      new THREE.MeshStandardMaterial({
+        color: 0xdddddd,
+        side: THREE.DoubleSide,
+      })
+    );
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -1;
+    scene.add(plane);
+
+    // 辅助工具
+    scene.add(new THREE.AxesHelper(5));
+    scene.add(new THREE.GridHelper(50, 50));
+
+    // 加载 OBJ + MTL + TGA 模型
+    const mtlLoader = new MTLLoader(manager);
+    mtlLoader.setPath("./module/rem/"); // 必须设置，否则找不到 TGA
+
+    mtlLoader.load("untitled.mtl", (materials) => {
+      materials.preload();
+
+      const objLoader = new OBJLoader(manager);
+      objLoader.setMaterials(materials);
+      objLoader.setPath("./module/rem/");
+
+      objLoader.load(
+        "untitled.obj",
+        (object) => {
+          object.position.y = 0;
+          object.scale.set(1, 1, 1);
+
+          // 遍历并检查材质，强制更新
+          object.traverse((child) => {
+            if (child.isMesh) {
+              const mats = Array.isArray(child.material) ? child.material : [child.material];
+              mats.forEach(mat => {
+                mat.needsUpdate = true;
+                // 强制白色底色，防止 MTL 里的深色 Kd 影响纹理显示
+                if (mat.color) mat.color.setHex(0xffffff);
+                if (mat.map) mat.map.needsUpdate = true;
+              });
+            }
+          });
+
+          scene.add(object);
+          document.getElementById("loadingText").style.display = "none";
+        },
+        (xhr) => {
+          // 加载进度
+          if (xhr.lengthComputable) {
+            const percent = ((xhr.loaded / xhr.total) * 100).toFixed(0);
+            document.getElementById(
+              "loadingText"
+            ).innerText = `加载中 ${percent}%...`;
+          }
+        },
+        (error) => {
+          console.error("加载模型失败:", error);
+          const loadingEl = document.getElementById("loadingText");
+          loadingEl.innerText = "加载失败";
+          setTimeout(() => (loadingEl.style.display = "none"), 3000); // 3秒后隐藏
+        }
       );
+    });
+
+    // 缩放逻辑
+    let targetDistance = camera.position.distanceTo(controls.target);
+    const zoomSpeed = 0.6;
+
+    renderer.domElement.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      const delta = event.deltaY > 0 ? 1 : -1;
+      targetDistance += delta * zoomSpeed;
+      targetDistance = THREE.MathUtils.clamp(
+        targetDistance,
+        controls.minDistance,
+        controls.maxDistance
+      );
+    });
+
+    let lastTouchDist = null;
+    renderer.domElement.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dx = e.touches[0].pageX - e.touches[1].pageX;
+        const dy = e.touches[0].pageY - e.touches[1].pageY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (lastTouchDist !== null) {
+          const offset = (lastTouchDist - dist) * 0.01;
+          targetDistance += offset;
+          targetDistance = THREE.MathUtils.clamp(
+            targetDistance,
+            controls.minDistance,
+            controls.maxDistance
+          );
+        }
+        lastTouchDist = dist;
+      }
+    });
+    renderer.domElement.addEventListener("touchend", () => {
+      lastTouchDist = null;
+    });
+
+    // 重置按钮
+    document.getElementById("resetBtn").addEventListener("click", () => {
       camera.position.set(3, 3, 7);
-
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
-
-      const controls = new OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.1;
-      controls.minDistance = 2;
-      controls.maxDistance = 20;
       controls.target.set(0, 0, 0);
       controls.update();
+      targetDistance = camera.position.distanceTo(controls.target);
+    });
 
-      scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-      const light = new THREE.DirectionalLight(0xffffff, 0.8);
-      light.position.set(5, 10, 7);
-      scene.add(light);
-
-      // 地面
-      const plane = new THREE.Mesh(
-        new THREE.PlaneGeometry(50, 50),
-        new THREE.MeshStandardMaterial({
-          color: 0xdddddd,
-          side: THREE.DoubleSide,
-        })
+    function animate() {
+      requestAnimationFrame(animate);
+      const dir = new THREE.Vector3();
+      camera.getWorldDirection(dir);
+      const currentDistance = camera.position.distanceTo(controls.target);
+      const newDistance = THREE.MathUtils.lerp(
+        currentDistance,
+        targetDistance,
+        0.1
       );
-      plane.rotation.x = -Math.PI / 2;
-      plane.position.y = -1;
-      scene.add(plane);
+      const newPos = dir.multiplyScalar(-newDistance).add(controls.target);
+      camera.position.copy(newPos);
+      controls.update();
+      renderer.render(scene, camera);
+    }
 
-      // 辅助工具
-      scene.add(new THREE.AxesHelper(5));
-      scene.add(new THREE.GridHelper(50, 50));
+    animate();
 
-      // 加载 OBJ + MTL + TGA 模型
-      const mtlLoader = new MTLLoader();
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
 
-      mtlLoader.load("./module/rem/untitled.mtl", (materials) => {
-        materials.preload();
-        const objLoader = new OBJLoader();
-        objLoader.setMaterials(materials);
-        objLoader.load(
-          "./module/rem/untitled.obj",
-          (object) => {
-            object.position.y = 0;
-            object.scale.set(1, 1, 1);
-            scene.add(object);
-            document.getElementById("loadingText").style.display = "none"; // 隐藏加载提示
-          },
-          (xhr) => {
-            // 加载进度
-            if (xhr.lengthComputable) {
-              const percent = ((xhr.loaded / xhr.total) * 100).toFixed(0);
-              document.getElementById(
-                "loadingText"
-              ).innerText = `加载中 ${percent}%...`;
-            }
-          },
-          (error) => {
-            console.error("加载模型失败:", error);
-            const loadingEl = document.getElementById("loadingText");
-            loadingEl.innerText = "加载失败";
-            setTimeout(() => (loadingEl.style.display = "none"), 3000); // 3秒后隐藏
-          }
-        );
-      });
-
-      // 缩放逻辑
-      let targetDistance = camera.position.distanceTo(controls.target);
-      const zoomSpeed = 0.6;
-
-      renderer.domElement.addEventListener("wheel", (event) => {
-        event.preventDefault();
-        const delta = event.deltaY > 0 ? 1 : -1;
-        targetDistance += delta * zoomSpeed;
-        targetDistance = THREE.MathUtils.clamp(
-          targetDistance,
-          controls.minDistance,
-          controls.maxDistance
-        );
-      });
-
-      let lastTouchDist = null;
-      renderer.domElement.addEventListener("touchmove", (e) => {
-        if (e.touches.length === 2) {
-          e.preventDefault();
-          const dx = e.touches[0].pageX - e.touches[1].pageX;
-          const dy = e.touches[0].pageY - e.touches[1].pageY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (lastTouchDist !== null) {
-            const offset = (lastTouchDist - dist) * 0.01;
-            targetDistance += offset;
-            targetDistance = THREE.MathUtils.clamp(
-              targetDistance,
-              controls.minDistance,
-              controls.maxDistance
-            );
-          }
-          lastTouchDist = dist;
-        }
-      });
-      renderer.domElement.addEventListener("touchend", () => {
-        lastTouchDist = null;
-      });
-
-      // 重置按钮
-      document.getElementById("resetBtn").addEventListener("click", () => {
-        camera.position.set(3, 3, 7);
-        controls.target.set(0, 0, 0);
-        controls.update();
-        targetDistance = camera.position.distanceTo(controls.target);
-      });
-
-      function animate() {
-        requestAnimationFrame(animate);
-        const dir = new THREE.Vector3();
-        camera.getWorldDirection(dir);
-        const currentDistance = camera.position.distanceTo(controls.target);
-        const newDistance = THREE.MathUtils.lerp(
-          currentDistance,
-          targetDistance,
-          0.1
-        );
-        const newPos = dir.multiplyScalar(-newDistance).add(controls.target);
-        camera.position.copy(newPos);
-        controls.update();
-        renderer.render(scene, camera);
-      }
-
-      animate();
-
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-    </script>
-  </body>
 </html>
