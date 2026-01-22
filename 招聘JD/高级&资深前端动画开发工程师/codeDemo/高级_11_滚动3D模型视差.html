@@ -200,11 +200,14 @@
             });
 
             const mesh = new THREE.Mesh(config.geometry, material);
+
             mesh.userData = {
                 index: index,
                 initialScale: 0.1,
                 targetScale: 1,
-                rotationSpeed: 0.01 + index * 0.005
+                rotationSpeedX: 0.01 + index * 0.003,
+                rotationSpeedY: 0.012 + index * 0.004,
+                rotationSpeedZ: 0.008 + index * 0.002
             };
 
             // 初始位置：右上角
@@ -238,9 +241,9 @@
                 const sectionEnd = (index + 1) * sectionHeight;
                 const sectionProgress = (window.scrollY - sectionStart) / sectionHeight;
 
-                // 进入阶段：从右上角飘到中间
-                if (window.scrollY >= sectionStart && window.scrollY < sectionStart + sectionHeight * 0.5) {
-                    const enterProgress = Math.min(sectionProgress * 2, 1);
+                // 进入阶段（0-0.3）：从右上角飘到中间
+                if (window.scrollY >= sectionStart && window.scrollY < sectionStart + sectionHeight * 0.3) {
+                    const enterProgress = Math.min(sectionProgress / 0.3, 1);
                     const easeProgress = 1 - Math.pow(1 - enterProgress, 3); // 缓动函数
 
                     // 位置：从右上角到中间
@@ -252,15 +255,23 @@
                     const scale = model.userData.initialScale + (model.userData.targetScale - model.userData.initialScale) * easeProgress;
                     model.scale.set(scale, scale, scale);
 
-                    // 旋转
-                    model.rotation.x += model.userData.rotationSpeed;
-                    model.rotation.y += model.userData.rotationSpeed;
+                    model.visible = true;
+                }
+                // 停留阶段（0.3-0.7）：在中间停留并自动旋转，不受滚动影响
+                else if (window.scrollY >= sectionStart + sectionHeight * 0.3 && window.scrollY < sectionStart + sectionHeight * 0.7) {
+                    // 位置保持在中间
+                    model.position.x = 0;
+                    model.position.y = 0;
+                    model.position.z = 0;
+
+                    // 缩放保持目标大小
+                    model.scale.set(model.userData.targetScale, model.userData.targetScale, model.userData.targetScale);
 
                     model.visible = true;
                 }
-                // 退出阶段：从中间到左下角消失
-                else if (window.scrollY >= sectionStart + sectionHeight * 0.5 && window.scrollY < sectionEnd) {
-                    const exitProgress = (sectionProgress - 0.5) * 2;
+                // 退出阶段（0.7-1.0）：从中间到左下角消失
+                else if (window.scrollY >= sectionStart + sectionHeight * 0.7 && window.scrollY < sectionEnd) {
+                    const exitProgress = (sectionProgress - 0.7) / 0.3;
                     const easeProgress = Math.pow(exitProgress, 2); // 缓动函数
 
                     // 位置：从中间到左下角
@@ -271,10 +282,6 @@
                     // 缩放：从大到小
                     const scale = model.userData.targetScale - (model.userData.targetScale - 0.1) * easeProgress;
                     model.scale.set(scale, scale, scale);
-
-                    // 旋转
-                    model.rotation.x += model.userData.rotationSpeed;
-                    model.rotation.y += model.userData.rotationSpeed;
 
                     model.visible = true;
                 }
@@ -327,6 +334,29 @@
         // 动画循环
         const animate = () => {
             requestAnimationFrame(animate);
+            
+            // 持续旋转所有可见的模型（3D无序旋转）
+            models.forEach((model) => {
+                if (model.visible) {
+                    // 检查模型是否在停留阶段（中间位置）
+                    const sectionStart = model.userData.index * sectionHeight;
+                    const isInCenter = window.scrollY >= sectionStart + sectionHeight * 0.3 && 
+                                      window.scrollY < sectionStart + sectionHeight * 0.7;
+                    
+                    if (isInCenter) {
+                        // 在中间时，进行3D无序旋转
+                        model.rotation.x += model.userData.rotationSpeedX;
+                        model.rotation.y += model.userData.rotationSpeedY;
+                        model.rotation.z += model.userData.rotationSpeedZ;
+                    } else {
+                        // 其他阶段也保持旋转，但速度稍慢
+                        model.rotation.x += model.userData.rotationSpeedX * 0.5;
+                        model.rotation.y += model.userData.rotationSpeedY * 0.5;
+                        model.rotation.z += model.userData.rotationSpeedZ * 0.5;
+                    }
+                }
+            });
+            
             renderer.render(scene, camera);
         };
 
