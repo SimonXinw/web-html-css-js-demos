@@ -165,6 +165,10 @@
     dirLight.position.set(5, 10, 7);
     scene.add(dirLight);
 
+    // 添加方向光辅助线（Helper）
+    const dirLightHelper = new THREE.DirectionalLightHelper(dirLight, 2, 0xffff00); // 0xffff00 是黄色
+    scene.add(dirLightHelper);
+
     // 绑定控制面板事件
     const getEl = (id) => document.getElementById(id);
     if (getEl('amb-int')) {
@@ -180,14 +184,17 @@
       getEl('dir-x').addEventListener('input', (e) => {
         dirLight.position.x = parseFloat(e.target.value);
         getEl('val-dir-x').innerText = e.target.value;
+        dirLightHelper.update(); // 更新辅助线
       });
       getEl('dir-y').addEventListener('input', (e) => {
         dirLight.position.y = parseFloat(e.target.value);
         getEl('val-dir-y').innerText = e.target.value;
+        dirLightHelper.update(); // 更新辅助线
       });
       getEl('dir-z').addEventListener('input', (e) => {
         dirLight.position.z = parseFloat(e.target.value);
         getEl('val-dir-z').innerText = e.target.value;
+        dirLightHelper.update(); // 更新辅助线
       });
     }
 
