@@ -90,15 +90,15 @@
     <div class="light-control-group">
       <h4>环境光</h4>
       <div class="light-control-item">
-        <label>强度: <span id="val-amb">1.8</span></label>
-        <input type="range" id="amb-int" min="0" max="2" step="0.01" value="1.8">
+        <label>强度: <span id="val-amb">2</span></label>
+        <input type="range" id="amb-int" min="0" max="10" step="0.1" value="2">
       </div>
     </div>
     <div class="light-control-group">
       <h4>方向光</h4>
       <div class="light-control-item">
-        <label>强度: <span id="val-dir">1.8</span></label>
-        <input type="range" id="dir-int" min="0" max="2" step="0.01" value="1.8">
+        <label>强度: <span id="val-dir">1</span></label>
+        <input type="range" id="dir-int" min="0" max="10" step="0.1" value="1">
       </div>
       <div class="light-control-item">
         <label>X: <span id="val-dir-x">5</span></label>
@@ -199,8 +199,12 @@
         side: THREE.DoubleSide,
       })
     );
+
     plane.rotation.x = -Math.PI / 2;
-    plane.position.y = -1;
+
+    // 增加地面与坐标轴的距离
+    plane.position.y = -2;
+
     scene.add(plane);
 
     // 辅助工具
