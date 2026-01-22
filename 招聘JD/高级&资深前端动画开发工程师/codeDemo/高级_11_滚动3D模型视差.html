@@ -164,57 +164,210 @@
         // 相机初始位置
         camera.position.z = 5;
 
-        // 模型数组
-        const models = [];
-        const modelConfigs = [
-            {
-                geometry: new THREE.TetrahedronGeometry(1, 0),
-                color: 0x667eea,
-                name: "四面体"
-            },
-            {
-                geometry: new THREE.BoxGeometry(1.5, 1.5, 1.5),
-                color: 0x764ba2,
-                name: "立方体"
-            },
-            {
-                geometry: new THREE.OctahedronGeometry(1, 0),
-                color: 0xf093fb,
-                name: "八面体"
-            },
-            {
-                geometry: new THREE.IcosahedronGeometry(1, 0),
-                color: 0x4facfe,
-                name: "二十面体"
-            }
-        ];
+        // 创建精美人物模型
+        const createCharacter = (color, scale = 1) => {
+            const character = new THREE.Group();
 
-        // 创建模型
-        modelConfigs.forEach((config, index) => {
-            const material = new THREE.MeshStandardMaterial({
-                color: config.color,
-                metalness: 0.7,
-                roughness: 0.3,
-                emissive: config.color,
-                emissiveIntensity: 0.2
+            // 身体材质
+            const bodyMaterial = new THREE.MeshStandardMaterial({
+                color: color,
+                metalness: 0.6,
+                roughness: 0.4,
+                emissive: color,
+                emissiveIntensity: 0.1
             });
 
-            const mesh = new THREE.Mesh(config.geometry, material);
+            const headMaterial = new THREE.MeshStandardMaterial({
+                color: 0xffdbac,
+                metalness: 0.3,
+                roughness: 0.7
+            });
 
-            mesh.userData = {
-                index: index,
-                initialScale: 0.1,
-                targetScale: 1,
-                rotationSpeedX: 0.01 + index * 0.003,
-                rotationSpeedY: 0.012 + index * 0.004,
-                rotationSpeedZ: 0.008 + index * 0.002
+            // 头部
+            const head = new THREE.Mesh(
+                new THREE.SphereGeometry(0.3 * scale, 16, 16),
+                headMaterial
+            );
+            head.position.y = 1.2 * scale;
+            character.add(head);
+
+            // 身体
+            const body = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.25 * scale, 0.3 * scale, 0.8 * scale, 16),
+                bodyMaterial
+            );
+            body.position.y = 0.4 * scale;
+            character.add(body);
+
+            // 左臂
+            const leftArm = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.08 * scale, 0.1 * scale, 0.6 * scale, 8),
+                bodyMaterial
+            );
+            leftArm.position.set(-0.4 * scale, 0.6 * scale, 0);
+            leftArm.rotation.z = 0.3;
+            character.add(leftArm);
+
+            // 右臂
+            const rightArm = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.08 * scale, 0.1 * scale, 0.6 * scale, 8),
+                bodyMaterial
+            );
+            rightArm.position.set(0.4 * scale, 0.6 * scale, 0);
+            rightArm.rotation.z = -0.3;
+            character.add(rightArm);
+
+            // 左腿
+            const leftLeg = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.1 * scale, 0.12 * scale, 0.7 * scale, 8),
+                bodyMaterial
+            );
+            leftLeg.position.set(-0.15 * scale, -0.35 * scale, 0);
+            character.add(leftLeg);
+
+            // 右腿
+            const rightLeg = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.1 * scale, 0.12 * scale, 0.7 * scale, 8),
+                bodyMaterial
+            );
+            rightLeg.position.set(0.15 * scale, -0.35 * scale, 0);
+            character.add(rightLeg);
+
+            // 存储部件引用用于动画
+            character.userData.parts = {
+                leftArm: leftArm,
+                rightArm: rightArm,
+                leftLeg: leftLeg,
+                rightLeg: rightLeg,
+                body: body,
+                head: head
             };
 
-            // 初始位置：右上角
-            mesh.position.set(10, 5, 0);
-            mesh.scale.set(0.1, 0.1, 0.1);
-            scene.add(mesh);
-            models.push(mesh);
+            return character;
+        };
+
+        // 模型数组
+        const models = [];
+
+        // 每个场景的模型配置（每个场景1-3个模型）
+        const sceneConfigs = [
+            // 场景1：四面体 + 人物
+            [
+                {
+                    type: "geometry",
+                    geometry: new THREE.TetrahedronGeometry(1, 0),
+                    color: 0x667eea,
+                    offset: { x: -1.5, y: 0, z: 0 }
+                },
+                {
+                    type: "character",
+                    color: 0x667eea,
+                    scale: 0.8,
+                    offset: { x: 1.5, y: 0, z: 0 }
+                }
+            ],
+            // 场景2：立方体 + 八面体 + 人物
+            [
+                {
+                    type: "geometry",
+                    geometry: new THREE.BoxGeometry(1.2, 1.2, 1.2),
+                    color: 0x764ba2,
+                    offset: { x: -1.8, y: 0, z: 0 }
+                },
+                {
+                    type: "geometry",
+                    geometry: new THREE.OctahedronGeometry(0.9, 0),
+                    color: 0xf093fb,
+                    offset: { x: 0, y: 0, z: -1 }
+                },
+                {
+                    type: "character",
+                    color: 0x764ba2,
+                    scale: 0.9,
+                    offset: { x: 1.8, y: 0, z: 0 }
+                }
+            ],
+            // 场景3：二十面体 + 人物 + 球体
+            [
+                {
+                    type: "geometry",
+                    geometry: new THREE.IcosahedronGeometry(1, 0),
+                    color: 0x4facfe,
+                    offset: { x: -1.5, y: 0, z: 0 }
+                },
+                {
+                    type: "character",
+                    color: 0x4facfe,
+                    scale: 1,
+                    offset: { x: 0, y: 0, z: 0 }
+                },
+                {
+                    type: "geometry",
+                    geometry: new THREE.SphereGeometry(0.8, 16, 16),
+                    color: 0x00d4ff,
+                    offset: { x: 1.5, y: 0, z: 0 }
+                }
+            ],
+            // 场景4：多个几何体 + 人物
+            [
+                {
+                    type: "geometry",
+                    geometry: new THREE.TorusGeometry(0.8, 0.3, 8, 16),
+                    color: 0xff6b9d,
+                    offset: { x: -2, y: 0, z: 0 }
+                },
+                {
+                    type: "character",
+                    color: 0xff6b9d,
+                    scale: 1.1,
+                    offset: { x: 0, y: 0, z: 0 }
+                },
+                {
+                    type: "geometry",
+                    geometry: new THREE.ConeGeometry(0.9, 1.5, 8),
+                    color: 0xffa500,
+                    offset: { x: 2, y: 0, z: 0 }
+                }
+            ]
+        ];
+
+        // 创建所有模型
+        sceneConfigs.forEach((sceneModels, sceneIndex) => {
+            sceneModels.forEach((config, modelIndex) => {
+                let mesh;
+
+                if (config.type === "character") {
+                    mesh = createCharacter(config.color, config.scale);
+                } else {
+                    const material = new THREE.MeshStandardMaterial({
+                        color: config.color,
+                        metalness: 0.7,
+                        roughness: 0.3,
+                        emissive: config.color,
+                        emissiveIntensity: 0.2
+                    });
+                    mesh = new THREE.Mesh(config.geometry, material);
+                }
+
+                mesh.userData = {
+                    sceneIndex: sceneIndex,
+                    modelIndex: modelIndex,
+                    initialScale: 0.1,
+                    targetScale: 1,
+                    rotationSpeedX: 0.01 + sceneIndex * 0.003 + modelIndex * 0.001,
+                    rotationSpeedY: 0.012 + sceneIndex * 0.004 + modelIndex * 0.001,
+                    rotationSpeedZ: 0.008 + sceneIndex * 0.002 + modelIndex * 0.001,
+                    offset: config.offset || { x: 0, y: 0, z: 0 },
+                    isCharacter: config.type === "character",
+                    animationTime: 0
+                };
+
+                // 初始位置：右上角
+                mesh.position.set(10, 5, 0);
+                mesh.scale.set(0.1, 0.1, 0.1);
+                scene.add(mesh);
+                models.push(mesh);
+            });
         });
 
         // 添加光源
@@ -236,9 +389,9 @@
 
         // 更新模型状态
         const updateModels = () => {
-            models.forEach((model, index) => {
-                const sectionStart = index * sectionHeight;
-                const sectionEnd = (index + 1) * sectionHeight;
+            models.forEach((model) => {
+                const sectionStart = model.userData.sceneIndex * sectionHeight;
+                const sectionEnd = (model.userData.sceneIndex + 1) * sectionHeight;
                 const sectionProgress = (window.scrollY - sectionStart) / sectionHeight;
 
                 // 进入阶段（0-0.3）：从右上角飘到中间
@@ -246,10 +399,14 @@
                     const enterProgress = Math.min(sectionProgress / 0.3, 1);
                     const easeProgress = 1 - Math.pow(1 - enterProgress, 3); // 缓动函数
 
-                    // 位置：从右上角到中间
-                    model.position.x = 10 - (10 - 0) * easeProgress;
-                    model.position.y = 5 - (5 - 0) * easeProgress;
-                    model.position.z = 0;
+                    // 位置：从右上角到中间（加上偏移量）
+                    const targetX = model.userData.offset.x;
+                    const targetY = model.userData.offset.y;
+                    const targetZ = model.userData.offset.z;
+
+                    model.position.x = 10 - (10 - targetX) * easeProgress;
+                    model.position.y = 5 - (5 - targetY) * easeProgress;
+                    model.position.z = 0 - (0 - targetZ) * easeProgress;
 
                     // 缩放：从小到大
                     const scale = model.userData.initialScale + (model.userData.targetScale - model.userData.initialScale) * easeProgress;
@@ -259,10 +416,10 @@
                 }
                 // 停留阶段（0.3-0.7）：在中间停留并自动旋转，不受滚动影响
                 else if (window.scrollY >= sectionStart + sectionHeight * 0.3 && window.scrollY < sectionStart + sectionHeight * 0.7) {
-                    // 位置保持在中间
-                    model.position.x = 0;
-                    model.position.y = 0;
-                    model.position.z = 0;
+                    // 位置保持在中间（加上偏移量）
+                    model.position.x = model.userData.offset.x;
+                    model.position.y = model.userData.offset.y;
+                    model.position.z = model.userData.offset.z;
 
                     // 缩放保持目标大小
                     model.scale.set(model.userData.targetScale, model.userData.targetScale, model.userData.targetScale);
@@ -275,9 +432,13 @@
                     const easeProgress = Math.pow(exitProgress, 2); // 缓动函数
 
                     // 位置：从中间到左下角
-                    model.position.x = 0 - (0 - (-10)) * easeProgress;
-                    model.position.y = 0 - (0 - (-5)) * easeProgress;
-                    model.position.z = 0 - 5 * easeProgress;
+                    const startX = model.userData.offset.x;
+                    const startY = model.userData.offset.y;
+                    const startZ = model.userData.offset.z;
+
+                    model.position.x = startX - (startX - (-10)) * easeProgress;
+                    model.position.y = startY - (startY - (-5)) * easeProgress;
+                    model.position.z = startZ - (startZ - 5) * easeProgress;
 
                     // 缩放：从大到小
                     const scale = model.userData.targetScale - (model.userData.targetScale - 0.1) * easeProgress;
@@ -331,36 +492,93 @@
         updateModels();
         updateTexts();
 
+        // 更新人物动画
+        const updateCharacterAnimation = (character, deltaTime) => {
+            if (!character.userData.isCharacter || !character.userData.parts) return;
+
+            const parts = character.userData.parts;
+            character.userData.animationTime += deltaTime;
+
+            // 走路/挥手动画
+            const walkSpeed = 3;
+            const armSwing = Math.sin(character.userData.animationTime * walkSpeed) * 0.5;
+            const legSwing = Math.sin(character.userData.animationTime * walkSpeed) * 0.3;
+
+            // 手臂摆动（挥手动作）
+            if (parts.leftArm) {
+                parts.leftArm.rotation.z = 0.3 + armSwing;
+                parts.leftArm.rotation.x = Math.sin(character.userData.animationTime * walkSpeed * 0.5) * 0.2;
+            }
+            if (parts.rightArm) {
+                parts.rightArm.rotation.z = -0.3 - armSwing;
+                parts.rightArm.rotation.x = -Math.sin(character.userData.animationTime * walkSpeed * 0.5) * 0.2;
+            }
+
+            // 腿部摆动（走路动作）
+            if (parts.leftLeg) {
+                parts.leftLeg.rotation.x = legSwing;
+            }
+            if (parts.rightLeg) {
+                parts.rightLeg.rotation.x = -legSwing;
+            }
+
+            // 身体轻微摆动
+            if (parts.body) {
+                parts.body.rotation.z = Math.sin(character.userData.animationTime * walkSpeed * 0.3) * 0.05;
+            }
+
+            // 头部轻微点头
+            if (parts.head) {
+                parts.head.rotation.x = Math.sin(character.userData.animationTime * walkSpeed * 0.4) * 0.1;
+            }
+        };
+
         // 动画循环
-        const animate = () => {
+        let lastTime = 0;
+        const animate = (currentTime) => {
             requestAnimationFrame(animate);
-            
+
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
             // 持续旋转所有可见的模型（3D无序旋转）
             models.forEach((model) => {
                 if (model.visible) {
                     // 检查模型是否在停留阶段（中间位置）
-                    const sectionStart = model.userData.index * sectionHeight;
-                    const isInCenter = window.scrollY >= sectionStart + sectionHeight * 0.3 && 
-                                      window.scrollY < sectionStart + sectionHeight * 0.7;
-                    
+                    const sectionStart = model.userData.sceneIndex * sectionHeight;
+                    const isInCenter = window.scrollY >= sectionStart + sectionHeight * 0.3 &&
+                        window.scrollY < sectionStart + sectionHeight * 0.7;
+
                     if (isInCenter) {
                         // 在中间时，进行3D无序旋转
-                        model.rotation.x += model.userData.rotationSpeedX;
-                        model.rotation.y += model.userData.rotationSpeedY;
-                        model.rotation.z += model.userData.rotationSpeedZ;
+                        if (!model.userData.isCharacter) {
+                            model.rotation.x += model.userData.rotationSpeedX;
+                            model.rotation.y += model.userData.rotationSpeedY;
+                            model.rotation.z += model.userData.rotationSpeedZ;
+                        } else {
+                            // 人物整体旋转较慢
+                            model.rotation.y += model.userData.rotationSpeedY * 0.3;
+                            // 更新人物动作
+                            updateCharacterAnimation(model, deltaTime);
+                        }
                     } else {
                         // 其他阶段也保持旋转，但速度稍慢
-                        model.rotation.x += model.userData.rotationSpeedX * 0.5;
-                        model.rotation.y += model.userData.rotationSpeedY * 0.5;
-                        model.rotation.z += model.userData.rotationSpeedZ * 0.5;
+                        if (!model.userData.isCharacter) {
+                            model.rotation.x += model.userData.rotationSpeedX * 0.5;
+                            model.rotation.y += model.userData.rotationSpeedY * 0.5;
+                            model.rotation.z += model.userData.rotationSpeedZ * 0.5;
+                        } else {
+                            model.rotation.y += model.userData.rotationSpeedY * 0.2;
+                            updateCharacterAnimation(model, deltaTime);
+                        }
                     }
                 }
             });
-            
+
             renderer.render(scene, camera);
         };
 
-        animate();
+        animate(0);
     </script>
 </body>
 
