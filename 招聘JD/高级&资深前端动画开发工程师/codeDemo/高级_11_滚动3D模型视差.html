@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>滚动3D模型视差动画</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Arial", sans-serif;
+            overflow-x: hidden;
+            background: #0a0a0a;
+        }
+
+        /* 3D 场景容器 */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* 内容区域 */
+        .content-section {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 100px 20px;
+            color: #fff;
+        }
+
+        .text-content {
+            max-width: 800px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        .text-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .text-content h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .text-content h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: #81d4fa;
+        }
+
+        .text-content p {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            color: #b0bec5;
+            margin-bottom: 15px;
+        }
+
+        /* 滚动提示 */
+        .scroll-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .text-content h1 {
+                font-size: 2rem;
+            }
+
+            .text-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .text-content p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="canvas-container"></div>
+
+    <div class="content-section" id="section1">
+        <div class="text-content" id="text1">
+            <h1>探索无限可能</h1>
+            <p>在数字世界中，每一个像素都承载着无限创意</p>
+        </div>
+    </div>
+
+    <div class="content-section" id="section2">
+        <div class="text-content" id="text2">
+            <h2>创新设计</h2>
+            <p>将想象力转化为现实，用技术点亮未来</p>
+        </div>
+    </div>
+
+    <div class="content-section" id="section3">
+        <div class="text-content" id="text3">
+            <h2>极致体验</h2>
+            <p>每一个细节都经过精心打磨，追求完美的用户体验</p>
+        </div>
+    </div>
+
+    <div class="content-section" id="section4">
+        <div class="text-content" id="text4">
+            <h2>持续进化</h2>
+            <p>在不断的学习与实践中，创造更美好的数字世界</p>
+        </div>
+    </div>
+
+    <div class="scroll-hint">向下滚动查看更多</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // 场景设置
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById("canvas-container").appendChild(renderer.domElement);
+
+        // 相机初始位置
+        camera.position.z = 5;
+
+        // 模型数组
+        const models = [];
+        const modelConfigs = [
+            {
+                geometry: new THREE.TetrahedronGeometry(1, 0),
+                color: 0x667eea,
+                name: "四面体"
+            },
+            {
+                geometry: new THREE.BoxGeometry(1.5, 1.5, 1.5),
+                color: 0x764ba2,
+                name: "立方体"
+            },
+            {
+                geometry: new THREE.OctahedronGeometry(1, 0),
+                color: 0xf093fb,
+                name: "八面体"
+            },
+            {
+                geometry: new THREE.IcosahedronGeometry(1, 0),
+                color: 0x4facfe,
+                name: "二十面体"
+            }
+        ];
+
+        // 创建模型
+        modelConfigs.forEach((config, index) => {
+            const material = new THREE.MeshStandardMaterial({
+                color: config.color,
+                metalness: 0.7,
+                roughness: 0.3,
+                emissive: config.color,
+                emissiveIntensity: 0.2
+            });
+
+            const mesh = new THREE.Mesh(config.geometry, material);
+            mesh.userData = {
+                index: index,
+                initialScale: 0.1,
+                targetScale: 1,
+                rotationSpeed: 0.01 + index * 0.005
+            };
+
+            // 初始位置：右上角
+            mesh.position.set(10, 5, 0);
+            mesh.scale.set(0.1, 0.1, 0.1);
+            scene.add(mesh);
+            models.push(mesh);
+        });
+
+        // 添加光源
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(5, 5, 5);
+        scene.add(directionalLight);
+
+        const pointLight = new THREE.PointLight(0x667eea, 1, 100);
+        pointLight.position.set(-5, 5, 5);
+        scene.add(pointLight);
+
+        // 滚动控制
+        let scrollProgress = 0;
+        const sectionHeight = window.innerHeight;
+        const totalSections = 4;
+
+        // 更新模型状态
+        const updateModels = () => {
+            models.forEach((model, index) => {
+                const sectionStart = index * sectionHeight;
+                const sectionEnd = (index + 1) * sectionHeight;
+                const sectionProgress = (window.scrollY - sectionStart) / sectionHeight;
+
+                // 进入阶段：从右上角飘到中间
+                if (window.scrollY >= sectionStart && window.scrollY < sectionStart + sectionHeight * 0.5) {
+                    const enterProgress = Math.min(sectionProgress * 2, 1);
+                    const easeProgress = 1 - Math.pow(1 - enterProgress, 3); // 缓动函数
+
+                    // 位置：从右上角到中间
+                    model.position.x = 10 - (10 - 0) * easeProgress;
+                    model.position.y = 5 - (5 - 0) * easeProgress;
+                    model.position.z = 0;
+
+                    // 缩放：从小到大
+                    const scale = model.userData.initialScale + (model.userData.targetScale - model.userData.initialScale) * easeProgress;
+                    model.scale.set(scale, scale, scale);
+
+                    // 旋转
+                    model.rotation.x += model.userData.rotationSpeed;
+                    model.rotation.y += model.userData.rotationSpeed;
+
+                    model.visible = true;
+                }
+                // 退出阶段：从中间到左下角消失
+                else if (window.scrollY >= sectionStart + sectionHeight * 0.5 && window.scrollY < sectionEnd) {
+                    const exitProgress = (sectionProgress - 0.5) * 2;
+                    const easeProgress = Math.pow(exitProgress, 2); // 缓动函数
+
+                    // 位置：从中间到左下角
+                    model.position.x = 0 - (0 - (-10)) * easeProgress;
+                    model.position.y = 0 - (0 - (-5)) * easeProgress;
+                    model.position.z = 0 - 5 * easeProgress;
+
+                    // 缩放：从大到小
+                    const scale = model.userData.targetScale - (model.userData.targetScale - 0.1) * easeProgress;
+                    model.scale.set(scale, scale, scale);
+
+                    // 旋转
+                    model.rotation.x += model.userData.rotationSpeed;
+                    model.rotation.y += model.userData.rotationSpeed;
+
+                    model.visible = true;
+                }
+                // 其他阶段：隐藏
+                else {
+                    model.visible = false;
+                }
+            });
+        };
+
+        // 更新文字显示
+        const updateTexts = () => {
+            const texts = document.querySelectorAll(".text-content");
+            texts.forEach((text, index) => {
+                const sectionStart = index * sectionHeight;
+                const sectionEnd = (index + 1) * sectionHeight;
+
+                if (window.scrollY >= sectionStart + sectionHeight * 0.3 && window.scrollY < sectionEnd) {
+                    text.classList.add("visible");
+                } else {
+                    text.classList.remove("visible");
+                }
+            });
+        };
+
+        // 滚动事件
+        let ticking = false;
+        const onScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    updateModels();
+                    updateTexts();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        };
+
+        window.addEventListener("scroll", onScroll);
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 初始更新
+        updateModels();
+        updateTexts();
+
+        // 动画循环
+        const animate = () => {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        };
+
+        animate();
+    </script>
+</body>
+
+</html>
