@@ -158,11 +158,15 @@
     controls.target.set(0, 0, 0);
     controls.update();
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    // 辅助函数：获取输入框的初始值
+    const getInitVal = (id) => parseFloat(document.getElementById(id).value);
+
+    // 使用 HTML 面板中的默认值初始化光源
+    const ambientLight = new THREE.AmbientLight(0xffffff, getInitVal('amb-int'));
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(5, 10, 7);
+    const dirLight = new THREE.DirectionalLight(0xffffff, getInitVal('dir-int'));
+    dirLight.position.set(getInitVal('dir-x'), getInitVal('dir-y'), getInitVal('dir-z'));
     scene.add(dirLight);
 
     // 添加方向光辅助线（Helper）
