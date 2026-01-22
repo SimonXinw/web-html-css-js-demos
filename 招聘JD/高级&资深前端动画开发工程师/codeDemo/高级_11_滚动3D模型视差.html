@@ -115,6 +115,94 @@
                 font-size: 1rem;
             }
         }
+
+        /* 光源控制面板 */
+        .light-controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 12px;
+            min-width: 280px;
+            max-height: 90vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-controls h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #81d4fa;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 8px;
+        }
+
+        .light-control-group {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .light-control-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .light-control-group h4 {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            color: #b0bec5;
+        }
+
+        .light-control-item {
+            margin-bottom: 8px;
+        }
+
+        .light-control-item label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3px;
+            color: #90a4ae;
+            font-size: 11px;
+        }
+
+        .light-control-item .value {
+            color: #fff;
+            font-weight: bold;
+            min-width: 45px;
+            text-align: right;
+        }
+
+        .light-control-item input[type="range"] {
+            width: 100%;
+            margin-bottom: 3px;
+        }
+
+        .light-control-item input[type="number"] {
+            width: 60px;
+            padding: 3px 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            color: #fff;
+            font-size: 11px;
+        }
+
+        .position-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+        .position-controls input {
+            width: 100%;
+        }
     </style>
 </head>
 
@@ -151,6 +239,83 @@
 
     <div class="scroll-hint">向下滚动查看更多</div>
 
+    <!-- 光源控制面板 -->
+    <div class="light-controls">
+        <h3>💡 光源设置</h3>
+        
+        <!-- 环境光 -->
+        <div class="light-control-group">
+            <h4>环境光 (Ambient Light)</h4>
+            <div class="light-control-item">
+                <label>强度: <span class="value" id="ambientIntensity">0.5</span></label>
+                <input type="range" id="ambientLight" min="0" max="3" step="0.1" value="0.5">
+            </div>
+        </div>
+
+        <!-- 方向光 -->
+        <div class="light-control-group">
+            <h4>方向光 (Directional Light)</h4>
+            <div class="light-control-item">
+                <label>强度: <span class="value" id="directionalIntensity">0.8</span></label>
+                <input type="range" id="directionalLight" min="0" max="3" step="0.1" value="0.8">
+            </div>
+            <div class="light-control-item">
+                <label>位置 X: <span class="value" id="dirPosX">5</span></label>
+                <input type="range" id="directionalX" min="-10" max="10" step="0.5" value="5">
+            </div>
+            <div class="light-control-item">
+                <label>位置 Y: <span class="value" id="dirPosY">10</span></label>
+                <input type="range" id="directionalY" min="-10" max="10" step="0.5" value="10">
+            </div>
+            <div class="light-control-item">
+                <label>位置 Z: <span class="value" id="dirPosZ">7</span></label>
+                <input type="range" id="directionalZ" min="-10" max="10" step="0.5" value="7">
+            </div>
+        </div>
+
+        <!-- 点光源1 -->
+        <div class="light-control-group">
+            <h4>点光源 1 (Point Light 1)</h4>
+            <div class="light-control-item">
+                <label>强度: <span class="value" id="pointIntensity1">1.0</span></label>
+                <input type="range" id="pointLight1" min="0" max="3" step="0.1" value="1.0">
+            </div>
+            <div class="light-control-item">
+                <label>位置 X: <span class="value" id="point1PosX">-5</span></label>
+                <input type="range" id="point1X" min="-10" max="10" step="0.5" value="-5">
+            </div>
+            <div class="light-control-item">
+                <label>位置 Y: <span class="value" id="point1PosY">5</span></label>
+                <input type="range" id="point1Y" min="-10" max="10" step="0.5" value="5">
+            </div>
+            <div class="light-control-item">
+                <label>位置 Z: <span class="value" id="point1PosZ">5</span></label>
+                <input type="range" id="point1Z" min="-10" max="10" step="0.5" value="5">
+            </div>
+        </div>
+
+        <!-- 额外点光源2 -->
+        <div class="light-control-group">
+            <h4>点光源 2 (Point Light 2)</h4>
+            <div class="light-control-item">
+                <label>强度: <span class="value" id="pointIntensity2">1.0</span></label>
+                <input type="range" id="pointLight2" min="0" max="3" step="0.1" value="1.0">
+            </div>
+            <div class="light-control-item">
+                <label>位置 X: <span class="value" id="point2PosX">5</span></label>
+                <input type="range" id="point2X" min="-10" max="10" step="0.5" value="5">
+            </div>
+            <div class="light-control-item">
+                <label>位置 Y: <span class="value" id="point2PosY">5</span></label>
+                <input type="range" id="point2Y" min="-10" max="10" step="0.5" value="5">
+            </div>
+            <div class="light-control-item">
+                <label>位置 Z: <span class="value" id="point2PosZ">-5</span></label>
+                <input type="range" id="point2Z" min="-10" max="10" step="0.5" value="-5">
+            </div>
+        </div>
+    </div>
+
     <script type="importmap">
         {
           "imports": {
@@ -167,16 +332,12 @@
         import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
         import { TGALoader } from "three/addons/loaders/TGALoader.js";
 
-        // 添加 TGA Loader 支持
-        try {
-            if (THREE?.Loader?.Handlers) {
-                THREE.Loader.Handlers.add(/\.tga$/i, new TGALoader());
-            } else {
-                console.warn("THREE.Loader.Handlers 不可用，TGA 纹理可能无法加载");
-            }
-        } catch (error) {
-            console.warn("TGA Loader 注册失败:", error);
-        }
+        // 添加 TGA Loader 支持（使用 DefaultLoadingManager）
+        const tgaLoader = new TGALoader(THREE.DefaultLoadingManager);
+        
+        // 为 MTL 材质加载器设置 TGA 纹理加载器
+        // 在 Three.js r160+ 中，需要通过 LoadingManager 处理
+        THREE.DefaultLoadingManager.addHandler(/\.tga$/i, tgaLoader);
 
         // 场景设置
         const scene = new THREE.Scene();
@@ -385,17 +546,104 @@
             await Promise.all(characterPromises);
         };
 
-        // 添加光源
+        // 添加光源（参考 3D_people_demo.html）
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-        directionalLight.position.set(5, 5, 5);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 7);
         scene.add(directionalLight);
 
-        const pointLight = new THREE.PointLight(0x667eea, 1, 100);
-        pointLight.position.set(-5, 5, 5);
-        scene.add(pointLight);
+        const pointLight1 = new THREE.PointLight(0xffffff, 1.0, 100);
+        pointLight1.position.set(-5, 5, 5);
+        scene.add(pointLight1);
+
+        const pointLight2 = new THREE.PointLight(0xffffff, 1.0, 100);
+        pointLight2.position.set(5, 5, -5);
+        scene.add(pointLight2);
+
+        // 光源控制
+        // 环境光
+        document.getElementById("ambientLight").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            ambientLight.intensity = value;
+            document.getElementById("ambientIntensity").textContent = value.toFixed(1);
+        });
+
+        // 方向光
+        document.getElementById("directionalLight").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            directionalLight.intensity = value;
+            document.getElementById("directionalIntensity").textContent = value.toFixed(1);
+        });
+
+        document.getElementById("directionalX").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            directionalLight.position.x = value;
+            document.getElementById("dirPosX").textContent = value.toFixed(1);
+        });
+
+        document.getElementById("directionalY").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            directionalLight.position.y = value;
+            document.getElementById("dirPosY").textContent = value.toFixed(1);
+        });
+
+        document.getElementById("directionalZ").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            directionalLight.position.z = value;
+            document.getElementById("dirPosZ").textContent = value.toFixed(1);
+        });
+
+        // 点光源1
+        document.getElementById("pointLight1").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            pointLight1.intensity = value;
+            document.getElementById("pointIntensity1").textContent = value.toFixed(1);
+        });
+
+        document.getElementById("point1X").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            pointLight1.position.x = value;
+            document.getElementById("point1PosX").textContent = value.toFixed(1);
+        });
+
+        document.getElementById("point1Y").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            pointLight1.position.y = value;
+            document.getElementById("point1PosY").textContent = value.toFixed(1);
+        });
+
+        document.getElementById("point1Z").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            pointLight1.position.z = value;
+            document.getElementById("point1PosZ").textContent = value.toFixed(1);
+        });
+
+        // 点光源2
+        document.getElementById("pointLight2").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            pointLight2.intensity = value;
+            document.getElementById("pointIntensity2").textContent = value.toFixed(1);
+        });
+
+        document.getElementById("point2X").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            pointLight2.position.x = value;
+            document.getElementById("point2PosX").textContent = value.toFixed(1);
+        });
+
+        document.getElementById("point2Y").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            pointLight2.position.y = value;
+            document.getElementById("point2PosY").textContent = value.toFixed(1);
+        });
+
+        document.getElementById("point2Z").addEventListener("input", (e) => {
+            const value = parseFloat(e.target.value);
+            pointLight2.position.z = value;
+            document.getElementById("point2PosZ").textContent = value.toFixed(1);
+        });
 
         // 滚动控制
         let scrollProgress = 0;
