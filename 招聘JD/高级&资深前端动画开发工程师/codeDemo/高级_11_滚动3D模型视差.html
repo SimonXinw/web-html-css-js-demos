@@ -199,23 +199,29 @@
             body.position.y = 0.4 * scale;
             character.add(body);
 
-            // 左臂
+            // 左臂组（用于更好的旋转控制）
+            const leftArmGroup = new THREE.Group();
             const leftArm = new THREE.Mesh(
                 new THREE.CylinderGeometry(0.08 * scale, 0.1 * scale, 0.6 * scale, 8),
                 bodyMaterial
             );
-            leftArm.position.set(-0.4 * scale, 0.6 * scale, 0);
-            leftArm.rotation.z = 0.3;
-            character.add(leftArm);
+            leftArm.rotation.z = Math.PI / 2; // 旋转90度让手臂水平
+            leftArm.position.x = -0.3 * scale; // 手臂在组内的位置
+            leftArmGroup.position.set(-0.4 * scale, 0.6 * scale, 0);
+            leftArmGroup.add(leftArm);
+            character.add(leftArmGroup);
 
-            // 右臂
+            // 右臂组
+            const rightArmGroup = new THREE.Group();
             const rightArm = new THREE.Mesh(
                 new THREE.CylinderGeometry(0.08 * scale, 0.1 * scale, 0.6 * scale, 8),
                 bodyMaterial
             );
-            rightArm.position.set(0.4 * scale, 0.6 * scale, 0);
-            rightArm.rotation.z = -0.3;
-            character.add(rightArm);
+            rightArm.rotation.z = Math.PI / 2; // 旋转90度让手臂水平
+            rightArm.position.x = 0.3 * scale; // 手臂在组内的位置
+            rightArmGroup.position.set(0.4 * scale, 0.6 * scale, 0);
+            rightArmGroup.add(rightArm);
+            character.add(rightArmGroup);
 
             // 左腿
             const leftLeg = new THREE.Mesh(
@@ -235,8 +241,8 @@
 
             // 存储部件引用用于动画
             character.userData.parts = {
-                leftArm: leftArm,
-                rightArm: rightArm,
+                leftArm: leftArmGroup,  // 使用组而不是单独的mesh
+                rightArm: rightArmGroup, // 使用组而不是单独的mesh
                 leftLeg: leftLeg,
                 rightLeg: rightLeg,
                 body: body,
@@ -412,6 +418,14 @@
                     const scale = model.userData.initialScale + (model.userData.targetScale - model.userData.initialScale) * easeProgress;
                     model.scale.set(scale, scale, scale);
 
+                    // 人物模型：根据滚动位置进行左右摇摆
+                    if (model.userData.isCharacter) {
+                        const swingAngle = Math.sin(enterProgress * Math.PI * 4) * 0.4;
+                        model.rotation.y = swingAngle;
+                        model.rotation.x = 0;
+                        model.rotation.z = 0;
+                    }
+
                     model.visible = true;
                 }
                 // 停留阶段（0.3-0.7）：在中间停留并自动旋转，不受滚动影响
@@ -423,6 +437,17 @@
 
                     // 缩放保持目标大小
                     model.scale.set(model.userData.targetScale, model.userData.targetScale, model.userData.targetScale);
+
+                    // 人物模型：根据滚动位置进行左右摇摆
+                    if (model.userData.isCharacter) {
+                        // 计算在停留阶段的滚动进度（0-1）
+                        const stayProgress = (window.scrollY - (sectionStart + sectionHeight * 0.3)) / (sectionHeight * 0.4);
+                        // 使用 sin 函数根据滚动位置实现左右摇摆
+                        const swingAngle = Math.sin(stayProgress * Math.PI * 4) * 0.4; // 左右摇摆约23度
+                        model.rotation.y = swingAngle;
+                        model.rotation.x = 0;
+                        model.rotation.z = 0;
+                    }
 
                     model.visible = true;
                 }
@@ -443,6 +468,14 @@
                     // 缩放：从大到小
                     const scale = model.userData.targetScale - (model.userData.targetScale - 0.1) * easeProgress;
                     model.scale.set(scale, scale, scale);
+
+                    // 人物模型：根据滚动位置进行左右摇摆
+                    if (model.userData.isCharacter) {
+                        const swingAngle = Math.sin(exitProgress * Math.PI * 4) * 0.4;
+                        model.rotation.y = swingAngle;
+                        model.rotation.x = 0;
+                        model.rotation.z = 0;
+                    }
 
                     model.visible = true;
                 }
@@ -492,54 +525,21 @@
         updateModels();
         updateTexts();
 
-        // 更新人物动画
-        const updateCharacterAnimation = (character, deltaTime) => {
-            if (!character.userData.isCharacter || !character.userData.parts) return;
-
-            const parts = character.userData.parts;
-            character.userData.animationTime += deltaTime;
-
-            // 走路/挥手动画
-            const walkSpeed = 3;
-            const armSwing = Math.sin(character.userData.animationTime * walkSpeed) * 0.5;
-            const legSwing = Math.sin(character.userData.animationTime * walkSpeed) * 0.3;
-
-            // 手臂摆动（挥手动作）
-            if (parts.leftArm) {
-                parts.leftArm.rotation.z = 0.3 + armSwing;
-                parts.leftArm.rotation.x = Math.sin(character.userData.animationTime * walkSpeed * 0.5) * 0.2;
-            }
-            if (parts.rightArm) {
-                parts.rightArm.rotation.z = -0.3 - armSwing;
-                parts.rightArm.rotation.x = -Math.sin(character.userData.animationTime * walkSpeed * 0.5) * 0.2;
-            }
-
-            // 腿部摆动（走路动作）
-            if (parts.leftLeg) {
-                parts.leftLeg.rotation.x = legSwing;
-            }
-            if (parts.rightLeg) {
-                parts.rightLeg.rotation.x = -legSwing;
-            }
-
-            // 身体轻微摆动
-            if (parts.body) {
-                parts.body.rotation.z = Math.sin(character.userData.animationTime * walkSpeed * 0.3) * 0.05;
-            }
-
-            // 头部轻微点头
-            if (parts.head) {
-                parts.head.rotation.x = Math.sin(character.userData.animationTime * walkSpeed * 0.4) * 0.1;
-            }
-        };
 
         // 动画循环
-        let lastTime = 0;
+        let lastTime = performance.now();
         const animate = (currentTime) => {
             requestAnimationFrame(animate);
 
-            const deltaTime = (currentTime - lastTime) / 1000;
+            // 确保时间正确计算
+            if (!currentTime) {
+                currentTime = performance.now();
+            }
+            const deltaTime = Math.min((currentTime - lastTime) / 1000, 0.1); // 限制最大deltaTime
             lastTime = currentTime;
+
+            // 如果deltaTime为0或无效，使用固定值
+            const validDeltaTime = deltaTime > 0 ? deltaTime : 0.016;
 
             // 持续旋转所有可见的模型（3D无序旋转）
             models.forEach((model) => {
@@ -549,27 +549,18 @@
                     const isInCenter = window.scrollY >= sectionStart + sectionHeight * 0.3 &&
                         window.scrollY < sectionStart + sectionHeight * 0.7;
 
-                    if (isInCenter) {
-                        // 在中间时，进行3D无序旋转
-                        if (!model.userData.isCharacter) {
+                    if (!model.userData.isCharacter) {
+                        // 几何体模型：进行3D无序旋转
+                        if (isInCenter) {
+                            // 在中间时，进行3D无序旋转
                             model.rotation.x += model.userData.rotationSpeedX;
                             model.rotation.y += model.userData.rotationSpeedY;
                             model.rotation.z += model.userData.rotationSpeedZ;
                         } else {
-                            // 人物整体旋转较慢
-                            model.rotation.y += model.userData.rotationSpeedY * 0.3;
-                            // 更新人物动作
-                            updateCharacterAnimation(model, deltaTime);
-                        }
-                    } else {
-                        // 其他阶段也保持旋转，但速度稍慢
-                        if (!model.userData.isCharacter) {
+                            // 其他阶段也保持旋转，但速度稍慢
                             model.rotation.x += model.userData.rotationSpeedX * 0.5;
                             model.rotation.y += model.userData.rotationSpeedY * 0.5;
                             model.rotation.z += model.userData.rotationSpeedZ * 0.5;
-                        } else {
-                            model.rotation.y += model.userData.rotationSpeedY * 0.2;
-                            updateCharacterAnimation(model, deltaTime);
                         }
                     }
                 }
