@@ -127,13 +127,10 @@
   <script type="module">
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-    import { MTLLoader } from "three/addons/loaders/MTLLoader.js";
-    import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
-    import { TGALoader } from "three/addons/loaders/TGALoader.js";
+    import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
 
-    // 创建 LoadingManager 并注册 TGALoader
+    // 创建 LoadingManager
     const manager = new THREE.LoadingManager();
-    manager.addHandler(/\.tga$/i, new TGALoader());
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f0f0);
@@ -144,18 +141,19 @@
       0.1,
       1000
     );
-    camera.position.set(3, 3, 7);
+    camera.position.set(0, 2, 5); // 调整相机位置，正对模型
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true; // 开启阴影
     document.body.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.1;
-    controls.minDistance = 2;
+    controls.minDistance = 1;
     controls.maxDistance = 20;
-    controls.target.set(0, 0, 0);
+    controls.target.set(0, 1, 0); // 目标点设为大概人物中心
     controls.update();
 
     // 辅助函数：获取输入框的初始值
@@ -167,6 +165,7 @@
 
     const dirLight = new THREE.DirectionalLight(0xffffff, getInitVal('dir-int'));
     dirLight.position.set(getInitVal('dir-x'), getInitVal('dir-y'), getInitVal('dir-z'));
+    dirLight.castShadow = true;
     scene.add(dirLight);
 
     // 添加方向光辅助线（Helper）
@@ -212,79 +211,92 @@
     );
 
     plane.rotation.x = -Math.PI / 2;
-
-    // 增加地面与坐标轴的距离
-    plane.position.y = -2;
-
+    plane.position.y = 0; // 地面设为0
+    plane.receiveShadow = true;
     scene.add(plane);
 
     // 辅助工具
     scene.add(new THREE.AxesHelper(5));
     scene.add(new THREE.GridHelper(50, 50));
 
-    // 加载 OBJ + MTL + TGA 模型
-    const mtlLoader = new MTLLoader(manager);
-    mtlLoader.setPath("./module/rem/"); // 必须设置，否则找不到 TGA
+    // 动画混合器
+    let mixer;
+    const clock = new THREE.Clock();
 
-    mtlLoader.load("untitled.mtl", (materials) => {
-      materials.preload();
+    // 加载 FBX 模型
+    const loader = new FBXLoader(manager);
+    // 设置纹理资源的路径，告诉加载器去 varina 文件夹找贴图
+    loader.setResourcePath("./varina/");
+    
+    loader.load(
+      "https://cdn.shopify.com/s/files/1/0787/4651/7790/files/animate_2.fbx?v=1769170989",
+      (object) => {
+        // FBX 单位通常比较大（厘米），Three.js 是米，这里缩小 0.01 倍
+        // 如果模型太小，可以改为 0.1 或 1
+        object.scale.set(0.01, 0.01, 0.01); 
+        object.position.set(0, 0, 0);
 
-      const objLoader = new OBJLoader(manager);
-      objLoader.setMaterials(materials);
-      objLoader.setPath("./module/rem/");
+        // 调试：打印动画列表
+        console.log("模型动画列表:", object.animations);
 
-      objLoader.load(
-        "untitled.obj",
-        (object) => {
-          object.position.y = 0;
-          object.scale.set(1, 1, 1);
-
-          // 遍历并检查材质，强制更新
-          object.traverse((child) => {
-            if (child.isMesh) {
-              child.castShadow = true;
-              child.receiveShadow = true;
-
-              const mats = Array.isArray(child.material) ? child.material : [child.material];
-              mats.forEach(mat => {
-                mat.needsUpdate = true;
-                // 强制白色底色，防止 MTL 里的深色 Kd 影响纹理显示
-                if (mat.color) mat.color.setHex(0xffffff);
-                if (mat.map) mat.map.needsUpdate = true;
-
-                // 修复透明度问题
-                if (mat.transparent || mat.alphaMap) {
-                    mat.alphaTest = 0.001; 
-                    mat.transparent = false;
-                    mat.side = THREE.DoubleSide;
-                }
-                
-                // 确保颜色正常显示
-                if (mat.map) mat.map.colorSpace = THREE.SRGBColorSpace;
-              });
-            }
-          });
-
-          scene.add(object);
-          document.getElementById("loadingText").style.display = "none";
-        },
-        (xhr) => {
-          // 加载进度
-          if (xhr.lengthComputable) {
-            const percent = ((xhr.loaded / xhr.total) * 100).toFixed(0);
-            document.getElementById(
-              "loadingText"
-            ).innerText = `加载中 ${percent}%...`;
-          }
-        },
-        (error) => {
-          console.error("加载模型失败:", error);
-          const loadingEl = document.getElementById("loadingText");
-          loadingEl.innerText = "加载失败";
-          setTimeout(() => (loadingEl.style.display = "none"), 3000); // 3秒后隐藏
+        // 如果模型有动画，播放第一个
+        const loadingEl = document.getElementById("loadingText");
+        
+        if (object.animations && object.animations.length > 0) {
+            mixer = new THREE.AnimationMixer(object);
+            const action = mixer.clipAction(object.animations[0]);
+            action.play();
+            
+            loadingEl.innerText = `加载成功！发现 ${object.animations.length} 个动画，正在播放: "${object.animations[0].name}"`;
+        } else {
+            loadingEl.innerText = "加载成功！但该模型未包含动画数据";
         }
-      );
-    });
+        
+        // 5秒后隐藏提示
+        setTimeout(() => (loadingEl.style.display = "none"), 5000);
+
+        // 开启阴影并处理材质
+        object.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+
+                // 修复材质：处理透明度问题
+                if (child.material) {
+                    const mats = Array.isArray(child.material) ? child.material : [child.material];
+                    mats.forEach(mat => {
+                        // 如果材质有透明度贴图或者开启了透明，尝试调整
+                        if (mat.transparent || mat.alphaMap) {
+                            mat.alphaTest = 0.001; 
+                            mat.transparent = false; // 关闭半透明混合，改为 alphaTest 裁剪
+                            mat.side = THREE.DoubleSide; // 双面渲染
+                        }
+                        
+                        // 确保颜色正常显示
+                        if (mat.map) mat.map.colorSpace = THREE.SRGBColorSpace;
+                    });
+                }
+            }
+        });
+
+        scene.add(object);
+        document.getElementById("loadingText").style.display = "none";
+      },
+      (xhr) => {
+        if (xhr.lengthComputable) {
+          const percent = ((xhr.loaded / xhr.total) * 100).toFixed(0);
+          document.getElementById(
+            "loadingText"
+          ).innerText = `加载中 ${percent}%...`;
+        }
+      },
+      (error) => {
+        console.error("加载模型失败:", error);
+        const loadingEl = document.getElementById("loadingText");
+        loadingEl.innerText = "加载失败";
+        // setTimeout(() => (loadingEl.style.display = "none"), 3000);
+      }
+    );
 
     // 缩放逻辑
     let targetDistance = camera.position.distanceTo(controls.target);
@@ -326,8 +338,8 @@
 
     // 重置按钮
     document.getElementById("resetBtn").addEventListener("click", () => {
-      camera.position.set(3, 3, 7);
-      controls.target.set(0, 0, 0);
+      camera.position.set(0, 2, 5);
+      controls.target.set(0, 1, 0);
       controls.update();
       targetDistance = camera.position.distanceTo(controls.target);
     });
@@ -345,7 +357,7 @@
       requestAnimationFrame(animate);
 
       // 键盘控制视角平移
-      const moveSpeed = 0.05;
+      const moveSpeed = 0.1;
       const forward = new THREE.Vector3();
       camera.getWorldDirection(forward);
       forward.y = 0;
@@ -366,6 +378,11 @@
       if (keyState["ArrowRight"] || keyState["KeyD"]) {
         controls.target.addScaledVector(right, moveSpeed);
       }
+
+      // 更新动画
+      const delta = clock.getDelta();
+      if (mixer) mixer.update(delta);
+
       const dir = new THREE.Vector3();
       camera.getWorldDirection(dir);
       const currentDistance = camera.position.distanceTo(controls.target);
