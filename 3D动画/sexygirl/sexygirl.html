@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Sexy Girl 模型展示</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #f0f0f0;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    #resetBtn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1;
+      padding: 6px 12px;
+      background: white;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #loadingText {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 12px 24px;
+      border-radius: 8px;
+      z-index: 999;
+    }
+
+    /* 光源控制面板 */
+    .light-controls {
+      position: fixed;
+      top: 50px;
+      left: 10px;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 15px;
+      border-radius: 8px;
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 12px;
+      min-width: 250px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .light-control-group {
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 10px;
+    }
+
+    .light-control-group h4 {
+      margin: 0 0 5px 0;
+      color: #81d4fa;
+    }
+
+    .light-control-item {
+      margin-bottom: 5px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .light-control-item label {
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loadingText">加载中 0%</div>
+  <button id="resetBtn">重置视角</button>
+
+  <!-- 光源控制面板 -->
+  <div class="light-controls">
+    <div class="light-control-group">
+      <h4>环境光</h4>
+      <div class="light-control-item">
+        <label>强度: <span id="val-amb">2</span></label>
+        <input type="range" id="amb-int" min="0" max="10" step="0.1" value="2">
+      </div>
+    </div>
+    <div class="light-control-group">
+      <h4>方向光</h4>
+      <div class="light-control-item">
+        <label>强度: <span id="val-dir">1</span></label>
+        <input type="range" id="dir-int" min="0" max="10" step="0.1" value="1">
+      </div>
+      <div class="light-control-item">
+        <label>X: <span id="val-dir-x">5</span></label>
+        <input type="range" id="dir-x" min="-10" max="10" step="0.1" value="5">
+      </div>
+      <div class="light-control-item">
+        <label>Y: <span id="val-dir-y">10</span></label>
+        <input type="range" id="dir-y" min="-10" max="10" step="0.1" value="10">
+      </div>
+      <div class="light-control-item">
+        <label>Z: <span id="val-dir-z">7</span></label>
+        <input type="range" id="dir-z" min="-10" max="10" step="0.1" value="7">
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+    import { TGALoader } from "three/addons/loaders/TGALoader.js";
+
+    // 创建 LoadingManager 并注册 TGALoader (因为材质里有 .tga 文件)
+    const manager = new THREE.LoadingManager();
+    manager.addHandler(/\.tga$/i, new TGALoader());
+
+    // 调试：打印资源加载路径，帮助排查 404 或路径拼接错误
+    manager.setURLModifier((url) => {
+        // 只打印非 data 协议的链接
+        if (!url.startsWith('data:')) {
+            console.log("正在请求资源:", url);
+        }
+        return url;
+    });
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0);
+
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    // 初始位置
+    camera.position.set(0, 2, 5);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true; // 开启阴影
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.1;
+    controls.minDistance = 1;
+    controls.maxDistance = 20;
+    controls.target.set(0, 1, 0);
+    controls.update();
+
+    // 辅助函数：获取输入框的初始值
+    const getInitVal = (id) => parseFloat(document.getElementById(id).value);
+
+    // 使用 HTML 面板中的默认值初始化光源
+    const ambientLight = new THREE.AmbientLight(0xffffff, getInitVal('amb-int'));
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, getInitVal('dir-int'));
+    dirLight.position.set(getInitVal('dir-x'), getInitVal('dir-y'), getInitVal('dir-z'));
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    // 添加方向光辅助线（Helper）
+    const dirLightHelper = new THREE.DirectionalLightHelper(dirLight, 2, 0xffff00);
+    scene.add(dirLightHelper);
+
+    // 绑定控制面板事件
+    const getEl = (id) => document.getElementById(id);
+    if (getEl('amb-int')) {
+      getEl('amb-int').addEventListener('input', (e) => {
+        ambientLight.intensity = parseFloat(e.target.value);
+        getEl('val-amb').innerText = e.target.value;
+      });
+
+      getEl('dir-int').addEventListener('input', (e) => {
+        dirLight.intensity = parseFloat(e.target.value);
+        getEl('val-dir').innerText = e.target.value;
+      });
+      getEl('dir-x').addEventListener('input', (e) => {
+        dirLight.position.x = parseFloat(e.target.value);
+        getEl('val-dir-x').innerText = e.target.value;
+        dirLightHelper.update();
+      });
+      getEl('dir-y').addEventListener('input', (e) => {
+        dirLight.position.y = parseFloat(e.target.value);
+        getEl('val-dir-y').innerText = e.target.value;
+        dirLightHelper.update();
+      });
+      getEl('dir-z').addEventListener('input', (e) => {
+        dirLight.position.z = parseFloat(e.target.value);
+        getEl('val-dir-z').innerText = e.target.value;
+        dirLightHelper.update();
+      });
+    }
+
+    // 地面
+    const plane = new THREE.Mesh(
+      new THREE.PlaneGeometry(50, 50),
+      new THREE.MeshStandardMaterial({
+        color: 0xdddddd,
+        side: THREE.DoubleSide,
+      })
+    );
+
+    plane.rotation.x = -Math.PI / 2;
+    plane.position.y = -5;
+    plane.receiveShadow = true;
+    scene.add(plane);
+
+    // 辅助工具
+    scene.add(new THREE.AxesHelper(5));
+    scene.add(new THREE.GridHelper(50, 50));
+
+    // 动画混合器
+    let mixer;
+    const clock = new THREE.Clock();
+
+    // 加载 FBX 模型
+    const loader = new FBXLoader(manager);
+    
+    // 设置跨域许可，允许从 CDN 加载图片 (这对 FBXLoader 内部加载纹理很重要)
+    loader.setCrossOrigin('anonymous');
+
+    // 设置纹理资源的路径
+    loader.setResourcePath("https://valerion-image-video.oss-cn-beijing.aliyuncs.com/animate_3d/girl2/textures/");
+    
+    loader.load(
+      "https://cdn.shopify.com/s/files/1/0787/4651/7790/files/animate_1.fbx?v=1769170190",
+      (object) => {
+        // FBX 单位通常是厘米，Three.js 是米，这里先缩小 0.01 倍
+        // 如果太小，请改为 0.1 或 1
+        object.scale.set(0.01, 0.01, 0.01); 
+        object.position.set(0, 0, 0);
+
+        // 调试：打印动画列表
+        console.log("模型动画列表:", object.animations);
+
+        // 如果模型有动画，播放第一个
+        const loadingEl = document.getElementById("loadingText");
+        
+        if (object.animations && object.animations.length > 0) {
+            mixer = new THREE.AnimationMixer(object);
+            const action = mixer.clipAction(object.animations[0]);
+            action.play();
+            
+            loadingEl.innerText = `加载成功！发现 ${object.animations.length} 个动画，正在播放: "${object.animations[0].name}"`;
+        } else {
+            loadingEl.innerText = "加载成功！但该模型未包含动画数据";
+        }
+        
+        // 5秒后隐藏提示
+        setTimeout(() => (loadingEl.style.display = "none"), 5000);
+
+        // 开启阴影并处理材质
+        object.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+
+                // 修复材质：处理透明度问题
+                if (child.material) {
+                    const mats = Array.isArray(child.material) ? child.material : [child.material];
+                    mats.forEach(mat => {
+                        // 如果材质有透明度贴图或者开启了透明，尝试调整
+                        // 这里针对头发等可能出现半透明问题的部件，设置 alphaTest
+                        // 这样只有不透明度大于 0.5 的部分才会显示，解决深度排序问题
+                        if (mat.transparent || mat.alphaMap) {
+                            mat.alphaTest = 0.001; 
+                            mat.transparent = false; // 关闭半透明混合，改为 alphaTest 裁剪
+                            mat.side = THREE.DoubleSide; // 双面渲染
+                        }
+                        
+                        // 确保颜色正常显示
+                        if (mat.map) mat.map.colorSpace = THREE.SRGBColorSpace;
+                    });
+                }
+            }
+        });
+
+        scene.add(object);
+      },
+      (xhr) => {
+        if (xhr.lengthComputable) {
+          const percent = ((xhr.loaded / xhr.total) * 100).toFixed(0);
+          document.getElementById(
+            "loadingText"
+          ).innerText = `加载中 ${percent}%...`;
+        }
+      },
+      (error) => {
+        console.error("加载模型失败:", error);
+        const loadingEl = document.getElementById("loadingText");
+        loadingEl.innerText = "加载失败";
+      }
+    );
+
+    // 缩放逻辑
+    let targetDistance = camera.position.distanceTo(controls.target);
+    const zoomSpeed = 0.6;
+
+    renderer.domElement.addEventListener("wheel", (event) => {
+      event.preventDefault();
+      const delta = event.deltaY > 0 ? 1 : -1;
+      targetDistance += delta * zoomSpeed;
+      targetDistance = THREE.MathUtils.clamp(
+        targetDistance,
+        controls.minDistance,
+        controls.maxDistance
+      );
+    });
+
+    let lastTouchDist = null;
+    renderer.domElement.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dx = e.touches[0].pageX - e.touches[1].pageX;
+        const dy = e.touches[0].pageY - e.touches[1].pageY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (lastTouchDist !== null) {
+          const offset = (lastTouchDist - dist) * 0.01;
+          targetDistance += offset;
+          targetDistance = THREE.MathUtils.clamp(
+            targetDistance,
+            controls.minDistance,
+            controls.maxDistance
+          );
+        }
+        lastTouchDist = dist;
+      }
+    });
+    renderer.domElement.addEventListener("touchend", () => {
+      lastTouchDist = null;
+    });
+
+    // 重置按钮
+    document.getElementById("resetBtn").addEventListener("click", () => {
+      camera.position.set(0, 2, 5);
+      controls.target.set(0, 1, 0);
+      controls.update();
+      targetDistance = camera.position.distanceTo(controls.target);
+    });
+
+    // 键盘按键状态
+    const keyState = {};
+    window.addEventListener("keydown", (e) => {
+      keyState[e.code] = true;
+    });
+    window.addEventListener("keyup", (e) => {
+      keyState[e.code] = false;
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // 键盘控制视角平移
+      const moveSpeed = 0.05;
+      const forward = new THREE.Vector3();
+      camera.getWorldDirection(forward);
+      forward.y = 0;
+      forward.normalize();
+
+      const right = new THREE.Vector3();
+      right.crossVectors(forward, camera.up).normalize();
+
+      if (keyState["ArrowUp"] || keyState["KeyW"]) {
+        controls.target.addScaledVector(forward, moveSpeed);
+      }
+      if (keyState["ArrowDown"] || keyState["KeyS"]) {
+        controls.target.addScaledVector(forward, -moveSpeed);
+      }
+      if (keyState["ArrowLeft"] || keyState["KeyA"]) {
+        controls.target.addScaledVector(right, -moveSpeed);
+      }
+      if (keyState["ArrowRight"] || keyState["KeyD"]) {
+        controls.target.addScaledVector(right, moveSpeed);
+      }
+
+      // 更新动画
+      const delta = clock.getDelta();
+      if (mixer) mixer.update(delta);
+
+      const dir = new THREE.Vector3();
+      camera.getWorldDirection(dir);
+      const currentDistance = camera.position.distanceTo(controls.target);
+      const newDistance = THREE.MathUtils.lerp(
+        currentDistance,
+        targetDistance,
+        0.1
+      );
+      const newPos = dir.multiplyScalar(-newDistance).add(controls.target);
+      camera.position.copy(newPos);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+
+</html>
