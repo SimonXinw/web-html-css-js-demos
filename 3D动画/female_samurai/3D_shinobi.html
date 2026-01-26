@@ -211,7 +211,7 @@
     );
 
     plane.rotation.x = -Math.PI / 2;
-    plane.position.y = 0; // 地面设为0
+    plane.position.y = -2.5; // 地面设为0
     plane.receiveShadow = true;
     scene.add(plane);
 
@@ -226,10 +226,10 @@
     // 加载 FBX 模型
     const loader = new FBXLoader(manager);
     // 设置纹理资源的路径，告诉加载器去 varina 文件夹找贴图
-    loader.setResourcePath("https://valerion-image-video.oss-cn-beijing.aliyuncs.com/animate_3d/women1/varina/");
+    loader.setResourcePath("https://valerion-image-video.oss-cn-beijing.aliyuncs.com/animate_3d/textures/");
     
     loader.load(
-      "https://cdn.shopify.com/s/files/1/0787/4651/7790/files/animate_2.fbx?v=1769170989",
+      "https://cdn.shopify.com/s/files/1/0787/4651/7790/files/sekiro.fbx?v=1769171071",
       (object) => {
         // FBX 单位通常比较大（厘米），Three.js 是米，这里缩小 0.01 倍
         // 如果模型太小，可以改为 0.1 或 1
@@ -255,21 +255,27 @@
         // 5秒后隐藏提示
         setTimeout(() => (loadingEl.style.display = "none"), 5000);
 
-        // 开启阴影并处理材质
+        // 开启阴影并修复材质
         object.traverse((child) => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
 
-                // 修复材质：处理透明度问题
+                // 修复材质
                 if (child.material) {
                     const mats = Array.isArray(child.material) ? child.material : [child.material];
                     mats.forEach(mat => {
-                        // 如果材质有透明度贴图或者开启了透明，尝试调整
+                        // 去掉自发光
+                        if (mat.emissive) {
+                            mat.emissive.setHex(0x000000); // 设为黑色
+                            mat.emissiveIntensity = 0;
+                        }
+
+                        // 修复透明度问题
                         if (mat.transparent || mat.alphaMap) {
                             mat.alphaTest = 0.001; 
-                            mat.transparent = false; // 关闭半透明混合，改为 alphaTest 裁剪
-                            mat.side = THREE.DoubleSide; // 双面渲染
+                            mat.transparent = false;
+                            mat.side = THREE.DoubleSide;
                         }
                         
                         // 确保颜色正常显示
@@ -357,7 +363,7 @@
       requestAnimationFrame(animate);
 
       // 键盘控制视角平移
-      const moveSpeed = 0.1;
+      const moveSpeed = 0.05;
       const forward = new THREE.Vector3();
       camera.getWorldDirection(forward);
       forward.y = 0;
