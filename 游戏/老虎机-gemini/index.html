@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>幸运老虎机</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- 顶部信息栏 -->
+        <div class="header-info">
+            <div class="info-box">
+                <span class="label">金币:</span>
+                <span id="credit-display" class="value">0</span>
+            </div>
+            <div class="info-box">
+                <span class="label">总押注:</span>
+                <span id="total-bet-display" class="value">0</span>
+            </div>
+        </div>
+
+        <!-- 跑马灯面板 -->
+        <div class="machine-panel">
+            <!-- 上边 -->
+            <div class="marquee-row top-row" id="row-top"></div>
+            
+            <!-- 中间区域 -->
+            <div class="center-area">
+                <!-- 左边 -->
+                <div class="marquee-col left-col" id="col-left"></div>
+                
+                <!-- 3个滚动的中奖数字 -->
+                <div class="reels-container">
+                    <div class="reel-window">
+                        <div class="reel-strip" id="reel-1"></div>
+                    </div>
+                    <div class="reel-window">
+                        <div class="reel-strip" id="reel-2"></div>
+                    </div>
+                    <div class="reel-window">
+                        <div class="reel-strip" id="reel-3"></div>
+                    </div>
+                    <div class="winning-line"></div>
+                </div>
+
+                <!-- 右边 -->
+                <div class="marquee-col right-col" id="col-right"></div>
+            </div>
+
+            <!-- 下边 -->
+            <div class="marquee-row bottom-row" id="row-bottom"></div>
+        </div>
+
+        <!-- 游戏控制区 -->
+        <div class="controls-area">
+            <!-- 押注面板 -->
+            <div class="betting-panel" id="betting-grid">
+                <!-- 动态生成押注按钮 -->
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button id="btn-coin" class="btn btn-coin">投币</button>
+                <div class="bet-multiplier-control">
+                    <span class="label">单注:</span>
+                    <button id="btn-bet-minus" class="btn btn-small">-</button>
+                    <span id="current-bet-val">1</span>
+                    <button id="btn-bet-plus" class="btn btn-small">+</button>
+                </div>
+                <button id="btn-start" class="btn btn-start" disabled>开始</button>
+            </div>
+        </div>
+        
+        <!-- 结果弹窗 -->
+        <div id="message-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="modal-title">中奖啦!</h2>
+                <p id="modal-msg">获得 100 金币</p>
+                <button id="modal-close" class="btn">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
