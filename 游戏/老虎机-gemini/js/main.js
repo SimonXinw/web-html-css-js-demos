@@ -16,6 +16,7 @@ class Game {
         this.elBetGrid = document.getElementById('betting-grid');
         this.btnStart = document.getElementById('btn-start');
         this.btnCoin = document.getElementById('btn-coin');
+        this.btnClear = document.getElementById('btn-clear');
         this.btnBetMinus = document.getElementById('btn-bet-minus');
         this.btnBetPlus = document.getElementById('btn-bet-plus');
         this.elCurrentBetVal = document.getElementById('current-bet-val');
@@ -57,12 +58,22 @@ class Game {
             const btn = document.createElement('div');
             btn.className = 'bet-btn';
             btn.dataset.id = item.id;
+            // 增加 bet-decrease 按钮
             btn.innerHTML = `
+                <span class="bet-decrease">-</span>
                 <span class="bet-amount">0</span>
                 <span class="icon" style="color: ${item.color}">${item.icon}</span>
                 <span class="rate">x${item.rate}</span>
             `;
             
+            // 减少押注事件
+            const decreaseBtn = btn.querySelector('.bet-decrease');
+            decreaseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.decreaseBet(item.id);
+            });
+
+            // 增加押注事件
             btn.addEventListener('click', () => this.placeBet(item.id));
             this.elBetGrid.appendChild(btn);
         });
@@ -72,6 +83,12 @@ class Game {
         this.btnCoin.addEventListener('click', () => {
             this.addCredit(CONFIG.coinValue);
         });
+        
+        if(this.btnClear) {
+            this.btnClear.addEventListener('click', () => {
+                this.clearBets();
+            });
+        }
 
         this.btnBetMinus.addEventListener('click', () => {
             if (this.betUnit > 1) {
@@ -103,12 +120,6 @@ class Game {
     placeBet(itemId) {
         if (this.isRunning) return;
         
-        // 检查余额是否足够支付这次增加的押注
-        // 我们采取“先扣款”还是“开始时扣款”？
-        // 传统老虎机是先押注，余额减少，赢了再加回来。
-        // 这里：点击押注时，从余额扣除？或者只记录押注额，开始时检查余额？
-        // 逻辑：每次点击增加 betUnit
-        
         const cost = this.betUnit;
         
         if (this.credit >= cost) {
@@ -118,11 +129,51 @@ class Game {
             this.updateUI();
             this.updateBetButton(itemId);
         } else {
-            // 余额不足，尝试自动投币提示?
-            // 简单闪烁一下余额
             this.elCredit.style.color = 'red';
             setTimeout(() => this.elCredit.style.color = '', 200);
         }
+    }
+
+    decreaseBet(itemId) {
+        if (this.isRunning) return;
+        
+        const currentBet = this.bets[itemId] || 0;
+        if (currentBet > 0) {
+            // 减少金额 = 最小是 betUnit，如果剩余不足 betUnit 则全部退回
+            // 或者：逻辑上是每次减少 betUnit。
+            // 如果 currentBet < betUnit (例如修改了倍率), 则减去 currentBet
+            
+            const decreaseAmount = Math.min(currentBet, this.betUnit);
+            
+            this.credit += decreaseAmount;
+            this.bets[itemId] -= decreaseAmount;
+            this.totalBet -= decreaseAmount;
+            
+            if (this.bets[itemId] <= 0) {
+                delete this.bets[itemId];
+            }
+            
+            this.updateUI();
+            this.updateBetButton(itemId);
+        }
+    }
+    
+    clearBets() {
+        if (this.isRunning) return;
+        if (this.totalBet === 0) return;
+        
+        // 退钱
+        this.credit += this.totalBet;
+        this.totalBet = 0;
+        
+        // 清空所有押注记录
+        const itemsToUpdate = Object.keys(this.bets);
+        this.bets = {};
+        
+        this.updateUI();
+        
+        // 更新受影响的按钮
+        itemsToUpdate.forEach(id => this.updateBetButton(id));
     }
 
     updateBetButton(itemId) {
@@ -148,6 +199,9 @@ class Game {
         this.elCredit.textContent = this.credit;
         this.elTotalBet.textContent = this.totalBet;
         this.btnStart.disabled = this.totalBet === 0 || this.isRunning;
+        if(this.btnClear) {
+            this.btnClear.disabled = this.totalBet === 0 || this.isRunning;
+        }
     }
 
     async startGame() {
@@ -156,15 +210,9 @@ class Game {
         this.marquee.reset();
         
         // 1. 决定结果
-        // 跑马灯结果
-        // 使用加权随机算法
-        // 获取实际布局中的所有格子，随机选一个
-        // 或者预定义概率：先决定中哪个水果，再找那个水果的格子
         const resultIndex = this.calculateMarqueeResult();
         const resultItem = this.marquee.getItemAt(resultIndex);
         
-        // 滚轮结果
-        // 简单随机
         const reelResults = [
             this.getRandomItem().id,
             this.getRandomItem().id,
@@ -172,10 +220,7 @@ class Game {
         ];
         
         // 2. 开始动画
-        // 跑马灯转圈
         const marqueePromise = this.runMarquee(resultIndex);
-        
-        // 滚轮转动
         const reelsPromise = this.reels.spin(reelResults);
         
         await Promise.all([marqueePromise, reelsPromise]);
@@ -185,16 +230,42 @@ class Game {
         
         this.isRunning = false;
         
-        // 清除押注（一轮一清？通常老虎机可以保留押注）
-        // 这里我们设计为保留押注，如果余额足够，方便下一局
-        // 但是我们需要检查余额是否足够保持当前押注
-        if (this.credit < this.totalBet) {
-            // 余额不足维持押注，清空押注或者不让开始
-            // 简单做法：不做处理，下次点击开始时会检查
-            // 为了用户体验，我们不自动清空押注，让用户自己决定是否加钱
-        }
+        // 游戏结束后是否保持押注？
+        // 如果我们保持押注，需要确保余额足够下一次。
+        // 但目前的逻辑是“已押注”的钱已经从 credit 扣除了。
+        // 所以下一次开始不需要再扣除（因为钱已经在桌上了）。
+        // 除非我们采用“每局结束清空”或者“每局开始时扣除”的模式。
+        // 当前模式：点击押注即扣费。所以这里不需要做任何 credit 检查。
+        // 只有当用户想*增加*押注时才检查 credit。
+        // 下一局可以直接点开始（用桌上的筹码玩），或者继续加注。
+        // 等等，传统老虎机每一局是消耗掉押注的。
+        // 如果赢了，钱加回 credit。
+        // 那么桌上的筹码（totalBet）在这一局结束时应该被视为“已消耗”。
+        // 下一局开始前，用户需要重新下注？
+        // 通常老虎机有一个“重复下注”或者保留上次下注的功能。
+        // 这里最简单的逻辑：
+        // 结算完成后，清空桌上的 bets（视觉上清空），totalBet 归零。
+        // 如果要保留“重复下注”，则需要从 credit 里再自动扣除 totalBet。
+        
+        // 目前代码逻辑：
+        // placeBet -> credit 减少, totalBet 增加。
+        // startGame -> 运行。
+        // settle -> 赢的钱加回 credit。
+        
+        // 关键问题：这一局结束后，totalBet 怎么办？
+        // 肯定是没了（输给机器了）。
+        // 所以应该清空 bets。
+        this.resetRound();
         
         this.updateUI();
+    }
+    
+    resetRound() {
+        // 清空押注显示，准备下一局
+        this.totalBet = 0;
+        const itemsToUpdate = Object.keys(this.bets);
+        this.bets = {};
+        itemsToUpdate.forEach(id => this.updateBetButton(id));
     }
     
     getRandomItem() {
@@ -202,10 +273,6 @@ class Game {
     }
 
     calculateMarqueeResult() {
-        // 简单随机选一个格子
-        // 更好的做法：根据赔率控制概率
-        // 比如 totalWeight，random(0, totalWeight)
-        // 这里简化：纯随机
         const count = this.marquee.cells.length;
         const rand = Math.floor(Math.random() * count);
         return rand;
@@ -214,13 +281,12 @@ class Game {
     runMarquee(targetIndex) {
         return new Promise(resolve => {
             let current = 0;
-            let speed = 50; // initial speed ms
-            let rounds = 3; // 至少转几圈
+            let speed = 50; 
+            let rounds = 3; 
             let steps = rounds * this.marquee.cells.length + targetIndex;
             let currentStep = 0;
             
             const step = () => {
-                // 计算当前高亮的格子索引 (0 - 23)
                 const index = current % this.marquee.cells.length;
                 this.marquee.highlight(index);
                 
@@ -228,19 +294,16 @@ class Game {
                 currentStep++;
                 
                 if (currentStep < steps) {
-                    // 速度变化：前段快，后段慢
                     if (steps - currentStep < 10) {
-                        speed += 30; // 减速
+                        speed += 30; 
                     } else if (steps - currentStep < 20) {
                         speed += 10;
                     }
-                    
                     setTimeout(step, speed);
                 } else {
                     resolve();
                 }
             };
-            
             step();
         });
     }
@@ -257,33 +320,19 @@ class Game {
             const win = betAmount * itemConfig.rate;
             winAmount += win;
             msg.push(`选中 ${itemConfig.icon}，赢得 ${win} 金币！`);
-        } else {
-            // msg.push(`结果是 ${itemConfig.icon}，可惜没押中。`);
         }
         
         // 2. 滚轮结算
-        // 检查是否匹配 Jackpot
-        const key = reelResultsIds.map(id => {
-            return CONFIG.items.find(i => i.id === id).icon;
-        }).join('-');
-        
-        // 也可以检查 id 组合
-        // 比如 id 都是一样的
         if (reelResultsIds[0] === reelResultsIds[1] && reelResultsIds[1] === reelResultsIds[2]) {
             const tripletId = reelResultsIds[0];
             const tripletItem = CONFIG.items.find(i => i.id === tripletId);
             
-            // 特殊奖励
-            // 查表或者直接给一个大奖
-            // 简单规则：3个一样的，奖励 50 * betUnit? 还是固定值？
-            // 按照 Config 的 Jackpot
             const iconKey = `${tripletItem.icon}-${tripletItem.icon}-${tripletItem.icon}`;
             if (CONFIG.jackpot[iconKey]) {
                 const jackpotWin = CONFIG.jackpot[iconKey];
                 winAmount += jackpotWin;
                 msg.push(`恭喜！触发大奖 ${iconKey}，额外获得 ${jackpotWin} 金币！`);
             } else {
-                // 普通三连
                 const bonus = 30;
                 winAmount += bonus;
                 msg.push(`不错哦！三连 ${tripletItem.icon}，额外获得 ${bonus} 金币！`);
@@ -292,7 +341,6 @@ class Game {
         
         if (winAmount > 0) {
             this.addCredit(winAmount);
-            // 播放中奖音效
             this.showMessage('恭喜发财', msg.join('<br>'));
         }
     }
@@ -304,5 +352,4 @@ class Game {
     }
 }
 
-// Start Game
 window.game = new Game();
