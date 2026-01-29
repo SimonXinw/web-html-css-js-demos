@@ -8,7 +8,7 @@ export class Marquee {
         this.cells = []; // 存储所有的 DOM 元素
         this.currentIndex = 0;
         this.totalCells = 24; // 8 top + 4 right + 8 bottom + 4 left
-        
+
         this.init();
     }
 
@@ -18,7 +18,7 @@ export class Marquee {
         // Right: 4 cells
         // Bottom: 8 cells (reversed order for visual loop)
         // Left: 4 cells (reversed order)
-        
+
         // 这是一个环形，我们按顺时针顺序填充
         // Top row: 0-7 (Left to Right)
         // Right col: 8-11 (Top to Bottom)
@@ -27,7 +27,7 @@ export class Marquee {
 
         // 生成随机的布局数据，保证每个奖项都有出现，但低倍率的出现多一些
         const layout = this.generateLayout();
-        
+
         this.renderRow(this.containerInfo.top, layout.slice(0, 8));
         this.renderCol(this.containerInfo.right, layout.slice(8, 12));
         // Bottom 需要反向渲染 DOM 才能在 flex-direction: row 中看起来是从右到左（或者我们在 CSS 里处理，或者这里倒序）
@@ -39,7 +39,7 @@ export class Marquee {
         // 顺时针：Top(L->R) -> Right(T->B) -> Bottom(R->L) -> Left(B->T)
         // 所以 Bottom 的 DOM 应该对应索引 19, 18, 17... 12
         this.renderRow(this.containerInfo.bottom, layout.slice(12, 20).reverse());
-        
+
         // Left: 23, 22, 21, 20
         this.renderCol(this.containerInfo.left, layout.slice(20, 24).reverse());
 
@@ -48,7 +48,7 @@ export class Marquee {
         // 我们需要重新查询或者在 render 时记录
         // 简单方法：给每个 cell 加 data-index
     }
-    
+
     generateLayout() {
         // 简单填充：重复 items 直到填满 24 个
         // 确保高倍率的少
@@ -63,7 +63,7 @@ export class Marquee {
         // Grape (30x): 2
         // Bar (50x): 1
         // Seven (100x): 1
-        
+
         const distribution = [
             'apple', 'apple', 'apple', 'apple', 'apple', 'apple',
             'orange', 'orange', 'orange', 'orange', 'orange',
@@ -74,13 +74,13 @@ export class Marquee {
             'bar',
             'seven'
         ];
-        
+
         // 打乱数组
         for (let i = distribution.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [distribution[i], distribution[j]] = [distribution[j], distribution[i]];
         }
-        
+
         return distribution.map(id => this.items.find(item => item.id === id));
     }
 
@@ -116,21 +116,21 @@ export class Marquee {
     reorderCells() {
         // 由于 DOM 插入顺序是 Top(L-R), Right(T-B), Bottom(L-R), Left(T-B)
         // 但我们需要逻辑顺序：Top(0-7), Right(8-11), Bottom(19-12), Left(23-20)
-        
+
         // 目前 DOM 里的顺序：
         // Top: 0-7
         // Right: 8-11
         // Bottom: 19...12 (因为我是 reverse 后 append 的) -> 所以 DOM 里的第1个 Bottom 元素对应逻辑索引 19
         // Left: 23...20 -> DOM 第1个 Left 元素对应逻辑索引 23
-        
+
         // 实际上我需要按逻辑索引访问 cells
         // 我们可以直接从 container 获取 children
-        
+
         const topCells = Array.from(this.containerInfo.top.children);
         const rightCells = Array.from(this.containerInfo.right.children);
         const bottomCells = Array.from(this.containerInfo.bottom.children);
         const leftCells = Array.from(this.containerInfo.left.children);
-        
+
         // 逻辑顺序 0-23
         this.cells = [
             ...topCells,                        // 0-7
@@ -138,17 +138,17 @@ export class Marquee {
             ...bottomCells.reverse(),           // 12-19 (DOM 是 19..12，reverse 回来就是 12..19)
             ...leftCells.reverse()              // 20-23 (DOM 是 23..20, reverse 回来就是 20..23)
         ];
-        
+
         // 验证
         // console.log("Marquee Cells Initialized:", this.cells.length);
     }
-    
+
     highlight(index) {
         // 清除上一个高亮
         if (this.lastActiveIndex !== undefined && this.cells[this.lastActiveIndex]) {
             this.cells[this.lastActiveIndex].classList.remove('active');
         }
-        
+
         // 设置新的高亮
         const cell = this.cells[index];
         if (cell) {
@@ -156,7 +156,7 @@ export class Marquee {
             this.lastActiveIndex = index;
         }
     }
-    
+
     getItemAt(index) {
         const cell = this.cells[index];
         return cell ? cell.dataset.id : null;

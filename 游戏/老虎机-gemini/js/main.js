@@ -1,6 +1,7 @@
 import { CONFIG } from './Config.js';
 import { Marquee } from './Marquee.js';
 import { Reels } from './Reels.js';
+import { Fireworks } from './Fireworks.js';
 
 class Game {
     constructor() {
@@ -39,6 +40,8 @@ class Game {
             document.getElementById('reel-2'),
             document.getElementById('reel-3')
         ], CONFIG.items);
+
+        this.fireworks = new Fireworks();
 
         this.init();
     }
@@ -113,8 +116,21 @@ class Game {
         });
         
         this.modalClose.addEventListener('click', () => {
-            this.modal.classList.remove('visible');
+            this.closeModal();
         });
+        
+        // 点击蒙层关闭弹窗
+        this.modal.addEventListener('click', (e) => {
+            // 如果点击的是 modal 本身（背景），而不是内容区域
+            if (e.target === this.modal) {
+                this.closeModal();
+            }
+        });
+    }
+
+    closeModal() {
+        this.modal.classList.remove('visible');
+        // this.fireworks.stop(); // 烟花已经停止了，不需要再停
     }
 
     placeBet(itemId) {
@@ -139,10 +155,6 @@ class Game {
         
         const currentBet = this.bets[itemId] || 0;
         if (currentBet > 0) {
-            // 减少金额 = 最小是 betUnit，如果剩余不足 betUnit 则全部退回
-            // 或者：逻辑上是每次减少 betUnit。
-            // 如果 currentBet < betUnit (例如修改了倍率), 则减去 currentBet
-            
             const decreaseAmount = Math.min(currentBet, this.betUnit);
             
             this.credit += decreaseAmount;
@@ -230,31 +242,6 @@ class Game {
         
         this.isRunning = false;
         
-        // 游戏结束后是否保持押注？
-        // 如果我们保持押注，需要确保余额足够下一次。
-        // 但目前的逻辑是“已押注”的钱已经从 credit 扣除了。
-        // 所以下一次开始不需要再扣除（因为钱已经在桌上了）。
-        // 除非我们采用“每局结束清空”或者“每局开始时扣除”的模式。
-        // 当前模式：点击押注即扣费。所以这里不需要做任何 credit 检查。
-        // 只有当用户想*增加*押注时才检查 credit。
-        // 下一局可以直接点开始（用桌上的筹码玩），或者继续加注。
-        // 等等，传统老虎机每一局是消耗掉押注的。
-        // 如果赢了，钱加回 credit。
-        // 那么桌上的筹码（totalBet）在这一局结束时应该被视为“已消耗”。
-        // 下一局开始前，用户需要重新下注？
-        // 通常老虎机有一个“重复下注”或者保留上次下注的功能。
-        // 这里最简单的逻辑：
-        // 结算完成后，清空桌上的 bets（视觉上清空），totalBet 归零。
-        // 如果要保留“重复下注”，则需要从 credit 里再自动扣除 totalBet。
-        
-        // 目前代码逻辑：
-        // placeBet -> credit 减少, totalBet 增加。
-        // startGame -> 运行。
-        // settle -> 赢的钱加回 credit。
-        
-        // 关键问题：这一局结束后，totalBet 怎么办？
-        // 肯定是没了（输给机器了）。
-        // 所以应该清空 bets。
         this.resetRound();
         
         this.updateUI();
@@ -311,6 +298,7 @@ class Game {
     settle(marqueeResultId, reelResultsIds) {
         let winAmount = 0;
         let msg = [];
+        let isWin = false;
         
         // 1. 跑马灯结算
         const betAmount = this.bets[marqueeResultId] || 0;
@@ -320,6 +308,7 @@ class Game {
             const win = betAmount * itemConfig.rate;
             winAmount += win;
             msg.push(`选中 ${itemConfig.icon}，赢得 ${win} 金币！`);
+            isWin = true;
         }
         
         // 2. 滚轮结算
@@ -337,11 +326,19 @@ class Game {
                 winAmount += bonus;
                 msg.push(`不错哦！三连 ${tripletItem.icon}，额外获得 ${bonus} 金币！`);
             }
+            isWin = true;
         }
         
         if (winAmount > 0) {
             this.addCredit(winAmount);
-            this.showMessage('恭喜发财', msg.join('<br>'));
+            
+            // 播放烟花
+            this.fireworks.start();
+            
+            // 2秒后直接弹窗（烟花只发射一次，会自动结束）
+            setTimeout(() => {
+                this.showMessage('恭喜发财', msg.join('<br>'));
+            }, 2000);
         }
     }
     

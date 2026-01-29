@@ -362,6 +362,8 @@ body {
     animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     box-shadow: 0 5px 20px rgba(0,0,0,0.5); /* 增加阴影 */
     border: 4px solid var(--primary-color); /* 增加边框 */
+    position: relative;
+    z-index: 102; /* 确保内容在烟花之上 */
 }
 
 .modal-content h2 {
