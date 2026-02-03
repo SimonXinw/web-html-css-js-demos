@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>初级动画 - 光泽扫过效果</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0e1a;
+      --bg-card: #141824;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-cyan: #06b6d4;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --glow-purple: rgba(139, 92, 246, 0.3);
+      --glow-pink: rgba(236, 72, 153, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Outfit", sans-serif;
+      background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f3a 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      overflow-x: hidden;
+    }
+
+    /* 背景装饰 */
+    body::before {
+      content: "";
+      position: fixed;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, var(--glow-purple) 0%, transparent 50%);
+      animation: rotate 30s linear infinite;
+      pointer-events: none;
+      opacity: 0.3;
+      z-index: 0;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 60px;
+      animation: fadeInDown 0.8s ease-out;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .header h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 700;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    .header p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+      margin-bottom: 60px;
+    }
+
+    /* 光泽扫过按钮 */
+    .shine-button {
+      position: relative;
+      padding: 18px 40px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+    }
+
+    .shine-button::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+      );
+      transition: left 0.6s ease;
+    }
+
+    .shine-button:hover::before {
+      left: 100%;
+    }
+
+    .shine-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(139, 92, 246, 0.5);
+    }
+
+    .shine-button:active {
+      transform: translateY(0);
+    }
+
+    /* 自动循环光泽 */
+    .auto-shine {
+      position: relative;
+      padding: 18px 40px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: linear-gradient(135deg, var(--accent-cyan), #3b82f6);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.3);
+    }
+
+    .auto-shine::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        transparent 100%
+      );
+      animation: shineLoop 3s infinite;
+    }
+
+    @keyframes shineLoop {
+      0% { left: -100%; }
+      50% { left: 150%; }
+      100% { left: 150%; }
+    }
+
+    /* 卡片光泽效果 */
+    .shine-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 16px;
+      padding: 32px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .shine-card::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent 30%,
+        rgba(139, 92, 246, 0.1) 50%,
+        transparent 70%
+      );
+      transform: translateX(-100%) translateY(-100%) rotate(45deg);
+      transition: transform 0.8s ease;
+    }
+
+    .shine-card:hover::before {
+      transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+
+    .shine-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(139, 92, 246, 0.5);
+    }
+
+    .shine-card h3 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .shine-card p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* 图片光泽效果 */
+    .shine-image-wrapper {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .shine-image {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .shine-image-wrapper::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.6) 50%,
+        transparent 100%
+      );
+      transform: skewX(-25deg);
+      transition: left 0.7s ease;
+      z-index: 1;
+    }
+
+    .shine-image-wrapper:hover::before {
+      left: 150%;
+    }
+
+    .shine-image-wrapper:hover .shine-image {
+      transform: scale(1.05);
+    }
+
+    /* 文字光泽效果 */
+    .shine-text {
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 700;
+      background: linear-gradient(
+        90deg,
+        var(--accent-purple) 0%,
+        var(--accent-pink) 25%,
+        var(--accent-cyan) 50%,
+        var(--accent-pink) 75%,
+        var(--accent-purple) 100%
+      );
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shineText 3s linear infinite;
+      text-align: center;
+      margin: 40px 0;
+    }
+
+    @keyframes shineText {
+      to {
+        background-position: 200% center;
+      }
+    }
+
+    /* 示例网格 */
+    .examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      animation: fadeInUp 1s ease-out 0.3s backwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .example-item {
+      background: var(--bg-card);
+      border: 1px solid rgba(139, 92, 246, 0.15);
+      border-radius: 16px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .example-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-align: center;
+    }
+
+    /* 响应式 */
+    @media (max-width: 768px) {
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .examples {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 36px;
+      }
+    }
+
+    /* 代码展示 */
+    .code-section {
+      background: var(--bg-card);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 16px;
+      padding: 32px;
+      margin-top: 40px;
+      animation: fadeInUp 1.2s ease-out 0.5s backwards;
+    }
+
+    .code-section h2 {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+    }
+
+    .code-block {
+      background: #0a0e1a;
+      border-radius: 12px;
+      padding: 24px;
+      overflow-x: auto;
+      font-family: "Fira Code", "Consolas", monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #94a3b8;
+    }
+
+    .code-block code {
+      color: #e2e8f0;
+    }
+
+    .code-keyword {
+      color: var(--accent-purple);
+    }
+
+    .code-property {
+      color: var(--accent-cyan);
+    }
+
+    .code-value {
+      color: var(--accent-pink);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>光泽扫过效果</h1>
+      <p>Shine Sweep Animation - 初级动画技术</p>
+    </header>
+
+    <div class="shine-text">流光溢彩</div>
+
+    <div class="examples">
+      <div class="example-item">
+        <h3 class="example-title">悬停光泽按钮</h3>
+        <button class="shine-button">鼠标悬停试试</button>
+      </div>
+
+      <div class="example-item">
+        <h3 class="example-title">自动循环光泽</h3>
+        <button class="auto-shine">自动循环动画</button>
+      </div>
+
+      <div class="example-item">
+        <h3 class="example-title">卡片光泽效果</h3>
+        <div class="shine-card">
+          <h3>精美卡片</h3>
+          <p>鼠标悬停查看对角线光泽扫过效果，营造高级质感。</p>
+        </div>
+      </div>
+
+      <div class="example-item">
+        <h3 class="example-title">图片光泽效果</h3>
+        <div class="shine-image-wrapper">
+          <img 
+            src="https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=600&h=400&fit=crop" 
+            alt="示例图片" 
+            class="shine-image"
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="code-section">
+      <h2>核心代码实现</h2>
+      <div class="code-block">
+<code><span class="code-comment">/* 基础光泽扫过效果 */</span>
+<span class="code-keyword">.shine-button</span> {
+  <span class="code-property">position</span>: <span class="code-value">relative</span>;
+  <span class="code-property">overflow</span>: <span class="code-value">hidden</span>;
+}
+
+<span class="code-keyword">.shine-button::before</span> {
+  <span class="code-property">content</span>: <span class="code-value">""</span>;
+  <span class="code-property">position</span>: <span class="code-value">absolute</span>;
+  <span class="code-property">top</span>: <span class="code-value">0</span>;
+  <span class="code-property">left</span>: <span class="code-value">-100%</span>;
+  <span class="code-property">width</span>: <span class="code-value">100%</span>;
+  <span class="code-property">height</span>: <span class="code-value">100%</span>;
+  <span class="code-property">background</span>: <span class="code-value">linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  )</span>;
+  <span class="code-property">transition</span>: <span class="code-value">left 0.6s ease</span>;
+}
+
+<span class="code-keyword">.shine-button:hover::before</span> {
+  <span class="code-property">left</span>: <span class="code-value">100%</span>;
+}
+
+<span class="code-comment">/* 自动循环光泽 */</span>
+<span class="code-keyword">@keyframes</span> <span class="code-value">shineLoop</span> {
+  <span class="code-keyword">0%</span> { <span class="code-property">left</span>: <span class="code-value">-100%</span>; }
+  <span class="code-keyword">50%</span> { <span class="code-property">left</span>: <span class="code-value">150%</span>; }
+  <span class="code-keyword">100%</span> { <span class="code-property">left</span>: <span class="code-value">150%</span>; }
+}
+
+<span class="code-keyword">.auto-shine::before</span> {
+  <span class="code-property">animation</span>: <span class="code-value">shineLoop 3s infinite</span>;
+}</code>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 添加页面加载动画
+    document.addEventListener("DOMContentLoaded", () => {
+      const elements = document.querySelectorAll(".example-item");
+      
+      elements.forEach((element, index) => {
+        element.style.animationDelay = `${0.1 * index}s`;
+      });
+
+      // 添加点击反馈
+      document.querySelectorAll("button").forEach(button => {
+        button.addEventListener("click", (e) => {
+          const ripple = document.createElement("span");
+          const rect = button.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top - size / 2;
+
+          ripple.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            left: ${x}px;
+            top: ${y}px;
+            transform: scale(0);
+            animation: rippleEffect 0.6s ease-out;
+            pointer-events: none;
+          `;
+
+          button.appendChild(ripple);
+
+          setTimeout(() => ripple.remove(), 600);
+        });
+      });
+
+      // 添加波纹动画
+      const style = document.createElement("style");
+      style.textContent = `
+        @keyframes rippleEffect {
+          to {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    });
+  </script>
+</body>
+</html>
