@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJI Style Exploded View Scroll</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: sans-serif;
+            overflow-x: hidden;
+        }
+
+        .scroll-height {
+            height: 400vh; /* 提供滚动距离 */
+        }
+
+        .sticky-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px; /* 3D 透视 */
+            overflow: hidden;
+        }
+
+        .drone-assembly {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            transform-style: preserve-3d;
+            transform: rotateX(60deg) rotateZ(45deg); /* 初始视角 */
+            transition: transform 0.1s linear;
+        }
+
+        /* 每一层组件 */
+        .layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid rgba(255,255,255,0.5);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            backface-visibility: visible;
+            transition: transform 0.1s linear, opacity 0.3s;
+        }
+
+        /* 模拟不同层 */
+        .layer-top {
+            background: rgba(0, 150, 255, 0.2);
+            z-index: 5;
+            color: #00aaff;
+        }
+
+        .layer-mid-1 {
+            background: rgba(0, 255, 150, 0.2);
+            z-index: 4;
+            color: #00ffaa;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+        }
+
+        .layer-mid-2 {
+            background: rgba(255, 200, 0, 0.2);
+            z-index: 3;
+            color: #ffcc00;
+            border-radius: 50%; /* 模拟圆形组件 */
+            width: 60%;
+            height: 60%;
+            top: 20%;
+            left: 20%;
+        }
+
+        .layer-bottom {
+            background: rgba(255, 50, 50, 0.2);
+            z-index: 2;
+            color: #ff3333;
+        }
+        
+        .axis-line {
+            position: absolute;
+            width: 2px;
+            height: 600px;
+            background: rgba(255,255,255,0.2);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotateX(90deg);
+            z-index: 1;
+        }
+
+        .text-overlay {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+        
+        .text-overlay.active {
+            opacity: 1;
+        }
+
+        .progress-indicator {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 200px;
+            width: 4px;
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            background: #fff;
+            height: 0%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="scroll-height"></div>
+
+    <div class="sticky-container">
+        <div class="drone-assembly" id="assembly">
+            <div class="axis-line"></div>
+            <div class="layer layer-bottom">底壳架构</div>
+            <div class="layer layer-mid-2">核心电机</div>
+            <div class="layer layer-mid-1">飞控主板</div>
+            <div class="layer layer-top">上盖护罩</div>
+        </div>
+        
+        <div class="text-overlay" id="text1">精密结构设计</div>
+        <div class="text-overlay" id="text2">强劲动力系统</div>
+        <div class="text-overlay" id="text3">智能飞行控制</div>
+    </div>
+
+    <div class="progress-indicator">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <script>
+        const assembly = document.getElementById('assembly');
+        const layers = document.querySelectorAll('.layer');
+        const text1 = document.getElementById('text1');
+        const text2 = document.getElementById('text2');
+        const text3 = document.getElementById('text3');
+        const progressBar = document.getElementById('progressBar');
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.body.scrollHeight - window.innerHeight;
+            const scrollPercent = scrollTop / docHeight;
+
+            // 进度条
+            progressBar.style.height = `${scrollPercent * 100}%`;
+
+            // 1. 旋转视角：随滚动稍微改变角度，增加立体感
+            const rotateX = 60 - (scrollPercent * 20); // 60 -> 40
+            const rotateZ = 45 + (scrollPercent * 90); // 45 -> 135
+            assembly.style.transform = `rotateX(${rotateX}deg) rotateZ(${rotateZ}deg)`;
+
+            // 2. 爆炸拆解 (Explosion)：随滚动改变 translateZ
+            // 越往上的层，飞得越高
+            
+            // 基础间距
+            const baseGap = 50; 
+            const expansionFactor = 300 * scrollPercent; // 最大拉开 300px
+
+            layers[3].style.transform = `translateZ(${baseGap * 1.5 + expansionFactor * 1.5}px)`; // Top
+            layers[2].style.transform = `translateZ(${baseGap * 0.5 + expansionFactor * 0.8}px)`; // Mid 1
+            layers[1].style.transform = `translateZ(${-baseGap * 0.5 - expansionFactor * 0.2}px)`; // Mid 2
+            layers[0].style.transform = `translateZ(${-baseGap * 1.5 - expansionFactor * 1.0}px)`; // Bottom
+
+            // 3. 文字控制
+            text1.classList.remove('active');
+            text2.classList.remove('active');
+            text3.classList.remove('active');
+
+            if (scrollPercent < 0.2) {
+                text1.classList.add('active');
+            } else if (scrollPercent >= 0.2 && scrollPercent < 0.6) {
+                text2.classList.add('active');
+            } else {
+                text3.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>
