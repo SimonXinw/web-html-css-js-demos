@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apple Style Typography Scaling</title>
+    <title>Apple Style Typography Scaling (详细注释版)</title>
     <style>
         body {
             margin: 0;
             padding: 0;
             background-color: #000;
             color: #fff;
+            /* Apple 常用字体栈 */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             overflow-x: hidden;
         }
@@ -23,29 +24,46 @@
             opacity: 0.5;
         }
 
+        /* 
+         * 关键点 1: 滚动容器的高度设置
+         * 为了让 sticky 元素停留足够长的时间以完成动画，
+         * 我们需要给容器一个比视口高得多的高度 (如 300vh)。
+         * 这样用户在滚动这 300vh 的过程中，sticky 元素会一直固定在屏幕上。
+         */
         .scroll-container {
-            height: 300vh; /* 滚动距离 */
+            height: 300vh; 
             position: relative;
         }
 
+        /* 
+         * 关键点 2: Sticky 定位
+         * 配合 top: 0，使元素在父容器滚动期间固定在视口顶部。
+         */
         .sticky-wrapper {
             position: sticky;
             top: 0;
             height: 100vh;
-            overflow: hidden;
+            overflow: hidden; /* 防止放大后的文字撑开页面宽度 */
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
+        /*
+         * 关键点 3: 性能优化 (will-change)
+         * 告诉浏览器该元素即将发生 transform 变化，
+         * 浏览器会提前将其提升到独立的合成层 (Compositing Layer)，
+         * 避免主线程重绘，极大提升动画流畅度。
+         */
         .zoom-text {
             font-size: 10rem;
             font-weight: 800;
             text-align: center;
             white-space: nowrap;
-            /* 初始状态可能非常大 */
             transform-origin: center center;
-            will-change: transform, opacity;
+            will-change: transform, opacity; 
+            
+            /* 文字渐变填充 */
             background: linear-gradient(135deg, #fff 0%, #888 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -62,23 +80,15 @@
             text-align: center;
         }
 
-        h2 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        
-        p {
-            font-size: 1.2rem;
-            color: #ccc;
-            max-width: 600px;
-            line-height: 1.6;
-        }
+        h2 { font-size: 3rem; margin-bottom: 1rem; }
+        p { font-size: 1.2rem; color: #ccc; max-width: 600px; line-height: 1.6; }
     </style>
 </head>
 <body>
 
-    <div class="spacer">向下滚动查看效果</div>
+    <div class="spacer">向下滚动查看 Apple 风格排版缩放</div>
 
+    <!-- 动画容器 -->
     <div class="scroll-container" id="zoomContainer">
         <div class="sticky-wrapper">
             <div class="zoom-text" id="zoomText">MacBook Pro</div>
@@ -92,70 +102,117 @@
 
     <div class="spacer">继续探索...</div>
 
+    <!-- 
+    ========================================
+    前端动画开发工程师 - 技术问答 (Q&A)
+    ========================================
+
+    Q1: 为什么要使用 position: sticky 而不是 fixed？
+    A1: 
+    - Sticky 是"粘性定位"，它是 relative 和 fixed 的结合体。
+    - 使用 sticky 可以让元素在父容器 (scroll-container) 视口范围内固定，
+      当父容器滚出视口时，sticky 元素会自动跟随滚走，无需 JS 手动计算何时移除 fixed 定位。
+    - 这大大简化了"滚动一段距离后取消固定"的逻辑代码。
+
+    Q2: 为什么动画中使用 transform: scale() 而不是修改 font-size？
+    A2: 
+    - 修改 font-size 会触发浏览器的 Layout (重排/回流)，计算开销巨大，帧率极低。
+    - 修改 transform (scale) 只会触发 Composite (合成)，不涉及 Layout 和 Paint (重绘)，
+      可以利用 GPU 加速，达到 60fps 甚至 120fps 的流畅度。
+
+    Q3: 如何确保滚动动画在不同屏幕高度下体验一致？
+    A3: 
+    - 计算进度时，不应使用绝对的像素值 (如 scrollY > 500)，而应使用比例 (progress = 0~1)。
+    - progress = (当前滚动值 - 容器起始位置) / (容器高度 - 视口高度)。
+    - 这样无论屏幕是 1080p 还是 4k，动画都会在容器滚动的相同百分比处完成。
+
+    Q4: 这里 requestAnimationFrame (rAF) 的作用是什么？
+    A4:
+    - 即使 scroll 事件触发频率很高，rAF 也能保证 update() 函数只在屏幕每次刷新时执行一次 (通常 60Hz)。
+    - 它避免了在同一帧内多次修改 DOM 样式，节省 CPU 资源。
+    - 配合 lerp (线性插值) 可以实现"平滑阻尼"效果，即便鼠标滚轮滚动得很生硬，动画也能丝滑过渡。
+    -->
+
     <script>
         const container = document.getElementById('zoomContainer');
         const text = document.getElementById('zoomText');
 
-        // 缓动函数，让动画更自然
+        // 目标缩放值（由滚动位置决定）
+        let targetScale = 20; 
+        // 当前缩放值（用于插值动画）
+        let currentScale = 20;
+
+        /**
+         * 线性插值函数 (Linear Interpolation)
+         * start: 当前值
+         * end: 目标值
+         * factor: 缓动系数 (0~1)，越小越平滑
+         */
         function lerp(start, end, factor) {
             return start + (end - start) * factor;
         }
 
-        let currentScale = 20; // 初始放大倍数
-        let targetScale = 20;
-
         function handleScroll() {
-            const containerRect = container.getBoundingClientRect();
+            // 获取容器相对于视口的位置
+            // offsetTop: 容器顶部距离文档顶部的距离
+            const startY = container.offsetTop;
             const windowHeight = window.innerHeight;
             
-            // 计算滚动进度 (0 到 1)
-            // 当容器顶部到达视口顶部时开始，到底部离开视口时结束
-            // 这里我们希望在 sticky 期间完成缩放
-            
-            // 实际上，因为是 sticky，我们需要计算的是 sticky 容器在整个 scroll-container 中的进度
-            // scroll-container 高度是 300vh，sticky 是 100vh
-            // 有效滚动距离是 200vh
-            
-            const startY = container.offsetTop;
+            // endY: 容器底部刚好离开视口的位置
+            // 有效滚动距离 = 容器高度 - 视口高度 (sticky 元素停留的时间)
             const endY = startY + container.offsetHeight - windowHeight;
             const scrollY = window.scrollY;
 
+            // 计算进度 0.0 ~ 1.0
             let progress = 0;
             
             if (scrollY < startY) {
-                progress = 0;
+                progress = 0; // 还没滚到
             } else if (scrollY > endY) {
-                progress = 1;
+                progress = 1; // 已经滚过
             } else {
                 progress = (scrollY - startY) / (endY - startY);
             }
 
-            // 缩放范围：从 20 倍缩小到 1 倍
-            // 也可以做透明度变化
+            // 核心逻辑：根据进度计算缩放倍数
+            // 进度 0 (开始) -> Scale 20 (巨大)
+            // 进度 1 (结束) -> Scale 1 (正常)
+            // 公式: 初始值 - (变化量 * 进度)
             targetScale = 20 - (19 * progress); 
             
-            // 简单的边界处理
+            // 边界保护
             if (targetScale < 1) targetScale = 1;
         }
 
-        // 使用 requestAnimationFrame 优化渲染
+        // 动画循环
         function update() {
-            // 简单的插值平滑，或者直接赋值
-            // currentScale = lerp(currentScale, targetScale, 0.1); 
-            // 直接赋值响应更灵敏，符合滚动直觉，除非是阻尼滚动
-            currentScale = targetScale;
+            // 使用 lerp 实现平滑跟随 (可选)
+            // 如果希望完全跟手 (响应快)，可以直接 currentScale = targetScale
+            // 这里使用 0.1 的系数，产生轻微的阻尼感，不仅显得高级，还能掩盖 JS 计算的抖动
+            currentScale = lerp(currentScale, targetScale, 0.1); 
 
+            // 精度优化：当差异极小时直接赋值，停止不必要的计算
+            if (Math.abs(targetScale - currentScale) < 0.01) {
+                currentScale = targetScale;
+            }
+
+            // 应用变换
             text.style.transform = `scale(${currentScale})`;
             
-            // 可选：透明度配合，只有在接近正常大小时才完全不透明
-            // text.style.opacity = Math.min(1, 1.5 - (currentScale / 20)); 
-
+            // 递归调用下一帧
             requestAnimationFrame(update);
         }
 
-        window.addEventListener('scroll', handleScroll);
-        update(); // 启动循环
-        handleScroll(); // 初始化
+        // 监听滚动
+        // { passive: true } 告诉浏览器该监听器不会调用 preventDefault
+        // 允许浏览器在滚动线程中继续处理滚动，避免滚动卡顿
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        
+        // 启动动画循环
+        update();
+        
+        // 初始化一次位置
+        handleScroll();
     </script>
 </body>
 </html>

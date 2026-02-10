@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insta360 Style Comparison Slider</title>
+    <title>Insta360 Style Comparison Slider (详细注释版)</title>
     <style>
         body {
             margin: 0;
@@ -16,17 +16,27 @@
             font-family: sans-serif;
         }
 
+        /* 
+         * 容器设计 
+         * 相对定位，作为所有绝对定位子元素的参考坐标系。
+         */
         .container {
             position: relative;
             width: 800px;
             height: 450px;
             border-radius: 12px;
-            overflow: hidden;
+            overflow: hidden; /* 必须隐藏溢出，保证圆角效果 */
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            user-select: none; /* 防止拖拽时选中文字 */
+            user-select: none; /* 禁止选中文本，防止拖拽时出现蓝色高亮 */
+            /* 触摸设备优化 */
+            touch-action: pan-y; /* 允许垂直滚动，禁止水平手势(留给 JS 处理) */
         }
 
-        /* 基础层（底层，右侧图） - 通常放"处理后"的效果 */
+        /* 
+         * 层级 1: 底层图片 (Base)
+         * 这是始终显示的背景图，通常作为"参照组"（如：处理后的、效果好的）。
+         * 它的宽度永远是 100%，被上层覆盖。
+         */
         .image-base {
             position: absolute;
             top: 0;
@@ -37,7 +47,7 @@
             background-size: cover;
         }
         
-        /* 标签 */
+        /* 标签样式 */
         .label {
             position: absolute;
             top: 20px;
@@ -46,50 +56,70 @@
             color: white;
             border-radius: 4px;
             font-size: 14px;
-            pointer-events: none;
+            pointer-events: none; /* 让鼠标事件穿透标签，不影响拖拽 */
             z-index: 10;
         }
         
         .label-after { right: 20px; }
         .label-before { left: 20px; }
 
-        /* 遮罩层（上层，左侧图） - 通常放"处理前"的效果 */
+        /* 
+         * 层级 2: 遮罩层 (Overlay)
+         * 这是"实验组"（如：处理前的、模糊的）。
+         * 关键原理：通过改变它的 width (例如 50%) 来露出下层的图片。
+         * 配合 overflow: hidden，只显示自身宽度内的内容。
+         */
         .image-overlay {
             position: absolute;
             top: 0;
             left: 0;
-            width: 50%; /* 初始位置 */
+            width: 50%; /* 初始位置: 一半 */
             height: 100%;
-            overflow: hidden;
+            overflow: hidden; /* 关键：裁切内容 */
             border-right: 2px solid white; /* 分割线 */
             z-index: 2;
+            will-change: width; /* 优化：提示浏览器 width 会频繁变化 */
         }
 
-        /* 遮罩层里的内容需要反向拉伸以保持位置固定 */
+        /* 
+         * 关键点：反向定位 / 固定内容
+         * 为什么需要在 overlay 里再放一个 inner 容器？
+         * 如果直接把背景设在 overlay 上，当 overlay 变窄时，背景图也会被挤压或只显示左边部分。
+         * 我们希望背景图是"固定"不动的，只是通过窗口看它。
+         * 
+         * 技巧：
+         * inner 宽度必须等于容器总宽度 (800px)，而不是 100% (相对于父级)。
+         * 这样无论 overlay 多窄，inner 里的图片内容始终完整且位置不变。
+         */
         .image-overlay-inner {
             position: absolute;
             top: 0;
             left: 0;
-            width: 800px; /* 必须和容器等宽 */
+            width: 800px; /* 固定宽度，等于父容器总宽 */
             height: 450px;
-            /* 模糊滤镜模拟防抖关闭效果 */
+            
+            /* 这里模拟"防抖关闭"效果：模糊 + 放大 */
             background: url('https://picsum.photos/id/237/800/450') no-repeat center center;
             background-size: cover;
-            filter: blur(4px) contrast(1.2);
-            transform: scale(1.05); /* 稍微放大模拟抖动感 */
+            filter: blur(4px) contrast(1.2); /* CSS 滤镜 */
+            transform: scale(1.05); /* 模拟画面抖动时的裁切 */
         }
 
-        /* 滑块手柄 */
+        /* 
+         * 层级 3: 拖拽手柄 (Handle)
+         * 这是一个 UI 控件，指示用户可以拖动。
+         * 它的 left 值需要和 overlay 的 width 值保持同步。
+         */
         .handle {
             position: absolute;
             top: 50%;
             left: 50%; /* 初始位置 */
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%); /* 居中校正 */
             width: 40px;
             height: 40px;
             background: white;
             border-radius: 50%;
-            cursor: ew-resize;
+            cursor: ew-resize; /* 左右拖动光标 */
             z-index: 3;
             display: flex;
             justify-content: center;
@@ -97,6 +127,7 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
+        /* 绘制手柄上的小箭头 */
         .handle::after {
             content: '';
             width: 0;
@@ -130,6 +161,37 @@
 </head>
 <body>
 
+    <!-- 
+    ========================================
+    前端动画开发工程师 - 技术问答 (Q&A)
+    ========================================
+
+    Q1: 除了使用两个 Div 叠加，还有什么 CSS 属性可以实现类似效果？
+    A1: 
+    - 使用 CSS `clip-path: polygon(...)` 也可以实现裁切。
+    - 使用 CSS `mask-image` (遮罩) 配合线性渐变。
+    - 但使用 `width` + `overflow: hidden` 是兼容性最好、性能开销最小（Layout 变化简单）的方案。
+
+    Q2: 为什么这里要用 mouseup 绑定在 window 上，而不是绑定在 handle 上？
+    A2: 
+    - 防止"脱把"。当用户拖动速度过快，鼠标可能会移出 handle 的范围。
+    - 如果 mouseup 绑在 handle 上，一旦鼠标移出，松开按键时就不会触发 mouseup，
+      导致 isDragging 状态无法重置，鼠标回到 handle 上时会继续粘连。
+    - 绑定在 window 确保无论鼠标在哪里松开，都能停止拖拽。
+
+    Q3: 移动端适配需要注意什么？
+    A3: 
+    - 移动端没有 mouse 事件，只有 touch 事件 (touchstart, touchmove, touchend)。
+    - 需要同时监听这两套事件，或者使用 Pointer Events (pointerdown, pointermove, pointerup) 来统一处理。
+    - 需要 event.preventDefault() 防止拖拽时触发浏览器的页面滚动或后退手势。
+
+    Q4: 如何优化拖拽时的性能？
+    A4: 
+    - 避免在 mousemove 中进行复杂的 DOM 查询或重排操作。
+    - 可以使用 requestAnimationFrame 对 updateSlider 进行节流 (Throttle)。
+    - 这里通过 `will-change: width` 提前告知浏览器优化渲染层。
+    -->
+
     <div class="container" id="compareContainer">
         <!-- 底层 (FlowState Stabilization ON) -->
         <div class="image-base">
@@ -156,35 +218,72 @@
         
         let isDragging = false;
 
+        /**
+         * 核心更新函数
+         * @param {number} x - 鼠标或触摸点的全局 X 坐标
+         */
         function updateSlider(x) {
+            // 获取容器的实时位置信息
             const containerRect = container.getBoundingClientRect();
-            let percentage = ((x - containerRect.left) / containerRect.width) * 100;
+            
+            // 计算鼠标在容器内的相对位置 (px)
+            // pageX 或 clientX 减去 容器左边距
+            let relativeX = x - containerRect.left;
+            
+            // 计算百分比
+            let percentage = (relativeX / containerRect.width) * 100;
 
-            // 限制范围
+            // 边界限制 (Clamping)
+            // 防止滑块移出容器
             if (percentage < 0) percentage = 0;
             if (percentage > 100) percentage = 100;
 
+            // 赋值：同步更新 遮罩层宽度 和 手柄位置
             overlay.style.width = percentage + '%';
             handle.style.left = percentage + '%';
         }
 
-        // 鼠标事件
-        handle.addEventListener('mousedown', () => isDragging = true);
-        window.addEventListener('mouseup', () => isDragging = false);
+        // ============================
+        // 鼠标事件 (PC 端)
+        // ============================
+        handle.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            e.preventDefault(); // 防止选中文本
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
         window.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
+            // requestAnimationFrame 优化可选，这里逻辑简单直接运行即可
             updateSlider(e.clientX);
         });
 
-        // 触摸事件 (移动端适配)
-        handle.addEventListener('touchstart', () => isDragging = true);
-        window.addEventListener('touchend', () => isDragging = false);
+        // ============================
+        // 触摸事件 (移动端)
+        // ============================
+        // touchstart 增加 {passive: false} 以便能调用 preventDefault
+        handle.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            // e.preventDefault(); 
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
         window.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
+            // e.touches[0] 获取第一个手指的坐标
             updateSlider(e.touches[0].clientX);
-        });
+            // 这里可以阻止默认滚动，提升体验
+            // if (e.cancelable) e.preventDefault(); 
+        }, { passive: false });
         
         // 点击容器任意位置跳转
+        // 提升用户体验，不需要必须点中滑块才能移动
         container.addEventListener('click', (e) => {
             updateSlider(e.clientX);
         });

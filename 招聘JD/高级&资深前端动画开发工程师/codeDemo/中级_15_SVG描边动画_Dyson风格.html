@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dyson Style SVG Path Animation</title>
+    <title>Dyson Style SVG Path Animation (详细注释版)</title>
     <style>
         body {
             margin: 0;
@@ -36,17 +36,20 @@
         .svg-container {
             width: 600px;
             height: 400px;
-            /* border: 1px solid #ddd; */
+            /* border: 1px solid #ddd; */ /* 调试用 */
         }
 
         /* SVG 样式 */
         svg {
             width: 100%;
             height: 100%;
-            overflow: visible;
+            overflow: visible; /* 允许粒子或线条稍微超出画板 */
         }
 
-        /* 静态轮廓 - 浅灰色 */
+        /* 
+         * 静态背景路径 (Track)
+         * 这是一个灰色的底色路径，一直显示，表示气流的通道。
+         */
         .path-bg {
             fill: none;
             stroke: #e0e0e0;
@@ -55,28 +58,65 @@
             stroke-linejoin: round;
         }
 
-        /* 动态描边 - 品牌色 (如 Dyson 的品红或紫色/蓝色) */
+        /* 
+         * 动态动画路径 (Runner)
+         * 这是覆盖在背景路径上方的彩色线条。
+         * 核心原理：stroke-dasharray + stroke-dashoffset
+         * 初始状态：dashoffset 等于路径长度（完全隐藏）。
+         * 动画状态：dashoffset 变为 0（完全显示）。
+         */
         .path-anim {
             fill: none;
-            stroke: #F20C98; /* Dyson Pink/Purpleish */
+            stroke: #F20C98; /* Dyson 标志性的品红色 */
             stroke-width: 2;
             stroke-linecap: round;
             stroke-linejoin: round;
-            /* 关键：dasharray 将由 JS 设置 */
+            
+            /* 
+             * 初始值占位
+             * 实际值必须在 JS 中获取 path.getTotalLength() 后设置，
+             * 否则无法精确控制动画进度。
+             */
             stroke-dasharray: 0 0; 
             stroke-dashoffset: 0;
-            transition: stroke-dashoffset 1.5s ease-out; /* CSS transition */
-        }
-
-        /* 气流粒子 */
-        .airflow-particle {
-            fill: #0077FF;
-            opacity: 0;
+            
+            /* 使用 CSS transition 实现平滑过渡 */
+            transition: stroke-dashoffset 1.5s ease-out; 
         }
 
     </style>
 </head>
 <body>
+
+    <!-- 
+    ========================================
+    前端动画开发工程师 - 技术问答 (Q&A)
+    ========================================
+
+    Q1: 解释一下 stroke-dasharray 和 stroke-dashoffset 的工作原理？
+    A1: 
+    - `stroke-dasharray`: 定义虚线的模式。如果设为 pathLength，则虚线的"实线段"长度等于整条路径长，"空白段"也等于路径长。
+    - `stroke-dashoffset`: 定义虚线的起始偏移量。
+    - 当 offset = pathLength 时，实线段刚好被推到可视范围之外，用户只能看到后面的空白段（即路径不可见）。
+    - 当 offset 减小到 0 时，实线段被拉回可视范围，就像线条被"画"出来一样。
+
+    Q2: 为什么要在 JS 中获取 getTotalLength()？
+    A2: 
+    - 每一条 SVG Path 的长度是不可预测的，取决于复杂的贝塞尔曲线计算。
+    - CSS 目前无法直接获取路径长度（虽然有 `path-length` 属性，但兼容性和使用场景有限）。
+    - 所以必须用 JS 动态计算，并赋值给 style。
+
+    Q3: IntersectionObserver 在这里的作用是什么？
+    A3: 
+    - 用于性能优化和交互体验。
+    - 只有当 SVG 元素真正进入视口（用户看得到）时，才开始播放动画。
+    - 避免用户还没滚到这里，动画就已经在后台默默放完了。
+
+    Q4: SVG 动画相比 Canvas 动画有什么优缺点？
+    A4: 
+    - 优点：SVG 是矢量 DOM 节点，分辨率独立（高清屏不模糊），CSS控制方便，适合线条、图标、UI 动画。
+    - 缺点：如果节点数量成千上万（如粒子系统），SVG 会导致 DOM 操作瓶颈，性能急剧下降。此时应选 Canvas / WebGL。
+    -->
 
     <div class="section">
         <p>向下滚动查看气流路径演示</p>
@@ -86,21 +126,24 @@
         <div class="title">Air Multiplier™ Technology</div>
         <div class="svg-container">
             <svg viewBox="0 0 600 400">
-                <!-- 模拟一个风扇/气流的抽象路径 -->
-                <!-- 底部进气 -> 环形加速 -> 向前喷射 -->
-                
-                <!-- 路径定义 -->
+                <!-- 
+                 D 属性定义：
+                 M: Move to (起始点)
+                 L: Line to (直线)
+                 C: Cubic Bezier (三次贝塞尔曲线)
+                -->
                 <defs>
+                    <!-- 定义路径 ID 供后续引用 (如果需要) -->
                     <path id="airflowPath" d="M 300 380 L 300 250 C 300 250 200 250 200 150 C 200 50 400 50 400 150 C 400 250 300 250 300 250 L 300 200" />
                 </defs>
 
-                <!-- 背景轨迹 -->
+                <!-- 背景层 -->
                 <path class="path-bg" d="M 300 380 L 300 250 C 300 250 200 250 200 150 C 200 50 400 50 400 150 C 400 250 300 250 300 250 L 300 200" />
                 
-                <!-- 动画轨迹 -->
+                <!-- 动画层 -->
                 <path id="animPath" class="path-anim" d="M 300 380 L 300 250 C 300 250 200 250 200 150 C 200 50 400 50 400 150 C 400 250 300 250 300 250 L 300 200" />
                 
-                <!-- 箭头装饰 (可选) -->
+                <!-- 装饰点 -->
                 <circle cx="300" cy="380" r="4" fill="#ccc" />
             </svg>
         </div>
@@ -114,50 +157,54 @@
         const path = document.getElementById('animPath');
         const section = document.getElementById('animSection');
         
-        // 获取路径总长度
+        // 核心步骤 1: 获取路径总长度
         const length = path.getTotalLength();
+        console.log('Path Length:', length); // 调试用
         
-        // 初始化：设置 dasharray 为长度，offset 也为长度（隐藏）
+        // 核心步骤 2: 初始化样式
+        // 将虚线的"实线"和"空白"都设为全长
         path.style.strokeDasharray = length;
+        // 将虚线偏移全长，使其不可见
         path.style.strokeDashoffset = length;
 
-        // 使用 Intersection Observer 监听进入视口
+        // 核心步骤 3: 监听可视区域
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    // 进入视口：offset 归零（显示路径）
-                    // 稍微延迟一点，让用户站定再播放
+                    // 进入视口：开始动画
+                    console.log('Animation Start');
+                    // 稍微延迟 200ms，让用户视线聚焦
                     setTimeout(() => {
+                        // 将 offset 归零，线条"生长"出来
                         path.style.strokeDashoffset = '0';
                     }, 200);
                 } else {
-                    // 离开视口：重置（可选，方便重复观看）
+                    // 离开视口：重置状态
+                    // 这样用户往回滚再次看到时，动画能重新播放
                     path.style.strokeDashoffset = length;
                 }
             });
         }, {
-            threshold: 0.5 // 元素显示 50% 时触发
+            threshold: 0.5 // 只有当元素 50% 进入屏幕时才触发
         });
 
         observer.observe(section);
         
-        // 可选：滚动驱动 (Scroll-driven)
-        // 如果想让线条跟随滚动条生长，可以用下面的逻辑替换上面的 Observer
+        // 扩展思考：
+        // 如果想让动画完全跟随滚动条进度（Scrollytelling），逻辑如下：
         /*
         window.addEventListener('scroll', () => {
             const rect = section.getBoundingClientRect();
             const windowHeight = window.innerHeight;
             
-            // 计算 section 在视口中的进度
-            // start: rect.top = windowHeight
-            // end: rect.bottom = 0
-            
+            // 计算 section 在视口中的进度 (0 ~ 1)
             let progress = 1 - (rect.top / (windowHeight - 200)); 
             
-            // 限制 0-1
+            // 限制范围
             if (progress < 0) progress = 0;
             if (progress > 1) progress = 1;
             
+            // 直接将进度映射到 offset
             path.style.strokeDashoffset = length * (1 - progress);
         });
         */

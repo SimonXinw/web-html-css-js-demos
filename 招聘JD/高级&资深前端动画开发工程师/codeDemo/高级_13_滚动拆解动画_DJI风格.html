@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DJI Style Exploded View Scroll</title>
+    <title>DJI Style Exploded View Scroll (详细注释版)</title>
     <style>
         body {
             margin: 0;
@@ -14,10 +14,20 @@
             overflow-x: hidden;
         }
 
+        /* 
+         * 滚动轨道
+         * 提供足够的页面高度供用户滚动，以驱动动画播放。
+         */
         .scroll-height {
-            height: 400vh; /* 提供滚动距离 */
+            height: 400vh; 
         }
 
+        /* 
+         * 舞台容器 (Stage)
+         * position: fixed 确保画面始终在视口中心。
+         * perspective: 1000px 开启 3D 透视，这是产生近大远小效果的关键。
+         * perspective-origin 默认是 center center。
+         */
         .sticky-container {
             position: fixed;
             top: 0;
@@ -27,17 +37,22 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective: 1000px; /* 3D 透视 */
+            perspective: 1000px; 
             overflow: hidden;
         }
 
+        /* 
+         * 3D 物体容器
+         * transform-style: preserve-3d 是核心属性！
+         * 如果没有它，子元素会被扁平化在父元素的平面上，无法在 Z 轴上产生真实的遮挡和空间关系。
+         */
         .drone-assembly {
             position: relative;
             width: 300px;
             height: 300px;
-            transform-style: preserve-3d;
-            transform: rotateX(60deg) rotateZ(45deg); /* 初始视角 */
-            transition: transform 0.1s linear;
+            transform-style: preserve-3d; /* 关键：保留 3D 空间 */
+            transform: rotateX(60deg) rotateZ(45deg); /* 初始视角：俯视 + 旋转 */
+            transition: transform 0.1s linear; /* 平滑过渡 */
         }
 
         /* 每一层组件 */
@@ -54,15 +69,27 @@
             font-weight: bold;
             border: 2px solid rgba(255,255,255,0.5);
             box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            
+            /* 
+             * 背面可见性
+             * 当元素翻转过去后是否可见。
+             * 在这个 Demo 中主要是正反面都会看到。
+             */
             backface-visibility: visible;
+            
+            /* 独立的层动画 */
             transition: transform 0.1s linear, opacity 0.3s;
         }
 
-        /* 模拟不同层 */
+        /* 
+         * 模拟不同层级的无人机组件 
+         * 使用 translateZ 可以在不进行 JS 控制时的初始状态就拉开一点间距，防止 Z-fighting (闪烁)
+         */
         .layer-top {
             background: rgba(0, 150, 255, 0.2);
             z-index: 5;
             color: #00aaff;
+            /* transform: translateZ(20px); */
         }
 
         .layer-mid-1 {
@@ -79,7 +106,7 @@
             background: rgba(255, 200, 0, 0.2);
             z-index: 3;
             color: #ffcc00;
-            border-radius: 50%; /* 模拟圆形组件 */
+            border-radius: 50%; /* 模拟圆形电机/风扇 */
             width: 60%;
             height: 60%;
             top: 20%;
@@ -92,6 +119,7 @@
             color: #ff3333;
         }
         
+        /* 虚拟轴线，辅助视觉 */
         .axis-line {
             position: absolute;
             width: 2px;
@@ -99,10 +127,12 @@
             background: rgba(255,255,255,0.2);
             top: 50%;
             left: 50%;
+            /* 将线条立起来穿过 Z 轴 */
             transform: translate(-50%, -50%) rotateX(90deg);
             z-index: 1;
         }
 
+        /* 说明文字 */
         .text-overlay {
             position: absolute;
             bottom: 50px;
@@ -110,14 +140,19 @@
             width: 100%;
             text-align: center;
             opacity: 0;
-            transition: opacity 0.5s;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
             pointer-events: none;
+            font-size: 24px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
         }
         
         .text-overlay.active {
             opacity: 1;
+            transform: translateY(0);
         }
 
+        /* 右侧进度条 */
         .progress-indicator {
             position: fixed;
             right: 20px;
@@ -126,17 +161,51 @@
             height: 200px;
             width: 4px;
             background: rgba(255,255,255,0.2);
+            border-radius: 2px;
         }
         
         .progress-bar {
             width: 100%;
             background: #fff;
             height: 0%;
+            border-radius: 2px;
         }
 
     </style>
 </head>
 <body>
+
+    <!-- 
+    ========================================
+    前端动画开发工程师 - 技术问答 (Q&A)
+    ========================================
+
+    Q1: preserve-3d 和 perspective 有什么区别？
+    A1: 
+    - `perspective` (透视) 设置在父容器上，定义了观察者眼睛距离屏幕的距离。值越小，透视感越强（近大远小越夸张）。
+    - `transform-style: preserve-3d` 设置在 3D 场景的容器上，决定子元素是否保留其 3D 位置。
+    - 如果不加 preserve-3d，子元素即使有 translateZ，也会被"压平"在父元素的平面上。
+
+    Q2: 为什么这里使用 translateZ 而不是 scale 来模拟远近？
+    A2: 
+    - 使用 `translateZ` 是真实的 3D 空间移动，配合 CSS 的透视属性，浏览器会自动计算正确的近大远小和遮挡关系。
+    - 使用 `scale` 只是 2D 缩放，无法产生正确的视差 (Parallax) 和透视角度变化（尤其是在旋转相机时）。
+    - 在 DJI 这种需要展示精密结构的场景中，真实 3D 坐标是必须的。
+
+    Q3: 这种大量 CSS 变换对性能有何影响？如何优化？
+    A3: 
+    - CSS 3D Transforms (translate3d, rotate3d) 通常由 GPU 处理，性能很好。
+    - 这里的瓶颈通常在于过多的 DOM 元素或过大的纹理（大图片）。
+    - 优化：使用 `will-change: transform` 提示浏览器将层独立；
+    - 如果结构极其复杂（如几千个零件），CSS 3D 可能会卡顿，此时应切换到 WebGL (Three.js)。
+
+    Q4: 如何实现滚动时的"动量"或"平滑"效果？
+    A4: 
+    - 原生 scroll 事件是同步触发的，直接绑定样式可能显得生硬。
+    - 可以引入"虚拟滚动"库 (如 Lenis) 或自己实现 lerp (线性插值) 算法：
+      `currentPos = currentPos + (targetPos - currentPos) * 0.1`
+    - 让动画值滞后于滚动值，产生丝滑的跟随效果。
+    -->
 
     <div class="scroll-height"></div>
 
@@ -166,42 +235,50 @@
         const text3 = document.getElementById('text3');
         const progressBar = document.getElementById('progressBar');
 
+        // 监听滚动事件
         window.addEventListener('scroll', () => {
             const scrollTop = window.scrollY;
+            // 计算文档总可滚动高度
             const docHeight = document.body.scrollHeight - window.innerHeight;
+            // 归一化滚动进度 (0.0 - 1.0)
             const scrollPercent = scrollTop / docHeight;
 
-            // 进度条
+            // 更新进度条
             progressBar.style.height = `${scrollPercent * 100}%`;
 
-            // 1. 旋转视角：随滚动稍微改变角度，增加立体感
-            const rotateX = 60 - (scrollPercent * 20); // 60 -> 40
-            const rotateZ = 45 + (scrollPercent * 90); // 45 -> 135
+            // 1. 旋转视角控制
+            // 随滚动改变视角，让用户感觉在环绕物体观察
+            const rotateX = 60 - (scrollPercent * 20); // 从 60度 变到 40度
+            const rotateZ = 45 + (scrollPercent * 90); // 从 45度 旋转到 135度
             assembly.style.transform = `rotateX(${rotateX}deg) rotateZ(${rotateZ}deg)`;
 
-            // 2. 爆炸拆解 (Explosion)：随滚动改变 translateZ
-            // 越往上的层，飞得越高
+            // 2. 爆炸拆解控制 (Exploded View Logic)
+            // 核心原理：根据进度修改各个层的 translateZ 值
             
-            // 基础间距
+            // 基础间距 (Base Gap)
             const baseGap = 50; 
+            // 膨胀系数 (Expansion Factor) - 随滚动增大
             const expansionFactor = 300 * scrollPercent; // 最大拉开 300px
 
-            layers[3].style.transform = `translateZ(${baseGap * 1.5 + expansionFactor * 1.5}px)`; // Top
+            // 分别设置每一层的位置
+            // 越外层的组件，移动距离应该越大
+            layers[3].style.transform = `translateZ(${baseGap * 1.5 + expansionFactor * 1.5}px)`; // Top (跑得最远)
             layers[2].style.transform = `translateZ(${baseGap * 0.5 + expansionFactor * 0.8}px)`; // Mid 1
             layers[1].style.transform = `translateZ(${-baseGap * 0.5 - expansionFactor * 0.2}px)`; // Mid 2
-            layers[0].style.transform = `translateZ(${-baseGap * 1.5 - expansionFactor * 1.0}px)`; // Bottom
+            layers[0].style.transform = `translateZ(${-baseGap * 1.5 - expansionFactor * 1.0}px)`; // Bottom (反向跑)
 
-            // 3. 文字控制
+            // 3. 文字说明的切换逻辑
+            // 简单的区间判断，实际项目中可能用 IntersectionObserver 或 ScrollTrigger
             text1.classList.remove('active');
             text2.classList.remove('active');
             text3.classList.remove('active');
 
             if (scrollPercent < 0.2) {
-                text1.classList.add('active');
+                text1.classList.add('active'); // 初始阶段
             } else if (scrollPercent >= 0.2 && scrollPercent < 0.6) {
-                text2.classList.add('active');
+                text2.classList.add('active'); // 拆解中段
             } else {
-                text3.classList.add('active');
+                text3.classList.add('active'); // 完全拆解
             }
         });
     </script>

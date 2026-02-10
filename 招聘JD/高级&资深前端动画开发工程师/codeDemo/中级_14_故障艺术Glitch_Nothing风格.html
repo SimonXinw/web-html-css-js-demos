@@ -3,10 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nothing Style Glitch & Dot Matrix</title>
+    <title>Nothing Style Glitch & Dot Matrix (详细注释版)</title>
     <style>
+        /* 
+         * 字体选择
+         * Nothing 风格严重依赖点阵字体 (NDot)。
+         * 这里使用 Courier New 等宽字体作为替代，保证对齐。
+         */
         @font-face {
-            /* 这里通常需要引入 Nothing 的 NDot 字体，这里用类似的 Monospace 模拟 */
             font-family: 'DotMatrix';
             src: local('Courier New'); 
         }
@@ -24,15 +28,20 @@
             overflow: hidden;
         }
 
-        /* 点阵背景模拟 */
+        /* 
+         * 背景：点阵网格 (Dot Grid)
+         * 使用 radial-gradient 模拟重复的小圆点。
+         * 相比加载一张 huge image，CSS 绘制性能更好且无限平铺。
+         */
         .grid-bg {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            /* 径向渐变：中心是深灰，边缘透明 -> 形成点 */
             background-image: radial-gradient(#333 1px, transparent 1px);
-            background-size: 20px 20px;
+            background-size: 20px 20px; /* 点间距 */
             opacity: 0.3;
             z-index: 0;
         }
@@ -43,7 +52,9 @@
             text-align: center;
         }
 
-        /* 主标题 Glitch */
+        /* 
+         * 故障文字容器
+         */
         .glitch-wrapper {
             position: relative;
             display: inline-block;
@@ -58,35 +69,41 @@
             text-transform: uppercase;
         }
 
-        /* 伪元素用于制造重影 */
+        /* 
+         * 核心技术：伪元素叠加 + Clip-path
+         * ::before 和 ::after 复制同样的内容，重叠在原文本上。
+         * 分别向左/右微移，并设置不同的颜色（红/蓝）形成色差 (Chromatic Aberration)。
+         */
         .glitch-text::before,
         .glitch-text::after {
-            content: attr(data-text);
+            content: attr(data-text); /* 自动获取 data-text 属性的内容 */
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #111; /* 遮挡下方 */
+            background: #111; /* 背景色遮挡下层 */
         }
 
         /* 红色通道偏移 */
         .glitch-text::before {
             left: 2px;
-            text-shadow: -2px 0 #ff0000;
+            text-shadow: -2px 0 #ff0000; /* 红色阴影 */
+            /* 初始裁剪：只显示一部分 */
             clip-path: inset(44% 0 61% 0);
+            /* 应用动画：不断改变裁剪区域 */
             animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
         }
 
         /* 蓝色通道偏移 */
         .glitch-text::after {
             left: -2px;
-            text-shadow: -2px 0 #00ffff;
+            text-shadow: -2px 0 #00ffff; /* 青色阴影 */
             clip-path: inset(50% 0 30% 0);
             animation: glitch-anim-2 3s infinite linear alternate-reverse;
         }
         
-        /* 简单的点阵文字模拟 - 实际上 Nothing 用的是特殊字体，这里用 CSS mask 模拟 */
+        /* 点阵闪烁文字 */
         .dot-text {
             margin-top: 2rem;
             font-size: 1.5rem;
@@ -99,7 +116,12 @@
             animation: blink 2s infinite;
         }
 
-        /* 模拟随机故障的关键帧 */
+        /* 
+         * Glitch 关键帧动画
+         * 核心思路：在极短时间内疯狂改变 clip-path 的 inset 值。
+         * inset(top right bottom left) 定义了矩形裁剪框。
+         * 通过不断改变 top/bottom，制造出条纹状的"撕裂"效果。
+         */
         @keyframes glitch-anim-1 {
             0% { clip-path: inset(20% 0 80% 0); }
             20% { clip-path: inset(60% 0 10% 0); }
@@ -123,7 +145,11 @@
             95%, 100% { opacity: 0; }
         }
 
-        /* 扫描线效果 */
+        /* 
+         * 扫描线效果 (Scanlines)
+         * 模拟 CRT 显示器的水平扫描线。
+         * 使用 linear-gradient 重复绘制透明和半透明黑线。
+         */
         .scanlines {
             position: fixed;
             top: 0;
@@ -137,12 +163,12 @@
                 rgba(0,0,0,0.1) 50%,
                 rgba(0,0,0,0.1)
             );
-            background-size: 100% 4px;
-            pointer-events: none;
+            background-size: 100% 4px; /* 每 4px 重复一次 */
+            pointer-events: none; /* 必须穿透，否则无法点击下方内容 */
             z-index: 10;
         }
 
-        /* 交互式 Hover 扭曲 - 简单版 */
+        /* 交互式按钮 */
         .interactive-box {
             margin-top: 50px;
             padding: 20px 40px;
@@ -152,6 +178,8 @@
             transition: transform 0.1s;
             position: relative;
             overflow: hidden;
+            background: transparent;
+            color: #fff;
         }
 
         .interactive-box:hover {
@@ -167,10 +195,38 @@
 </head>
 <body>
 
+    <!-- 
+    ========================================
+    前端动画开发工程师 - 技术问答 (Q&A)
+    ========================================
+
+    Q1: 如何仅用 CSS 实现文字的 Glitch (故障) 效果？
+    A1: 
+    - 核心是利用 `::before` 和 `::after` 伪元素复制主元素内容 (`content: attr(data-text)`)。
+    - 将伪元素定位在主元素上方，分别向左/右微移，设置 `mix-blend-mode` 或简单的颜色叠加制造色差。
+    - 使用 `@keyframes` 配合 `clip-path: inset(...)` 不断裁剪伪元素，使其只显示局部条纹，模拟信号撕裂。
+
+    Q2: 这里的 .scanlines (扫描线) 为什么 pointer-events: none 很重要？
+    A2: 
+    - 扫描线通常是铺满全屏 (`100vw`, `100vh`) 且 `z-index` 较高的遮罩层。
+    - 如果不设置 `pointer-events: none`，它会拦截所有的鼠标事件（点击、悬停、拖拽），导致底下的按钮和链接无法交互。
+
+    Q3: CSS 动画和 JS 动画在 Glitch 效果中的分工是什么？
+    A3: 
+    - CSS (Keyframes): 负责高频、循环的视觉噪音（如色散震动、扫描线滚动），因为 CSS 运行在合成线程，开销小且稳定。
+    - JS: 负责随机性强、幅度大的"突发性故障"。例如每隔几秒随机改变 transform 位移，或随机替换文字字符 (Decode Effect)，增加不可预测感。
+
+    Q4: 如何实现 Nothing 官网那种点阵字体效果？
+    A4: 
+    - 最佳方案：引入 WebFont (如 NDot)。
+    - 替代方案（无字体文件）：使用 Canvas 绘制文字，读取像素数据，将非透明像素替换为圆点或方块进行重绘。
+    -->
+
     <div class="grid-bg"></div>
     <div class="scanlines"></div>
 
     <div class="container">
+        <!-- data-text 属性用于 CSS 获取内容 -->
         <div class="glitch-wrapper">
             <h1 class="glitch-text" data-text="NOTHING">NOTHING</h1>
         </div>
@@ -186,15 +242,19 @@
 
     <script>
         // JS 用于增强随机性，偶尔产生剧烈的 Glitch
+        // 纯 CSS 的循环显得太规律，JS 可以打破这种规律
         const text = document.querySelector('.glitch-text');
         
         setInterval(() => {
-            // 随机触发一次强烈的位移
+            // 20% 的概率触发一次强烈的位移
             if(Math.random() > 0.8) {
+                // 随机位移距离
                 const shiftX = (Math.random() - 0.5) * 10 + 'px';
                 const shiftY = (Math.random() - 0.5) * 10 + 'px';
+                
                 text.style.transform = `translate(${shiftX}, ${shiftY})`;
                 
+                // 50ms ~ 150ms 后迅速复位，产生"抽搐"感
                 setTimeout(() => {
                     text.style.transform = 'translate(0, 0)';
                 }, 50 + Math.random() * 100);
