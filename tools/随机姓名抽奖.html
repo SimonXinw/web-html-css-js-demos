@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D 随机姓名抽奖</title>
+    <style>
+        :root {
+            --primary-color: #ff3b30;
+            --bg-color: #1c1c1e;
+            --item-height: 80px;
+            --visible-count: 5;
+            /* 屏幕上可见的数量 */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 左侧：抽奖主舞台 */
+        .stage-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: radial-gradient(circle at center, #2c2c2e 0%, #000 100%);
+        }
+
+        /* 3D 滚轮容器 */
+        .lottery-wheel {
+            position: relative;
+            width: 400px;
+            height: calc(var(--item-height) * var(--visible-count));
+            /* 80px * 5 = 400px */
+            overflow: hidden;
+            perspective: 1000px;
+            /* 3D 透视关键 */
+            /* 遮罩：上下虚化，中间清晰 */
+            mask-image: linear-gradient(to bottom,
+                    transparent 0%,
+                    black 20%,
+                    black 80%,
+                    transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom,
+                    transparent 0%,
+                    black 20%,
+                    black 80%,
+                    transparent 100%);
+            border-left: 2px solid rgba(255, 255, 255, 0.1);
+            border-right: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 名字列表 */
+        .name-list {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            transform-style: preserve-3d;
+        }
+
+        .name-item {
+            height: var(--item-height);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.5);
+            /* 默认状态，JS 会动态修改 transform */
+            backface-visibility: hidden;
+            transition: color 0.2s;
+        }
+
+        .name-item.active {
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            font-size: 40px;
+        }
+
+        /* 选中框指示器 */
+        .highlight-bar {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: var(--item-height);
+            transform: translateY(-50%);
+            border-top: 2px solid var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            background: rgba(255, 59, 48, 0.1);
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(255, 59, 48, 0.2);
+        }
+
+        /* 控制按钮 */
+        .controls {
+            margin-top: 40px;
+            z-index: 20;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.3s;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            outline: none;
+        }
+
+        #actionBtn {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
+        }
+
+        #actionBtn:active {
+            transform: scale(0.95);
+        }
+
+        #actionBtn.stop-mode {
+            background-color: #ff9f0a;
+            box-shadow: 0 4px 15px rgba(255, 159, 10, 0.4);
+        }
+
+        #actionBtn:disabled {
+            background-color: #48484a;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* 右侧：奖品与中奖名单 */
+        .sidebar {
+            width: 350px;
+            background-color: #2c2c2e;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #3a3a3c;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #3a3a3c;
+            padding-bottom: 10px;
+            font-size: 18px;
+            color: #8e8e93;
+        }
+
+        .prize-section {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .prize-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #3a3a3c;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .prize-item.current {
+            background: rgba(255, 59, 48, 0.2);
+            border: 1px solid var(--primary-color);
+        }
+
+        .prize-item.done {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        .prize-name {
+            font-weight: bold;
+        }
+
+        .prize-count {
+            background: #000;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        .winner-section {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .winner-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .winner-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .winner-item span:first-child {
+            color: #ff9f0a;
+        }
+
+        /* 弹窗动画 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1c1c1e, #2c2c2e);
+            padding: 40px 60px;
+            border-radius: 20px;
+            text-align: center;
+            border: 2px solid var(--primary-color);
+            transform: scale(0.5);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 50px rgba(255, 59, 48, 0.5);
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            color: #8e8e93;
+            margin-bottom: 10px;
+        }
+
+        .modal-name {
+            font-size: 60px;
+            font-weight: bold;
+            color: #fff;
+            margin: 20px 0;
+        }
+
+        .modal-prize {
+            font-size: 30px;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 主舞台 -->
+    <div class="stage-container">
+        <div class="lottery-wheel">
+            <div class="highlight-bar"></div>
+            <ul class="name-list" id="nameList">
+                <!-- JS 动态生成 -->
+            </ul>
+        </div>
+
+        <div class="controls">
+            <button id="actionBtn">开始抽奖</button>
+        </div>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <h2>当前奖品池</h2>
+        <div class="prize-section" id="prizeList">
+            <!-- JS 动态生成 -->
+        </div>
+
+        <h2>中奖名单</h2>
+        <div class="winner-section">
+            <ul class="winner-list" id="winnerList">
+                <!-- JS 动态生成 -->
+            </ul>
+        </div>
+    </div>
+
+    <!-- 中奖弹窗 -->
+    <div class="modal" id="resultModal">
+        <div class="modal-content">
+            <div class="modal-title">恭喜中奖</div>
+            <div class="modal-prize" id="modalPrizeName">一等奖</div>
+            <div class="modal-name" id="modalWinnerName">张三</div>
+            <button onclick="closeModal()" style="margin-top: 20px; font-size: 18px; padding: 10px 30px;">确定</button>
+        </div>
+    </div>
+
+    <script>
+        // ================= 配置数据 =================
+        // 随机生成20个名字
+        const initialNames = [
+            "赵一", "钱二", "孙三", "李四", "周五", "吴六", "郑七", "王八", "冯九", "陈十",
+            "褚十一", "卫十二", "蒋十三", "沈十四", "韩十五", "杨十六", "朱十七", "秦十八", "尤十九", "许二十"
+        ];
+
+        // 奖品配置
+        const initialPrizes = [
+            { name: "特等奖：MacBook Pro", count: 1 },
+            { name: "一等奖：iPhone 16", count: 2 },
+            { name: "二等奖：iPad Air", count: 3 },
+            { name: "三等奖：AirPods", count: 4 },
+            { name: "四等奖：京东卡 500元", count: 5 },
+            { name: "五等奖：精美公仔", count: 5 } // 总共20个奖品对应20个人
+        ];
+
+        // ================= 状态管理 =================
+        let names = [...initialNames]; // 当前剩余未中奖的名字
+        let prizes = JSON.parse(JSON.stringify(initialPrizes)); // 奖品状态
+
+        let isRolling = false;
+        let isStopping = false;
+        let speed = 0;
+        let currentOffset = 0;
+        let animationId = null;
+
+        const ITEM_HEIGHT = 80; // 对应 CSS var(--item-height)
+        const VISIBLE_COUNT = 5; // 对应 CSS var(--visible-count)
+
+        // DOM 元素
+        const nameListEl = document.getElementById('nameList');
+        const actionBtn = document.getElementById('actionBtn');
+        const prizeListEl = document.getElementById('prizeList');
+        const winnerListEl = document.getElementById('winnerList');
+        const modal = document.getElementById('resultModal');
+
+        // ================= 初始化 =================
+        function init() {
+            renderPrizes();
+            // 初始渲染名字列表（为了视觉效果，我们需要把名字列表重复拼接，制造无限滚动假象）
+            // 至少保证列表高度超过容器很多
+            renderWheel();
+        }
+
+        // 渲染滚轮列表
+        function renderWheel() {
+            nameListEl.innerHTML = '';
+            // 如果名字太少，多复制几份以保证滚动流畅
+            let displayNames = [...names];
+            while (displayNames.length < 20) {
+                displayNames = displayNames.concat(names);
+            }
+            // 再复制一份用于无缝连接
+            displayNames = displayNames.concat(displayNames);
+
+            displayNames.forEach(name => {
+                const li = document.createElement('li');
+                li.className = 'name-item';
+                li.textContent = name;
+                nameListEl.appendChild(li);
+            });
+        }
+
+        // 渲染奖品列表
+        function renderPrizes() {
+            prizeListEl.innerHTML = '';
+            let activeFound = false;
+
+            prizes.forEach((prize, index) => {
+                const div = document.createElement('div');
+                div.className = 'prize-item';
+                if (prize.count === 0) {
+                    div.classList.add('done');
+                } else if (!activeFound) {
+                    div.classList.add('current');
+                    activeFound = true; // 标记当前正在抽的奖项（第一个有剩余数量的）
+                }
+
+                div.innerHTML = `
+                    <span class="prize-name">${prize.name}</span>
+                    <span class="prize-count">剩余: ${prize.count}</span>
+                `;
+                prizeListEl.appendChild(div);
+            });
+
+            // 检查是否所有奖品都抽完了
+            if (!activeFound && names.length > 0) {
+                actionBtn.textContent = "抽奖结束";
+                actionBtn.disabled = true;
+            } else if (names.length === 0) {
+                actionBtn.textContent = "人员已空";
+                actionBtn.disabled = true;
+            }
+        }
+
+        // 获取当前正在抽的奖品
+        function getCurrentPrize() {
+            return prizes.find(p => p.count > 0);
+        }
+
+        // ================= 核心动画逻辑 =================
+
+        // 每一帧更新
+        function update() {
+            // 1. 更新位移
+            currentOffset += speed;
+
+            // 2. 无缝滚动逻辑
+            // 列表实际高度
+            const totalHeight = nameListEl.scrollHeight / 2; // 因为我们复制了一倍
+            if (currentOffset >= totalHeight) {
+                currentOffset -= totalHeight;
+            }
+
+            // 3. 应用位移
+            nameListEl.style.transform = `translateY(${currentOffset}px)`; // 实际上我们是往上滚，视觉上名字往下走？
+            // 不，题目要求"从下向上滚动"。
+            // 所以名字应该往上跑，translateY 应该是负值变大，或者正值？
+            // 让我们修正一下：
+            // 列表向上移动 => translateY 减小
+
+            // 重新定义方向：
+            // 向上滚动：translateY 从 0 变到 -totalHeight
+            const visualOffset = -(currentOffset % totalHeight);
+            nameListEl.style.transform = `translateY(${visualOffset}px)`;
+
+            // 4. 3D 景深效果 (SanD Effect)
+            // 遍历所有可见的 li，根据它们距离中心的距离，计算旋转和透明度
+            const items = nameListEl.children;
+            const containerCenter = (ITEM_HEIGHT * VISIBLE_COUNT) / 2; // 200px
+
+            // 这里的 visualOffset 是负数，表示列表向上移了多少
+            // 第 i 个元素的 Y 坐标 = i * ITEM_HEIGHT + visualOffset
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                // 元素中心相对于视口顶部的距离
+                const itemCenterY = (i * ITEM_HEIGHT) + visualOffset + (ITEM_HEIGHT / 2);
+
+                // 距离视口中心的距离
+                const dist = Math.abs(containerCenter - itemCenterY);
+
+                // 只有在视口附近的才计算，优化性能
+                if (dist < 400) {
+                    // 归一化距离 (0 ~ 1)，1 表示非常远
+                    const normalizedDist = Math.min(dist / 250, 1);
+
+                    // 计算 3D 变换
+                    // 越远，rotateX 越大 (向后倒)，scale 越小，opacity 越低
+                    // 上方的元素 rotateX 为正，下方的为负？或者统一向后倒
+                    // 为了做圆柱效果：
+                    // 上方元素 (itemCenterY < containerCenter): rotateX(正)
+                    // 下方元素 (itemCenterY > containerCenter): rotateX(负)
+
+                    const rotateDir = itemCenterY < containerCenter ? 1 : -1;
+                    const rotateX = normalizedDist * 45 * rotateDir; // 最大 45度
+                    const scale = 1 - (normalizedDist * 0.3); // 最小 0.7
+                    const opacity = 1 - (normalizedDist * 0.7); // 最小 0.3
+
+                    item.style.transform = `perspective(1000px) rotateX(${rotateX}deg) scale(${scale})`;
+                    item.style.opacity = opacity;
+
+                    // 高亮中心元素
+                    if (dist < ITEM_HEIGHT / 2) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                }
+            }
+
+            // 5. 停止逻辑 (物理减速)
+            if (isStopping) {
+                // 减速
+                speed *= 0.96; // 摩擦系数
+
+                // 当速度足够慢时，吸附到最近的格子
+                if (speed < 2) {
+                    // 计算最近的格子位置
+                    // 目标是让某个 item 刚好在 containerCenter
+                    // visualOffset = - (targetIndex * ITEM_HEIGHT - (containerCenter - ITEM_HEIGHT/2))
+                    // 简化：visualOffset 应该是 ITEM_HEIGHT 的整数倍 (加上偏移)
+                    // 实际上，只要 currentOffset % ITEM_HEIGHT === 0 即可
+
+                    const remainder = currentOffset % ITEM_HEIGHT;
+
+                    if (remainder < 2 || remainder > ITEM_HEIGHT - 2) {
+                        // 足够接近，直接停止
+                        speed = 0;
+                        isRolling = false;
+                        isStopping = false;
+
+                        // 修正 offset 到精确位置
+                        currentOffset = Math.round(currentOffset / ITEM_HEIGHT) * ITEM_HEIGHT;
+
+                        finishLottery();
+                        return; // 结束循环
+                    } else {
+                        // 还没对齐，保持最低速度蠕动直到对齐
+                        speed = 2;
+                    }
+                }
+            }
+
+            if (isRolling || isStopping) {
+                animationId = requestAnimationFrame(update);
+            }
+        }
+
+        // ================= 交互逻辑 =================
+
+        actionBtn.addEventListener('click', () => {
+            if (!isRolling && !isStopping) {
+                // 开始
+                startRoll();
+            } else if (isRolling && !isStopping) {
+                // 停止
+                stopRoll();
+            }
+        });
+
+        function startRoll() {
+            const currentPrize = getCurrentPrize();
+            if (!currentPrize) {
+                alert("所有奖品已抽完！");
+                return;
+            }
+            if (names.length === 0) {
+                alert("人员已空！");
+                return;
+            }
+
+            isRolling = true;
+            isStopping = false;
+            speed = 30; // 初始速度
+            actionBtn.textContent = "停止";
+            actionBtn.classList.add('stop-mode');
+
+            update();
+        }
+
+        function stopRoll() {
+            isStopping = true;
+            actionBtn.textContent = "正在停止...";
+            actionBtn.disabled = true;
+            actionBtn.classList.remove('stop-mode');
+        }
+
+        function finishLottery() {
+            // 计算选中的是哪个名字
+            // currentOffset 对应的是滚动的距离
+            // 视口中心的索引 = (currentOffset + containerCenter - itemHeight/2) / itemHeight
+            // 简化：因为我们是无限滚动的，需要取模
+
+            // 实际上，直接找 DOM 中带有 .active 的元素最准确
+            const activeItem = document.querySelector('.name-item.active');
+            if (!activeItem) {
+                // 异常保护，如果没对齐
+                console.error("未找到选中项，重试");
+                stopRoll();
+                return;
+            }
+
+            const winnerName = activeItem.textContent;
+            const currentPrize = getCurrentPrize();
+
+            // 显示结果
+            showResult(winnerName, currentPrize);
+
+            // 更新数据
+            // 1. 扣减奖品
+            currentPrize.count--;
+            // 2. 移除人员
+            const winnerIndex = names.indexOf(winnerName);
+            if (winnerIndex > -1) {
+                names.splice(winnerIndex, 1);
+            }
+
+            // 更新 UI
+            renderPrizes();
+            addWinnerRecord(winnerName, currentPrize.name);
+
+            // 稍微延迟后重新渲染滚轮（移除已中奖的人）
+            // 注意：重新渲染会导致滚动位置重置，所以要在弹窗关闭后或者用户无感知时做
+            // 这里我们选择在下次开始前或者现在立刻做（可能会闪一下，但逻辑正确）
+            // 为了体验，我们在关闭弹窗时刷新列表
+        }
+
+        function showResult(name, prize) {
+            document.getElementById('modalPrizeName').textContent = prize.name.split('：')[0]; // 只显示奖项等级
+            document.getElementById('modalWinnerName').textContent = name;
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+            actionBtn.disabled = false;
+            actionBtn.textContent = "开始抽奖";
+
+            // 重新渲染列表（移除已中奖者）
+            renderWheel();
+            // 重置滚动位置到 0，避免闪烁错位
+            currentOffset = 0;
+            nameListEl.style.transform = `translateY(0px)`;
+
+            // 重新初始化一下 3D 状态
+            const items = nameListEl.children;
+            for (let item of items) {
+                item.style.transform = '';
+                item.style.opacity = '';
+                item.classList.remove('active');
+            }
+            // 手动触发一次高亮计算
+            if (items.length > 2) items[2].classList.add('active'); // 假设第3个在中间
+        }
+
+        function addWinnerRecord(name, prizeName) {
+            const li = document.createElement('li');
+            li.className = 'winner-item';
+            li.innerHTML = `
+                <span>${name}</span>
+                <span style="color:#aaa">${prizeName.split('：')[1] || prizeName}</span>
+            `;
+            winnerListEl.prepend(li);
+        }
+
+        // 启动
+        init();
+
+    </script>
+</body>
+
+</html>
