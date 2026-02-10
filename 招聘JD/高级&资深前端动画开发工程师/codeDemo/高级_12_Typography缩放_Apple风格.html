@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Style Typography Scaling</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .spacer {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            opacity: 0.5;
+        }
+
+        .scroll-container {
+            height: 300vh; /* 滚动距离 */
+            position: relative;
+        }
+
+        .sticky-wrapper {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .zoom-text {
+            font-size: 10rem;
+            font-weight: 800;
+            text-align: center;
+            white-space: nowrap;
+            /* 初始状态可能非常大 */
+            transform-origin: center center;
+            will-change: transform, opacity;
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .content-section {
+            height: 100vh;
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        p {
+            font-size: 1.2rem;
+            color: #ccc;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="spacer">向下滚动查看效果</div>
+
+    <div class="scroll-container" id="zoomContainer">
+        <div class="sticky-wrapper">
+            <div class="zoom-text" id="zoomText">MacBook Pro</div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <h2>超强，超快。</h2>
+        <p>M3 芯片带来惊人的性能表现，让工作和娱乐都更上一层楼。</p>
+    </div>
+
+    <div class="spacer">继续探索...</div>
+
+    <script>
+        const container = document.getElementById('zoomContainer');
+        const text = document.getElementById('zoomText');
+
+        // 缓动函数，让动画更自然
+        function lerp(start, end, factor) {
+            return start + (end - start) * factor;
+        }
+
+        let currentScale = 20; // 初始放大倍数
+        let targetScale = 20;
+
+        function handleScroll() {
+            const containerRect = container.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            
+            // 计算滚动进度 (0 到 1)
+            // 当容器顶部到达视口顶部时开始，到底部离开视口时结束
+            // 这里我们希望在 sticky 期间完成缩放
+            
+            // 实际上，因为是 sticky，我们需要计算的是 sticky 容器在整个 scroll-container 中的进度
+            // scroll-container 高度是 300vh，sticky 是 100vh
+            // 有效滚动距离是 200vh
+            
+            const startY = container.offsetTop;
+            const endY = startY + container.offsetHeight - windowHeight;
+            const scrollY = window.scrollY;
+
+            let progress = 0;
+            
+            if (scrollY < startY) {
+                progress = 0;
+            } else if (scrollY > endY) {
+                progress = 1;
+            } else {
+                progress = (scrollY - startY) / (endY - startY);
+            }
+
+            // 缩放范围：从 20 倍缩小到 1 倍
+            // 也可以做透明度变化
+            targetScale = 20 - (19 * progress); 
+            
+            // 简单的边界处理
+            if (targetScale < 1) targetScale = 1;
+        }
+
+        // 使用 requestAnimationFrame 优化渲染
+        function update() {
+            // 简单的插值平滑，或者直接赋值
+            // currentScale = lerp(currentScale, targetScale, 0.1); 
+            // 直接赋值响应更灵敏，符合滚动直觉，除非是阻尼滚动
+            currentScale = targetScale;
+
+            text.style.transform = `scale(${currentScale})`;
+            
+            // 可选：透明度配合，只有在接近正常大小时才完全不透明
+            // text.style.opacity = Math.min(1, 1.5 - (currentScale / 20)); 
+
+            requestAnimationFrame(update);
+        }
+
+        window.addEventListener('scroll', handleScroll);
+        update(); // 启动循环
+        handleScroll(); // 初始化
+    </script>
+</body>
+</html>
