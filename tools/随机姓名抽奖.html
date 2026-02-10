@@ -562,30 +562,29 @@
                 const now = Date.now();
                 const stopDuration = now - stopStartTime;
 
-                // 阶段一：前 2 秒缓慢减速 (增加悬念)
-                // 阻力系数设为 0.99，非常滑
-                if (stopDuration < 2000) {
-                    speed *= 0.99;
+                // 阶段一：前 3 秒缓慢减速 (增加悬念)
+                if (stopDuration < 3000) {
+                    speed *= 0.992; // 非常小的阻力
                 } 
-                // 阶段二：2秒后，施加稍大的阻力
+                // 阶段二：3秒后，施加稍大的阻力
                 else {
-                    speed *= 0.97;
+                    speed *= 0.96;
                 }
 
                 // 阶段三：极低速"爬行" (Crawl Phase)
-                // 当速度降低到一定程度，强制保持在一个极低的速度蠕动
-                // 模拟轮盘最后慢慢走过几个格子的感觉
-                if (speed < 1.5 && speed > 0.1) {
-                    speed = 1.0; // 恒定低速
+                // 当速度降低到很低时，强制保持在一个极低的速度蠕动
+                // 模拟轮盘最后慢慢走过几个格子的感觉，增加紧张感
+                if (speed < 1.0 && speed > 0.1) {
+                    speed = 0.3; // 恒定极低速 (龟速)
                 }
                 
                 // 阶段四：对齐停止
-                // 只有当速度非常低 (处于爬行阶段)，且对齐到了网格中心时才停
-                if (speed <= 1.0) {
+                // 只有当速度处于爬行阶段，且对齐到了网格中心时才停
+                if (speed <= 0.3) {
                     const remainder = currentOffset % ITEM_HEIGHT;
-                    // remainder 接近 0 或接近 80 表示对齐
-                    // 这里判断是否接近一个整数个 ITEM_HEIGHT
-                    if (remainder < 2 || remainder > ITEM_HEIGHT - 2) {
+                    // 检测是否对齐：remainder 接近 0 或接近 ITEM_HEIGHT
+                    // 允许误差范围缩小到 1px，保证停得准
+                    if (remainder < 1 || remainder > ITEM_HEIGHT - 1) {
                         speed = 0;
                         isRolling = false;
                         isStopping = false;
