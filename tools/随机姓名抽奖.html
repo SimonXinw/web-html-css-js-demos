@@ -39,6 +39,7 @@
             height: 100%;
             pointer-events: none;
             z-index: 90;
+            mix-blend-mode: screen; /* 增强发光感 */
         }
 
         /* 左侧：抽奖主舞台 */
@@ -661,17 +662,19 @@
         loopFireworks();
 
         function launchFireworks() {
-            // 连续发射 10 次，模拟盛大场景
-            let count = 0;
-            const interval = setInterval(() => {
-                // 随机位置
-                const x = Math.random() * canvas.width * 0.6 + canvas.width * 0.2; // 中间 60% 区域
-                const y = Math.random() * canvas.height * 0.4 + canvas.height * 0.1; // 上方 40% 区域
-                fireworks.push(new Firework(x, y));
-                
-                count++;
-                if (count > 10) clearInterval(interval);
-            }, 200);
+            // 只发射一个烟花，从底部中间发射到屏幕中心
+            // 目标位置：屏幕正中心
+            const x = canvas.width / 2;
+            const y = canvas.height / 2;
+            
+            // 为了让烟花正好在中间炸开，我们需要计算一个合适的发射速度或者直接在中间生成爆炸粒子
+            // 原有的 Firework 类是模拟从下往上飞的。
+            // 我们可以创建一个 Firework 实例，起始点在底部中间，目标点在屏幕中心
+            
+            const startX = canvas.width / 2;
+            
+            // 创建一个大烟花
+            fireworks.push(new Firework(startX, y));
         }
 
         // ================= 初始化 =================
