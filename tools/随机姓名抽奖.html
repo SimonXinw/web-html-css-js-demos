@@ -562,7 +562,7 @@
             if (isStopping) {
                 const now = Date.now();
                 const t = now - stopStartTime;
-                const DURATION = 10000; // 设定 10秒 完整停下
+                const DURATION = 20000; // 设定 10秒 完整停下
                 const MIN_CRAWL_SPEED = 0.5; // 最低龟爬速度
 
                 if (t < DURATION) {
@@ -570,11 +570,10 @@
                     // 进度 progress 从 0 变到 1
                     const progress = t / DURATION;
                     
-                    // 使用三次幂缓动 (Cubic Ease Out) 的反向逻辑
-                    // (1 - progress)^3 从 1 降到 0
-                    // 速度 = (初始速度 - 最低速度) * 衰减因子 + 最低速度
-                    // 这样速度曲线是完全连续平滑的，没有阶段感，且最后会平滑过渡到 MIN_CRAWL_SPEED
-                    const decayFactor = Math.pow(1 - progress, 3);
+                    // 使用五次幂缓动 (Quintic Ease Out)
+                    // 指数越高，初期减速越快，后期的"龟爬"时间越长，悬念感越强
+                    // 3 = 均衡，5 = 极强拖拽感
+                    const decayFactor = Math.pow(1 - progress, 5);
                     
                     speed = (initialStopSpeed - MIN_CRAWL_SPEED) * decayFactor + MIN_CRAWL_SPEED;
                 } else {
