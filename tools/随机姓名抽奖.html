@@ -4,30 +4,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D 随机姓名抽奖</title>
+    <title>3D 随机姓名抽奖 - 喜庆版</title>
     <style>
         :root {
-            --primary-color: #ff3b30;
-            --secondary-color: #ff9f0a;
-            --bg-color: #1c1c1e;
-            --card-bg: #2c2c2e;
-            --border-color: #3a3a3c;
-            --text-color: #fff;
-            --text-secondary: #8e8e93;
-            --item-height: 80px;
+            /* 中国红配色方案 */
+            --primary-red: #c02c2c; /* 主红 */
+            --dark-red: #7a0e0e;    /* 深红背景 */
+            --gold: #fcc200;        /* 金色 */
+            --light-gold: #ffe58f;  /* 浅金 */
+            --text-color: #fff1d4;  /* 米白文字 */
+            
+            --primary-color: var(--gold); /* 按钮主色调改为金色 */
+            --secondary-color: #ff5722;   /* 橙色点缀 */
+            
+            --bg-gradient: radial-gradient(circle at center, #be1e1e 0%, #7a0e0e 60%, #420404 100%);
+            
+            --card-bg: rgba(66, 4, 4, 0.65);
+            --border-color: rgba(252, 194, 0, 0.3);
+            
+            --item-height: 90px;
             --visible-count: 5;
-            /* 屏幕上可见的数量 */
         }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-color);
+            background: var(--bg-gradient);
             color: var(--text-color);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: "Microsoft YaHei", "Heiti SC", -apple-system, BlinkMacSystemFont, sans-serif;
             display: flex;
             height: 100vh;
             overflow: hidden;
+            /* 添加一点纹理背景 */
+            background-image: 
+                var(--bg-gradient),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fcc200' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
         }
 
         /* 烟花容器 */
@@ -39,7 +50,7 @@
             height: 100%;
             pointer-events: none;
             z-index: 90;
-            mix-blend-mode: screen; /* 增强发光感 */
+            mix-blend-mode: screen; 
         }
 
         /* 左侧：抽奖主舞台 */
@@ -50,31 +61,80 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            background: radial-gradient(circle at center, #2c2c2e 0%, #000 100%);
+            /* 移除原有的背景，使用body的 */
+        }
+
+        /* 标题装饰 */
+        .main-title {
+            font-size: 3rem;
+            color: var(--gold);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(252, 194, 0, 0.4);
+            margin-bottom: 2rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+            background: linear-gradient(to bottom, #ffd700, #ffaa00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+        
+        .main-title::after {
+            content: 'LUCKY DRAW';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            letter-spacing: 8px;
+            color: rgba(255, 255, 255, 0.4);
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.4);
         }
 
         /* 3D 滚轮容器 */
         .lottery-wheel {
             position: relative;
-            width: 400px;
+            width: 500px; /* 加宽 */
             height: calc(var(--item-height) * var(--visible-count));
-            /* 80px * 5 = 400px */
             overflow: hidden;
-            perspective: 1000px;
-            /* 3D 透视关键 */
+            perspective: 1200px; /* 调整透视 */
+            
+            /* 装饰性边框 */
+            border: 4px solid var(--gold);
+            border-radius: 12px;
+            box-shadow: 
+                0 0 0 2px #b71c1c,
+                0 0 30px rgba(252, 194, 0, 0.2),
+                inset 0 0 50px rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.2);
+            
             mask-image: linear-gradient(to bottom,
                     transparent 0%,
-                    black 20%,
-                    black 80%,
+                    black 15%,
+                    black 85%,
                     transparent 100%);
             -webkit-mask-image: linear-gradient(to bottom,
                     transparent 0%,
-                    black 20%,
-                    black 80%,
+                    black 15%,
+                    black 85%,
                     transparent 100%);
-            border-left: 2px solid rgba(255, 255, 255, 0.1);
-            border-right: 2px solid rgba(255, 255, 255, 0.1);
         }
+        
+        /* 滚轮两侧装饰（模拟灯笼挂饰） */
+        .lottery-wheel::before, .lottery-wheel::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 20px;
+            height: 60%;
+            background: var(--gold);
+            transform: translateY(-50%);
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(252, 194, 0, 0.6);
+            z-index: 5;
+        }
+        .lottery-wheel::before { left: 10px; }
+        .lottery-wheel::after { right: 10px; }
 
         /* 名字列表 */
         .name-list {
@@ -93,18 +153,22 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 32px;
+            font-size: 36px;
             font-weight: bold;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 241, 212, 0.4);
             backface-visibility: hidden;
             transition: color 0.2s;
             white-space: nowrap;
+            font-family: "Kaiti SC", "STKaiti", "KaiTi", serif; /* 尝试使用楷体增加韵味 */
         }
 
         .name-item.active {
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
-            font-size: 40px;
+            color: var(--gold);
+            text-shadow: 
+                0 0 10px rgba(252, 194, 0, 0.8),
+                2px 2px 0px rgba(165, 0, 0, 1);
+            font-size: 52px;
+            font-weight: 900;
         }
 
         /* 选中框指示器 */
@@ -115,125 +179,177 @@
             width: 100%;
             height: var(--item-height);
             transform: translateY(-50%);
-            border-top: 2px solid var(--primary-color);
-            border-bottom: 2px solid var(--primary-color);
-            background: rgba(255, 59, 48, 0.1);
+            /* 改为金色边框 */
+            border-top: 2px solid var(--gold);
+            border-bottom: 2px solid var(--gold);
+            background: linear-gradient(90deg, 
+                rgba(252, 194, 0, 0) 0%, 
+                rgba(252, 194, 0, 0.15) 50%, 
+                rgba(252, 194, 0, 0) 100%);
             pointer-events: none;
             z-index: 10;
-            box-shadow: 0 0 20px rgba(255, 59, 48, 0.2);
+            box-shadow: 0 0 25px rgba(252, 194, 0, 0.2);
         }
 
         /* 控制区 */
         .controls {
-            margin-top: 40px;
+            margin-top: 50px;
             z-index: 20;
             display: flex;
-            gap: 20px;
+            gap: 30px;
         }
 
         .btn {
-            padding: 15px 40px;
-            font-size: 20px;
+            padding: 16px 48px;
+            font-size: 22px;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.1s, background-color 0.3s, box-shadow 0.3s;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             outline: none;
-            color: white;
+            color: #7a0e0e; /* 按钮文字深红 */
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(255,255,255,0.4), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn:hover::before {
+            opacity: 1;
         }
 
         .btn:active {
-            transform: scale(0.95);
+            transform: scale(0.98);
         }
 
         .btn:disabled {
-            background-color: #48484a;
+            background-color: #551111;
+            color: #aa7777;
             cursor: not-allowed;
             box-shadow: none;
-            color: #8e8e93;
+            border: 2px solid #662222;
         }
 
         .btn-primary {
-            background-color: var(--primary-color);
-            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
+            background: linear-gradient(to bottom, #ffd700, #ffb300);
+            box-shadow: 
+                0 4px 0 #c68e00,
+                0 8px 15px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+            border: 2px solid #fff5c2;
         }
 
         .btn-warning {
-            background-color: var(--secondary-color);
-            box-shadow: 0 4px 15px rgba(255, 159, 10, 0.4);
+            background: linear-gradient(to bottom, #ff5722, #e64a19);
+            color: white;
+            box-shadow: 
+                0 4px 0 #bf360c,
+                0 8px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid #ffccbc;
         }
 
         .btn-secondary {
-            background-color: #3a3a3c;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            background: rgba(0,0,0,0.3);
+            border: 2px solid var(--gold);
+            color: var(--gold);
             font-size: 16px;
-            padding: 15px 30px;
+            padding: 16px 32px;
+            box-shadow: none;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(252, 194, 0, 0.1);
         }
 
         /* 右侧：侧边栏 */
         .sidebar {
-            width: 350px;
+            width: 380px;
             background-color: var(--card-bg);
-            padding: 20px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
-            border-left: 1px solid var(--border-color);
-            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+            border-left: 2px solid var(--border-color);
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
         }
 
         h2 {
             margin-top: 0;
             border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
-            font-size: 18px;
-            color: var(--text-secondary);
+            padding-bottom: 15px;
+            font-size: 20px;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+        }
+        
+        h2::before {
+            content: '🧧';
+            margin-right: 10px;
+            font-size: 24px;
         }
 
         .prize-section {
             flex: 1;
             overflow-y: auto;
-            margin-bottom: 20px;
-            /* 美化滚动条 */
+            margin-bottom: 30px;
             scrollbar-width: thin;
-            scrollbar-color: #48484a transparent;
+            scrollbar-color: var(--gold) transparent;
         }
 
         .prize-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px;
-            background: var(--border-color);
-            margin-bottom: 8px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            margin-bottom: 10px;
             border-radius: 8px;
             transition: all 0.3s;
+            border: 1px solid transparent;
         }
 
         .prize-item.current {
-            background: rgba(255, 59, 48, 0.2);
-            border: 1px solid var(--primary-color);
+            background: linear-gradient(90deg, rgba(252, 194, 0, 0.2), rgba(252, 194, 0, 0.05));
+            border: 1px solid var(--gold);
+            box-shadow: 0 0 15px rgba(252, 194, 0, 0.1);
         }
 
         .prize-item.done {
-            opacity: 0.4;
+            opacity: 0.5;
             text-decoration: line-through;
+            filter: grayscale(0.8);
         }
 
         .prize-name {
             font-weight: bold;
+            font-size: 16px;
         }
 
         .prize-count {
-            background: #000;
-            padding: 2px 8px;
-            border-radius: 10px;
+            background: var(--dark-red);
+            padding: 4px 10px;
+            border-radius: 20px;
             font-size: 12px;
+            color: var(--light-gold);
+            border: 1px solid var(--border-color);
         }
 
         .winner-section {
@@ -248,15 +364,24 @@
         }
 
         .winner-item {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 14px;
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 15px;
             display: flex;
             justify-content: space-between;
+            background: rgba(0,0,0,0.1);
+            margin-bottom: 4px;
+            border-radius: 4px;
+        }
+        
+        .winner-item:first-child {
+            background: rgba(252, 194, 0, 0.15);
+            border-left: 3px solid var(--gold);
         }
 
         .winner-item span:first-child {
-            color: var(--secondary-color);
+            color: var(--light-gold);
+            font-weight: bold;
         }
 
         /* 通用弹窗样式 */
@@ -266,7 +391,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -274,7 +399,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
         }
 
         .modal.show {
@@ -282,16 +407,51 @@
             pointer-events: auto;
         }
 
-        /* 结果弹窗内容 */
+        /* 结果弹窗内容 - 红包风格 */
         .result-content {
-            background: linear-gradient(135deg, #1c1c1e, #2c2c2e);
-            padding: 40px 60px;
+            background: linear-gradient(135deg, #d32f2f, #b71c1c);
+            width: 500px;
+            height: 600px; /* 增加高度 */
+            padding: 0; /* 清空内边距，完全自定义 */
             border-radius: 20px;
             text-align: center;
-            border: 2px solid var(--primary-color);
+            border: 4px solid var(--gold);
             transform: scale(0.5);
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 0 50px rgba(255, 59, 48, 0.5);
+            box-shadow: 0 0 60px rgba(255, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        /* 红包半圆盖子装饰 */
+        .result-content::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 200px;
+            background: #a31515;
+            border-radius: 50%;
+            z-index: 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .result-inner {
+            position: relative;
+            z-index: 1;
+            padding: 60px 40px 40px;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .modal.show .result-content {
@@ -299,36 +459,61 @@
         }
 
         .modal-title {
-            font-size: 24px;
-            color: var(--text-secondary);
-            margin-bottom: 10px;
+            font-size: 32px;
+            color: var(--light-gold);
+            margin-bottom: 20px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
         .modal-name {
-            font-size: 60px;
-            font-weight: bold;
+            font-size: 72px;
+            font-weight: 900;
             color: #fff;
-            margin: 20px 0;
+            margin: 10px 0 30px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-family: "Kaiti SC", "STKaiti", "KaiTi", serif;
         }
 
         .modal-prize {
-            font-size: 30px;
-            color: var(--primary-color);
+            font-size: 28px;
+            color: var(--gold);
+            background: rgba(0,0,0,0.2);
+            padding: 10px 30px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+        
+        /* 装饰图案 */
+        .decoration-cloud {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background-image: radial-gradient(circle at 50% 100%, #fcc200 10%, transparent 12%),
+                              radial-gradient(circle at 20% 100%, #fcc200 10%, transparent 12%),
+                              radial-gradient(circle at 80% 100%, #fcc200 10%, transparent 12%);
+            background-size: 100px 50px;
+            opacity: 0.1;
         }
 
         /* 人员管理弹窗内容 */
         .user-manage-content {
-            background: var(--card-bg);
-            width: 600px;
+            background: #2c0b0b; /* 深色背景 */
+            width: 700px;
             max-width: 90%;
             max-height: 80vh;
             border-radius: 12px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
             transform: translateY(20px);
             transition: transform 0.3s;
+            border: 1px solid var(--border-color);
         }
 
         .modal.show .user-manage-content {
@@ -341,25 +526,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #252527;
+            background: rgba(0,0,0,0.2);
         }
 
         .modal-header h3 {
             margin: 0;
-            font-size: 20px;
+            font-size: 22px;
+            color: var(--gold);
         }
 
         .close-btn {
             background: none;
             border: none;
-            color: #fff;
-            font-size: 24px;
+            color: var(--text-color);
+            font-size: 28px;
             cursor: pointer;
             padding: 0 10px;
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover {
+            color: var(--primary-color);
         }
 
         .modal-body {
-            padding: 20px;
+            padding: 25px;
             overflow-y: auto;
             flex: 1;
         }
@@ -367,65 +558,83 @@
         /* 添加人员输入区域 */
         .add-user-area {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
         .add-user-input {
             flex: 1;
-            padding: 10px 15px;
+            padding: 12px 18px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
-            background: #1c1c1e;
+            background: rgba(0,0,0,0.3);
             color: #fff;
-            font-size: 14px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .add-user-input:focus {
+            border-color: var(--gold);
         }
 
         .add-user-btn {
-            padding: 10px 20px;
-            background: var(--primary-color);
-            color: white;
+            padding: 12px 25px;
+            background: var(--gold);
+            color: #7a0e0e;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             white-space: nowrap;
+            font-weight: bold;
+        }
+        
+        .add-user-btn:hover {
+            background: #ffd700;
+            box-shadow: 0 0 10px rgba(252, 194, 0, 0.4);
         }
 
         /* 人员列表表格 */
         .user-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
         }
 
         .user-table th {
             text-align: left;
-            padding: 10px;
-            color: var(--text-secondary);
-            border-bottom: 1px solid var(--border-color);
+            padding: 12px 15px;
+            color: var(--gold);
+            border-bottom: 2px solid var(--border-color);
             position: sticky;
             top: 0;
-            background: var(--card-bg);
+            background: #2c0b0b;
+            font-weight: normal;
         }
 
         .user-table td {
-            padding: 10px;
+            padding: 12px 15px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .user-table tr:hover td {
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
             font-size: 12px;
         }
 
         .status-pending {
-            background: #3a3a3c;
-            color: #aaa;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
         }
 
         .status-won {
-            background: rgba(255, 59, 48, 0.2);
-            color: var(--primary-color);
+            background: rgba(252, 194, 0, 0.2);
+            color: var(--gold);
+            border: 1px solid rgba(252, 194, 0, 0.3);
         }
     </style>
 </head>
@@ -436,6 +645,9 @@
 
     <!-- 主舞台 -->
     <div class="stage-container">
+        <!-- 添加大标题 -->
+        <div class="main-title">幸运大抽奖</div>
+        
         <div class="lottery-wheel">
             <div class="highlight-bar"></div>
             <ul class="name-list" id="nameList">
@@ -456,7 +668,7 @@
             <!-- JS 动态生成 -->
         </div>
 
-        <h2>中奖名单</h2>
+        <h2>中奖榜单</h2>
         <div class="winner-section">
             <ul class="winner-list" id="winnerList">
                 <!-- JS 动态生成 -->
@@ -467,10 +679,13 @@
     <!-- 中奖结果弹窗 -->
     <div class="modal" id="resultModal">
         <div class="result-content">
-            <div class="modal-title">恭喜中奖</div>
-            <div class="modal-prize" id="modalPrizeName">一等奖</div>
-            <div class="modal-name" id="modalWinnerName">张三</div>
-            <button class="btn btn-primary" onclick="closeResultModal()" style="margin-top: 20px;">确定</button>
+            <div class="decoration-cloud"></div>
+            <div class="result-inner">
+                <div class="modal-title">✨ 恭喜中奖 ✨</div>
+                <div class="modal-name" id="modalWinnerName">张三</div>
+                <div class="modal-prize" id="modalPrizeName">一等奖</div>
+                <button class="btn btn-primary" onclick="closeResultModal()" style="min-width: 150px; font-size: 18px;">收下好运</button>
+            </div>
         </div>
     </div>
 
@@ -478,13 +693,13 @@
     <div class="modal" id="userModal">
         <div class="user-manage-content">
             <div class="modal-header">
-                <h3>人员列表</h3>
+                <h3>人员列表管理</h3>
                 <button class="close-btn" onclick="closeUserModal()">×</button>
             </div>
             <div class="modal-body">
                 <div class="add-user-area">
-                    <input type="text" id="addUserInput" class="add-user-input" placeholder="输入姓名，多个用逗号分隔 (如: 张三, 李四)">
-                    <button class="add-user-btn" onclick="handleAddUsers()">添加</button>
+                    <input type="text" id="addUserInput" class="add-user-input" placeholder="输入姓名，多个用逗号或换行分隔">
+                    <button class="add-user-btn" onclick="handleAddUsers()">批量添加</button>
                 </div>
                 <table class="user-table">
                     <thead>
@@ -508,19 +723,18 @@
             "赵一", "钱二", "孙三", "李四", "周五", "吴六", "郑七", "王八", "冯九", "陈十",
             "褚十一", "卫十二", "蒋十三", "沈十四", "韩十五", "杨十六", "朱十七", "秦十八", "尤十九", "许二十"
         ];
-
+        
+        // 增加一些奖品，让演示更好看
         const initialPrizes = [
             { name: "特等奖：MacBook Pro", count: 1 },
-            { name: "一等奖：iPhone 16", count: 2 },
-            { name: "二等奖：iPad Air", count: 3 },
-            { name: "三等奖：AirPods", count: 4 },
-            { name: "四等奖：京东卡 500元", count: 5 },
-            { name: "五等奖：精美公仔", count: 5 }
+            { name: "一等奖：iPhone 16 Pro", count: 1 },
+            { name: "二等奖：iPad Air", count: 2 },
+            { name: "三等奖：AirPods Pro", count: 3 },
+            { name: "四等奖：京东卡 1000元", count: 5 },
+            { name: "五等奖：精美礼品一份", count: 10 }
         ];
 
         // ================= 状态管理 =================
-        // activeNames: 还在奖池中的人
-        // winnerHistory: 已经中奖的人 { name, prize, time }
         let activeNames = [...initialNames];
         let winnerHistory = [];
         let prizes = JSON.parse(JSON.stringify(initialPrizes));
@@ -532,9 +746,9 @@
         let currentOffset = 0;
         let animationId = null;
         let stopStartTime = 0;
-        let initialStopSpeed = 0; // 记录点击停止时的瞬时速度
+        let initialStopSpeed = 0;
 
-        const ITEM_HEIGHT = 80;
+        const ITEM_HEIGHT = 90; // 对应 CSS --item-height
         const VISIBLE_COUNT = 5;
 
         // DOM
@@ -550,7 +764,7 @@
         const userTableBody = document.getElementById('userTableBody');
         const addUserInput = document.getElementById('addUserInput');
 
-        // ================= 烟花特效 =================
+        // ================= 烟花特效 (优化颜色) =================
         const canvas = document.getElementById('fireworksCanvas');
         const ctx = canvas.getContext('2d');
         let fireworks = [];
@@ -568,19 +782,19 @@
                 this.x = x;
                 this.y = y;
                 this.color = color;
-                // 爆炸速度
-                this.vx = (Math.random() - 0.5) * 10;
-                this.vy = (Math.random() - 0.5) * 10;
+                this.vx = (Math.random() - 0.5) * 12;
+                this.vy = (Math.random() - 0.5) * 12;
                 this.alpha = 1;
-                this.friction = 0.96; // 空气阻力
-                this.gravity = 0.05; // 重力
+                this.friction = 0.95; 
+                this.gravity = 0.08; 
+                this.decay = Math.random() * 0.015 + 0.005;
             }
 
             draw() {
                 ctx.globalAlpha = this.alpha;
                 ctx.fillStyle = this.color;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
                 ctx.fill();
             }
 
@@ -590,7 +804,7 @@
                 this.vy += this.gravity;
                 this.x += this.vx;
                 this.y += this.vy;
-                this.alpha -= 0.01;
+                this.alpha -= this.decay;
             }
         }
 
@@ -599,17 +813,20 @@
                 this.x = x;
                 this.y = canvas.height;
                 this.targetY = y;
-                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                this.vx = (x - canvas.width / 2) * 0.01; // 稍微有点弧度
-                this.vy = -15; // 发射速度
+                // 金色、红色、橙色系
+                const colors = ['#ffd700', '#ff0000', '#ff4500', '#ff8c00', '#ffffff'];
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.vx = (x - canvas.width / 2) * 0.005; 
+                this.vy = -12 - Math.random() * 4; 
                 this.exploded = false;
             }
 
             draw() {
                 if (!this.exploded) {
+                    ctx.globalAlpha = 1;
                     ctx.fillStyle = this.color;
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y, 4, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
@@ -617,38 +834,33 @@
             update() {
                 if (!this.exploded) {
                     this.y += this.vy;
-                    // 到达目标高度，爆炸
                     if (this.y <= this.targetY || this.vy >= 0) {
                         this.explode();
                     }
-                    this.vy += 0.2; // 重力减速
+                    this.vy += 0.2; 
                 }
             }
 
             explode() {
                 this.exploded = true;
-                // 产生粒子
-                for (let i = 0; i < 50; i++) {
+                for (let i = 0; i < 80; i++) {
                     particles.push(new Particle(this.x, this.y, this.color));
                 }
             }
         }
 
         function loopFireworks() {
-            // 拖尾效果
             ctx.globalCompositeOperation = 'destination-out';
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // 拖尾更长一点
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.globalCompositeOperation = 'lighter';
 
-            // 更新烟花
             for (let i = fireworks.length - 1; i >= 0; i--) {
                 fireworks[i].update();
                 fireworks[i].draw();
                 if (fireworks[i].exploded) fireworks.splice(i, 1);
             }
 
-            // 更新粒子
             for (let i = particles.length - 1; i >= 0; i--) {
                 particles[i].update();
                 particles[i].draw();
@@ -658,23 +870,17 @@
             requestAnimationFrame(loopFireworks);
         }
         
-        // 启动烟花循环
         loopFireworks();
 
         function launchFireworks() {
-            // 只发射一个烟花，从底部中间发射到屏幕中心
-            // 目标位置：屏幕正中心
-            const x = canvas.width / 2;
-            const y = canvas.height / 2;
-            
-            // 为了让烟花正好在中间炸开，我们需要计算一个合适的发射速度或者直接在中间生成爆炸粒子
-            // 原有的 Firework 类是模拟从下往上飞的。
-            // 我们可以创建一个 Firework 实例，起始点在底部中间，目标点在屏幕中心
-            
-            const startX = canvas.width / 2;
-            
-            // 创建一个大烟花
-            fireworks.push(new Firework(startX, y));
+            // 发射多个烟花
+            for(let i=0; i<5; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * canvas.width * 0.6 + canvas.width * 0.2;
+                    const y = Math.random() * canvas.height * 0.5 + canvas.height * 0.1;
+                    fireworks.push(new Firework(x, y));
+                }, i * 300);
+            }
         }
 
         // ================= 初始化 =================
@@ -685,16 +891,12 @@
 
         function renderWheel() {
             nameListEl.innerHTML = '';
-            // 如果没人了，显示空
             if (activeNames.length === 0) return;
 
-            // 构造显示列表：为了无缝滚动，至少要有足够的长度
-            // 复制 activeNames 直到超过一定数量 (例如 30)
             let displayNames = [...activeNames];
-            while (displayNames.length < 30) {
+            while (displayNames.length < 40) { // 增加循环长度以保证顺滑
                 displayNames = displayNames.concat(activeNames);
             }
-            // 再复制一份用于无缝连接的尾巴
             displayNames = displayNames.concat(displayNames);
 
             displayNames.forEach(name => {
@@ -729,11 +931,9 @@
             if (!activeFound && activeNames.length > 0) {
                 actionBtn.textContent = "抽奖结束";
                 actionBtn.disabled = true;
-                actionBtn.className = 'btn btn-secondary';
             } else if (activeNames.length === 0) {
                 actionBtn.textContent = "人员已空";
                 actionBtn.disabled = true;
-                actionBtn.className = 'btn btn-secondary';
             }
         }
 
@@ -744,62 +944,38 @@
         // ================= 动画核心 =================
 
         function update() {
-            // 1. 物理计算
             if (isStopping) {
                 const now = Date.now();
                 const t = now - stopStartTime;
-                const DURATION = 10000; // 设定 10秒 完整停下
-                const MIN_CRAWL_SPEED = 0.5; // 最低龟爬速度
+                const DURATION = 8000; // 8秒停下
+                const MIN_CRAWL_SPEED = 0.8;
 
                 if (t < DURATION) {
-                    // --- 单一数学公式控制全程 (0s -> 10s) ---
-                    // 进度 progress 从 0 变到 1
                     const progress = t / DURATION;
-
-                    // 使用五次幂缓动 (Quintic Ease Out)
-                    // 指数越高，初期减速越快，后期的"龟爬"时间越长，悬念感越强
-                    // 3 = 均衡，5 = 极强拖拽感
-                    const decayFactor = Math.pow(1 - progress, 5);
-
+                    const decayFactor = Math.pow(1 - progress, 4); // 缓动
                     speed = (initialStopSpeed - MIN_CRAWL_SPEED) * decayFactor + MIN_CRAWL_SPEED;
                 } else {
-                    // --- 超时停止阶段 ---
-                    // 此时速度已经非常接近 MIN_CRAWL_SPEED (0.5)
-                    // 保持这个速度直到对齐
                     speed = MIN_CRAWL_SPEED;
-
                     const remainder = currentOffset % ITEM_HEIGHT;
-                    // 检测对齐 (允许 1px 误差)
-                    if (remainder < 1 || remainder > ITEM_HEIGHT - 1) {
+                    if (remainder < 1.5 || remainder > ITEM_HEIGHT - 1.5) { // 放宽一点判定
                         speed = 0;
                         isRolling = false;
                         isStopping = false;
-
-                        // 修正位置
                         currentOffset = Math.round(currentOffset / ITEM_HEIGHT) * ITEM_HEIGHT;
-
-                        // 结束动画循环，进入结算
                         finishLottery();
                         return;
                     }
                 }
             }
 
-            // 更新位移
             currentOffset += speed;
-
-            // 无缝循环逻辑
             const totalHeight = nameListEl.scrollHeight / 2;
             if (currentOffset >= totalHeight) {
                 currentOffset -= totalHeight;
             }
 
-            // 渲染位移
-            // 向上滚动 => translateY 为负
             const visualOffset = -(currentOffset % totalHeight);
             nameListEl.style.transform = `translateY(${visualOffset}px)`;
-
-            // 3D 效果计算
             update3DEffect(visualOffset);
 
             if (isRolling || isStopping) {
@@ -813,22 +989,26 @@
 
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
-                // 加上 visualOffset (负数) 才是当前的真实 Y 坐标
                 const itemY = (i * ITEM_HEIGHT) + visualOffset;
                 const itemCenterY = itemY + (ITEM_HEIGHT / 2);
-
-                // 距离视口中心的距离
                 const dist = Math.abs(containerCenter - itemCenterY);
 
-                if (dist < 400) {
-                    const normalizedDist = Math.min(dist / 250, 1);
+                if (dist < 500) {
+                    const normalizedDist = Math.min(dist / 300, 1);
                     const rotateDir = itemCenterY < containerCenter ? 1 : -1;
-                    const rotateX = normalizedDist * 45 * rotateDir;
-                    const scale = 1 - (normalizedDist * 0.3);
-                    const opacity = 1 - (normalizedDist * 0.7);
+                    const rotateX = normalizedDist * 50 * rotateDir;
+                    const scale = 1 - (normalizedDist * 0.2);
+                    const opacity = 1 - (normalizedDist * 0.6);
+
+                    // 增加 text-shadow 发光
+                    let textShadow = '';
+                    if (dist < ITEM_HEIGHT / 2) {
+                         textShadow = '0 0 15px rgba(252, 194, 0, 0.8)';
+                    }
 
                     item.style.transform = `perspective(1000px) rotateX(${rotateX}deg) scale(${scale})`;
                     item.style.opacity = opacity;
+                    item.style.textShadow = textShadow;
 
                     if (dist < ITEM_HEIGHT / 2) {
                         item.classList.add('active');
@@ -861,11 +1041,11 @@
 
             isRolling = true;
             isStopping = false;
-            speed = 40; // 初始高速
+            speed = 50; // 更快的初始速度
 
             actionBtn.textContent = "停止";
             actionBtn.className = "btn btn-warning";
-            userManageBtn.disabled = true; // 抽奖中禁止操作人员
+            userManageBtn.disabled = true;
 
             update();
         }
@@ -873,7 +1053,7 @@
         function stopRoll() {
             isStopping = true;
             stopStartTime = Date.now();
-            initialStopSpeed = speed; // 锁定初始速度
+            initialStopSpeed = speed;
             actionBtn.textContent = "好运降临...";
             actionBtn.disabled = true;
             actionBtn.className = "btn btn-secondary";
@@ -881,38 +1061,29 @@
 
         function finishLottery() {
             const activeItem = document.querySelector('.name-item.active');
-            if (!activeItem) {
-                // 极端情况未对齐
-                stopRoll(); return;
-            }
+            if (!activeItem) { stopRoll(); return; }
 
             const winnerName = activeItem.textContent;
             const currentPrize = getCurrentPrize();
             
-            // 1. 立即播放烟花庆祝
             launchFireworks();
 
-            // 2. 延迟 2秒 弹出结果
             setTimeout(() => {
-                // 记录数据
                 winnerHistory.push({
                     name: winnerName,
                     prize: currentPrize.name,
                     time: new Date().toLocaleTimeString()
                 });
 
-                // 移除获奖者
                 const idx = activeNames.indexOf(winnerName);
                 if (idx > -1) activeNames.splice(idx, 1);
 
-                // 扣减奖品
                 currentPrize.count--;
 
-                // UI 更新
                 showResultModal(winnerName, currentPrize);
                 renderPrizes();
                 addWinnerToList(winnerName, currentPrize.name);
-            }, 2000);
+            }, 1000); // 缩短等待时间
         }
 
         // ================= UI 与 弹窗 =================
@@ -930,12 +1101,9 @@
             actionBtn.className = "btn btn-primary";
             userManageBtn.disabled = false;
 
-            // 重要：重置滚动位置和列表
             currentOffset = 0;
             nameListEl.style.transform = `translateY(0px)`;
             renderWheel();
-
-            // 重新初始化 3D 状态 (防止第一帧闪烁)
             update3DEffect(0);
         }
 
@@ -944,9 +1112,9 @@
             li.className = 'winner-item';
             li.innerHTML = `
                 <span>${name}</span>
-                <span style="color:#aaa">${prizeName.split('：')[1] || prizeName}</span>
+                <span style="color:rgba(255,255,255,0.7)">${prizeName.split('：')[1] || prizeName}</span>
             `;
-            winnerListEl.prepend(li); // 最新在最前
+            winnerListEl.prepend(li);
         }
 
         // ================= 人员管理 =================
@@ -962,9 +1130,6 @@
 
         function renderUserTable() {
             userTableBody.innerHTML = '';
-
-            // 合并列表：待抽奖在前，已中奖在后
-            // 1. 待抽奖
             activeNames.forEach(name => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -975,7 +1140,6 @@
                 userTableBody.appendChild(tr);
             });
 
-            // 2. 已中奖 (反转顺序，最近中奖的在上面)
             [...winnerHistory].reverse().forEach(record => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -990,21 +1154,13 @@
         function handleAddUsers() {
             const val = addUserInput.value.trim();
             if (!val) return;
-
-            // 支持中英文逗号，换行符分隔
-            const newNames = val.split(/[,，\n]/)
-                .map(s => s.trim())
-                .filter(s => s.length > 0);
-
+            const newNames = val.split(/[,，\n]/).map(s => s.trim()).filter(s => s.length > 0);
             if (newNames.length === 0) return;
 
-            // 去重添加
             let count = 0;
             newNames.forEach(name => {
-                // 检查是否已经在待抽列表或已中奖列表
                 const isPending = activeNames.includes(name);
                 const isWon = winnerHistory.some(w => w.name === name);
-
                 if (!isPending && !isWon) {
                     activeNames.push(name);
                     count++;
@@ -1012,16 +1168,14 @@
             });
 
             addUserInput.value = '';
-            alert(`成功添加 ${count} 位新人员！`);
+            // alert(`成功添加 ${count} 位新人员！`); // 移除alert，直接刷新
             renderUserTable();
-            renderWheel(); // 刷新主舞台滚轮
-            renderPrizes(); // 更新按钮状态（如果之前没人了）
+            renderWheel();
+            renderPrizes();
         }
 
-        // 初始化
         init();
 
     </script>
 </body>
-
 </html>
