@@ -413,10 +413,28 @@
             pointer-events: none;
             z-index: 50;
         }
+
+        /* 3D名字背景 Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* 调整原有背景层级 */
+        .bg-pattern {
+            z-index: 0;
+            opacity: 0.05; /* 降低原有纹理透明度 */
+        }
     </style>
 </head>
 <body>
 
+    <canvas id="bg-canvas"></canvas>
     <canvas id="confetti-canvas"></canvas>
 
     <div class="bg-pattern"></div>
@@ -579,6 +597,126 @@
             renderUI();
             setupEventListeners();
             animateConfetti(); // 预加载 Canvas
+            initBgAnimation(); // 启动3D名字背景
+        }
+
+        // ... existing code ...
+
+        /**
+         * 3D 名字背景特效
+         */
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let nameStars = [];
+        const STAR_COUNT = 150; // 名字数量
+        const FOCAL_LENGTH = 400; // 焦距，控制透视感
+        
+        class NameStar {
+            constructor() {
+                this.reset(true);
+            }
+
+            reset(initial = false) {
+                // 如果没有用户数据，使用默认占位
+                const nameList = state.users.length > 0 ? state.users : [{name: '福'}, {name: '乐'}, {name: '喜'}];
+                this.name = nameList[Math.floor(Math.random() * nameList.length)].name;
+                
+                // 随机分布在视野范围内
+                // x, y 范围需要比屏幕大很多，这样飞过来时才会从四周划过
+                this.x = (Math.random() - 0.5) * window.innerWidth * 4;
+                this.y = (Math.random() - 0.5) * window.innerHeight * 4;
+                
+                // z轴深度: 初始时随机分布在远近，重置时回到最远处
+                this.z = initial ? Math.random() * 2000 : 2000;
+                
+                this.speed = 5 + Math.random() * 5; // 移动速度
+                this.color = '#FFFACD';
+            }
+
+            update() {
+                this.z -= this.speed;
+                
+                // 如果飞过头了（z <= 0），重置到远处
+                if (this.z <= 10) {
+                    this.reset();
+                }
+            }
+
+            draw() {
+                if (!this.name) return;
+
+                // 3D 投影公式
+                const scale = FOCAL_LENGTH / (FOCAL_LENGTH + this.z); // z越小(越近)，scale越大
+                
+                // 屏幕中心坐标
+                const cx = bgCanvas.width / 2;
+                const cy = bgCanvas.height / 2;
+
+                const x2d = cx + this.x * scale;
+                const y2d = cy + this.y * scale;
+
+                // 简单的视锥裁剪
+                if (x2d < -100 || x2d > bgCanvas.width + 100 || y2d < -100 || y2d > bgCanvas.height + 100) {
+                    // 如果还在很远的地方就出界了，不需要重置，继续飞
+                    // 如果很近了出界，可以重置以节省资源? 其实不用，z<=10会自动重置
+                    return; 
+                }
+
+                // 透明度随距离变化：远处透明，近处清晰，极近处消失
+                // z: 2000 -> 0
+                // alpha: 0 -> 1 -> 0
+                let alpha = 1;
+                if (this.z > 1500) {
+                    alpha = 1 - (this.z - 1500) / 500;
+                } else if (this.z < 200) {
+                    alpha = this.z / 200;
+                }
+                
+                // 限制 alpha 范围
+                alpha = Math.max(0, Math.min(1, alpha * 0.4)); // *0.4 降低整体亮度，不要太抢眼
+
+                bgCtx.save();
+                bgCtx.translate(x2d, y2d);
+                
+                // 字体大小随距离变化
+                const fontSize = Math.max(10, 40 * scale);
+                bgCtx.font = `bold ${fontSize}px "Microsoft YaHei"`;
+                bgCtx.fillStyle = `rgba(255, 250, 205, ${alpha})`;
+                bgCtx.textAlign = 'center';
+                bgCtx.textBaseline = 'middle';
+                
+                bgCtx.fillText(this.name, 0, 0);
+                bgCtx.restore();
+            }
+        }
+
+        function initBgAnimation() {
+            // 响应 resize
+            const resizeBg = () => {
+                bgCanvas.width = window.innerWidth;
+                bgCanvas.height = window.innerHeight;
+            };
+            window.addEventListener('resize', resizeBg);
+            resizeBg();
+
+            // 创建粒子
+            nameStars = [];
+            for(let i=0; i<STAR_COUNT; i++) {
+                nameStars.push(new NameStar());
+            }
+
+            animateBg();
+        }
+
+        function animateBg() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            
+            nameStars.forEach(star => {
+                star.update();
+                star.draw();
+            });
+
+            requestAnimationFrame(animateBg);
         }
 
         function loadData() {
