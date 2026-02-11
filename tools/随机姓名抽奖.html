@@ -809,15 +809,23 @@
         }
 
         class Firework {
-            constructor(x, y) {
-                this.x = x;
+            constructor(targetX, targetY) {
+                this.x = canvas.width / 2; // 起点固定在底部中心
                 this.y = canvas.height;
-                this.targetY = y;
+                this.targetX = targetX;
+                this.targetY = targetY;
                 // 金色、红色、橙色系
                 const colors = ['#ffd700', '#ff0000', '#ff4500', '#ff8c00', '#ffffff'];
                 this.color = colors[Math.floor(Math.random() * colors.length)];
-                this.vx = (x - canvas.width / 2) * 0.005; 
-                this.vy = -12 - Math.random() * 4; 
+                
+                // 垂直发射速度
+                this.vy = -13 - Math.random() * 5; 
+                
+                // 估算到达目标高度的时间 (简单物理估算或经验值)
+                // 假设大约 60-80 帧到达顶点附近
+                const flightTime = 70; 
+                this.vx = (targetX - this.x) / flightTime;
+
                 this.exploded = false;
             }
 
@@ -833,11 +841,13 @@
 
             update() {
                 if (!this.exploded) {
+                    this.x += this.vx;
                     this.y += this.vy;
+                    // 到达目标高度或者速度降为0时爆炸
                     if (this.y <= this.targetY || this.vy >= 0) {
                         this.explode();
                     }
-                    this.vy += 0.2; 
+                    this.vy += 0.2; // 重力
                 }
             }
 
@@ -850,9 +860,8 @@
         }
 
         function loopFireworks() {
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; // 拖尾更长一点
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // 使用 clearRect 清除上一帧，去除拖尾路径
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.globalCompositeOperation = 'lighter';
 
             for (let i = fireworks.length - 1; i >= 0; i--) {
@@ -1083,7 +1092,7 @@
                 showResultModal(winnerName, currentPrize);
                 renderPrizes();
                 addWinnerToList(winnerName, currentPrize.name);
-            }, 1000); // 缩短等待时间
+            }, 3500); // 延长等待时间，让烟花放完
         }
 
         // ================= UI 与 弹窗 =================
@@ -1105,6 +1114,11 @@
             nameListEl.style.transform = `translateY(0px)`;
             renderWheel();
             update3DEffect(0);
+
+            // 清理烟花，防止影响下一次
+            fireworks = [];
+            particles = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
         function addWinnerToList(name, prizeName) {
