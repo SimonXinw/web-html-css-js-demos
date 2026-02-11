@@ -560,35 +560,34 @@
             // 1. 物理计算
             if (isStopping) {
                 const now = Date.now();
-                const stopDuration = now - stopStartTime;
-
-                // 阶段一：前 3 秒缓慢减速 (增加悬念)
-                if (stopDuration < 3000) {
-                    speed *= 0.992; // 非常小的阻力
-                } 
-                // 阶段二：3秒后，施加稍大的阻力
-                else {
-                    speed *= 0.96;
-                }
-
-                // 阶段三：极低速"爬行" (Crawl Phase)
-                // 当速度降低到很低时，强制保持在一个极低的速度蠕动
-                // 模拟轮盘最后慢慢走过几个格子的感觉，增加紧张感
-                if (speed < 1.0 && speed > 0.1) {
-                    speed = 0.3; // 恒定极低速 (龟速)
-                }
+                const t = now - stopStartTime;
                 
-                // 阶段四：对齐停止
-                // 只有当速度处于爬行阶段，且对齐到了网格中心时才停
-                if (speed <= 0.3) {
+                // 配置参数
+                const CRAWL_SPEED = 0.6; // 龟爬速度 (0.6px/frame 约等于 2秒走一格)
+                const MIN_DURATION = 8000; // 最小停止时长 (8秒)，保证悬念够长
+
+                if (t < 3000) {
+                    // 阶段一 (0-3s): 快速减速期
+                    // 使用固定阻力快速将速度从 40 降下来
+                    speed *= 0.96; 
+                } else {
+                    // 阶段二 (3s+): 丝滑切入龟速
+                    // 使用 Lerp 插值，让速度平滑地趋向于 CRAWL_SPEED
+                    // 这样就没有突兀的"阶段感"
+                    speed += (CRAWL_SPEED - speed) * 0.05;
+                }
+
+                // 阶段三: 超时停止
+                // 只有当时间足够长，且刚好对齐格子时才停
+                if (t > MIN_DURATION) {
                     const remainder = currentOffset % ITEM_HEIGHT;
-                    // 检测是否对齐：remainder 接近 0 或接近 ITEM_HEIGHT
-                    // 允许误差范围缩小到 1px，保证停得准
-                    if (remainder < 1 || remainder > ITEM_HEIGHT - 1) {
+                    // 判定范围宽一点 (1.5px)，确保 CRAWL_SPEED (0.6) 一定能落在区间内
+                    if (remainder < 1.5 || remainder > ITEM_HEIGHT - 1.5) {
                         speed = 0;
                         isRolling = false;
                         isStopping = false;
-                        // 修正位置
+                        
+                        // 修正最终位置
                         currentOffset = Math.round(currentOffset / ITEM_HEIGHT) * ITEM_HEIGHT;
                         finishLottery();
                         return; // 结束帧循环
