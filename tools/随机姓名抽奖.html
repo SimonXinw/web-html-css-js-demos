@@ -472,7 +472,8 @@
         let speed = 0;
         let currentOffset = 0;
         let animationId = null;
-        let stopStartTime = 0; // 记录点击停止的时间
+        let stopStartTime = 0;
+        let initialStopSpeed = 0; // 记录点击停止时的瞬时速度
         
         const ITEM_HEIGHT = 80;
         const VISIBLE_COUNT = 5;
@@ -561,36 +562,40 @@
             if (isStopping) {
                 const now = Date.now();
                 const t = now - stopStartTime;
-                
-                // 配置参数
-                const CRAWL_SPEED = 0.6; // 龟爬速度 (0.6px/frame 约等于 2秒走一格)
-                const MIN_DURATION = 8000; // 最小停止时长 (8秒)，保证悬念够长
+                const DURATION = 10000; // 设定 10秒 完整停下
+                const MIN_CRAWL_SPEED = 0.5; // 最低龟爬速度
 
-                if (t < 3000) {
-                    // 阶段一 (0-3s): 快速减速期
-                    // 使用固定阻力快速将速度从 40 降下来
-                    speed *= 0.96; 
+                if (t < DURATION) {
+                    // --- 单一数学公式控制全程 (0s -> 10s) ---
+                    // 进度 progress 从 0 变到 1
+                    const progress = t / DURATION;
+                    
+                    // 使用三次幂缓动 (Cubic Ease Out) 的反向逻辑
+                    // (1 - progress)^3 从 1 降到 0
+                    // 速度 = (初始速度 - 最低速度) * 衰减因子 + 最低速度
+                    // 这样速度曲线是完全连续平滑的，没有阶段感，且最后会平滑过渡到 MIN_CRAWL_SPEED
+                    const decayFactor = Math.pow(1 - progress, 3);
+                    
+                    speed = (initialStopSpeed - MIN_CRAWL_SPEED) * decayFactor + MIN_CRAWL_SPEED;
                 } else {
-                    // 阶段二 (3s+): 丝滑切入龟速
-                    // 使用 Lerp 插值，让速度平滑地趋向于 CRAWL_SPEED
-                    // 这样就没有突兀的"阶段感"
-                    speed += (CRAWL_SPEED - speed) * 0.05;
-                }
-
-                // 阶段三: 超时停止
-                // 只有当时间足够长，且刚好对齐格子时才停
-                if (t > MIN_DURATION) {
+                    // --- 超时停止阶段 ---
+                    // 此时速度已经非常接近 MIN_CRAWL_SPEED (0.5)
+                    // 保持这个速度直到对齐
+                    speed = MIN_CRAWL_SPEED;
+                    
                     const remainder = currentOffset % ITEM_HEIGHT;
-                    // 判定范围宽一点 (1.5px)，确保 CRAWL_SPEED (0.6) 一定能落在区间内
-                    if (remainder < 1.5 || remainder > ITEM_HEIGHT - 1.5) {
+                    // 检测对齐 (允许 1px 误差)
+                    if (remainder < 1 || remainder > ITEM_HEIGHT - 1) {
                         speed = 0;
                         isRolling = false;
                         isStopping = false;
                         
-                        // 修正最终位置
+                        // 修正位置
                         currentOffset = Math.round(currentOffset / ITEM_HEIGHT) * ITEM_HEIGHT;
+                        
+                        // 结束动画循环，进入结算
                         finishLottery();
-                        return; // 结束帧循环
+                        return; 
                     }
                 }
             }
@@ -682,7 +687,8 @@
 
         function stopRoll() {
             isStopping = true;
-            stopStartTime = Date.now(); // 记录停止时刻
+            stopStartTime = Date.now();
+            initialStopSpeed = speed; // 锁定初始速度
             actionBtn.textContent = "好运降临...";
             actionBtn.disabled = true;
             actionBtn.className = "btn btn-secondary";
@@ -697,25 +703,28 @@
 
             const winnerName = activeItem.textContent;
             const currentPrize = getCurrentPrize();
+            
+            // 延迟 2秒 弹出结果
+            setTimeout(() => {
+                // 记录数据
+                winnerHistory.push({
+                    name: winnerName,
+                    prize: currentPrize.name,
+                    time: new Date().toLocaleTimeString()
+                });
 
-            // 记录数据
-            winnerHistory.push({
-                name: winnerName,
-                prize: currentPrize.name,
-                time: new Date().toLocaleTimeString()
-            });
+                // 移除获奖者
+                const idx = activeNames.indexOf(winnerName);
+                if (idx > -1) activeNames.splice(idx, 1);
 
-            // 移除获奖者
-            const idx = activeNames.indexOf(winnerName);
-            if (idx > -1) activeNames.splice(idx, 1);
+                // 扣减奖品
+                currentPrize.count--;
 
-            // 扣减奖品
-            currentPrize.count--;
-
-            // UI 更新
-            showResultModal(winnerName, currentPrize);
-            renderPrizes();
-            addWinnerToList(winnerName, currentPrize.name);
+                // UI 更新
+                showResultModal(winnerName, currentPrize);
+                renderPrizes();
+                addWinnerToList(winnerName, currentPrize.name);
+            }, 2000);
         }
 
         // ================= UI 与 弹窗 =================
