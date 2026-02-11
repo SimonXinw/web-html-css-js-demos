@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>多人随机姓名抽奖 - 喜庆版</title>
+    <style>
+        :root {
+            --primary-red: #D42721;
+            --dark-red: #8B0000;
+            --gold: #FFD700;
+            --light-gold: #FFFACD;
+            --text-color: #333;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "Heiti SC", sans-serif;
+            background: radial-gradient(circle at center, #e63946, #8B0000);
+            min-height: 100vh;
+            color: var(--light-gold);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 背景装饰 - 云纹/灯笼 (CSS绘制简单示意) */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(var(--gold) 1px, transparent 1px),
+                radial-gradient(var(--gold) 1px, transparent 1px);
+            background-size: 50px 50px;
+            background-position: 0 0, 25px 25px;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .lantern {
+            position: absolute;
+            top: -20px;
+            width: 80px;
+            height: 100px;
+            background: var(--primary-red);
+            border-radius: 50px;
+            border: 4px solid var(--gold);
+            box-shadow: 0 0 20px var(--gold);
+            z-index: 1;
+            animation: swing 3s infinite ease-in-out alternate;
+        }
+        .lantern::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 30px;
+            width: 20px;
+            height: 40px;
+            background: var(--gold);
+        }
+        .lantern.left { left: 5%; }
+        .lantern.right { right: 5%; animation-delay: 1s; }
+
+        @keyframes swing {
+            from { transform: rotate(-5deg); }
+            to { transform: rotate(5deg); }
+        }
+
+        /* 主容器 */
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: var(--gold);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5), 0 0 20px var(--gold);
+            letter-spacing: 5px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--light-gold);
+            opacity: 0.9;
+        }
+
+        /* 抽奖主区域 */
+        .main-stage {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 4px solid var(--gold);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 900px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        /* 奖品选择栏 */
+        .prize-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .prize-card {
+            background: linear-gradient(135deg, #fff, #f0f0f0);
+            color: var(--dark-red);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            min-width: 120px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prize-card.active {
+            background: var(--gold);
+            border-color: #fff;
+            transform: scale(1.05);
+            font-weight: bold;
+            box-shadow: 0 0 15px var(--gold);
+        }
+
+        .prize-card .prize-name { font-size: 1.1rem; }
+        .prize-card .prize-count { font-size: 0.9rem; opacity: 0.8; }
+        
+        /* 进度条效果 */
+        .prize-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: var(--primary-red);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* 滚动名字显示 */
+        .rolling-display {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #fff;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            margin: 20px 0;
+            perspective: 1000px;
+        }
+
+        .rolling-name {
+            display: inline-block;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 结果展示区 (用于一次抽多个) */
+        .winners-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            display: none; /* 默认隐藏，抽奖结束后显示 */
+        }
+        
+        .winner-card {
+            background: var(--gold);
+            color: var(--primary-red);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            animation: zoomIn 0.5s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn-start {
+            background: var(--gold);
+            color: var(--primary-red);
+        }
+        
+        .btn-stop {
+            background: var(--primary-red);
+            color: #fff;
+            border: 2px solid #fff;
+            display: none;
+        }
+
+        .btn-settings {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        .batch-select {
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .batch-select option {
+            background: var(--dark-red);
+            color: #fff;
+        }
+
+        /* 弹窗面板 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal {
+            background: #fff;
+            color: #333;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 15px;
+            padding: 0;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            background: var(--primary-red);
+            color: #fff;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 { margin: 0; }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .tab.active {
+            color: var(--primary-red);
+            border-bottom: 3px solid var(--primary-red);
+        }
+
+        /* 设置表单 */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        textarea.form-control { min-height: 150px; resize: vertical; }
+
+        .btn-primary {
+            background: var(--primary-red);
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: #fff;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* 列表表格 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th { background: #f8f9fa; color: #333; }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+        .status-unwon { background: #e9ecef; color: #666; }
+        .status-won { background: #d4edda; color: #155724; }
+
+        .prize-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        /* 粒子动画 Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="bg-pattern"></div>
+    <div class="lantern left"></div>
+    <div class="lantern right"></div>
+
+    <div class="container">
+        <header>
+            <h1>🎉 新春嘉年华 · 幸运大抽奖 🎉</h1>
+            <div class="subtitle">Fair, Just, and Joyous Lucky Draw</div>
+        </header>
+
+        <div class="main-stage">
+            <div class="prize-selector" id="prizeListDisplay">
+                <!-- 奖品列表将通过JS动态生成 -->
+            </div>
+
+            <div class="rolling-display" id="rollingDisplay">
+                准备开始
+            </div>
+
+            <div class="winners-grid" id="winnersGrid">
+                <!-- 中奖结果展示 -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <select class="batch-select" id="batchSizeSelect">
+                <option value="1">抽 1 人</option>
+                <option value="3">抽 3 人</option>
+                <option value="5">抽 5 人</option>
+                <option value="10">抽 10 人</option>
+            </select>
+            
+            <button class="btn btn-start" id="startBtn">开始抽奖</button>
+            <button class="btn btn-stop" id="stopBtn">停止 !</button>
+            
+            <button class="btn btn-settings" id="settingsBtn">⚙️ 设置 / 名单</button>
+        </div>
+    </div>
+
+    <!-- 设置弹窗 -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>⚙️ 抽奖管理</h2>
+                <button class="close-btn" id="closeSettings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tabs">
+                    <div class="tab active" data-tab="participants">人员管理</div>
+                    <div class="tab" data-tab="prizes">奖品设置</div>
+                    <div class="tab" data-tab="results">人员状态</div>
+                </div>
+
+                <!-- 人员管理 -->
+                <div id="tab-participants" class="tab-content">
+                    <div class="form-group">
+                        <label class="form-label">导入名单 (每行一个姓名)</label>
+                        <textarea class="form-control" id="namesInput" placeholder="张三&#10;李四&#10;王五"></textarea>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <span>当前总人数: <strong id="totalCount">0</strong></span>
+                            <span style="margin-left: 20px;">待抽奖: <strong id="remainCount">0</strong></span>
+                        </div>
+                        <div>
+                            <button class="btn-primary" id="saveNamesBtn">保存名单</button>
+                            <button class="btn-danger" id="resetAllBtn" style="margin-left: 10px;">重置所有状态</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 奖品设置 -->
+                <div id="tab-prizes" class="tab-content" style="display: none;">
+                    <div id="prizesContainer">
+                        <!-- 动态生成奖品输入行 -->
+                    </div>
+                    <button class="btn-primary" id="addPrizeBtn" style="margin-top: 10px;">+ 添加奖品</button>
+                    <button class="btn-primary" id="savePrizesBtn" style="float: right; margin-top: 10px;">保存奖品设置</button>
+                </div>
+
+                <!-- 中奖结果 -->
+                <div id="tab-results" class="tab-content" style="display: none;">
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>姓名</th>
+                                    <th>奖项</th>
+                                    <th>中奖时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultsTableBody">
+                                <!-- 结果列表 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * 状态管理
+         */
+        const state = {
+            users: [], // { name, id, prizeId: null | string, winTime: null }
+            prizes: [], // { id, name, count, drawnCount }
+            currentPrizeId: null,
+            isRolling: false,
+            batchSize: 1,
+            timer: null
+        };
+
+        const STORAGE_KEY = 'lucky_draw_data';
+
+        // 初始化默认数据
+        const defaultPrizes = [
+            { id: 'p1', name: '特等奖', count: 1, drawnCount: 0 },
+            { id: 'p2', name: '一等奖', count: 3, drawnCount: 0 },
+            { id: 'p3', name: '二等奖', count: 5, drawnCount: 0 },
+            { id: 'p4', name: '三等奖', count: 10, drawnCount: 0 }
+        ];
+
+        // DOM 元素
+        const el = {
+            startBtn: document.getElementById('startBtn'),
+            stopBtn: document.getElementById('stopBtn'),
+            settingsBtn: document.getElementById('settingsBtn'),
+            closeSettings: document.getElementById('closeSettings'),
+            settingsModal: document.getElementById('settingsModal'),
+            rollingDisplay: document.getElementById('rollingDisplay'),
+            winnersGrid: document.getElementById('winnersGrid'),
+            prizeListDisplay: document.getElementById('prizeListDisplay'),
+            batchSizeSelect: document.getElementById('batchSizeSelect'),
+            namesInput: document.getElementById('namesInput'),
+            saveNamesBtn: document.getElementById('saveNamesBtn'),
+            resetAllBtn: document.getElementById('resetAllBtn'),
+            totalCount: document.getElementById('totalCount'),
+            remainCount: document.getElementById('remainCount'),
+            prizesContainer: document.getElementById('prizesContainer'),
+            addPrizeBtn: document.getElementById('addPrizeBtn'),
+            savePrizesBtn: document.getElementById('savePrizesBtn'),
+            resultsTableBody: document.getElementById('resultsTableBody'),
+            tabs: document.querySelectorAll('.tab'),
+            tabContents: document.querySelectorAll('.tab-content'),
+            confettiCanvas: document.getElementById('confetti-canvas')
+        };
+
+        // 音效 (可选，这里使用简单的Audio Context或者不加)
+        
+        /**
+         * 初始化
+         */
+        function init() {
+            loadData();
+            renderUI();
+            setupEventListeners();
+            animateConfetti(); // 预加载 Canvas
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const data = JSON.parse(stored);
+                state.users = data.users || [];
+                state.prizes = data.prizes || defaultPrizes;
+            } else {
+                state.prizes = defaultPrizes;
+                // Add demo users
+                const demoNames = [
+                    "张三", "李四", "王五", "赵六", "孙七", "周八", "吴九", "郑十",
+                    "刘一", "陈二", "杨三", "黄四", "朱五", "徐六", "何七", "马八",
+                    "罗九", "梁十", "宋一", "唐二", "许三", "韩四", "邓五", "曹六",
+                    "彭七", "曾八", "萧九", "田十", "董一", "袁二"
+                ];
+                state.users = demoNames.map(name => ({
+                    name,
+                    id: Date.now() + Math.random(),
+                    prizeId: null
+                }));
+            }
+            
+            if (state.prizes.length > 0) {
+                state.currentPrizeId = state.prizes[0].id;
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                users: state.users,
+                prizes: state.prizes
+            }));
+        }
+
+        /**
+         * UI 渲染逻辑
+         */
+        function renderUI() {
+            renderPrizeSelector();
+            renderSettings();
+            updateStats();
+        }
+
+        function renderPrizeSelector() {
+            el.prizeListDisplay.innerHTML = '';
+            state.prizes.forEach(prize => {
+                const card = document.createElement('div');
+                card.className = `prize-card ${state.currentPrizeId === prize.id ? 'active' : ''}`;
+                const percent = Math.min(100, (prize.drawnCount / prize.count) * 100);
+                
+                card.innerHTML = `
+                    <div class="prize-name">${prize.name}</div>
+                    <div class="prize-count">${prize.drawnCount} / ${prize.count}</div>
+                    <div class="prize-progress" style="width: ${percent}%"></div>
+                `;
+                
+                card.onclick = () => {
+                    if (state.isRolling) return;
+                    state.currentPrizeId = prize.id;
+                    renderPrizeSelector();
+                    el.rollingDisplay.textContent = `准备抽取: ${prize.name}`;
+                    el.rollingDisplay.style.display = 'flex';
+                    el.winnersGrid.style.display = 'none';
+                };
+                el.prizeListDisplay.appendChild(card);
+            });
+
+            // 更新主显示区的默认文本
+            const currentPrize = state.prizes.find(p => p.id === state.currentPrizeId);
+            if (!state.isRolling && currentPrize) {
+                el.rollingDisplay.textContent = `准备抽取: ${currentPrize.name}`;
+            }
+        }
+
+        function updateStats() {
+            const unwon = state.users.filter(u => !u.prizeId).length;
+            el.totalCount.textContent = state.users.length;
+            el.remainCount.textContent = unwon;
+            el.namesInput.value = state.users.map(u => u.name).join('\n');
+            renderResultsTable();
+        }
+
+        /**
+         * 抽奖核心逻辑
+         */
+        function startLottery() {
+            const currentPrize = state.prizes.find(p => p.id === state.currentPrizeId);
+            if (!currentPrize) return alert('请先选择奖品');
+            
+            const remainingPrizeCount = currentPrize.count - currentPrize.drawnCount;
+            if (remainingPrizeCount <= 0) return alert('该奖品已抽完！');
+
+            const candidates = state.users.filter(u => !u.prizeId);
+            if (candidates.length === 0) return alert('没有人可以抽了！');
+
+            state.isRolling = true;
+            state.batchSize = parseInt(el.batchSizeSelect.value);
+            
+            // 切换按钮状态
+            el.startBtn.style.display = 'none';
+            el.stopBtn.style.display = 'block';
+            el.rollingDisplay.style.display = 'flex';
+            el.winnersGrid.style.display = 'none';
+            el.settingsBtn.disabled = true;
+
+            // 开始滚动动画
+            let frame = 0;
+            state.timer = setInterval(() => {
+                // 随机显示名字
+                const randomName = candidates[Math.floor(Math.random() * candidates.length)].name;
+                el.rollingDisplay.innerHTML = `<div class="rolling-name">${randomName}</div>`;
+                frame++;
+            }, 50); // 50ms 刷新一次
+        }
+
+        function stopLottery() {
+            clearInterval(state.timer);
+            state.isRolling = false;
+            
+            // 真正的抽奖逻辑
+            const currentPrize = state.prizes.find(p => p.id === state.currentPrizeId);
+            const candidates = state.users.filter(u => !u.prizeId);
+            const remainingPrizeCount = currentPrize.count - currentPrize.drawnCount;
+            
+            // 实际抽取数量：取 (设置的批量, 剩余奖品数, 剩余人数) 的最小值
+            const drawCount = Math.min(state.batchSize, remainingPrizeCount, candidates.length);
+            
+            // 洗牌算法随机抽取
+            const winners = [];
+            for (let i = 0; i < drawCount; i++) {
+                const randomIndex = Math.floor(Math.random() * candidates.length);
+                const winner = candidates[randomIndex];
+                // 标记中奖
+                winner.prizeId = currentPrize.id;
+                winner.winTime = new Date().toLocaleString();
+                winners.push(winner);
+                // 从候选池移除以防重复抽 (本次循环内)
+                candidates.splice(randomIndex, 1);
+            }
+
+            // 更新奖品计数
+            currentPrize.drawnCount += winners.length;
+            
+            // 保存数据
+            saveData();
+            updateStats();
+            renderPrizeSelector();
+
+            // 显示结果
+            showWinners(winners);
+
+            // 恢复按钮
+            el.startBtn.style.display = 'block';
+            el.stopBtn.style.display = 'none';
+            el.settingsBtn.disabled = false;
+
+            // 触发特效
+            fireConfetti();
+        }
+
+        function showWinners(winners) {
+            el.rollingDisplay.style.display = 'none';
+            el.winnersGrid.style.display = 'grid';
+            el.winnersGrid.innerHTML = '';
+            
+            winners.forEach(w => {
+                const div = document.createElement('div');
+                div.className = 'winner-card';
+                div.textContent = w.name;
+                el.winnersGrid.appendChild(div);
+            });
+        }
+
+        /**
+         * 设置与事件监听
+         */
+        function setupEventListeners() {
+            el.startBtn.addEventListener('click', startLottery);
+            el.stopBtn.addEventListener('click', stopLottery);
+            
+            el.settingsBtn.addEventListener('click', () => {
+                el.settingsModal.style.display = 'flex';
+                renderSettings();
+            });
+            
+            el.closeSettings.addEventListener('click', () => el.settingsModal.style.display = 'none');
+            
+            // Tab 切换
+            el.tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    el.tabs.forEach(t => t.classList.remove('active'));
+                    el.tabContents.forEach(c => c.style.display = 'none');
+                    tab.classList.add('active');
+                    document.getElementById(`tab-${tab.dataset.tab}`).style.display = 'block';
+                });
+            });
+
+            // 保存名单
+            el.saveNamesBtn.addEventListener('click', () => {
+                const text = el.namesInput.value.trim();
+                const names = text.split('\n').map(n => n.trim()).filter(n => n);
+                // 保留已中奖状态，更新名单逻辑比较复杂。
+                // 简单策略：完全重置用户列表，或者合并。
+                // 这里采用：如果是全新名单，则覆盖；如果名字相同，尝试保留ID？
+                // 简单做法：覆盖模式 (会丢失中奖状态，所以提示重置)
+                // 优化做法：根据名字去重
+                
+                if(!confirm("保存将更新人员名单，是否继续？")) return;
+
+                const newUsers = names.map(name => {
+                    // 尝试查找现有用户以保留状态
+                    const exist = state.users.find(u => u.name === name);
+                    return exist || { name, id: Date.now() + Math.random(), prizeId: null };
+                });
+                
+                state.users = newUsers;
+                saveData();
+                updateStats();
+                alert('名单已更新');
+            });
+
+            // 重置
+            el.resetAllBtn.addEventListener('click', () => {
+                if(confirm('确定要重置所有人的中奖状态吗？这将清空所有奖品发放记录。')) {
+                    state.users.forEach(u => {
+                        u.prizeId = null;
+                        u.winTime = null;
+                    });
+                    state.prizes.forEach(p => p.drawnCount = 0);
+                    saveData();
+                    updateStats();
+                    renderPrizeSelector();
+                    alert('已重置');
+                }
+            });
+
+            // 添加奖品
+            el.addPrizeBtn.addEventListener('click', () => {
+                const id = 'p' + Date.now();
+                state.prizes.push({ id, name: '新奖品', count: 1, drawnCount: 0 });
+                renderPrizesSetting();
+            });
+
+            // 保存奖品
+            el.savePrizesBtn.addEventListener('click', () => {
+                // 收集DOM数据
+                const rows = document.querySelectorAll('.prize-row');
+                const newPrizes = [];
+                rows.forEach(row => {
+                    const id = row.dataset.id;
+                    const name = row.querySelector('.p-name').value;
+                    const count = parseInt(row.querySelector('.p-count').value);
+                    const original = state.prizes.find(p => p.id === id);
+                    
+                    newPrizes.push({
+                        id,
+                        name,
+                        count,
+                        drawnCount: original ? original.drawnCount : 0
+                    });
+                });
+                state.prizes = newPrizes;
+                saveData();
+                renderPrizeSelector();
+                alert('奖品设置已保存');
+            });
+        }
+
+        function renderSettings() {
+            renderPrizesSetting();
+            renderResultsTable();
+        }
+
+        function renderPrizesSetting() {
+            el.prizesContainer.innerHTML = '';
+            state.prizes.forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'prize-row';
+                row.dataset.id = p.id;
+                row.innerHTML = `
+                    <input type="text" class="form-control p-name" value="${p.name}" style="flex:2">
+                    <input type="number" class="form-control p-count" value="${p.count}" min="1" style="flex:1">
+                    <button class="btn-danger" onclick="removePrize('${p.id}')">删除</button>
+                `;
+                el.prizesContainer.appendChild(row);
+            });
+        }
+
+        window.removePrize = function(id) {
+            state.prizes = state.prizes.filter(p => p.id !== id);
+            renderPrizesSetting();
+        };
+        
+        window.resetWinner = function(userId) {
+            const user = state.users.find(u => u.id == userId); // loose match for ID
+            if (user && user.prizeId) {
+                const prize = state.prizes.find(p => p.id === user.prizeId);
+                if (prize) prize.drawnCount--;
+                user.prizeId = null;
+                user.winTime = null;
+                saveData();
+                renderResultsTable();
+                updateStats();
+                renderPrizeSelector();
+            }
+        };
+
+        function renderResultsTable() {
+            // Sort: Winners first, then by win time (newest first), then by name
+            const allUsers = [...state.users].sort((a, b) => {
+                if (a.prizeId && !b.prizeId) return -1;
+                if (!a.prizeId && b.prizeId) return 1;
+                if (a.prizeId && b.prizeId) {
+                     return new Date(b.winTime) - new Date(a.winTime);
+                }
+                return 0;
+            });
+
+            el.resultsTableBody.innerHTML = allUsers.map(u => {
+                const prize = state.prizes.find(p => p.id === u.prizeId);
+                const statusHtml = prize 
+                    ? `<span class="status-badge status-won">${prize.name}</span>`
+                    : `<span class="status-badge status-unwon">未中奖</span>`;
+                
+                const actionHtml = prize
+                    ? `<button class="btn-danger" onclick="resetWinner('${u.id}')">取消中奖</button>`
+                    : `-`;
+
+                return `
+                    <tr>
+                        <td>${u.name}</td>
+                        <td>${statusHtml}</td>
+                        <td>${u.winTime || '-'}</td>
+                        <td>${actionHtml}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        /**
+         * 礼花特效 (Simple Canvas Confetti)
+         */
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let animationId;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                color: ['#FFD700', '#FF0000', '#FFFFFF', '#FFA500'][Math.floor(Math.random() * 4)],
+                size: Math.random() * 10 + 5,
+                speedY: Math.random() * 5 + 2,
+                speedX: Math.random() * 4 - 2,
+                rotation: Math.random() * 360,
+                rotationSpeed: Math.random() * 10 - 5
+            };
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.rotation += p.rotationSpeed;
+                
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation * Math.PI / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                ctx.restore();
+
+                if (p.y > canvas.height) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            if (particles.length > 0) {
+                requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        function fireConfetti() {
+            for (let i = 0; i < 150; i++) {
+                particles.push(createParticle());
+            }
+            animateConfetti();
+        }
+
+        // 启动
+        init();
+
+    </script>
+</body>
+</html>
