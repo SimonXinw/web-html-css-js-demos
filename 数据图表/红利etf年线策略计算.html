@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>红利ETF年线策略计算器</title>
+    <style>
+        :root {
+            --primary-color: #d32f2f;
+            /* 红利风格 - 红色 */
+            --secondary-color: #fbc02d;
+            /* 金色 */
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #666666;
+            --success-color: #388e3c;
+            --warning-color: #f57c00;
+            --danger-color: #d32f2f;
+            --info-color: #1976d2;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            margin-top: 8px;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            background: #fff8f8;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ffebee;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        input[type="number"] {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.1);
+        }
+
+        .btn-calc {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-calc:hover {
+            background: #b71c1c;
+        }
+
+        .result-card {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            overflow: hidden;
+            display: none;
+            /* Hidden by default */
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            padding: 15px 20px;
+            background: #eee;
+            color: #333;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .status-neutral {
+            background: var(--info-color);
+        }
+
+        .status-undervalued {
+            background: var(--success-color);
+        }
+
+        .status-extreme-low {
+            background: #1b5e20;
+        }
+
+        /* Dark Green */
+        .status-overvalued {
+            background: var(--warning-color);
+        }
+
+        .status-extreme-high {
+            background: var(--danger-color);
+        }
+
+        .result-body {
+            padding: 20px;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.2rem;
+        }
+
+        .action-box {
+            background: #f9f9f9;
+            border-left: 4px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .action-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: block;
+            color: #444;
+        }
+
+        .action-content {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .highlight {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .reason-box {
+            font-size: 0.9rem;
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        /* 仪表盘指示条 */
+        .gauge-container {
+            height: 10px;
+            background: linear-gradient(to right,
+                    #1b5e20 0%, #1b5e20 10%,
+                    /* 极端低估 */
+                    #4caf50 10%, #4caf50 25%,
+                    /* 低估 */
+                    #2196f3 25%, #2196f3 75%,
+                    /* 中枢 */
+                    #ff9800 75%, #ff9800 90%,
+                    /* 高估 */
+                    #f44336 90%, #f44336 100%
+                    /* 极端高估 */
+                );
+            border-radius: 5px;
+            position: relative;
+            margin: 20px 0 40px 0;
+        }
+
+        .gauge-marker {
+            position: absolute;
+            top: -5px;
+            width: 4px;
+            height: 20px;
+            background: #000;
+            border: 1px solid #fff;
+            transform: translateX(-50%);
+            transition: left 0.5s ease;
+        }
+
+        .gauge-label {
+            position: absolute;
+            top: 20px;
+            font-size: 0.8rem;
+            color: #888;
+            transform: translateX(-50%);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .input-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>📈 红利ETF年线策略计算器</h1>
+            <div class="subtitle">基于250日均线的波段+定投复合策略</div>
+        </header>
+
+        <div class="input-section">
+            <div class="form-group">
+                <label for="annualPrice">250日均线价格 (年线)</label>
+                <input type="number" id="annualPrice" step="0.001" placeholder="例如: 1.050">
+            </div>
+            <div class="form-group">
+                <label for="currentPrice">当前收盘价</label>
+                <input type="number" id="currentPrice" step="0.001" placeholder="例如: 1.020">
+            </div>
+            <div class="form-group">
+                <label for="baseAmount">每周基准定投金额 (元)</label>
+                <input type="number" id="baseAmount" step="100" value="1000" placeholder="例如: 1000">
+            </div>
+        </div>
+
+        <button class="btn-calc" onclick="calculateStrategy()">生成策略方案</button>
+
+        <div id="resultCard" class="result-card">
+            <div class="result-header" id="resultHeader">
+                <span id="zoneTitle">计算结果</span>
+                <span id="zoneBadge" class="status-badge">未计算</span>
+            </div>
+
+            <div class="result-body">
+                <!-- 仪表盘 -->
+                <div class="gauge-container">
+                    <div class="gauge-marker" id="gaugeMarker" style="left: 50%;"></div>
+                    <div class="gauge-label" style="left: 10%">极低</div>
+                    <div class="gauge-label" style="left: 25%">低估</div>
+                    <div class="gauge-label" style="left: 50%">中枢</div>
+                    <div class="gauge-label" style="left: 75%">高估</div>
+                    <div class="gauge-label" style="left: 90%">极高</div>
+                </div>
+
+                <div class="metric-row">
+                    <span>年线偏离度:</span>
+                    <span id="deviationValue" class="metric-value">0.00%</span>
+                </div>
+
+                <div class="action-box" style="border-left-color: #2196f3;">
+                    <span class="action-title">🎯 定投操作 (本周)</span>
+                    <div id="fixedInvestAction" class="action-content">
+                        --
+                    </div>
+                </div>
+
+                <div class="action-box" style="border-left-color: #ff9800;">
+                    <span class="action-title">🌊 波段操作 (额外)</span>
+                    <div id="bandAction" class="action-content">
+                        --
+                    </div>
+                </div>
+
+                <div class="action-box" style="border-left-color: #4caf50;">
+                    <span class="action-title">⚖️ 止盈/风控规则</span>
+                    <div id="sellRule" class="action-content">
+                        --
+                    </div>
+                </div>
+
+                <div class="reason-box" id="reasonText">
+                    --
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateStrategy() {
+            // 1. 获取输入
+            const annualPrice = parseFloat(document.getElementById('annualPrice').value);
+            const currentPrice = parseFloat(document.getElementById('currentPrice').value);
+            const baseAmount = parseFloat(document.getElementById('baseAmount').value);
+
+            if (isNaN(annualPrice) || isNaN(currentPrice) || isNaN(baseAmount)) {
+                alert("请输入所有数值！");
+                return;
+            }
+
+            // 2. 计算偏离度
+            const deviation = ((currentPrice - annualPrice) / annualPrice) * 100;
+
+            // 3. 判定区间和策略
+            let zone = {};
+
+            if (deviation <= -10) {
+                // 极端低估区
+                zone = {
+                    title: "极端低估区 (黄金坑)",
+                    badgeClass: "status-extreme-low",
+                    fixedAmountFactor: 3,
+                    fixedText: `🔥 <b>基准定投金额翻 3 倍</b><br>建议本周定投金额：<span class="highlight">${(baseAmount * 3).toLocaleString()} 元</span>`,
+                    bandText: `🚀 <b>加大力度抄底</b><br>如有增量资金，可单笔加仓 <span class="highlight">${(baseAmount * 10).toLocaleString()} 元</span> (10倍基准)。<br>若继续下跌，每跌 2% 可再加 1 次 (最多加2次)。`,
+                    sellText: "✅ <b>波段止盈：</b>反弹至 -5% 卖出30%；反弹至年线(0%) 卖出50%；反弹至 +5% 全部卖出。",
+                    reason: "💡 历史级黄金坑，胜率超95%，下跌空间有限，大胆吸筹。",
+                    gaugePercent: 5 // Left edge
+                };
+            } else if (deviation > -10 && deviation <= -5) {
+                // 低估加仓区
+                zone = {
+                    title: "低估加仓区",
+                    badgeClass: "status-undervalued",
+                    fixedAmountFactor: 2,
+                    fixedText: `💪 <b>基准定投金额翻倍</b><br>建议本周定投金额：<span class="highlight">${(baseAmount * 2).toLocaleString()} 元</span>`,
+                    bandText: `📥 <b>适度加仓</b><br>如有增量资金，可单笔加仓 <span class="highlight">${(baseAmount * 5).toLocaleString()} 元</span> (5倍基准)。<br>若继续下跌，每跌 1% 可再加 1 次 (最多加3次)。`,
+                    sellText: "✅ <b>波段止盈：</b>加仓筹码反弹至年线(0%) 卖出50%；反弹至 +3% 全部卖出。",
+                    reason: "💡 短期超跌，跌出安全边际，加大买入摊薄成本。",
+                    gaugePercent: 17.5
+                };
+            } else if (deviation > -5 && deviation < 5) {
+                // 中枢均衡区
+                zone = {
+                    title: "中枢均衡区",
+                    badgeClass: "status-neutral",
+                    fixedAmountFactor: 1,
+                    fixedText: `🛡️ <b>执行基准定投</b><br>建议本周定投金额：<span class="highlight">${baseAmount.toLocaleString()} 元</span>`,
+                    bandText: "💤 <b>不做波段操作</b><br>只持有，不折腾。该区间波动太小，做波段容易卖飞或亏手续费。",
+                    sellText: "无特殊操作，躺平即可。",
+                    reason: "💡 标的合理价值区，90%的时间都在这里。",
+                    gaugePercent: 50
+                };
+            } else if (deviation >= 5 && deviation < 10) {
+                // 高估减仓区
+                zone = {
+                    title: "高估减仓区",
+                    badgeClass: "status-overvalued",
+                    fixedAmountFactor: 0.5,
+                    fixedText: `📉 <b>定投金额减半</b><br>建议本周定投金额：<span class="highlight">${(baseAmount * 0.5).toLocaleString()} 元</span>`,
+                    bandText: "📤 <b>卖出波段筹码</b><br>此前低估区加仓的波段筹码，全部卖出落袋。<br>如果没有波段筹码，底仓不动。",
+                    sellText: "✅ <b>额外止盈：</b>若偏离度达到 +8%，可卖出【累计定投筹码】的 20%，等跌回年线再接回。",
+                    reason: "💡 短期超涨，大概率回调，减少高位接盘，锁定波段利润。",
+                    gaugePercent: 82.5
+                };
+            } else {
+                // 极端高估区 (>= 10)
+                zone = {
+                    title: "极端高估区 (风险区)",
+                    badgeClass: "status-extreme-high",
+                    fixedAmountFactor: 0.2, // or 0
+                    fixedText: `⛔ <b>暂停定投 或 仅投20%</b><br>建议本周定投金额：<span class="highlight">${(baseAmount * 0.2).toLocaleString()} 元</span> (或暂停)`,
+                    bandText: "🏃 <b>大幅减仓</b><br>所有【波段筹码】+【累计定投筹码】的 50%，全部卖出落袋。",
+                    sellText: "✅ <b>底仓操作：</b>仅当偏离度 ≥ +15% 时，卖出【永久底仓】的 30%，跌回年线以下再买回。",
+                    reason: "💡 历史级高估，大幅减仓规避回撤，卖出的筹码能在更低位置捡回。",
+                    gaugePercent: 95
+                };
+            }
+
+            // 4. 更新UI
+            const resultCard = document.getElementById('resultCard');
+            resultCard.style.display = 'block';
+
+            // Header
+            document.getElementById('zoneTitle').innerText = zone.title;
+            const badge = document.getElementById('zoneBadge');
+            badge.className = 'status-badge ' + zone.badgeClass;
+            badge.innerText = zone.title.split(' ')[0]; // Short title
+
+            // Values
+            const devElem = document.getElementById('deviationValue');
+            devElem.innerText = (deviation > 0 ? '+' : '') + deviation.toFixed(2) + '%';
+            devElem.style.color = deviation > 0 ? '#d32f2f' : '#2e7d32'; // Red for high, Green for low in CN stock logic usually, but let's stick to logical colors. 
+            // Actually, usually Red is Up/High, Green is Down/Low in China.
+            // Let's use the badge colors logic for consistency.
+
+            document.getElementById('fixedInvestAction').innerHTML = zone.fixedText;
+            document.getElementById('bandAction').innerHTML = zone.bandText;
+            document.getElementById('sellRule').innerHTML = zone.sellText;
+            document.getElementById('reasonText').innerHTML = zone.reason;
+
+            // Gauge Position Calculation
+            // Map deviation to percentage:
+            // -15% -> 0%
+            // -10% -> 10%
+            // -5% -> 25%
+            // 0% -> 50%
+            // +5% -> 75%
+            // +10% -> 90%
+            // +15% -> 100%
+
+            let gaugePos = 50;
+            if (deviation <= -10) {
+                // Map -20 ~ -10 to 0 ~ 10
+                gaugePos = Math.max(0, 10 + (deviation + 10) * 2);
+            } else if (deviation > -10 && deviation <= -5) {
+                // Map -10 ~ -5 to 10 ~ 25
+                gaugePos = 10 + (deviation + 10) * 3;
+            } else if (deviation > -5 && deviation <= 0) {
+                // Map -5 ~ 0 to 25 ~ 50
+                gaugePos = 25 + (deviation + 5) * 5;
+            } else if (deviation > 0 && deviation < 5) {
+                // Map 0 ~ 5 to 50 ~ 75
+                gaugePos = 50 + deviation * 5;
+            } else if (deviation >= 5 && deviation < 10) {
+                // Map 5 ~ 10 to 75 ~ 90
+                gaugePos = 75 + (deviation - 5) * 3;
+            } else {
+                // Map 10 ~ 20 to 90 ~ 100
+                gaugePos = Math.min(100, 90 + (deviation - 10) * 1);
+            }
+
+            document.getElementById('gaugeMarker').style.left = gaugePos + '%';
+
+        }
+    </script>
+
+</body>
+
+</html>
