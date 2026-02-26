@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中证红利低波ETF 年线波段策略助手</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: var(--primary);
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-box {
+            border-left: 4px solid var(--primary);
+            padding-left: 16px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .zone-neutral {
+            background-color: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .zone-buy {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+
+        .zone-sell {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: #f1f5f9;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .tag-green {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .tag-red {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .tag-yellow {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>中证红利低波ETF 策略助手</h1>
+        <p style="color: #64748b;">基于「永久底仓 + 档位定投 + 波段增强」的年线策略</p>
+
+        <!-- 用户资金情况 -->
+        <div class="card">
+            <h2>📊 你的个性化资金规划</h2>
+            <div class="grid">
+                <div class="stat-box">
+                    <div>
+                        <label for="totalBudget" style="font-weight: normal; margin-bottom: 2px;">今年总预算 (可修改)</label>
+                        <input type="number" id="totalBudget" value="50000" onchange="updateBudget()"
+                            style="font-size: 1.5rem; font-weight: bold; padding: 5px; width: 150px;">
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <div>
+                        <label for="investedInput" style="font-weight: normal; margin-bottom: 2px;">已投底仓 (可修改)</label>
+                        <input type="number" id="investedInput" value="10600" onchange="updateBudget()"
+                            style="font-size: 1.5rem; font-weight: bold; color: var(--success); padding: 5px; width: 150px;">
+                    </div>
+                </div>
+                <div class="stat-box">
+                    <div>剩余弹药</div>
+                    <div class="stat-value" id="remainingAmount">¥39,400</div>
+                </div>
+            </div>
+
+            <hr style="margin: 24px 0; border: 0; border-top: 1px solid #e2e8f0;">
+
+            <h3>建议配置结构 (基于总预算)</h3>
+            <ul>
+                <li><strong>永久底仓：<span id="basePos">¥15,000</span> (30%)</strong> - 建议在低估区打满，这部分只进不出，吃息复利。</li>
+                <li><strong>定投资金池：<span id="investPool">¥25,000</span> (50%)</strong> - 用于每周定投，按档位调整金额。</li>
+                <li><strong>波段弹药库：<span id="swingPool">¥10,000</span> (20%)</strong> - 仅在极端低估时加仓，赚反弹差价。</li>
+            </ul>
+        </div>
+
+        <!-- 年线计算器 -->
+        <div class="card">
+            <h2>🧮 年线偏离度 & 操作计算器</h2>
+            <p style="color: #64748b; font-size: 0.9rem;">每周五收盘后，输入数据查看操作建议</p>
+
+            <div class="grid">
+                <div class="input-group">
+                    <label for="currentPrice">当前收盘价 (元)</label>
+                    <input type="number" id="currentPrice" step="0.001" placeholder="例如: 2.050">
+                </div>
+                <div class="input-group">
+                    <label for="ma250">250日均线 (年线) 价格 (元)</label>
+                    <input type="number" id="ma250" step="0.001" placeholder="例如: 2.000">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>设定你的每周基准定投金额 (建议: ¥500)</label>
+                <input type="number" id="baseAmount" value="500" placeholder="500">
+            </div>
+
+            <button onclick="calculate()">生成操作建议</button>
+
+            <div id="result" class="result-box" style="display: none;">
+                <!-- 结果将显示在这里 -->
+            </div>
+        </div>
+
+        <!-- 策略档位表 -->
+        <div class="card">
+            <h2>📋 核心策略档位速查表</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>档位</th>
+                        <th>年线偏离度</th>
+                        <th>定投操作</th>
+                        <th>波段操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="tag tag-yellow">中枢区</span></td>
+                        <td>-5% ~ +5%</td>
+                        <td>基准金额 (不增不减)</td>
+                        <td>躺平不动</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-green">低估区</span></td>
+                        <td>-5% ~ -10%</td>
+                        <td><strong>X 2</strong> (翻倍)</td>
+                        <td>可动用波段库加仓，反弹至年线卖出</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-green" style="background-color: #bbf7d0;">极端低估</span></td>
+                        <td>≤ -10%</td>
+                        <td><strong>X 3</strong> (三倍)</td>
+                        <td>重仓出击，反弹至-5%开始分批止盈</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-red">高估区</span></td>
+                        <td>+5% ~ +10%</td>
+                        <td><strong>X 0.5</strong> (减半)</td>
+                        <td>卖出此前加仓的波段筹码</td>
+                    </tr>
+                    <tr>
+                        <td><span class="tag tag-red" style="background-color: #fecaca;">极端高估</span></td>
+                        <td>≥ +10%</td>
+                        <td><strong>暂停</strong> (或仅投20%)</td>
+                        <td>大减仓，卖出50%定投累计筹码</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 铁律 -->
+        <div class="card" style="border-left: 5px solid var(--danger);">
+            <h2>⚠️ 不可突破的铁律</h2>
+            <ol>
+                <li><strong>底仓不动</strong>：1.5万永久底仓，除非极端高估(+15%)，否则只买不卖，用于吃息。</li>
+                <li><strong>波段不恋战</strong>：波段加仓的钱，赚了就跑，绝不套牢成股东。</li>
+                <li><strong>定投永不停</strong>：哪怕在高位，也至少投一点，防止完全踏空慢牛。</li>
+                <li><strong>不止损</strong>：红利低波指数越跌越有价值，跌破年线是机会，不是风险。</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateBudget();
+        });
+
+        function updateBudget() {
+            const total = parseFloat(document.getElementById('totalBudget').value) || 50000;
+            const currentInvested = parseFloat(document.getElementById('investedInput').value) || 0;
+
+            // 建议结构: 底仓 30%, 定投 50%, 波段 20%
+            const basePos = total * 0.3;
+            const investPool = total * 0.5;
+            const swingPool = total * 0.2;
+
+            // 更新卡片里的数字
+            document.getElementById('basePos').innerText = `¥${Math.round(basePos).toLocaleString()}`;
+            document.getElementById('investPool').innerText = `¥${Math.round(investPool).toLocaleString()}`;
+            document.getElementById('swingPool').innerText = `¥${Math.round(swingPool).toLocaleString()}`;
+
+            // 计算剩余
+            const remaining = total - currentInvested;
+            const remainingEl = document.getElementById('remainingAmount');
+            remainingEl.innerText = `¥${remaining.toLocaleString()}`;
+
+            if (remaining < 0) {
+                remainingEl.style.color = 'var(--danger)';
+            } else {
+                remainingEl.style.color = 'var(--text)';
+            }
+
+            // 自动更新 每周基准定投建议: (定投池 / 50周) 取整百
+            const suggestedWeekly = Math.max(100, Math.floor((investPool / 50) / 100) * 100);
+
+            const label = document.querySelector('label[for="baseAmount"]');
+            if (label) label.innerText = `设定你的每周基准定投金额 (建议: ¥${suggestedWeekly})`;
+
+            // 如果用户没改过这个值，或者想自动同步，可以放开下面这行
+            // document.getElementById('baseAmount').value = suggestedWeekly;
+        }
+
+        function calculate() {
+            const currentPrice = parseFloat(document.getElementById('currentPrice').value);
+            const ma250 = parseFloat(document.getElementById('ma250').value);
+            const baseAmount = parseFloat(document.getElementById('baseAmount').value) || 500;
+
+            if (!currentPrice || !ma250) {
+                alert("请输入当前价格和年线价格");
+                return;
+            }
+
+            const deviation = ((currentPrice - ma250) / ma250) * 100;
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+
+            let zoneClass = 'zone-neutral';
+            let zoneText = '中枢均衡区';
+            let action = '';
+            let dingTouAmount = baseAmount;
+            let suggestion = '';
+
+            if (deviation >= 10) {
+                zoneClass = 'zone-sell';
+                zoneText = '🔥 极端高估区';
+                dingTouAmount = baseAmount * 0.2; // 仅投20%或暂停
+                action = '大幅减仓';
+                suggestion = `
+                <strong>操作建议：</strong><br>
+                1. 定投金额调整为 <strong>¥${dingTouAmount.toFixed(0)}</strong> (或直接暂停)<br>
+                2. 卖出所有波段筹码 + 累计定投筹码的 50%<br>
+                3. 1.5万底仓继续持有，除非偏离度超过15%
+            `;
+            } else if (deviation >= 5) {
+                zoneClass = 'zone-sell';
+                zoneText = '⚠️ 高估减仓区';
+                dingTouAmount = baseAmount * 0.5;
+                action = '减仓';
+                suggestion = `
+                <strong>操作建议：</strong><br>
+                1. 定投金额减半至 <strong>¥${dingTouAmount.toFixed(0)}</strong><br>
+                2. 卖出此前低估加仓的波段筹码，落袋为安<br>
+                3. 底仓和定投底仓不动
+            `;
+            } else if (deviation >= -5) {
+                zoneClass = 'zone-neutral';
+                zoneText = '⚖️ 中枢均衡区';
+                dingTouAmount = baseAmount;
+                action = '持有 / 定投';
+                suggestion = `
+                <strong>操作建议：</strong><br>
+                1. 按兵不动，执行基准定投 <strong>¥${dingTouAmount.toFixed(0)}</strong><br>
+                2. 不做波段，躺平持有，享受分红
+            `;
+            } else if (deviation >= -10) {
+                zoneClass = 'zone-buy';
+                zoneText = '💰 低估加仓区';
+                dingTouAmount = baseAmount * 2;
+                action = '加倍买入';
+                suggestion = `
+                <strong>操作建议：</strong><br>
+                1. 定投金额翻倍至 <strong>¥${dingTouAmount.toFixed(0)}</strong><br>
+                2. 若还没买够1.5万底仓，趁此机会补满<br>
+                3. 可动用波段库资金加仓，反弹至年线(0%)时卖出止盈
+            `;
+            } else {
+                zoneClass = 'zone-buy';
+                zoneText = '💎 极端低估区 (黄金坑)';
+                dingTouAmount = baseAmount * 3;
+                action = '重仓出击';
+                suggestion = `
+                <strong>操作建议：</strong><br>
+                1. 定投金额三倍至 <strong>¥${dingTouAmount.toFixed(0)}</strong><br>
+                2. 波段库资金可以打满，每跌2%加一次仓<br>
+                3. 这是历史级机会，反弹至-5%开始分批止盈
+            `;
+            }
+
+            resultDiv.className = `result-box ${zoneClass}`;
+            resultDiv.innerHTML = `
+            <h3 style="margin-top: 0;">${zoneText}</h3>
+            <p><strong>年线偏离度：</strong> <span style="font-size: 1.5rem; font-weight: bold;">${deviation.toFixed(2)}%</span></p>
+            <hr>
+            ${suggestion}
+        `;
+        }
+    </script>
+
+</body>
+
+</html>
