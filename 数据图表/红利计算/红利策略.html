@@ -61,6 +61,64 @@
             margin-top: 4px;
         }
 
+        /* ── Header 右侧策略摘要 ── */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .header-badge {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            padding: 10px 18px;
+            text-align: center;
+            min-width: 90px;
+        }
+        .header-badge .hb-label { font-size: 0.72rem; opacity: 0.8; margin-bottom: 2px; }
+        .header-badge .hb-value { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+
+        .header-strategy {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 12px 18px;
+            min-width: 240px;
+            display: none;
+            transition: background 0.3s, border-color 0.3s;
+        }
+
+        /* 区间主题色 */
+        .header-strategy.hs-extreme-low  { background: rgba(22,163,74,0.25);  border-color: rgba(22,163,74,0.6); }
+        .header-strategy.hs-low          { background: rgba(34,197,94,0.2);   border-color: rgba(34,197,94,0.5); }
+        .header-strategy.hs-neutral      { background: rgba(202,138,4,0.2);   border-color: rgba(202,138,4,0.5); }
+        .header-strategy.hs-high         { background: rgba(234,88,12,0.22);  border-color: rgba(234,88,12,0.55); }
+        .header-strategy.hs-extreme-high { background: rgba(229,62,62,0.25);  border-color: rgba(229,62,62,0.6); }
+
+        .header-strategy .hs-zone {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.2px;
+        }
+        .header-strategy .hs-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            margin-bottom: 4px;
+            opacity: 0.95;
+        }
+        .header-strategy .hs-row:last-child { margin-bottom: 0; }
+        .header-strategy .hs-icon { flex-shrink: 0; }
+
+        /* 金额颜色：买入绿，卖出红 */
+        .hs-amt-buy  { font-weight: 800; font-size: 0.9rem; color: #86efac; }
+        .hs-amt-sell { font-weight: 800; font-size: 0.9rem; color: #fca5a5; }
+        .hs-amt-hold { font-weight: 800; font-size: 0.9rem; color: #fde68a; }
+
         /* ── Upload fallback ── */
         .upload-zone {
             display: none;
@@ -496,6 +554,14 @@
             .budget-grid {
                 grid-template-columns: 1fr 1fr;
             }
+
+            .header-right {
+                width: 100%;
+            }
+
+            .header-strategy {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
@@ -507,7 +573,15 @@
             <h1>📈 易方达中证红利ETF · 年线策略看板</h1>
             <div class="meta" id="headerMeta">正在加载数据...</div>
         </div>
-        <div id="headerBadge"></div>
+        <div class="header-right">
+            <!-- 策略操作摘要 -->
+            <div class="header-strategy" id="headerStrategy">
+                <div class="hs-zone" id="hsZone">--</div>
+                <div id="hsActions"></div>
+            </div>
+            <!-- 偏离度数字 -->
+            <div id="headerBadge"></div>
+        </div>
     </div>
 
     <!-- 上传降级区域 -->
@@ -803,6 +877,31 @@
                 </div>
             </div>
         `).join("");
+
+            // ── 同步更新 Header 策略摘要 ──────────────────────────────────────────
+            const hsEl = document.getElementById("headerStrategy");
+            hsEl.style.display = "block";
+
+            // 更新区间主题样式
+            hsEl.className = "header-strategy hs-" + zone.replace("-", "-");
+            document.getElementById("hsZone").textContent = meta.label;
+
+            // 决定金额 class：低估/极端低估用绿（买入），高估用红（卖出），中枢用黄
+            const amtClass = (zone === "extreme-low" || zone === "low") ? "hs-amt-buy"
+                           : (zone === "extreme-high" || zone === "high") ? "hs-amt-sell"
+                           : "hs-amt-hold";
+
+            // 渲染前2条操作；把 a-amount 替换为对应颜色 class
+            const hsRows = actions.slice(0, 2).map(a => {
+                const styledText = a.text
+                    .replace(/class="a-amount"/g, `class="${amtClass}"`)
+                    .replace(/<b>/g, "<b style='font-weight:700;'>"); // 保持加粗
+                return `<div class="hs-row">
+                    <span class="hs-icon">${a.icon}</span>
+                    <span><b>${a.label}：</b>${styledText}</span>
+                </div>`;
+            }).join("");
+            document.getElementById("hsActions").innerHTML = hsRows;
         }
 
         // 当预算输入变化时，刷新策略面板
