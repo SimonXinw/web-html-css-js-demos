@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 转 JSON 工具</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 24px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+        }
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+        .drop-zone input {
+            display: none;
+        }
+        .drop-zone .icon { font-size: 3rem; margin-bottom: 12px; }
+        .drop-zone .hint { color: #64748b; font-size: 0.9rem; }
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        .btn:hover { background: var(--primary-hover); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-secondary {
+            background: #64748b;
+        }
+        .btn-secondary:hover { background: #475569; }
+        .preview-area {
+            margin-top: 20px;
+            display: none;
+        }
+        .preview-area.show { display: block; }
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .preview-header h3 { font-size: 1rem; }
+        .opts label { margin-right: 16px; font-weight: normal; }
+        .opts input { margin-right: 4px; }
+        textarea.preview-json {
+            width: 100%;
+            min-height: 280px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+        }
+        .file-info {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 12px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            background: #1e293b;
+            color: #fff;
+            font-size: 0.9rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 100;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📊 Excel 转 JSON</h1>
+    <p class="subtitle">选择 .xlsx / .xls 文件，自动解析为 JSON 并支持下载</p>
+
+    <div class="card">
+        <div class="drop-zone" id="dropZone">
+            <input type="file" id="fileInput" accept=".xlsx,.xls">
+            <div class="icon">📁</div>
+            <div>点击或拖拽 Excel 文件到此处</div>
+            <div class="hint">支持 .xlsx、.xls</div>
+        </div>
+        <div class="file-info" id="fileInfo"></div>
+        <div class="preview-area" id="previewArea">
+            <div class="preview-header">
+                <h3>JSON 预览</h3>
+                <div class="opts">
+                    <label><input type="radio" name="format" value="array" checked> 数组</label>
+                    <label><input type="radio" name="format" value="object"> 对象 (首列为 key)</label>
+                </div>
+            </div>
+            <textarea class="preview-json" id="previewJson" readonly></textarea>
+            <div style="margin-top: 12px;">
+                <button class="btn" id="btnDownload">下载 JSON 文件</button>
+                <button class="btn btn-secondary" id="btnCopy">复制到剪贴板</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SheetJS 从 CDN 引入 -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+<script>
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const fileInfo = document.getElementById("fileInfo");
+    const previewArea = document.getElementById("previewArea");
+    const previewJson = document.getElementById("previewJson");
+    const btnDownload = document.getElementById("btnDownload");
+    const btnCopy = document.getElementById("btnCopy");
+    const toast = document.getElementById("toast");
+
+    let currentData = null;
+    let currentFileName = "";
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 2000);
+    }
+
+    function parseExcel(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const json = XLSX.utils.sheet_to_json(firstSheet, {
+                        header: 1,
+                        defval: "",
+                        raw: false
+                    });
+                    resolve({ json, sheetName: workbook.SheetNames[0] });
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error("文件读取失败"));
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
+    function toArrayOfObjects(rows) {
+        if (!rows || rows.length < 2) return [];
+        const headers = rows[0].map((h, i) => h !== undefined && h !== null && String(h).trim() !== "" ? String(h).trim() : "col_" + i);
+        const out = [];
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const obj = {};
+            headers.forEach((h, j) => {
+                obj[h] = row[j] !== undefined ? row[j] : "";
+            });
+            out.push(obj);
+        }
+        return out;
+    }
+
+    function toObjectByFirstColumn(rows) {
+        if (!rows || rows.length < 2) return {};
+        const keyCol = 0;
+        const headers = rows[0].map((h, i) => h !== undefined && h !== null && String(h).trim() !== "" ? String(h).trim() : "col_" + i);
+        const out = {};
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const key = row[keyCol] !== undefined ? String(row[keyCol]) : "row_" + i;
+            const obj = {};
+            headers.forEach((h, j) => {
+                if (j !== keyCol) obj[h] = row[j] !== undefined ? row[j] : "";
+            });
+            out[key] = obj;
+        }
+        return out;
+    }
+
+    function refreshPreview() {
+        if (!currentData) return;
+        const isObject = document.querySelector('input[name="format"]:checked').value === "object";
+        const result = isObject ? toObjectByFirstColumn(currentData) : toArrayOfObjects(currentData);
+        previewJson.value = JSON.stringify(result, null, 2);
+    }
+
+    function handleFile(file) {
+        if (!file) return;
+        const valid = ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/vnd.ms-excel"];
+        if (!valid.includes(file.type) && !/\.(xlsx|xls)$/i.test(file.name)) {
+            showToast("请选择 .xlsx 或 .xls 文件");
+            return;
+        }
+        fileInfo.textContent = "解析中: " + file.name + " ...";
+        parseExcel(file)
+            .then(({ json }) => {
+                currentData = json;
+                currentFileName = file.name.replace(/\.[^.]+$/, "");
+                fileInfo.textContent = "已解析 " + json.length + " 行";
+                previewArea.classList.add("show");
+                refreshPreview();
+            })
+            .catch((err) => {
+                fileInfo.textContent = "";
+                showToast("解析失败: " + (err.message || "未知错误"));
+            });
+    }
+
+    dropZone.addEventListener("click", () => fileInput.click());
+    dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+    dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.classList.remove("dragover");
+        const file = e.dataTransfer.files[0];
+        handleFile(file);
+    });
+    fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        handleFile(file);
+    });
+
+    document.querySelectorAll('input[name="format"]').forEach((radio) => {
+        radio.addEventListener("change", refreshPreview);
+    });
+
+    btnDownload.addEventListener("click", () => {
+        if (!currentData) {
+            showToast("请先导入 Excel 文件");
+            return;
+        }
+        const isObject = document.querySelector('input[name="format"]:checked').value === "object";
+        const result = isObject ? toObjectByFirstColumn(currentData) : toArrayOfObjects(currentData);
+        const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = (currentFileName || "data") + ".json";
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast("已下载 JSON 文件");
+    });
+
+    btnCopy.addEventListener("click", () => {
+        if (!previewJson.value) {
+            showToast("请先导入 Excel 文件");
+            return;
+        }
+        navigator.clipboard.writeText(previewJson.value).then(
+            () => showToast("已复制到剪贴板"),
+            () => showToast("复制失败")
+        );
+    });
+</script>
+</body>
+</html>
