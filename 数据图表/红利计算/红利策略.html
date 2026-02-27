@@ -70,18 +70,28 @@
         }
 
         .header-badge {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 10px;
             padding: 10px 18px;
             text-align: center;
             min-width: 90px;
         }
-        .header-badge .hb-label { font-size: 0.72rem; opacity: 0.8; margin-bottom: 2px; }
-        .header-badge .hb-value { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+
+        .header-badge .hb-label {
+            font-size: 0.72rem;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+
+        .header-badge .hb-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            line-height: 1;
+        }
 
         .header-strategy {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             padding: 12px 18px;
             min-width: 240px;
@@ -90,11 +100,30 @@
         }
 
         /* 区间主题色 */
-        .header-strategy.hs-extreme-low  { background: rgba(22,163,74,0.25);  border-color: rgba(22,163,74,0.6); }
-        .header-strategy.hs-low          { background: rgba(34,197,94,0.2);   border-color: rgba(34,197,94,0.5); }
-        .header-strategy.hs-neutral      { background: rgba(202,138,4,0.2);   border-color: rgba(202,138,4,0.5); }
-        .header-strategy.hs-high         { background: rgba(234,88,12,0.22);  border-color: rgba(234,88,12,0.55); }
-        .header-strategy.hs-extreme-high { background: rgba(229,62,62,0.25);  border-color: rgba(229,62,62,0.6); }
+        .header-strategy.hs-extreme-low {
+            background: rgba(22, 163, 74, 0.25);
+            border-color: rgba(22, 163, 74, 0.6);
+        }
+
+        .header-strategy.hs-low {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.5);
+        }
+
+        .header-strategy.hs-neutral {
+            background: rgba(202, 138, 4, 0.2);
+            border-color: rgba(202, 138, 4, 0.5);
+        }
+
+        .header-strategy.hs-high {
+            background: rgba(234, 88, 12, 0.22);
+            border-color: rgba(234, 88, 12, 0.55);
+        }
+
+        .header-strategy.hs-extreme-high {
+            background: rgba(229, 62, 62, 0.25);
+            border-color: rgba(229, 62, 62, 0.6);
+        }
 
         .header-strategy .hs-zone {
             font-size: 0.95rem;
@@ -102,6 +131,7 @@
             margin-bottom: 8px;
             letter-spacing: 0.2px;
         }
+
         .header-strategy .hs-row {
             display: flex;
             align-items: flex-start;
@@ -111,13 +141,33 @@
             margin-bottom: 4px;
             opacity: 0.95;
         }
-        .header-strategy .hs-row:last-child { margin-bottom: 0; }
-        .header-strategy .hs-icon { flex-shrink: 0; }
+
+        .header-strategy .hs-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .header-strategy .hs-icon {
+            flex-shrink: 0;
+        }
 
         /* 金额颜色：买入绿，卖出红 */
-        .hs-amt-buy  { font-weight: 800; font-size: 0.9rem; color: #86efac; }
-        .hs-amt-sell { font-weight: 800; font-size: 0.9rem; color: #fca5a5; }
-        .hs-amt-hold { font-weight: 800; font-size: 0.9rem; color: #fde68a; }
+        .hs-amt-buy {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #86efac;
+        }
+
+        .hs-amt-sell {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #fca5a5;
+        }
+
+        .hs-amt-hold {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: #fde68a;
+        }
 
         /* ── Upload fallback ── */
         .upload-zone {
@@ -592,45 +642,91 @@
         <p><strong>点击这里手动上传</strong><br>易方达中证红利ETF_基金净值.xlsx</p>
         <p style="margin-top:10px;font-size:0.8rem;">
             也可以
-            <span style="color:#93c5fd;cursor:pointer;text-decoration:underline;" onclick="loadFromSupabase()">重试 Supabase</span>
+            <span style="color:#93c5fd;cursor:pointer;text-decoration:underline;" onclick="loadFromSupabase()">重试
+                Supabase</span>
         </p>
     </div>
 
     <div class="loading" id="loading">数据加载中，请稍候...</div>
 
-    <!-- ── 数据统计卡片 ── -->
-    <div class="stats-grid" id="statsGrid" style="display:none;">
-        <div class="stat-card blue">
-            <div class="s-label">最新单位净值</div>
-            <div class="s-value c-blue" id="statNav">--</div>
-            <div class="s-sub" id="statDate">--</div>
+    <!-- ── 前复权净值：展示 + 图表（策略判断基准）── -->
+    <div id="navBlockAdj" style="display:none;">
+        <div class="stats-grid">
+            <div class="stat-card" style="border-left-color:#10b981;">
+                <div class="s-label">最新前复权净值</div>
+                <div class="s-value" style="color:#10b981;" id="statAdjNav">--</div>
+                <div class="s-sub">分红复权后可比价格</div>
+            </div>
+            <div class="stat-card gold">
+                <div class="s-label">MA250 年线（前复权）</div>
+                <div class="s-value c-gold" id="statAdjMa250">--</div>
+                <div class="s-sub">策略判断基准</div>
+            </div>
+            <div class="stat-card" id="statDeviationCard">
+                <div class="s-label">偏离年线（策略基准）</div>
+                <div class="s-value" id="statDeviation">--</div>
+                <div class="s-sub" id="statDeviationHint">--</div>
+            </div>
         </div>
-        <div class="stat-card gold">
-            <div class="s-label">MA250 年线</div>
-            <div class="s-value c-gold" id="statMa250">--</div>
-            <div class="s-sub">近250交易日均价</div>
-        </div>
-        <div class="stat-card" id="statDeviationCard">
-            <div class="s-label">偏离年线</div>
-            <div class="s-value" id="statDeviation">--</div>
-            <div class="s-sub" id="statDeviationHint">--</div>
-        </div>
-        <div class="stat-card purple">
-            <div class="s-label">MA5 周线</div>
-            <div class="s-value" style="color:var(--purple);" id="statMa5">--</div>
-            <div class="s-sub">近5交易日均价</div>
+        <div class="card" id="chartCardAdj">
+            <h2>🎯 前复权净值走势 · MA250 年线（策略判断基准）</h2>
+            <div id="adjChart" style="width:100%;height:380px;"></div>
         </div>
     </div>
 
-    <!-- ── 净值折线图 ── -->
-    <div class="card" id="chartCardMain" style="display:none;">
-        <h2>📊 净值走势 · 年线 / 周线</h2>
-        <div id="mainChart"></div>
+    <!-- ── 单位净值：展示 + 图表 ── -->
+    <div id="navBlockUnit" style="display:none;">
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="s-label">最新单位净值</div>
+                <div class="s-value c-blue" id="statNav">--</div>
+                <div class="s-sub" id="statDate">--</div>
+            </div>
+            <div class="stat-card gold">
+                <div class="s-label">MA250 年线（单位净值）</div>
+                <div class="s-value c-gold" id="statNavMa250">--</div>
+                <div class="s-sub">近250交易日均价</div>
+            </div>
+            <div class="stat-card purple">
+                <div class="s-label">MA5 周线</div>
+                <div class="s-value" style="color:var(--purple);" id="statMa5">--</div>
+                <div class="s-sub">近5交易日均价</div>
+            </div>
+        </div>
+        <div class="card" id="chartCardMain">
+            <h2>📊 单位净值走势 · MA250 / MA5</h2>
+            <div id="mainChart"></div>
+        </div>
     </div>
 
-    <!-- ── 偏离度柱状图 ── -->
+    <!-- ── 累计净值：展示 + 图表 ── -->
+    <div id="navBlockCumul" style="display:none;">
+        <div class="stats-grid">
+            <div class="stat-card" style="border-left-color:#0ea5e9;">
+                <div class="s-label">最新累计净值</div>
+                <div class="s-value" style="color:#0ea5e9;" id="statCumNav">--</div>
+                <div class="s-sub">含分红再投收益</div>
+            </div>
+            <div class="stat-card gold">
+                <div class="s-label">MA250 年线（累计净值）</div>
+                <div class="s-value c-gold" id="statMa250">--</div>
+                <div class="s-sub">近250交易日均价</div>
+            </div>
+            <div class="stat-card purple">
+                <div class="s-label">MA5 周线（累计净值）</div>
+                <div class="s-value" style="color:var(--purple);" id="statCumMa5">--</div>
+                <div class="s-sub">近5交易日均价</div>
+            </div>
+        </div>
+        <div class="card" id="chartCardCumul">
+            <h2>📈 累计净值走势 · MA250 / MA5</h2>
+            <div id="cumulChart" style="width:100%;height:380px;"></div>
+        </div>
+    </div>
+
+    <!-- ── 偏离度柱状图（基于前复权净值）── -->
     <div class="card" id="chartCardDev" style="display:none;">
-        <h2>📉 年线偏离度历史</h2>
+        <h2>📉 年线偏离度历史（基于前复权净值）</h2>
         <div id="deviationChart"></div>
     </div>
 
@@ -758,22 +854,21 @@
 
     <script>
         // ── 常量 ─────────────────────────────────────────────────────────────────
-        const FILE_NAME       = "易方达中证红利ETF_基金净值.xlsx";
-        const MA250_N         = 250;
-        const MA5_N           = 5;
-        const SUPABASE_URL    = "https://lvsyycnybkwbrvvmshfb.supabase.co";
-        const SUPABASE_KEY    = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2c3l5Y255Ymt3YnJ2dm1zaGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNTU5NjMsImV4cCI6MjA3MjgzMTk2M30.Ot7-h6nbAhIkUOGoqAv8diUBW6-Llhh8MtA6bJMXbeA";
-        const SUPABASE_TABLE  = "yfd_dividend";
-        const SUPABASE_LIMIT  = 10000;
+        const FILE_NAME = "易方达中证红利ETF_基金净值.xlsx";
+        const MA250_N = 250;
+        const MA5_N = 5;
+        const SUPABASE_URL = "https://lvsyycnybkwbrvvmshfb.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2c3l5Y255Ymt3YnJ2dm1zaGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNTU5NjMsImV4cCI6MjA3MjgzMTk2M30.Ot7-h6nbAhIkUOGoqAv8diUBW6-Llhh8MtA6bJMXbeA";
+        const SUPABASE_TABLE = "yfd_dividend";
+        const SUPABASE_LIMIT = 10000;
 
         // ── 全局状态 ──────────────────────────────────────────────────────────────
         let gLatestDev = null; // 最新偏离度，供 budget 变动时刷新策略
 
         // ── DOM refs ──────────────────────────────────────────────────────────────
-        const loadingEl = document.getElementById("loading");
-        const uploadZone = document.getElementById("uploadZone");
-        const statsGrid = document.getElementById("statsGrid");
-        const fileInput = document.getElementById("fileInput");
+        const loadingEl    = document.getElementById("loading");
+        const uploadZone   = document.getElementById("uploadZone");
+        const fileInput    = document.getElementById("fileInput");
 
         // ── Helpers ───────────────────────────────────────────────────────────────
         function fmt(n, d = 4) { return typeof n === "number" ? n.toFixed(d) : "--"; }
@@ -902,8 +997,8 @@
 
             // 决定金额 class：低估/极端低估用绿（买入），高估用红（卖出），中枢用黄
             const amtClass = (zone === "extreme-low" || zone === "low") ? "hs-amt-buy"
-                           : (zone === "extreme-high" || zone === "high") ? "hs-amt-sell"
-                           : "hs-amt-hold";
+                : (zone === "extreme-high" || zone === "high") ? "hs-amt-sell"
+                    : "hs-amt-hold";
 
             // 渲染前2条操作；把 a-amount 替换为对应颜色 class
             const hsRows = actions.slice(0, 2).map(a => {
@@ -934,18 +1029,27 @@
 
             const headers = rows[0].map(String);
             const dateIdx = headers.findIndex(h => h.includes("净值日期"));
-            const navIdx = headers.findIndex(h => h.includes("单位净值"));
+            const navIdx  = headers.findIndex(h => h.includes("单位净值"));
+            const cumIdx  = headers.findIndex(h => h.includes("累计净值"));
+            const adjIdx  = headers.findIndex(h => h.includes("前复权") || h.toLowerCase().includes("adj"));
 
             if (dateIdx < 0 || navIdx < 0)
                 throw new Error("未找到「净值日期」或「单位净值」列");
 
             const records = [];
             for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                const date = String(row[dateIdx] || "").trim();
-                const nav = parseFloat(row[navIdx]);
+                const row    = rows[i];
+                const date   = String(row[dateIdx] || "").trim();
+                const nav    = parseFloat(row[navIdx]);
+                const cumRaw = cumIdx >= 0 ? parseFloat(row[cumIdx]) : NaN;
+                const adjRaw = adjIdx >= 0 ? parseFloat(row[adjIdx]) : NaN;
                 if (!date || isNaN(nav)) continue;
-                records.push({ date, nav });
+                records.push({
+                    date,
+                    nav,
+                    cumNav: !isNaN(cumRaw) ? cumRaw : null,
+                    adjNav: !isNaN(adjRaw) ? adjRaw : null
+                });
             }
             records.sort((a, b) => a.date.localeCompare(b.date));
             return records;
@@ -958,16 +1062,39 @@
                 return;
             }
 
-            const dates = records.map(r => r.date);
-            const closes = records.map(r => r.nav);
+            const dates   = records.map(r => r.date);
+            const closes  = records.map(r => r.nav);
+            const cumNavs = records.map(r => r.cumNav  ?? null);
+            const adjNavs = records.map(r => r.adjNav  ?? null);
+
+            // ── 单位净值 MA ────────────────────────────────────────────────────────
             const ma250 = calcMA(closes, MA250_N);
-            const ma5 = calcMA(closes, MA5_N);
-            const devArr = closes.map((c, i) => devPct(c, ma250[i]));
+            const ma5   = calcMA(closes, MA5_N);
+
+            // ── 累计净值 MA ────────────────────────────────────────────────────────
+            const hasCumNav   = cumNavs.some(v => v !== null && !isNaN(v));
+            const cumFilled   = cumNavs.map((v, i) => (v !== null && !isNaN(v)) ? v : closes[i]);
+            const cumMa250    = calcMA(cumFilled, MA250_N);
+            const cumMa5      = calcMA(cumFilled, MA5_N);
+
+            // ── 前复权净值 MA（策略判断基准）─────────────────────────────────────
+            const hasAdjNav   = adjNavs.some(v => v !== null && !isNaN(v));
+            const adjFilled   = adjNavs.map((v, i) => (v !== null && !isNaN(v)) ? v : closes[i]);
+            const adjMa250    = calcMA(adjFilled, MA250_N);
+            const adjMa5      = calcMA(adjFilled, MA5_N);
+            // 策略偏离度以前复权净值为准；若无前复权则降级用累计净值，再降级用单位净值
+            const stratFilled = hasAdjNav ? adjFilled : (hasCumNav ? cumFilled : closes);
+            const stratMa250  = hasAdjNav ? adjMa250  : (hasCumNav ? cumMa250  : ma250);
+            const devArr      = stratFilled.map((c, i) => devPct(c, stratMa250[i]));
 
             records.forEach((r, i) => {
-                r.ma250 = ma250[i];
-                r.ma5 = ma5[i];
-                r.devPct = devArr[i];
+                r.ma250    = ma250[i];
+                r.ma5      = ma5[i];
+                r.cumMa250 = cumMa250[i];
+                r.cumMa5   = cumMa5[i];
+                r.adjMa250 = adjMa250[i];
+                r.adjMa5   = adjMa5[i];
+                r.devPct   = devArr[i];  // 策略偏离度：优先前复权净值
             });
 
             const last = records[records.length - 1];
@@ -975,10 +1102,21 @@
             const isUp = gLatestDev !== null && gLatestDev >= 0;
 
             // ── Stats cards ───────────────────────────────────────────────────────
-            document.getElementById("statNav").textContent = fmt(last.nav);
-            document.getElementById("statDate").textContent = last.date;
-            document.getElementById("statMa250").textContent = last.ma250 ? fmt(last.ma250) : "--";
-            document.getElementById("statMa5").textContent = last.ma5 ? fmt(last.ma5) : "--";
+            // 单位净值区块
+            document.getElementById("statNav").textContent      = fmt(last.nav);
+            document.getElementById("statDate").textContent     = last.date;
+            document.getElementById("statNavMa250").textContent = last.ma250    ? fmt(last.ma250)    : "--";
+            document.getElementById("statMa5").textContent      = last.ma5      ? fmt(last.ma5)      : "--";
+
+            // 累计净值区块
+            document.getElementById("statCumNav").textContent   = last.cumNav   ? fmt(last.cumNav)   : (hasCumNav ? "--" : fmt(last.nav) + " (同单位)");
+            document.getElementById("statMa250").textContent    = last.cumMa250 ? fmt(last.cumMa250) : "--";
+            document.getElementById("statCumMa5").textContent   = last.cumMa5   ? fmt(last.cumMa5)   : "--";
+
+            // 前复权净值区块（策略基准）
+            const adjVal = last.adjNav ?? (hasAdjNav ? null : last.nav);
+            document.getElementById("statAdjNav").textContent   = adjVal        ? fmt(adjVal)        : "--";
+            document.getElementById("statAdjMa250").textContent = last.adjMa250 ? fmt(last.adjMa250) : "--";
 
             const devEl = document.getElementById("statDeviation");
             const devCard = document.getElementById("statDeviationCard");
@@ -1004,9 +1142,10 @@
 
             // ── Show sections ─────────────────────────────────────────────────────
             loadingEl.classList.add("hidden");
-            statsGrid.style.display = "grid";
-            document.getElementById("chartCardMain").style.display = "block";
-            document.getElementById("chartCardDev").style.display = "block";
+            document.getElementById("navBlockUnit").style.display  = "block";
+            document.getElementById("navBlockCumul").style.display = "block";
+            document.getElementById("navBlockAdj").style.display   = "block";
+            document.getElementById("chartCardDev").style.display  = "block";
             document.getElementById("strategySection").style.display = "block";
 
             // ── Strategy panel ────────────────────────────────────────────────────
@@ -1032,22 +1171,22 @@
                             ? `<span style="color:${dc};font-weight:700;">${sign}${d.toFixed(2)}%</span>`
                             : `<span style="color:#a0aec0;">--</span>`;
                         return `
-                        <div style="padding:4px 0;min-width:185px;">
+                        <div style="padding:4px 0;min-width:195px;">
                             <div style="font-size:11px;color:#a0aec0;margin-bottom:6px;">${rec.date}</div>
                             <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
                                 <span style="color:#90cdf4;">单位净值</span>
                                 <b>${rec.nav.toFixed(4)}</b>
                             </div>
                             <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
-                                <span style="color:#fbd38d;">MA250 年线</span>
-                                <span>${rec.ma250 ? rec.ma250.toFixed(4) : "--"}</span>
-                            </div>
-                            <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
                                 <span style="color:#d6bcfa;">MA5 周线</span>
                                 <span>${rec.ma5 ? rec.ma5.toFixed(4) : "--"}</span>
                             </div>
+                            <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
+                                <span style="color:#fbd38d;">MA250 (单位净值)</span>
+                                <span>${rec.ma250 ? rec.ma250.toFixed(4) : "--"}</span>
+                            </div>
                             <div style="border-top:1px solid #2d3748;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;gap:18px;">
-                                <span>偏离年线</span>${dt}
+                                <span>偏离年线 (累计)</span>${dt}
                             </div>
                         </div>`;
                     }
@@ -1098,6 +1237,179 @@
                 ]
             });
 
+            // ── Cumulative NAV chart ──────────────────────────────────────────────
+            const eCumul = echarts.init(document.getElementById("cumulChart"));
+            eCumul.setOption({
+                backgroundColor: "#fff",
+                grid: { top: 56, right: 36, bottom: 60, left: 60 },
+                tooltip: {
+                    trigger: "axis",
+                    backgroundColor: "#1a202c",
+                    borderColor: "#2d3748",
+                    textStyle: { color: "#e2e8f0", fontSize: 12 },
+                    formatter(params) {
+                        const idx = params[0].dataIndex;
+                        const rec = records[idx];
+                        const d = rec.devPct;
+                        const sign = d !== null && d >= 0 ? "+" : "";
+                        const dc = d !== null ? (d >= 0 ? "#fc8181" : "#68d391") : "#a0aec0";
+                        const dt = d !== null
+                            ? `<span style="color:${dc};font-weight:700;">${sign}${d.toFixed(2)}%</span>`
+                            : `<span style="color:#a0aec0;">--</span>`;
+                        const cumVal = hasCumNav && rec.cumNav != null ? rec.cumNav.toFixed(4) : rec.nav.toFixed(4);
+                        return `
+                        <div style="padding:4px 0;min-width:200px;">
+                            <div style="font-size:11px;color:#a0aec0;margin-bottom:6px;">${rec.date}</div>
+                            <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
+                                <span style="color:#67e8f9;">累计净值</span>
+                                <b>${cumVal}</b>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
+                                <span style="color:#fde68a;">MA250 年线</span>
+                                <span>${rec.cumMa250 ? rec.cumMa250.toFixed(4) : "--"}</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
+                                <span style="color:#c4b5fd;">MA5 周线</span>
+                                <span>${rec.cumMa5 ? rec.cumMa5.toFixed(4) : "--"}</span>
+                            </div>
+                        </div>`;
+                    }
+                },
+                legend: { top: 8, right: 10, textStyle: { color: "#4a5568", fontSize: 12 }, icon: "roundRect" },
+                xAxis: {
+                    type: "category",
+                    data: dates,
+                    axisLabel: {
+                        fontSize: 11, color: "#718096",
+                        interval: Math.floor(dates.length / 10),
+                        rotate: dates.length > 100 ? 30 : 0
+                    },
+                    axisLine: { lineStyle: { color: "#e2e8f0" } }
+                },
+                yAxis: {
+                    type: "value", scale: true,
+                    axisLabel: { fontSize: 11, color: "#718096" },
+                    splitLine: { lineStyle: { color: "#f0f4f8", type: "dashed" } }
+                },
+                dataZoom: [
+                    { type: "inside", start: Math.max(0, 100 - (MA250_N / records.length) * 200), end: 100 },
+                    { type: "slider", height: 22, bottom: 4, start: Math.max(0, 100 - (MA250_N / records.length) * 200), end: 100, textStyle: { color: "#718096", fontSize: 10 } }
+                ],
+                series: [
+                    {
+                        name: "累计净值", type: "line",
+                        data: hasCumNav ? cumNavs : closes,
+                        lineStyle: { color: "#0ea5e9", width: 2 },
+                        itemStyle: { color: "#0ea5e9" },
+                        showSymbol: false,
+                        areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: "rgba(14,165,233,0.12)" }, { offset: 1, color: "rgba(14,165,233,0)" }] } },
+                        z: 3
+                    },
+                    {
+                        name: "MA250 年线", type: "line",
+                        data: cumMa250,
+                        lineStyle: { color: "#f59e0b", width: 2.5, type: "dashed" },
+                        itemStyle: { color: "#f59e0b" },
+                        showSymbol: false, connectNulls: true, z: 2
+                    },
+                    {
+                        name: "MA5 周线", type: "line",
+                        data: cumMa5,
+                        lineStyle: { color: "#8b5cf6", width: 1.5, type: "dotted" },
+                        itemStyle: { color: "#8b5cf6" },
+                        showSymbol: false, connectNulls: true, z: 1
+                    }
+                ]
+            });
+
+            // ── Adj NAV chart（前复权净值，策略判断基准）──────────────────────────
+            const eAdj = echarts.init(document.getElementById("adjChart"));
+            eAdj.setOption({
+                backgroundColor: "#fff",
+                grid: { top: 56, right: 36, bottom: 60, left: 60 },
+                tooltip: {
+                    trigger: "axis",
+                    backgroundColor: "#1a202c",
+                    borderColor: "#2d3748",
+                    textStyle: { color: "#e2e8f0", fontSize: 12 },
+                    formatter(params) {
+                        const idx  = params[0].dataIndex;
+                        const rec  = records[idx];
+                        const d    = rec.devPct;
+                        const sign = d !== null && d >= 0 ? "+" : "";
+                        const dc   = d !== null ? (d >= 0 ? "#fc8181" : "#68d391") : "#a0aec0";
+                        const dt   = d !== null
+                            ? `<span style="color:${dc};font-weight:700;">${sign}${d.toFixed(2)}%</span>`
+                            : `<span style="color:#a0aec0;">--</span>`;
+                        const adjVal = hasAdjNav && rec.adjNav != null ? rec.adjNav.toFixed(4) : rec.nav.toFixed(4);
+                        return `
+                        <div style="padding:4px 0;min-width:210px;">
+                            <div style="font-size:11px;color:#a0aec0;margin-bottom:6px;">${rec.date}</div>
+                            <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
+                                <span style="color:#6ee7b7;">前复权净值</span>
+                                <b>${adjVal}</b>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
+                                <span style="color:#fde68a;">MA250 年线</span>
+                                <span>${rec.adjMa250 ? rec.adjMa250.toFixed(4) : "--"}</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;gap:18px;margin-bottom:3px;">
+                                <span style="color:#c4b5fd;">MA5 周线</span>
+                                <span>${rec.adjMa5 ? rec.adjMa5.toFixed(4) : "--"}</span>
+                            </div>
+                            <div style="border-top:1px solid #2d3748;margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;gap:18px;">
+                                <span>偏离年线（策略基准）</span>${dt}
+                            </div>
+                        </div>`;
+                    }
+                },
+                legend: { top: 8, right: 10, textStyle: { color: "#4a5568", fontSize: 12 }, icon: "roundRect" },
+                xAxis: {
+                    type: "category",
+                    data: dates,
+                    axisLabel: {
+                        fontSize: 11, color: "#718096",
+                        interval: Math.floor(dates.length / 10),
+                        rotate: dates.length > 100 ? 30 : 0
+                    },
+                    axisLine: { lineStyle: { color: "#e2e8f0" } }
+                },
+                yAxis: {
+                    type: "value", scale: true,
+                    axisLabel: { fontSize: 11, color: "#718096" },
+                    splitLine: { lineStyle: { color: "#f0f4f8", type: "dashed" } }
+                },
+                dataZoom: [
+                    { type: "inside", start: Math.max(0, 100 - (MA250_N / records.length) * 200), end: 100 },
+                    { type: "slider", height: 22, bottom: 4, start: Math.max(0, 100 - (MA250_N / records.length) * 200), end: 100, textStyle: { color: "#718096", fontSize: 10 } }
+                ],
+                series: [
+                    {
+                        name: "前复权净值", type: "line",
+                        data: hasAdjNav ? adjNavs : closes,
+                        lineStyle: { color: "#10b981", width: 2 },
+                        itemStyle: { color: "#10b981" },
+                        showSymbol: false,
+                        areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: "rgba(16,185,129,0.12)" }, { offset: 1, color: "rgba(16,185,129,0)" }] } },
+                        z: 3
+                    },
+                    {
+                        name: "MA250 年线", type: "line",
+                        data: adjMa250,
+                        lineStyle: { color: "#f59e0b", width: 2.5, type: "dashed" },
+                        itemStyle: { color: "#f59e0b" },
+                        showSymbol: false, connectNulls: true, z: 2
+                    },
+                    {
+                        name: "MA5 周线", type: "line",
+                        data: adjMa5,
+                        lineStyle: { color: "#8b5cf6", width: 1.5, type: "dotted" },
+                        itemStyle: { color: "#8b5cf6" },
+                        showSymbol: false, connectNulls: true, z: 1
+                    }
+                ]
+            });
+
             // ── Deviation chart ───────────────────────────────────────────────────
             const devDates = [], devData = [];
             records.forEach(r => {
@@ -1143,7 +1455,7 @@
                 }]
             });
 
-            window.addEventListener("resize", () => { eMain.resize(); eDiv.resize(); });
+            window.addEventListener("resize", () => { eMain.resize(); eCumul.resize(); eAdj.resize(); eDiv.resize(); });
         }
 
         // ── Supabase 数据加载（默认数据源）────────────────────────────────────────
@@ -1152,7 +1464,7 @@
             loadingEl.textContent = "正在从 Supabase 加载数据...";
 
             const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`
-                + `?select=date,net_price`
+                + `?select=date,net_price,net_totsl,adj_net_price`
                 + `&order=date.asc`
                 + `&limit=${SUPABASE_LIMIT}`;
 
@@ -1174,8 +1486,10 @@
                 const records = rows
                     .filter(r => r.date && r.net_price != null)
                     .map(r => ({
-                        date: String(r.date).slice(0, 10), // 只取 YYYY-MM-DD
-                        nav:  parseFloat(r.net_price)
+                        date:   String(r.date).slice(0, 10),
+                        nav:    parseFloat(r.net_price),
+                        cumNav: r.net_totsl      != null ? parseFloat(r.net_totsl)      : null,
+                        adjNav: r.adj_net_price  != null ? parseFloat(r.adj_net_price)  : null
                     }))
                     .filter(r => !isNaN(r.nav));
 
