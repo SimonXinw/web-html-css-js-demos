@@ -584,12 +584,16 @@
         </div>
     </div>
 
-    <!-- 上传降级区域 -->
+    <!-- 上传降级区域（Supabase 与本地文件均失败时显示）-->
     <div class="upload-zone" id="uploadZone">
         <input type="file" id="fileInput" accept=".xlsx,.xls">
         <div class="icon">📂</div>
-        <p>无法自动加载文件（file:// 协议限制）</p>
-        <p><strong>点击这里手动选择</strong><br>易方达中证红利ETF_基金净值.xlsx</p>
+        <p>Supabase 与本地文件均加载失败</p>
+        <p><strong>点击这里手动上传</strong><br>易方达中证红利ETF_基金净值.xlsx</p>
+        <p style="margin-top:10px;font-size:0.8rem;">
+            也可以
+            <span style="color:#93c5fd;cursor:pointer;text-decoration:underline;" onclick="loadFromSupabase()">重试 Supabase</span>
+        </p>
     </div>
 
     <div class="loading" id="loading">数据加载中，请稍候...</div>
@@ -744,13 +748,23 @@
         </div>
     </div>
 
-    <footer>数据来源：用户导入 Excel · 图表仅供参考，不构成投资建议</footer>
+    <footer>
+        <span id="dataSourceTag">数据源：加载中...</span>
+        &nbsp;·&nbsp;
+        <span style="cursor:pointer;text-decoration:underline;" onclick="loadFromSupabase()">🔄 重新拉取</span>
+        &nbsp;·&nbsp;
+        图表仅供参考，不构成投资建议
+    </footer>
 
     <script>
         // ── 常量 ─────────────────────────────────────────────────────────────────
-        const FILE_NAME = "易方达中证红利ETF_基金净值.xlsx";
-        const MA250_N = 250;
-        const MA5_N = 5;
+        const FILE_NAME       = "易方达中证红利ETF_基金净值.xlsx";
+        const MA250_N         = 250;
+        const MA5_N           = 5;
+        const SUPABASE_URL    = "https://lvsyycnybkwbrvvmshfb.supabase.co";
+        const SUPABASE_KEY    = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2c3l5Y255Ymt3YnJ2dm1zaGZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNTU5NjMsImV4cCI6MjA3MjgzMTk2M30.Ot7-h6nbAhIkUOGoqAv8diUBW6-Llhh8MtA6bJMXbeA";
+        const SUPABASE_TABLE  = "yfd_dividend";
+        const SUPABASE_LIMIT  = 10000;
 
         // ── 全局状态 ──────────────────────────────────────────────────────────────
         let gLatestDev = null; // 最新偏离度，供 budget 变动时刷新策略
@@ -1132,13 +1146,63 @@
             window.addEventListener("resize", () => { eMain.resize(); eDiv.resize(); });
         }
 
-        // ── Load via fetch ────────────────────────────────────────────────────────
-        function loadViaFetch() {
+        // ── Supabase 数据加载（默认数据源）────────────────────────────────────────
+        async function loadFromSupabase() {
+            loadingEl.classList.remove("hidden");
+            loadingEl.textContent = "正在从 Supabase 加载数据...";
+
+            const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`
+                + `?select=date,net_price`
+                + `&order=date.asc`
+                + `&limit=${SUPABASE_LIMIT}`;
+
+            try {
+                const res = await fetch(url, {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                const rows = await res.json();
+                if (!rows || rows.length === 0) throw new Error("Supabase 返回数据为空");
+
+                // 转换为统一 records 格式
+                const records = rows
+                    .filter(r => r.date && r.net_price != null)
+                    .map(r => ({
+                        date: String(r.date).slice(0, 10), // 只取 YYYY-MM-DD
+                        nav:  parseFloat(r.net_price)
+                    }))
+                    .filter(r => !isNaN(r.nav));
+
+                records.sort((a, b) => a.date.localeCompare(b.date));
+
+                document.getElementById("dataSourceTag").textContent = `数据源：Supabase · ${SUPABASE_TABLE}`;
+                render(records);
+
+            } catch (err) {
+                console.warn("Supabase 加载失败，切换到 xlsx fetch:", err.message);
+                loadFromXlsx();
+            }
+        }
+
+        // ── Excel fetch（次选：同目录 xlsx 文件）──────────────────────────────────
+        function loadFromXlsx() {
+            loadingEl.classList.remove("hidden");
+            loadingEl.textContent = "正在从本地文件加载数据...";
+
             fetch(`./${FILE_NAME}`)
                 .then(res => { if (!res.ok) throw new Error("HTTP " + res.status); return res.arrayBuffer(); })
-                .then(buf => render(parseBuffer(buf)))
+                .then(buf => {
+                    document.getElementById("dataSourceTag").textContent = `数据源：本地 xlsx 文件`;
+                    render(parseBuffer(buf));
+                })
                 .catch(err => {
-                    console.warn("fetch 失败:", err.message);
+                    console.warn("xlsx fetch 失败，切换到手动上传:", err.message);
                     showUpload();
                 });
         }
@@ -1148,7 +1212,7 @@
             uploadZone.style.display = "block";
         }
 
-        // ── File input fallback ───────────────────────────────────────────────────
+        // ── File input fallback（手动上传）────────────────────────────────────────
         uploadZone.addEventListener("click", () => fileInput.click());
         uploadZone.addEventListener("dragover", e => { e.preventDefault(); uploadZone.style.borderColor = "#2563eb"; });
         uploadZone.addEventListener("dragleave", () => { uploadZone.style.borderColor = "#cbd5e0"; });
@@ -1166,7 +1230,10 @@
             loadingEl.textContent = `正在解析 ${file.name}...`;
             const reader = new FileReader();
             reader.onload = ev => {
-                try { render(parseBuffer(ev.target.result)); }
+                try {
+                    document.getElementById("dataSourceTag").textContent = `数据源：手动上传 ${file.name}`;
+                    render(parseBuffer(ev.target.result));
+                }
                 catch (e) { loadingEl.textContent = "解析失败：" + e.message; }
             };
             reader.onerror = () => { loadingEl.textContent = "文件读取失败"; };
@@ -1174,7 +1241,7 @@
         }
 
         // ── Bootstrap ─────────────────────────────────────────────────────────────
-        loadViaFetch();
+        loadFromSupabase();
     </script>
 </body>
 
