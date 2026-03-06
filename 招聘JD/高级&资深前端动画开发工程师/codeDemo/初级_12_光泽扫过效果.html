@@ -362,6 +362,46 @@
       }
     }
 
+    /* 面试问题区 */
+    .qa_section {
+      background: var(--bg-card);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 16px;
+      padding: 32px;
+      margin-top: 40px;
+    }
+
+    .qa_section h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+      letter-spacing: 0.05em;
+    }
+
+    .qa_item {
+      margin-bottom: 18px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    .qa_item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .qa_item strong {
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+    }
+
     /* 代码展示 */
     .code-section {
       background: var(--bg-card);
@@ -445,6 +485,124 @@
           >
         </div>
       </div>
+    </div>
+
+    <div class="qa_section">
+      <h2>面试考察点</h2>
+
+      <div class="qa_item">
+        <strong>1. 光泽扫过效果的核心实现原理是什么？</strong>
+        <!-- 
+          答案：
+          利用 ::before 伪元素绝对定位在父容器内，初始位置 left: -100%（完全在左侧隐藏），
+          父容器设置 overflow: hidden 裁剪超出部分。
+          hover 时将 left 改为 100%，伪元素从左穿过容器滑向右侧，
+          伪元素本身是一条半透明白色渐变条（linear-gradient），视觉上形成"光扫过"的效果。
+          
+          三要素：
+          1. 父容器 overflow: hidden（裁剪）
+          2. ::before 伪元素持有渐变光条
+          3. transition 驱动 left 从 -100% → 100%
+        -->
+      </div>
+
+      <div class="qa_item">
+        <strong>2. 为什么父容器必须设置 overflow: hidden？</strong>
+        <!-- 
+          答案：
+          ::before 伪元素初始在父容器左侧（left: -100%），动画结束后在右侧（left: 100%），
+          这两个位置都超出了父容器边界。
+          如果不设置 overflow: hidden，光条会在容器外也可见，
+          破坏页面布局并产生奇怪的视觉溢出。
+          overflow: hidden 确保只有经过容器内部的部分可见，实现"窗口裁剪"效果。
+        -->
+      </div>
+
+      <div class="qa_item">
+        <strong>3. 用 left 做动画有性能问题，怎么优化？</strong>
+        <!-- 
+          答案：
+          left 属性的改变会触发 Layout（重排）→ Paint（重绘）→ Composite，性能较差。
+          
+          优化方案：用 transform: translateX 替代 left：
+          - 初始：transform: translateX(-200%)
+          - hover：transform: translateX(200%)
+          
+          transform 只触发 Composite（合成），跳过 Layout 和 Paint，
+          可以利用 GPU 加速，在 60fps 下更流畅，尤其是多个元素同时动画时优势明显。
+          
+          同时配合 will-change: transform 提前告知浏览器提升合成层。
+        -->
+      </div>
+
+      <div class="qa_item">
+        <strong>4. hover 触发和自动循环光泽在实现上有什么区别？</strong>
+        <!-- 
+          答案：
+          hover 触发：使用 CSS transition，hover 时改变属性值，浏览器自动插值过渡。
+          特点：只在用户悬停时播放一次，交互性强，不浪费性能。
+          
+          自动循环：使用 CSS animation + @keyframes：
+          @keyframes shineLoop {
+            0%   { left: -100%; }
+            50%  { left: 150%; }
+            100% { left: 150%; }  // 停留一半时间再重置（避免回扫）
+          }
+          .auto-shine::before { animation: shineLoop 3s infinite; }
+          
+          区别：
+          - transition：由状态变化驱动（hover/focus/class），单次
+          - animation：时间轴驱动，可无限循环，与用户交互无关
+        -->
+      </div>
+
+      <div class="qa_item">
+        <strong>5. skewX(-25deg) 在图片光泽中的作用是什么？</strong>
+        <!-- 
+          答案：
+          skewX 让光条沿 X 轴倾斜，产生"斜切"的视觉效果。
+          没有 skewX 时，光条是垂直的矩形，看起来生硬。
+          加上 skewX(-25deg) 后，光条变为平行四边形，扫过时更像真实的光反射，
+          仿照真实物体表面反光的倾斜角度，视觉上更自然、更高端。
+          
+          实际产品中（如苹果官网按钮、游戏卡片），光泽一般是 20~35 度倾斜角。
+        -->
+      </div>
+
+      <div class="qa_item">
+        <strong>6. 文字流光效果（background-size: 200%）的原理是什么？</strong>
+        <!-- 
+          答案：
+          核心原理：让背景渐变比文字宽一倍，然后通过 animation 移动背景位置。
+          
+          1. background-size: 200% auto → 渐变宽度是文字的 2 倍
+          2. background-clip: text → 背景被裁剪到文字轮廓内
+          3. color: transparent（-webkit-text-fill-color）→ 文字本身透明，露出背景渐变
+          4. @keyframes shineText { to { background-position: 200% center; } }
+             → 背景从左移动到右，颜色渐变随之流动
+          
+          关键：background-clip: text 是非标准属性，需要 -webkit- 前缀，
+          Safari/Chrome 支持良好，Firefox 需要加 background-clip: text（无前缀）。
+        -->
+      </div>
+
+      <div class="qa_item">
+        <strong>7. 卡片光泽用的是对角线扫过，和水平扫过有什么实现差异？</strong>
+        <!-- 
+          答案：
+          水平扫过：光条宽度 = 容器宽度，沿 X 轴平移（translateX 或 left）。
+          
+          对角线扫过：
+          1. 伪元素尺寸设为 200%×200%（覆盖整个对角线长度）
+          2. 渐变方向为 45deg（斜向）
+          3. 初始 transform: translateX(-100%) translateY(-100%) rotate(45deg)
+          4. hover：transform: translateX(100%) translateY(100%) rotate(45deg)
+          
+          核心区别：需要通过多重 transform 组合实现从左上到右下的斜向移动，
+          同时放大伪元素尺寸确保对角线完全覆盖（矩形对角线 = √2 × 边长）。
+        -->
+      </div>
+
     </div>
 
     <div class="code-section">
