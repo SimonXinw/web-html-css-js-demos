@@ -59,20 +59,19 @@
     }
 
 
-    setInterval(function () {
+    // 每一个小球一个随机颜色
+    var arr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
+    var col = '#';
+    for (var j = 0; j < 6; j++) {
+        var num = Math.round(Math.random() * 15);
+        col += arr[num];
+    }
 
-        // 给所有小球颜色
-        for (var i = 0; i < 50; i++) {
-            // 每一个小球一个随机颜色
-            var arr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
-            var col = '#';
-            for (var j = 0; j < 6; j++) {
-                var num = Math.round(Math.random() * 15);
-                col += arr[num];
-            }
-            oDivs[i].style.background = col;
-        }
-    }, 10)
+    // 给所有小球颜色
+    for (var i = 0; i < 50; i++) {
+
+        oDivs[i].style.background = col;
+    }
 
 </script>
 
