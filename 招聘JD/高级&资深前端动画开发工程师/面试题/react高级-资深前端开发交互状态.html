@@ -414,11 +414,258 @@
       .assessment-grid { grid-template-columns: 1fr; }
       .score-bar { grid-template-columns: repeat(2, 1fr); }
       .theme-toggle { top: 12px; right: 12px; padding: 6px 10px 6px 8px; font-size: 0.78rem; }
+      .score-panel { width: 240px; right: 8px; bottom: 8px; }
     }
+
+    /* ===== 题目评分输入行 ===== */
+    .q-score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--border);
+      flex-wrap: wrap;
+    }
+
+    .q-score-label {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+
+    .q-score-controls { display: flex; gap: 5px; flex-wrap: wrap; }
+
+    .score-quick {
+      padding: 3px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--score-row-bg);
+      color: var(--text-sub);
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: monospace;
+    }
+
+    .score-quick:hover { border-color: var(--accent); color: var(--text-main); }
+
+    .score-quick.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .q-score-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: auto;
+    }
+
+    .q-score-input {
+      width: 52px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--score-row-bg);
+      color: var(--text-main);
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, color 0.2s;
+      font-family: monospace;
+    }
+
+    .q-score-input:focus { border-color: var(--accent); }
+    .q-score-input.s-high { border-color: var(--success); color: var(--success); }
+    .q-score-input.s-mid  { border-color: var(--warning); color: var(--warning); }
+    .q-score-input.s-low  { border-color: var(--danger);  color: var(--danger); }
+
+    .q-score-sep { color: var(--text-sub); font-size: 0.9rem; }
+    .q-score-max { color: var(--text-sub); font-size: 0.82rem; font-weight: 600; }
+
+    /* ===== 汇总悬浮面板 ===== */
+    .score-panel {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 998;
+      width: 272px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+      transition: background 0.35s, border-color 0.35s;
+      overflow: hidden;
+    }
+
+    .score-panel.collapsed .panel-body { display: none; }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      cursor: pointer;
+      background: rgba(59,130,246,0.08);
+      border-bottom: 1px solid var(--border);
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .panel-header:hover { background: rgba(59,130,246,0.14); }
+
+    .panel-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .panel-header-btns { display: flex; gap: 6px; }
+
+    .btn-panel {
+      padding: 2px 9px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--score-row-bg);
+      color: var(--text-sub);
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-panel:hover { border-color: var(--accent); color: var(--text-main); }
+    .btn-panel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-panel.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-panel.primary:hover { opacity: 0.88; }
+
+    .panel-body { padding: 12px 14px 14px; }
+
+    .panel-mod-row { margin-bottom: 9px; }
+
+    .panel-mod-name {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-bottom: 3px;
+    }
+
+    .panel-mod-score { font-weight: 700; color: var(--text-main); font-family: monospace; }
+
+    .mini-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      overflow: hidden;
+    }
+
+    .mini-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent);
+      transition: width 0.35s cubic-bezier(0.34,1.56,0.64,1), background 0.3s;
+    }
+
+    .panel-divider {
+      margin: 10px 0;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    .panel-total {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .panel-total-num {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+      line-height: 1.15;
+      font-family: monospace;
+      transition: color 0.3s;
+    }
+
+    .panel-total-sub {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .total-bar-wrap {
+      height: 7px;
+      border-radius: 4px;
+      background: var(--border);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    #panel-total-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--accent);
+      transition: width 0.4s cubic-bezier(0.34,1.56,0.64,1), background 0.3s;
+    }
+
+    .panel-answered {
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 7px;
+      margin-top: 11px;
+    }
+
+    .panel-actions .btn-panel { flex: 1; padding: 7px; font-size: 0.78rem; }
   </style>
 </head>
 
 <body>
+
+  <!-- 评分汇总浮动面板 -->
+  <div class="score-panel collapsed" id="scorePanel">
+    <div class="panel-header" id="panelHeader">
+      <div class="panel-title">📊 评分汇总</div>
+      <div class="panel-header-btns" onclick="event.stopPropagation()">
+        <button class="btn-panel" id="btnClear">清空</button>
+        <button class="btn-panel primary" id="btnDownload">💾 下载</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div id="modRows"></div>
+      <hr class="panel-divider">
+      <div class="panel-total">
+        <span class="panel-total-num" id="panelTotalNum">0 / 190</span>
+        <div class="panel-total-sub" id="panelTotalPct">得分率 0%</div>
+        <div class="total-bar-wrap"><div id="panel-total-bar" style="width:0%"></div></div>
+      </div>
+      <div class="panel-answered" id="panelAnswered">已评 0 / 20 题</div>
+      <div class="panel-actions">
+        <button class="btn-panel" id="btnExpand">展开全部答案</button>
+        <button class="btn-panel primary" id="btnCollapse">🗜️ 折叠</button>
+      </div>
+    </div>
+  </div>
 
   <!-- 日夜切换开关 -->
   <button class="theme-toggle" id="themeToggle" aria-label="切换白天/夜晚主题">
@@ -2266,6 +2513,443 @@ export const initWebVitals = () => {
       applyTheme(!isNowLight);
       localStorage.setItem(STORAGE_KEY, !isNowLight ? "light" : "dark");
     });
+  </script>
+
+  <!-- ===== 评分系统 ===== -->
+  <script>
+  (function () {
+    const SCORE_KEY = "react-interview-scores-v2";
+
+    const MOD_CONFIG = [
+      { name: "一、React核心原理",    range: [0,  2],  max: 25 },
+      { name: "二、多组件架构规范",   range: [3,  4],  max: 20 },
+      { name: "三、产品详情页场景",   range: [5,  7],  max: 25 },
+      { name: "四、状态管理对比",     range: [8,  9],  max: 20 },
+      { name: "五、跨端性能优化",     range: [10, 10], max: 10 },
+      { name: "六、资深专项考察",     range: [11, 14], max: 40 },
+      { name: "七、独立站业务专项",   range: [15, 19], max: 50 },
+    ];
+    const TOTAL_MAX = 190;
+
+    // 读取存储的得分
+    let scores = {};
+    try { scores = JSON.parse(localStorage.getItem(SCORE_KEY) || "{}"); } catch (e) {}
+
+    const allCards = document.querySelectorAll(".question-card");
+
+    // ===== 1. 构建面板模块行 =====
+    const modRowsEl = document.getElementById("modRows");
+    MOD_CONFIG.forEach((mod, mi) => {
+      const div = document.createElement("div");
+      div.className = "panel-mod-row";
+      div.innerHTML = `
+        <div class="panel-mod-name">
+          <span>${mod.name}</span>
+          <span class="panel-mod-score" id="ms${mi}">0/${mod.max}</span>
+        </div>
+        <div class="mini-bar"><div class="mini-bar-fill" id="mb${mi}" style="width:0%"></div></div>
+      `;
+      modRowsEl.appendChild(div);
+    });
+
+    // ===== 2. 为每张题目卡片注入评分行 =====
+    allCards.forEach((card, idx) => {
+      const h4 = card.querySelector(".score-guide h4");
+      const m = h4?.textContent.match(/\((\d+)分\)/);
+      const maxScore = m ? parseInt(m[1]) : 10;
+
+      if (!(idx in scores)) scores[idx] = null;
+
+      // 从评分标准中提取快速分值
+      const levels = card.querySelectorAll(".score-label");
+      const qVals = new Set([0, maxScore]);
+      levels.forEach(l => {
+        const rm = l.textContent.match(/(\d+)[–—\-](\d+)/);
+        if (rm) { qVals.add(parseInt(rm[1])); qVals.add(parseInt(rm[2])); }
+        else { const nm = l.textContent.match(/\d+/g); if (nm) nm.forEach(n => qVals.add(parseInt(n))); }
+      });
+      const sortedVals = [...qVals].filter(v => v >= 0 && v <= maxScore).sort((a, b) => a - b);
+
+      const row = document.createElement("div");
+      row.className = "q-score-row";
+      row.innerHTML = `
+        <span class="q-score-label">Q${idx + 1} 评分</span>
+        <div class="q-score-controls">
+          ${sortedVals.map(v => `<button class="score-quick" data-v="${v}">${v}</button>`).join("")}
+        </div>
+        <div class="q-score-input-wrap">
+          <input class="q-score-input" type="number"
+            min="0" max="${maxScore}"
+            placeholder="—"
+            value="${scores[idx] !== null && scores[idx] !== undefined ? scores[idx] : ""}"
+          />
+          <span class="q-score-sep">/</span>
+          <span class="q-score-max">${maxScore}</span>
+        </div>
+      `;
+      card.appendChild(row);
+
+      const input = row.querySelector(".q-score-input");
+
+      // 应用已保存的样式
+      if (scores[idx] !== null && scores[idx] !== undefined) {
+        applyStyling(row, scores[idx], maxScore);
+      }
+
+      // 快速分值按钮
+      row.querySelectorAll(".score-quick").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const v = parseInt(btn.dataset.v);
+          input.value = v;
+          scores[idx] = v;
+          save(); update(); applyStyling(row, v, maxScore);
+        });
+      });
+
+      // 输入框
+      input.addEventListener("input", () => {
+        const raw = input.value;
+        if (raw === "") {
+          scores[idx] = null;
+          applyStyling(row, null, maxScore);
+        } else {
+          let v = Math.min(Math.max(0, parseInt(raw) || 0), maxScore);
+          input.value = v;
+          scores[idx] = v;
+          applyStyling(row, v, maxScore);
+        }
+        save(); update();
+      });
+    });
+
+    function applyStyling(row, val, max) {
+      const inp = row.querySelector(".q-score-input");
+      inp.className = "q-score-input";
+      row.querySelectorAll(".score-quick").forEach(b => b.classList.toggle("active", parseInt(b.dataset.v) === val));
+      if (val === null || val === undefined) return;
+      if (val >= max * 0.75) inp.classList.add("s-high");
+      else if (val >= max * 0.4)  inp.classList.add("s-mid");
+      else inp.classList.add("s-low");
+    }
+
+    function save() {
+      try { localStorage.setItem(SCORE_KEY, JSON.stringify(scores)); } catch (e) {}
+    }
+
+    // ===== 3. 实时更新面板 =====
+    function update() {
+      let totalScore = 0;
+      let totalAnswered = 0;
+
+      MOD_CONFIG.forEach((mod, mi) => {
+        let modScore = 0;
+        for (let i = mod.range[0]; i <= mod.range[1]; i++) {
+          const v = scores[i];
+          if (v !== null && v !== undefined) { modScore += v; totalAnswered++; }
+        }
+        totalScore += modScore;
+        const pct = Math.round(modScore / mod.max * 100);
+        const color = pct >= 75 ? "var(--success)" : pct >= 40 ? "var(--warning)" : "var(--danger)";
+        const ms = document.getElementById("ms" + mi);
+        const mb = document.getElementById("mb" + mi);
+        if (ms) ms.textContent = `${modScore}/${mod.max}`;
+        if (mb) { mb.style.width = pct + "%"; mb.style.background = color; }
+      });
+
+      const pct = Math.round(totalScore / TOTAL_MAX * 100);
+      const color = pct >= 75 ? "var(--success)" : pct >= 40 ? "var(--warning)" : "var(--danger)";
+
+      const numEl = document.getElementById("panelTotalNum");
+      const barEl = document.getElementById("panel-total-bar");
+      if (numEl) { numEl.textContent = `${totalScore} / ${TOTAL_MAX}`; numEl.style.color = color; }
+      if (barEl) { barEl.style.width = pct + "%"; barEl.style.background = color; }
+      const pctEl = document.getElementById("panelTotalPct");
+      if (pctEl) pctEl.textContent = `得分率 ${pct}%`;
+      const anEl = document.getElementById("panelAnswered");
+      if (anEl) anEl.textContent = `已评 ${totalAnswered} / ${allCards.length} 题`;
+    }
+
+    update();
+
+    // ===== 4. 面板折叠 =====
+    document.getElementById("panelHeader").addEventListener("click", () => {
+      document.getElementById("scorePanel").classList.toggle("collapsed");
+    });
+
+    document.getElementById("btnCollapse").addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.getElementById("scorePanel").classList.add("collapsed");
+    });
+
+    // ===== 5. 展开/折叠所有答案 =====
+    let allExpanded = false;
+    document.getElementById("btnExpand").addEventListener("click", (e) => {
+      e.stopPropagation();
+      allExpanded = !allExpanded;
+      document.querySelectorAll("details").forEach(d => d.open = allExpanded);
+      e.target.textContent = allExpanded ? "折叠全部答案" : "展开全部答案";
+    });
+
+    // ===== 6. 清空评分 =====
+    document.getElementById("btnClear").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!confirm("确认清空所有评分？")) return;
+      allCards.forEach((card, idx) => {
+        scores[idx] = null;
+        const row = card.querySelector(".q-score-row");
+        if (!row) return;
+        const inp = row.querySelector(".q-score-input");
+        if (inp) { inp.value = ""; inp.className = "q-score-input"; }
+        row.querySelectorAll(".score-quick").forEach(b => b.classList.remove("active"));
+      });
+      save(); update();
+    });
+
+    // ===== 7. 下载报告（Canvas 绘制评分卡）=====
+    document.getElementById("btnDownload").addEventListener("click", (e) => {
+      e.stopPropagation();
+      const btnDl = document.getElementById("btnDownload");
+      btnDl.textContent = "生成中…";
+      btnDl.disabled = true;
+
+      try {
+        const isLight = document.documentElement.classList.contains("light");
+        const BG       = isLight ? "#f0f4f9" : "#0f111a";
+        const SURFACE  = isLight ? "#ffffff" : "#1a1e2e";
+        const BORDER   = isLight ? "#dde3ef" : "#2d3748";
+        const TEXT      = isLight ? "#1a2035" : "#e2e8f0";
+        const TEXT_SUB  = isLight ? "#5a6a85" : "#94a3b8";
+        const ACCENT    = isLight ? "#2563eb" : "#3b82f6";
+        const GREEN     = "#10b981";
+        const YELLOW    = "#f59e0b";
+        const RED       = "#ef4444";
+        const DPR       = window.devicePixelRatio || 2;
+
+        // ---- 收集题目数据 ----
+        const rows = [];
+        allCards.forEach((card, idx) => {
+          const h4   = card.querySelector(".score-guide h4");
+          const m    = h4?.textContent.match(/\((\d+)分\)/);
+          const max  = m ? parseInt(m[1]) : 10;
+          const cur  = scores[idx] !== null && scores[idx] !== undefined ? scores[idx] : null;
+          // 取题目文字，截短
+          const raw  = card.querySelector(".q-title")?.textContent.replace(/\s+/g, " ").trim() || "";
+          const title = raw.length > 52 ? raw.slice(0, 52) + "…" : raw;
+          rows.push({ idx, title, cur, max });
+        });
+
+        const totalMax  = TOTAL_MAX;
+        const totalCur  = rows.reduce((s, r) => s + (r.cur ?? 0), 0);
+        const answered  = rows.filter(r => r.cur !== null).length;
+        const pct       = Math.round(totalCur / totalMax * 100);
+        const date      = new Date().toLocaleDateString("zh-CN");
+
+        // ---- Canvas 尺寸 ----
+        const W       = 860;
+        const ROW_H   = 38;
+        const PADDING = 32;
+        const HDR_H   = 110;
+        const MOD_HDR = 34;
+        const FTR_H   = 110;
+
+        // 计算每个模块需要的高度
+        let totalContentH = HDR_H + PADDING;
+        MOD_CONFIG.forEach(mod => {
+          totalContentH += MOD_HDR;
+          const qCount = mod.range[1] - mod.range[0] + 1;
+          totalContentH += qCount * ROW_H + 8;
+        });
+        totalContentH += FTR_H + PADDING;
+
+        const H = totalContentH;
+        const canvas = document.createElement("canvas");
+        canvas.width  = W * DPR;
+        canvas.height = H * DPR;
+        const ctx = canvas.getContext("2d");
+        ctx.scale(DPR, DPR);
+
+        // ---- 背景 ----
+        ctx.fillStyle = BG;
+        ctx.fillRect(0, 0, W, H);
+
+        // ---- 顶部 Header ----
+        ctx.fillStyle = SURFACE;
+        roundRect(ctx, PADDING, 16, W - PADDING * 2, HDR_H - 16, 10);
+        ctx.fill();
+
+        ctx.fillStyle = ACCENT;
+        ctx.font = `700 18px "Segoe UI", sans-serif`;
+        ctx.fillText("React 资深前端 · 面试评估报告", PADDING + 20, 48);
+
+        ctx.fillStyle = TEXT_SUB;
+        ctx.font = `13px "Segoe UI", sans-serif`;
+        ctx.fillText(`评估日期：${date}　　已评 ${answered} / ${rows.length} 题`, PADDING + 20, 70);
+
+        // 总分大字
+        const scoreColor = pct >= 75 ? GREEN : pct >= 45 ? YELLOW : RED;
+        ctx.fillStyle = scoreColor;
+        ctx.font = `800 32px "Segoe UI", monospace`;
+        ctx.textAlign = "right";
+        ctx.fillText(`${totalCur}`, W - PADDING - 90, 60);
+        ctx.font = `14px "Segoe UI", sans-serif`;
+        ctx.fillStyle = TEXT_SUB;
+        ctx.fillText(`/ ${totalMax}`, W - PADDING - 20, 60);
+        ctx.font = `13px "Segoe UI", sans-serif`;
+        ctx.fillText(`得分率 ${pct}%`, W - PADDING - 20, 80);
+        ctx.textAlign = "left";
+
+        // 总分进度条
+        const BAR_X = PADDING + 20;
+        const BAR_Y = 82;
+        const BAR_W = W - PADDING * 2 - 40;
+        const BAR_H = 6;
+        ctx.fillStyle = BORDER;
+        roundRect(ctx, BAR_X, BAR_Y, BAR_W, BAR_H, 3);
+        ctx.fill();
+        ctx.fillStyle = scoreColor;
+        roundRect(ctx, BAR_X, BAR_Y, Math.max(4, BAR_W * pct / 100), BAR_H, 3);
+        ctx.fill();
+
+        // ---- 模块 + 题目行 ----
+        let y = HDR_H + PADDING;
+
+        MOD_CONFIG.forEach((mod) => {
+          // 模块标题行
+          ctx.fillStyle = isLight ? "rgba(37,99,235,0.07)" : "rgba(59,130,246,0.08)";
+          roundRect(ctx, PADDING, y, W - PADDING * 2, MOD_HDR - 4, 6);
+          ctx.fill();
+
+          // 模块得分
+          let modScore = 0;
+          for (let i = mod.range[0]; i <= mod.range[1]; i++) {
+            modScore += scores[i] !== null && scores[i] !== undefined ? scores[i] : 0;
+          }
+          const modPct = Math.round(modScore / mod.max * 100);
+          const modColor = modPct >= 75 ? GREEN : modPct >= 45 ? YELLOW : RED;
+
+          ctx.fillStyle = ACCENT;
+          ctx.font = `600 13px "Segoe UI", sans-serif`;
+          ctx.fillText(mod.name, PADDING + 12, y + 21);
+
+          ctx.fillStyle = modColor;
+          ctx.font = `700 13px "Segoe UI", monospace`;
+          ctx.textAlign = "right";
+          ctx.fillText(`${modScore} / ${mod.max}`, W - PADDING - 12, y + 21);
+          ctx.textAlign = "left";
+
+          y += MOD_HDR;
+
+          // 题目行
+          for (let i = mod.range[0]; i <= mod.range[1]; i++) {
+            const r = rows[i];
+            if (!r) continue;
+
+            // 行背景（交替）
+            if ((i - mod.range[0]) % 2 === 0) {
+              ctx.fillStyle = isLight ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.015)";
+              ctx.fillRect(PADDING, y, W - PADDING * 2, ROW_H);
+            }
+
+            // Q 编号
+            ctx.fillStyle = ACCENT;
+            ctx.font = `600 12px "Consolas", monospace`;
+            ctx.fillText(`Q${i + 1}`, PADDING + 12, y + 24);
+
+            // 题目标题
+            ctx.fillStyle = TEXT;
+            ctx.font = `13px "Segoe UI", sans-serif`;
+            ctx.fillText(r.title, PADDING + 42, y + 24);
+
+            // 得分 / 最高分
+            const scoreStr = r.cur !== null ? String(r.cur) : "—";
+            const qColor = r.cur === null ? TEXT_SUB
+              : r.cur >= r.max * 0.75 ? GREEN
+              : r.cur >= r.max * 0.4  ? YELLOW : RED;
+
+            ctx.fillStyle = qColor;
+            ctx.font = `700 13px "Consolas", monospace`;
+            ctx.textAlign = "right";
+            ctx.fillText(scoreStr, W - PADDING - 42, y + 24);
+            ctx.fillStyle = TEXT_SUB;
+            ctx.font = `12px "Segoe UI", sans-serif`;
+            ctx.fillText(`/${r.max}`, W - PADDING - 14, y + 24);
+            ctx.textAlign = "left";
+
+            // 分隔线
+            ctx.strokeStyle = BORDER;
+            ctx.globalAlpha = 0.5;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(PADDING + 12, y + ROW_H);
+            ctx.lineTo(W - PADDING - 12, y + ROW_H);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            y += ROW_H;
+          }
+          y += 8;
+        });
+
+        // ---- 底部汇总 ----
+        y += 8;
+        ctx.fillStyle = SURFACE;
+        roundRect(ctx, PADDING, y, W - PADDING * 2, FTR_H - 20, 10);
+        ctx.fill();
+
+        // 左：总分
+        ctx.fillStyle = scoreColor;
+        ctx.font = `800 40px "Segoe UI", monospace`;
+        ctx.textAlign = "center";
+        ctx.fillText(`${totalCur}`, PADDING + 90, y + 56);
+        ctx.font = `14px "Segoe UI", sans-serif`;
+        ctx.fillStyle = TEXT_SUB;
+        ctx.fillText(`/ ${totalMax}  (${pct}%)`, PADDING + 90, y + 76);
+
+        // 中：评级
+        const grade = pct >= 90 ? "优秀 ★★★" : pct >= 75 ? "良好 ★★☆" : pct >= 60 ? "合格 ★☆☆" : "待提升 ☆☆☆";
+        const gradeColor = pct >= 90 ? GREEN : pct >= 75 ? ACCENT : pct >= 60 ? YELLOW : RED;
+        ctx.fillStyle = gradeColor;
+        ctx.font = `700 20px "Segoe UI", sans-serif`;
+        ctx.fillText(grade, W / 2, y + 48);
+        ctx.font = `12px "Segoe UI", sans-serif`;
+        ctx.fillStyle = TEXT_SUB;
+        ctx.fillText(`已评 ${answered} / ${rows.length} 题`, W / 2, y + 70);
+
+        ctx.textAlign = "left";
+        ctx.fillStyle = TEXT_SUB;
+        ctx.font = `11px "Segoe UI", sans-serif`;
+        ctx.fillText("React 资深前端动画工程师评估体系 v2", PADDING + 20, y + FTR_H - 30);
+
+        // ---- 下载 ----
+        const link = document.createElement("a");
+        link.download = `React面试评分报告_${date.replace(/\//g, "-")}.png`;
+        link.href = canvas.toDataURL("image/png", 0.95);
+        link.click();
+
+      } catch (err) {
+        alert("生成失败：" + err.message);
+      } finally {
+        btnDl.textContent = "💾 下载";
+        btnDl.disabled = false;
+      }
+    });
+
+    // 辅助：圆角矩形
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+  })();
   </script>
 
 </body>
