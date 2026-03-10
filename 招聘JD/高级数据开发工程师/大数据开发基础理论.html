@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大数据开发基础理论 · 跨境电商业务知识</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>大数据开发基础理论 & 跨境电商业务知识</h1>
+    <p class="hero-sub">从零开始系统掌握大数据核心概念，了解跨境电商数据分析的业务背景</p>
+    <div class="tags">
+      <span class="tag tag-blue">分布式系统</span>
+      <span class="tag tag-green">SQL & 数仓</span>
+      <span class="tag tag-purple">Spark / Flink</span>
+      <span class="tag tag-orange">跨境电商指标</span>
+      <span class="tag tag-pink">用户行为分析</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🧠</div>
+      一、大数据核心概念
+      <span class="chapter-count">新手必知</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">大数据的 5V 特征 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>Volume（体量）</strong>：数据量巨大，TB → PB → EB 级别，无法用单机存储</li>
+          <li><strong>Velocity（速度）</strong>：数据产生速度极快，需要实时或近实时处理</li>
+          <li><strong>Variety（多样性）</strong>：结构化（数据库）、半结构化（JSON/日志）、非结构化（图片/视频）</li>
+          <li><strong>Veracity（真实性）</strong>：数据质量参差不齐，有噪声、重复、缺失</li>
+          <li><strong>Value（价值）</strong>：价值密度低，需要从海量数据中挖掘有用信息</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">分布式系统三大挑战</div>
+        <ul class="card-points">
+          <li><strong>一致性 (Consistency)</strong>：所有节点同一时刻看到的数据相同</li>
+          <li><strong>可用性 (Availability)</strong>：每个请求都能得到响应（不论成功/失败）</li>
+          <li><strong>分区容错 (Partition Tolerance)</strong>：网络分区时系统仍能继续运行</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">CAP 定理</span>
+          三者只能同时满足其中两个。<br>
+          大数据系统通常选 AP（可用 + 分区容错），牺牲强一致性，用最终一致性替代。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">批处理 vs 流处理</div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>批处理</th><th>流处理</th></tr></thead>
+          <tbody>
+            <tr><td>代表工具</td><td>Hive / Spark</td><td>Flink / Kafka Streams</td></tr>
+            <tr><td>延迟</td><td>分钟～小时</td><td>毫秒～秒级</td></tr>
+            <tr><td>数据范围</td><td>有界（历史全量）</td><td>无界（实时流入）</td></tr>
+            <tr><td>典型场景</td><td>每日报表、T+1 分析</td><td>实时大屏、风控告警</td></tr>
+            <tr><td>容错成本</td><td>低（重跑即可）</td><td>高（需 Checkpoint）</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">MapReduce 原理（基础思想）</div>
+        <div class="card-desc">Google 提出的分布式计算模型，是 Hadoop 的核心计算引擎，也是理解 Spark 的基础。</div>
+        <div class="flow" style="margin-top:12px">
+          <span class="flow-step fs-blue">原始数据</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">Map（切片并行处理）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">Shuffle（按 Key 排序分发）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">Reduce（合并聚合）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">输出结果</span>
+        </div>
+        <div class="card-formula" style="margin-top:12px">
+          例：统计词频 → Map 拆分每个词输出 (word, 1)，Reduce 对相同 word 的 1 求和
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🗄️</div>
+      二、数据存储基础
+      <span class="chapter-count">理解数据的组织方式</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">HDFS 分布式文件系统 <span class="card-badge badge-core">核心</span></div>
+        <ul class="card-points">
+          <li><strong>Block（数据块）</strong>：文件切分为 128MB 的 Block，分散存储在各节点</li>
+          <li><strong>NameNode（主节点）</strong>：管理文件系统元数据（文件路径、Block 位置），不存实际数据</li>
+          <li><strong>DataNode（数据节点）</strong>：实际存储数据块，默认 3 副本保证高可用</li>
+          <li><strong>副本策略</strong>：第 1 副本在本机，第 2 副本在同机架另一台，第 3 副本在另一机架</li>
+        </ul>
+        <div class="card-formula">
+          NameNode 是 HDFS 的单点，内存有限（每个文件约 150 Byte 元数据）<br>
+          → 大量小文件会拖垮 NameNode，这是小文件问题的根源
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常见数据文件格式对比</div>
+        <table class="compare-table">
+          <thead><tr><th>格式</th><th>特点</th><th>适用场景</th></tr></thead>
+          <tbody>
+            <tr><td>CSV / JSON</td><td>行式存储，人类可读</td><td>原始数据接入（ODS层）</td></tr>
+            <tr><td>Parquet</td><td>列式存储，高压缩，支持谓词下推</td><td>OLAP 查询首选</td></tr>
+            <tr><td>ORC</td><td>列式存储，Hive 优化，支持 ACID</td><td>Hive 仓库中间层</td></tr>
+            <tr><td>Avro</td><td>行式+Schema 演化，序列化效率高</td><td>Kafka 消息、流处理</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">列式存储为什么快？</div>
+        <div class="card-desc">
+          <strong>行式存储</strong>：同一行的字段紧挨存储，适合查询整行（如 MySQL 的增删改查）。<br><br>
+          <strong>列式存储</strong>：同一列的值紧挨存储，查询某几列时只需读取对应列文件，跳过无关列。
+        </div>
+        <div class="card-formula">
+          场景：SELECT SUM(price) FROM orders<br>
+          行式：读取每一行所有字段 → 只取 price → 浪费大量 IO<br>
+          列式：直接读取 price 列文件 → IO 减少 90%+
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据压缩格式</div>
+        <ul class="card-points">
+          <li><strong>Snappy</strong>：压缩速度极快，压缩率中等，<strong>Spark 默认推荐</strong>，不支持分割</li>
+          <li><strong>Gzip</strong>：压缩率高，但压缩/解压慢，适合冷数据归档</li>
+          <li><strong>LZO</strong>：支持分割（可并行解压），适合大文件 MapReduce 输入</li>
+          <li><strong>Zstd</strong>：新一代，兼顾高压缩率和速度，ClickHouse/Parquet 常用</li>
+        </ul>
+        <div class="card-formula">
+          压缩选择原则：实时/频繁读写 → Snappy；存储优先/冷数据 → Gzip/Zstd
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🔍</div>
+      三、SQL 核心知识
+      <span class="chapter-count">大数据开发日常 80% 工作量</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">JOIN 类型全解 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>JOIN 类型</th><th>结果说明</th><th>场景</th></tr></thead>
+          <tbody>
+            <tr><td>INNER JOIN</td><td>两表都有匹配才保留</td><td>关联确定存在的维度</td></tr>
+            <tr><td>LEFT JOIN</td><td>左表全保留，右表无匹配为 NULL</td><td>保留左表全量（最常用）</td></tr>
+            <tr><td>RIGHT JOIN</td><td>右表全保留（少用，可转为 LEFT）</td><td>-</td></tr>
+            <tr><td>FULL OUTER JOIN</td><td>两表都保留，无匹配为 NULL</td><td>数据对账、差异分析</td></tr>
+            <tr><td>CROSS JOIN</td><td>笛卡尔积（行数相乘）</td><td>日期序列扩展等特殊场景</td></tr>
+            <tr><td>LEFT ANTI JOIN</td><td>左表中右表无匹配的行</td><td>找"未购买用户"等差集</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">窗口函数详解 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc" style="margin-bottom:8px">窗口函数在不减少行数的情况下计算聚合值，是数据分析的核心工具。</div>
+        <div class="card-formula">
+          <span class="label">语法结构</span>
+          函数名() OVER (PARTITION BY 分组列 ORDER BY 排序列 ROWS/RANGE 窗口范围)
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>ROW_NUMBER()</strong>：序号（1,2,3...），相同值也不并列</li>
+          <li><strong>RANK()</strong>：排名（1,1,3...），相同值并列，后续跳号</li>
+          <li><strong>DENSE_RANK()</strong>：密集排名（1,1,2...），相同值并列，不跳号</li>
+          <li><strong>LAG(col, n)</strong>：取当前行往前第 n 行的值（常用于环比计算）</li>
+          <li><strong>LEAD(col, n)</strong>：取当前行往后第 n 行的值</li>
+          <li><strong>SUM/AVG OVER</strong>：累计求和/滑动平均</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">典型用例：取每个用户最近一笔订单</span>
+          SELECT * FROM (<br>
+          &nbsp;&nbsp;SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_time DESC) AS rn<br>
+          &nbsp;&nbsp;FROM orders<br>
+          ) WHERE rn = 1
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">GROUP BY 与 HAVING 的区别</div>
+        <ul class="card-points">
+          <li><strong>WHERE</strong>：在聚合前过滤原始行（不能用聚合函数）</li>
+          <li><strong>GROUP BY</strong>：按指定列分组，配合聚合函数使用</li>
+          <li><strong>HAVING</strong>：在聚合后过滤分组结果（可以用聚合函数）</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">示例：找出订单金额超过 1000 的用户</span>
+          SELECT user_id, SUM(amount) AS total<br>
+          FROM orders<br>
+          WHERE status = 'paid'         -- 先过滤（WHERE在聚合前）<br>
+          GROUP BY user_id<br>
+          HAVING SUM(amount) > 1000     -- 再筛选聚合结果
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">CTE（公共表表达式）vs 子查询</div>
+        <div class="card-desc" style="margin-bottom:8px">CTE 使用 WITH 语句，让复杂 SQL 更可读，支持多次引用。</div>
+        <div class="card-formula">
+          <span class="label">CTE 写法（推荐）</span>
+          WITH paid_orders AS (<br>
+          &nbsp;&nbsp;SELECT * FROM orders WHERE status = 'paid'<br>
+          ),<br>
+          user_stats AS (<br>
+          &nbsp;&nbsp;SELECT user_id, COUNT(*) AS cnt FROM paid_orders GROUP BY user_id<br>
+          )<br>
+          SELECT * FROM user_stats WHERE cnt > 3;
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li>CTE 可以被多次引用，子查询每次都重新计算</li>
+          <li>CTE 语义清晰，便于调试和维护</li>
+          <li>部分引擎会将 CTE 物化（缓存结果），提高性能</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🏗️</div>
+      四、数据仓库基础
+      <span class="chapter-count">数据组织架构的核心</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">OLTP vs OLAP <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>OLTP（在线事务）</th><th>OLAP（在线分析）</th></tr></thead>
+          <tbody>
+            <tr><td>典型系统</td><td>MySQL / PostgreSQL</td><td>Hive / ClickHouse / Doris</td></tr>
+            <tr><td>操作类型</td><td>增删改查（高频小事务）</td><td>读多写少（大批量扫描）</td></tr>
+            <tr><td>数据量</td><td>GB 级，历史数据会归档</td><td>TB～PB 级，保留全量历史</td></tr>
+            <tr><td>查询特点</td><td>按主键查单行，延迟 < 10ms</td><td>全表扫描/聚合，秒～分钟级</td></tr>
+            <tr><td>数据模型</td><td>高度范式化（3NF）</td><td>反范式化（大宽表）</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数仓分层架构 <span class="card-badge badge-core">核心</span></div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">数据源<br><small>MySQL/日志/埋点</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">ODS<br><small>贴源层·原始数据</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">DWD<br><small>明细层·清洗宽表</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">DWS<br><small>汇总层·轻度聚合</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">ADS<br><small>应用层·指标报表</small></span>
+        </div>
+        <ul class="card-points" style="margin-top:12px">
+          <li><strong>ODS</strong>：原始数据保留，不做业务加工，保留原始字段和类型</li>
+          <li><strong>DWD</strong>：清洗、标准化、关联维表，生成业务明细宽表</li>
+          <li><strong>DWS</strong>：按主题汇总（用户维度/商品维度/时间维度），供多个应用共享</li>
+          <li><strong>ADS</strong>：面向具体指标，直接对接 BI 工具或接口</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">维度建模：星型模式</div>
+        <div class="card-desc">由一张<strong>事实表</strong>（记录业务事件，如订单、点击）和多张<strong>维度表</strong>（描述业务主体，如用户、商品）组成。</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">电商星型模式举例</span>
+          事实表：fact_orders（order_id, user_id, product_id, region_id, amount, dt）<br>
+          维度表：dim_user（user_id, country, gender, register_date）<br>
+          维度表：dim_product（product_id, category, brand, price_tier）<br>
+          维度表：dim_region（region_id, country_code, timezone）
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li>事实表记录数量大（每笔订单一行），维度表量少</li>
+          <li>查询时 JOIN 维度表获取描述信息</li>
+          <li>为提高查询速度，常将维度字段冗余到事实表（反范式化宽表）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ETL 的含义与流程</div>
+        <div class="card-desc"><strong>Extract（抽取）→ Transform（转换）→ Load（加载）</strong>，是数据进入仓库的必经流程。</div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>E（抽取）</strong>：从 MySQL 读 Binlog、消费 Kafka 消息、解析日志文件</li>
+          <li><strong>T（转换）</strong>：数据清洗（去重、过滤脏数据）、字段标准化（时区统一）、业务逻辑计算</li>
+          <li><strong>L（加载）</strong>：写入 HDFS / Hive / ClickHouse，按分区存储</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          现代数仓也说 ELT（先加载再转换），因为大数据引擎转换能力更强，可以在仓库内直接处理
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">📦</div>
+      五、跨境电商核心业务指标
+      <span class="chapter-count">数据分析的业务语言</span>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-abbr">GMV</div>
+        <div class="metric-name">商品交易总额 (Gross Merchandise Volume)</div>
+        <div class="metric-formula">GMV = 成交件数 × 客单价</div>
+        <div class="metric-desc">包含取消/退款订单，是电商平台最核心的规模指标</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">UV</div>
+        <div class="metric-name">独立访客数 (Unique Visitors)</div>
+        <div class="metric-formula">按设备ID/用户ID去重计数</div>
+        <div class="metric-desc">同一用户访问多次只算1个UV，衡量真实用户规模</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">PV</div>
+        <div class="metric-name">页面浏览量 (Page View)</div>
+        <div class="metric-formula">每次页面加载计1次</div>
+        <div class="metric-desc">PV/UV = 人均浏览页数，反映用户活跃度</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CVR</div>
+        <div class="metric-name">转化率 (Conversion Rate)</div>
+        <div class="metric-formula">CVR = 下单用户数 / 访客数 × 100%</div>
+        <div class="metric-desc">核心经营指标，独立站通常 1%~3% 为正常水平</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">AOV</div>
+        <div class="metric-name">平均客单价 (Average Order Value)</div>
+        <div class="metric-formula">AOV = 总销售额 / 订单数</div>
+        <div class="metric-desc">提升 AOV 是提升 GMV 的核心策略之一</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">LTV</div>
+        <div class="metric-name">用户生命周期价值 (Lifetime Value)</div>
+        <div class="metric-formula">LTV = AOV × 购买频次 × 留存时长</div>
+        <div class="metric-desc">衡量一个用户在全生命周期内创造的总价值</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CAC</div>
+        <div class="metric-name">用户获取成本 (Customer Acquisition Cost)</div>
+        <div class="metric-formula">CAC = 总营销费用 / 新增用户数</div>
+        <div class="metric-desc">LTV/CAC > 3 通常认为业务健康可持续</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ROAS</div>
+        <div class="metric-name">广告花费回报 (Return on Ad Spend)</div>
+        <div class="metric-formula">ROAS = 广告带来的收入 / 广告花费</div>
+        <div class="metric-desc">衡量广告投放效率，ROAS > 3 通常为盈利线</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CTR</div>
+        <div class="metric-name">点击率 (Click-Through Rate)</div>
+        <div class="metric-formula">CTR = 点击次数 / 展示次数 × 100%</div>
+        <div class="metric-desc">衡量广告/商品素材的吸引力</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CR</div>
+        <div class="metric-name">复购率 (Repurchase Rate)</div>
+        <div class="metric-formula">CR = 有复购的用户数 / 总购买用户数</div>
+        <div class="metric-desc">反映用户忠诚度，是评估商品/服务质量的核心</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">RFM</div>
+        <div class="metric-name">用户价值分层模型</div>
+        <div class="metric-formula">R=最近购买时间 F=购买频次 M=累计消费</div>
+        <div class="metric-desc">经典用户分层模型，用于精准营销和用户运营</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">NPS</div>
+        <div class="metric-name">净推荐值 (Net Promoter Score)</div>
+        <div class="metric-formula">NPS = 推荐者% - 贬损者%</div>
+        <div class="metric-desc">衡量用户满意度和口碑，跨境品牌极为重视</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">🛒</div>
+      六、跨境电商业务流程与数据概念
+      <span class="chapter-count">理解业务才能设计好数据</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">订单生命周期 <span class="card-badge badge-biz">业务核心</span></div>
+        <div class="flow" style="flex-direction:column; align-items:flex-start; gap:4px; margin-top:8px">
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-blue">待支付</span><small style="color:var(--text-muted)">→ 用户点击购买，生成订单号</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-green">已支付</span><small style="color:var(--text-muted)">→ 支付成功，GMV 计入</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-yellow">备货中</span><small style="color:var(--text-muted)">→ 仓库收到订单，开始拣货</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-orange">已发货</span><small style="color:var(--text-muted)">→ 物流单号生成，追踪开始</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-purple">已签收</span><small style="color:var(--text-muted)">→ 用户收到货物，确认收货</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-pink">售后/退款</span><small style="color:var(--text-muted)">→ GMV 扣减，退款到账</small></div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          注意：GMV 通常统计已支付状态，实际收入（Revenue）= GMV - 退款 - 平台费
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">用户行为漏斗模型 <span class="card-badge badge-biz">业务核心</span></div>
+        <div class="flow" style="flex-direction:column; gap:6px; margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-blue" style="width:140px;text-align:center">曝光/展示<br><small>100,000 次</small></span>
+            <small style="color:var(--text-muted)">→ CTR 2%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-green" style="width:140px;text-align:center">点击访问<br><small>2,000 UV</small></span>
+            <small style="color:var(--text-muted)">→ 加购率 15%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-yellow" style="width:140px;text-align:center">加入购物车<br><small>300 人</small></span>
+            <small style="color:var(--text-muted)">→ 结账率 60%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-orange" style="width:140px;text-align:center">发起结账<br><small>180 人</small></span>
+            <small style="color:var(--text-muted)">→ 支付率 80%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-purple" style="width:140px;text-align:center">完成支付<br><small>144 人</small></span>
+            <small style="color:var(--text-muted)">→ 最终 CVR 7.2%</small>
+          </div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          数据分析重点：找到漏斗中流失最大的环节（最大断层），优先优化
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">商品 / SKU / SPU 的区别</div>
+        <ul class="card-points">
+          <li><strong>SPU（标准产品单元）</strong>：一类商品的基本信息描述，如"Nike Air Max 90 运动鞋"</li>
+          <li><strong>SKU（库存最小单元）</strong>：具体规格组合，如"Nike Air Max 90 · 红色 · 42码"，库存、价格针对 SKU 管理</li>
+          <li><strong>Variant（变体）</strong>：Shopify 等系统中对 SKU 的称呼</li>
+          <li><strong>Listing</strong>：商品在某一平台的详情页，一个 SPU 可对应多个平台的 Listing</li>
+        </ul>
+        <div class="card-formula">
+          1个 SPU = N个 SKU（颜色 × 尺寸 = SKU数量）<br>
+          库存告警、价格策略都在 SKU 粒度操作
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">跨境电商特有概念</div>
+        <ul class="card-points">
+          <li><strong>FBA（亚马逊自营物流）</strong>：卖家发货到亚马逊仓库，由亚马逊负责配送</li>
+          <li><strong>FBM（卖家自发货）</strong>：卖家自行处理物流，灵活但配送慢</li>
+          <li><strong>COD（货到付款）</strong>：东南亚/中东市场常见，退货率较高</li>
+          <li><strong>BFCM</strong>：Black Friday Cyber Monday，全年最大销售节点</li>
+          <li><strong>站外引流</strong>：通过 Facebook/TikTok/Google Ads 将流量引到独立站</li>
+          <li><strong>品牌出海</strong>：区别于铺货模式，建立品牌认知，提升复购率和 LTV</li>
+          <li><strong>汇率换算</strong>：多货币收款，数据分析时统一换算为基准货币（如 USD）</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">📣</div>
+      七、流量与广告数据基础
+      <span class="chapter-count">理解用户从哪里来</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">流量来源（Traffic Source）分类</div>
+        <ul class="card-points">
+          <li><strong>Organic Search（自然搜索）</strong>：Google/Bing 搜索自然排名带来的流量，依靠 SEO</li>
+          <li><strong>Paid Search（付费搜索）</strong>：Google Ads 关键词竞价广告（SEM）</li>
+          <li><strong>Social（社交媒体）</strong>：Facebook / Instagram / TikTok 自然和付费流量</li>
+          <li><strong>Email（邮件营销）</strong>：发送给已有用户的营销邮件，成本低、ROI 高</li>
+          <li><strong>Direct（直接访问）</strong>：直接输入网址或书签，通常是老用户</li>
+          <li><strong>Referral（引荐）</strong>：其他网站链接跳转，如联盟营销（Affiliate）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">UTM 参数 — 流量追踪利器</div>
+        <div class="card-desc">UTM 参数附加在 URL 后面，帮助 GA/分析系统识别流量来源和广告效果。</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">UTM 示例 URL</span>
+          https://yourstore.com/products/shoes<br>
+          ?utm_source=facebook<br>
+          &utm_medium=paid_social<br>
+          &utm_campaign=bfcm_2024<br>
+          &utm_content=video_ad_v2<br>
+          &utm_term=running+shoes
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>utm_source</strong>：流量来源平台（facebook/google/email）</li>
+          <li><strong>utm_medium</strong>：营销媒介类型（cpc/organic/newsletter）</li>
+          <li><strong>utm_campaign</strong>：活动名称（便于不同活动效果对比）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">广告归因模型</div>
+        <div class="card-desc">用户购买前可能接触多次广告，归因决定将"功劳"分配给哪次接触。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>最终点击归因 (Last Click)</strong>：将 100% 功劳给最后一次点击，最常用但不完整</li>
+          <li><strong>首次点击归因 (First Click)</strong>：给最初引入用户的渠道，重视品宣效果</li>
+          <li><strong>线性归因 (Linear)</strong>：均分给所有接触点，较为公平</li>
+          <li><strong>数据驱动归因</strong>：用机器学习分析每个接触点的实际贡献，最准确</li>
+        </ul>
+        <div class="card-formula">
+          跨境独立站常用 Last Click 作为主要归因，同时用 Data-driven 做参考分析
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Google Analytics 核心维度</div>
+        <ul class="card-points">
+          <li><strong>Session（会话）</strong>：用户在 30 分钟内的连续访问，超时则新开 Session</li>
+          <li><strong>Bounce Rate（跳出率）</strong>：只访问一个页面就离开的 Session 比例，高则说明首页吸引力弱</li>
+          <li><strong>Pages/Session</strong>：平均每次访问浏览页数，越高说明用户越感兴趣</li>
+          <li><strong>Avg Session Duration</strong>：平均停留时长，反映内容质量</li>
+          <li><strong>New vs Returning</strong>：新用户 vs 回访用户比例，体现品牌留存</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">💡</div>
+      八、数据分析常用思维模型
+      <span class="chapter-count">做分析比会工具更重要</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">拆解分析法（问题树）</div>
+        <div class="card-desc">当 GMV 下降时，不要直接猜原因，而是系统性拆解：</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">GMV 拆解树</span>
+          GMV = UV × CVR × AOV<br><br>
+          UV 下降？→ 拆分各渠道流量 → 找出哪个渠道下降<br>
+          CVR 下降？→ 拆分漏斗各环节 → 找出哪一步流失大<br>
+          AOV 下降？→ 看商品结构变化 → 是否低价品占比上升
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">A/B 测试基础概念</div>
+        <ul class="card-points">
+          <li><strong>对照组 (Control)</strong>：保持原有方案不变的用户群体</li>
+          <li><strong>实验组 (Treatment)</strong>：接受新方案（新页面/新价格/新功能）的用户群体</li>
+          <li><strong>随机分流</strong>：用用户 ID Hash 确保随机且稳定分配，同一用户始终在同一组</li>
+          <li><strong>显著性检验</strong>：p-value &lt; 0.05 时，认为实验组与对照组差异非偶然</li>
+          <li><strong>最小样本量</strong>：需提前计算，避免过早下结论（数据太少时方差大）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">同期群分析（Cohort Analysis）</div>
+        <div class="card-desc">将同一时间段注册/购买的用户分为一组（Cohort），追踪这批用户随时间的行为变化。</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">典型应用：用户留存分析</span>
+          11月注册用户（Cohort）的购买留存率：<br>
+          第1月购买：40%<br>
+          第2月购买：20%<br>
+          第3月购买：12%<br>
+          第6月购买：8%
+        </div>
+        <div class="card-desc" style="margin-top:8px">留存曲线趋于平稳说明有忠实用户群，持续下滑说明产品无法留住用户。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据分析的常见陷阱</div>
+        <ul class="card-points">
+          <li><strong>幸存者偏差</strong>：只分析存活的用户/商品，忽略已流失的样本</li>
+          <li><strong>混淆变量</strong>：两个指标相关，但可能都是第三个因素的结果（如节假日）</li>
+          <li><strong>辛普森悖论</strong>：整体趋势与分组趋势相反，需要拆分维度分析</li>
+          <li><strong>短视 vs 长视</strong>：短期提升 CTR 可能损害长期品牌形象和复购率</li>
+          <li><strong>均值陷阱</strong>：平均客单价上涨，可能是高价商品少量拉高了均值，中位数更可靠</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🔧</div>
+      九、大数据工具生态速览
+      <span class="chapter-count">新人了解全貌</span>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-title">数据采集层</div>
+        <ul class="card-points">
+          <li><strong>Flume</strong>：日志文件实时采集，写入 HDFS/Kafka</li>
+          <li><strong>Canal / Debezium</strong>：MySQL Binlog 实时 CDC（变更数据捕获）</li>
+          <li><strong>Kafka</strong>：分布式消息队列，数据总线，解耦生产者和消费者</li>
+          <li><strong>埋点 SDK</strong>：前端/APP 行为数据上报，如 Segment / GrowingIO</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据存储层</div>
+        <ul class="card-points">
+          <li><strong>HDFS</strong>：分布式文件系统，Hive/Spark 的底层存储</li>
+          <li><strong>Hive</strong>：将 SQL 转换为 MapReduce/Spark 运行，构建数仓</li>
+          <li><strong>HBase</strong>：NoSQL 列存数据库，高并发随机读写，适合明细查询</li>
+          <li><strong>Redis</strong>：内存 KV 存储，用于实时计数、缓存结果</li>
+          <li><strong>ClickHouse/Doris</strong>：高性能 OLAP，实时分析报表</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据计算层</div>
+        <ul class="card-points">
+          <li><strong>Spark</strong>：内存计算，批流一体，替代 MapReduce</li>
+          <li><strong>Flink</strong>：真实时流计算，低延迟，Exactly-Once 语义</li>
+          <li><strong>Presto / Trino</strong>：联邦查询，跨数据源 SQL 分析</li>
+          <li><strong>dbt</strong>：数据转换工具，SQL 版本管理和血缘追踪</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">调度与管理层</div>
+        <ul class="card-points">
+          <li><strong>Airflow</strong>：工作流调度，Python 定义 DAG，支持依赖管理</li>
+          <li><strong>DolphinScheduler</strong>：国内常用的可视化任务调度系统</li>
+          <li><strong>Ranger</strong>：Hadoop 权限管理，控制数据访问权限</li>
+          <li><strong>Atlas</strong>：数据血缘、元数据管理，追踪数据来源</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据可视化与 BI 层</div>
+        <ul class="card-points">
+          <li><strong>Superset</strong>：开源 BI 工具，支持多种数据源，美观易用</li>
+          <li><strong>Metabase</strong>：更适合非技术人员的 BI，配置简单</li>
+          <li><strong>Grafana</strong>：时序数据监控，常用于实时大屏</li>
+          <li><strong>Tableau / Power BI</strong>：商业 BI，功能强大，跨境公司常用</li>
+          <li><strong>GA4 / Shopify Analytics</strong>：电商平台自带分析工具</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">云平台大数据服务</div>
+        <ul class="card-points">
+          <li><strong>AWS EMR</strong>：云端 Hadoop/Spark 集群，按需弹性扩缩容</li>
+          <li><strong>Google BigQuery</strong>：Serverless 数仓，按查询量计费，跨境公司常用</li>
+          <li><strong>Azure Synapse</strong>：微软云数仓，与 Power BI 深度集成</li>
+          <li><strong>阿里云 MaxCompute</strong>：国内大数据首选，与 DataWorks 配合</li>
+          <li><strong>Snowflake</strong>：多云数仓，数据共享能力强，跨境 SaaS 公司常用</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "bigdata-theory-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>
