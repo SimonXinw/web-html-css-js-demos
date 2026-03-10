@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>资深前端动画工程师面试题库 (React/Next.js/WebGL)</title>
+  <style>
+    :root {
+      --bg: #0f111a;
+      --card-bg: #1a1e2e;
+      --text-main: #e2e8f0;
+      --text-sub: #94a3b8;
+      --accent: #8b5cf6;
+      --border: #2d3748;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --pre-bg: #0d0f18;
+      --pre-border: rgba(255, 255, 255, 0.07);
+      --code-inline-bg: rgba(255, 255, 255, 0.1);
+      --code-inline-color: #c3b1e1;
+      --answer-bg: rgba(0, 0, 0, 0.3);
+      --score-row-bg: rgba(255, 255, 255, 0.03);
+      --section-bg: rgba(139, 92, 246, 0.05);
+      --h1-from: #fff;
+    }
+
+    /* ===== 白天模式变量覆盖 ===== */
+    html.light {
+      --bg: #f4f5f9;
+      --card-bg: #ffffff;
+      --text-main: #1e2433;
+      --text-sub: #64748b;
+      --accent: #7c3aed;
+      --border: #dde1ea;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --pre-bg: #1e2433;
+      --pre-border: rgba(0, 0, 0, 0.1);
+      --code-inline-bg: rgba(124, 58, 237, 0.1);
+      --code-inline-color: #7c3aed;
+      --answer-bg: rgba(124, 58, 237, 0.04);
+      --score-row-bg: rgba(0, 0, 0, 0.025);
+      --section-bg: rgba(124, 58, 237, 0.05);
+      --h1-from: #1e2433;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Segoe UI", -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 40px 20px;
+      transition: background-color 0.35s, color 0.35s;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 60px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--h1-from) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+
+    .subtitle {
+      color: var(--text-sub);
+      font-size: 1.1rem;
+    }
+
+    .score-summary {
+      margin-top: 16px;
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .score-chip {
+      font-size: 0.85rem;
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      background: rgba(139, 92, 246, 0.08);
+      color: var(--text-sub);
+    }
+
+    .section-title {
+      font-size: 1.4rem;
+      margin: 50px 0 25px;
+      padding: 12px 16px;
+      border-left: 4px solid var(--accent);
+      background: var(--section-bg);
+      border-radius: 0 8px 8px 0;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.35s, color 0.35s;
+    }
+
+    .section-tag {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      font-weight: normal;
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .question-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.35s, border-color 0.35s;
+    }
+
+    .question-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .question-card.accent {
+      border-color: rgba(139, 92, 246, 0.6);
+    }
+
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .q-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .q-tag {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--accent);
+      margin-left: 12px;
+      white-space: nowrap;
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      flex-shrink: 0;
+    }
+
+    .q-tag.hard {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .q-tag.warn {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+
+    .assessment-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 24px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .point-list h4,
+    .score-guide h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+    }
+
+    .point-list ul {
+      list-style: none;
+    }
+
+    .point-list li {
+      margin-bottom: 8px;
+      padding-left: 18px;
+      position: relative;
+      font-size: 0.92rem;
+      color: var(--text-main);
+    }
+
+    .point-list li::before {
+      content: "▸";
+      color: var(--accent);
+      position: absolute;
+      left: 0;
+    }
+
+    .score-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+      font-size: 0.88rem;
+      padding: 10px 12px;
+      border-radius: 6px;
+      background: var(--score-row-bg);
+      border-left: 2px solid transparent;
+      transition: background 0.35s;
+    }
+
+    .score-row.low  { border-left-color: var(--text-sub); }
+    .score-row.mid  { border-left-color: var(--warning); }
+    .score-row.high { border-left-color: var(--success); }
+
+    .score-label {
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: inline-block;
+      font-size: 0.85rem;
+    }
+
+    .level-low  { color: var(--text-sub); }
+    .level-mid  { color: var(--warning); }
+    .level-high { color: var(--success); }
+
+    .score-desc {
+      color: var(--text-sub);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    details {
+      margin-top: 16px;
+    }
+
+    summary {
+      cursor: pointer;
+      color: var(--accent);
+      font-size: 0.88rem;
+      font-weight: 600;
+      user-select: none;
+      transition: color 0.2s;
+      padding: 6px 0;
+    }
+
+    summary:hover {
+      color: #fff;
+    }
+
+    .answer-key {
+      margin-top: 12px;
+      background: var(--answer-bg);
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      border-left: 3px solid var(--accent);
+      color: var(--text-main);
+      line-height: 1.7;
+      transition: background 0.35s;
+    }
+
+    .answer-key strong {
+      color: var(--text-main);
+    }
+
+    .answer-key p {
+      margin-bottom: 8px;
+    }
+
+    .answer-key ol,
+    .answer-key ul {
+      padding-left: 20px;
+      margin-top: 6px;
+    }
+
+    .answer-key li {
+      margin-bottom: 4px;
+    }
+
+    pre {
+      background: var(--pre-bg);
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-top: 10px;
+      border: 1px solid var(--pre-border);
+      transition: background 0.35s, border-color 0.35s;
+    }
+
+    pre code {
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.85rem;
+      color: #a5d6a7;
+      background: none;
+      padding: 0;
+      border-radius: 0;
+    }
+
+    code {
+      background: var(--code-inline-bg);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.88em;
+      color: var(--code-inline-color);
+      transition: background 0.35s, color 0.35s;
+    }
+
+    /* ===== 主题切换按钮 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      transition: background 0.35s, border-color 0.35s, box-shadow 0.2s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: "Segoe UI", -apple-system, sans-serif;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(139, 92, 246, 0.2);
+    }
+
+    .theme-toggle:active {
+      transform: scale(0.96);
+    }
+
+    /* 轨道 */
+    .toggle-track {
+      width: 36px;
+      height: 20px;
+      border-radius: 20px;
+      background: var(--border);
+      position: relative;
+      transition: background 0.35s;
+      flex-shrink: 0;
+    }
+
+    html.light .toggle-track {
+      background: var(--accent);
+    }
+
+    /* 圆球 */
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+    }
+
+    html.light .toggle-thumb {
+      transform: translateX(16px);
+    }
+
+    /* 标签文字 */
+    .toggle-label {
+      letter-spacing: 0.03em;
+    }
+
+    @media (max-width: 768px) {
+      .assessment-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .theme-toggle {
+        top: 12px;
+        right: 12px;
+        padding: 6px 10px 6px 8px;
+        font-size: 0.78rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- 主题切换按钮 -->
+  <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+    <div class="toggle-track">
+      <div class="toggle-thumb" id="toggleThumb">☀️</div>
+    </div>
+    <span class="toggle-label" id="toggleLabel">深色</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <h1>资深前端动画工程师面试评估表</h1>
+      <p class="subtitle">Next.js 独立站 · 浏览器原理 · 图形算法 · 性能优化</p>
+      <div class="score-summary">
+        <span class="score-chip">满分 150 分</span>
+        <span class="score-chip">五大考察模块</span>
+        <span class="score-chip">含参考答案解析</span>
+      </div>
+    </header>
+
+    <!-- ==================== 模块 1 ==================== -->
+    <div class="section-title">
+      一、浏览器渲染与 CSS 底层原理
+      <span class="section-tag">30 分 · Deep Dive</span>
+    </div>
+
+    <!-- Q1 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q1: 为什么 <code>transform</code> 和 <code>opacity</code> 动画性能最高？请详述浏览器渲染流水线 (Rendering Pipeline)。</div>
+        <span class="q-tag">核心必问</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>流水线阶段</strong>：Parse HTML → Style → Layout (Reflow) → Paint (Repaint) → Composite。</li>
+            <li><strong>触发层级</strong>：改变 width/left 触发 Layout；改变 color 触发 Paint；transform/opacity 仅触发 Composite。</li>
+            <li><strong>合成线程</strong>：Composite 在独立线程运行，不阻塞主线程，即使 JS 阻塞也能保持 60fps。</li>
+            <li><strong>GPU 纹理上传</strong>：合成层变成 GPU 纹理，变换操作直接由 GPU 矩阵运算完成。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能完整描述像素管道全流程；区分主线程/合成线程；解释 GPU 纹理混合过程。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 GPU 加速、Layout/Paint 区别，但对线程模型描述模糊。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">只知道"transform 快"，不能解释原因。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案解析</summary>
+        <div class="answer-key">
+          <p><strong>浏览器完整像素管道：</strong></p>
+          <ol>
+            <li><strong>Style</strong>：计算每个元素最终 CSS 值。</li>
+            <li><strong>Layout</strong>：计算元素尺寸与位置（最昂贵）。</li>
+            <li><strong>Paint</strong>：将元素绘制到位图（像素填充）。</li>
+            <li><strong>Composite</strong>：将多个合成层合并输出到屏幕（纯 GPU 操作）。</li>
+          </ol>
+          <p><strong>关键</strong>：transform/opacity 的变化完全绕过 Layout 和 Paint，仅由 GPU 矩阵乘法完成，且运行在独立的合成线程，即使主线程被 JS 长任务阻塞，动画依然流畅。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q2: <code>will-change</code> 属性的原理是什么？滥用会带来什么问题？</div>
+        <span class="q-tag">性能优化</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>提前提升合成层</strong>：浏览器提前为元素创建独立纹理（GPU 显存），避免动画时临时创建的开销。</li>
+            <li><strong>VRAM 占用</strong>：每个合成层消耗显存，大量 will-change 会导致移动端 OOM（内存不足）Crash。</li>
+            <li><strong>层爆炸 (Layer Explosion)</strong>：子元素可能被意外提升到独立层，触发大量 Composite。</li>
+            <li><strong>正确用法</strong>：动画前通过 JS 动态添加，动画结束后移除；不使用 <code>* { will-change: transform }</code>。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">明确指出 VRAM 爆炸风险；知道 <code>translateZ(0)</code> 是旧版 Hack；能区分 will-change 与 transform: translate3d 的异同。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道它提升 GPU 加速，但不清楚副作用与使用时机。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不了解或认为"加上只有好处"。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案解析</summary>
+        <div class="answer-key">
+          <p><strong>最佳实践：</strong></p>
+          <pre><code>// 动画开始时添加
+el.style.willChange = 'transform';
+el.addEventListener('transitionend', () => {
+  el.style.willChange = 'auto'; // 动画结束后还原
+}, { once: true });</code></pre>
+          <p><strong>警惕场景</strong>：在 CSS 文件中对大量元素静态设置 will-change，会让整个页面所有元素都占用 GPU 显存，移动端极易崩溃。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q3: <code>steps()</code> 和 <code>cubic-bezier()</code> 的数学含义是什么？为什么 ease-out 感觉"自然"？</div>
+        <span class="q-tag">数学原理</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>贝塞尔本质</strong>：时间轴 t(0→1) 映射到属性值 p(0→1) 的曲线，两个控制点决定斜率（速度）变化。</li>
+            <li><strong>ease-out 感觉自然</strong>：符合物理摩擦力：先快后慢，像滑动停止，符合人眼"惯性期待"。</li>
+            <li><strong>steps() 阶梯函数</strong>：将时间切割成 N 段，用于 Sprite Sheet 逐帧动画；<code>steps(12, end)</code>。</li>
+            <li><strong>spring 与 bezier 的根本区别</strong>：bezier 时长固定，spring 基于物理方程，时长由速度动态决定。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能解释斜率代表速度；用 steps 实现逐帧动画；对比 spring 物理与贝塞尔的差异（speed → duration vs duration fixed）。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 ease-out "先快后慢"，能用 cubic-bezier 调节效果。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">只会用预设关键词（ease/linear），不理解背后数学。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案解析</summary>
+        <div class="answer-key">
+          <p><strong>cubic-bezier(x1, y1, x2, y2) 快速记忆：</strong></p>
+          <ul>
+            <li><code>ease</code> = <code>cubic-bezier(0.25, 0.1, 0.25, 1)</code> — 慢快慢</li>
+            <li><code>ease-in</code> = <code>cubic-bezier(0.42, 0, 1, 1)</code> — 先慢（加速入场）</li>
+            <li><code>ease-out</code> = <code>cubic-bezier(0, 0, 0.58, 1)</code> — 先快后慢（最像物理）</li>
+            <li>弹簧效果：<code>cubic-bezier(0.34, 1.56, 0.64, 1)</code> — Y 值超过 1，模拟过冲</li>
+          </ul>
+          <p><strong>steps 应用</strong>：雪碧图逐帧动画，精灵动画走路循环。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 2 ==================== -->
+    <div class="section-title">
+      二、图形算法与动画数学
+      <span class="section-tag">40 分 · Algorithm & Math</span>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q4: 算法题：实现帧率无关的 Lerp (Damp) 函数。简单 Lerp 在 120Hz 屏幕上为什么会"跑得更快"？</div>
+        <span class="q-tag">基础算法</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>基础公式</strong>：<code>lerp(a, b, t) = a + (b - a) * t</code>。</li>
+            <li><strong>帧率耦合问题</strong>：每帧执行 <code>cur += (target - cur) * 0.1</code>，60hz 每秒执行 60 次，120hz 执行 120 次，速度翻倍。</li>
+            <li><strong>修复方案</strong>：引入 <code>deltaTime</code>，用指数衰减公式：<code>t = 1 - Math.exp(-lambda * dt)</code>。</li>
+            <li><strong>应用场景</strong>：鼠标跟随阻尼、相机平滑、平滑滚动位置。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能手写帧率无关的 damp 函数；解释 Math.exp 指数衰减原理；知道 lambda 参数控制"阻尼强度"。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 Lerp 公式和用途，但未考虑帧率差异。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不了解 Lerp，或认为用 CSS transition 可替代一切。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考代码</summary>
+        <div class="answer-key">
+<pre><code>// 基础版（帧率相关 — 不推荐）
+const lerp = (a, b, t) => a + (b - a) * t;
+
+// 进阶版：帧率无关 Damp（推荐）
+// lambda: 阻尼系数（越大越快追上目标，通常 1–20）
+// dt: 上一帧到当前帧的时间差（单位：秒）
+const damp = (a, b, lambda, dt) =>
+  lerp(a, b, 1 - Math.exp(-lambda * dt));
+
+// 使用示例 (requestAnimationFrame loop)
+let prev = performance.now();
+const tick = () => {
+  const now = performance.now();
+  const dt = (now - prev) / 1000; // 转换为秒
+  prev = now;
+
+  curX = damp(curX, targetX, 8, dt);
+  el.style.transform = `translateX(${curX}px)`;
+  requestAnimationFrame(tick);
+};</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q5: 场景题：如何检测鼠标是否在一个经过 CSS rotate 旋转后的矩形元素内？(OBB 碰撞检测)</div>
+        <span class="q-tag hard">图形学难点</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>AABB vs OBB</strong>：<code>getBoundingClientRect</code> 返回的是 AABB（轴对齐包围盒），旋转后精度差。</li>
+            <li><strong>逆变换法</strong>：将鼠标坐标通过矩形变换矩阵的逆矩阵还原到元素局部坐标系，再做 AABB 检测。</li>
+            <li><strong>矩阵获取</strong>：<code>getComputedStyle(el).transform</code> 拿到 matrix 值，解析旋转角度。</li>
+            <li><strong>分离轴定理 (SAT)</strong>：另一种通用方案，但对简单矩形来说逆变换更简洁。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">给出完整的逆变换法方案；知道 DOMMatrix API；提到 SAT 作为通用备选；指出 getBoundingClientRect 的精度缺陷。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 getBoundingClientRect 不够用，有坐标转换的思路但细节模糊。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">直接用 getBoundingClientRect，忽略旋转影响。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案解析</summary>
+        <div class="answer-key">
+          <p><strong>逆变换法核心代码：</strong></p>
+<pre><code>function isPointInRotatedRect(el, mouseX, mouseY) {
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+
+  // 获取元素旋转角度
+  const style = getComputedStyle(el);
+  const matrix = new DOMMatrix(style.transform);
+  const angle = Math.atan2(matrix.m12, matrix.m11); // 弧度
+
+  // 将鼠标坐标平移到以元素中心为原点
+  const dx = mouseX - cx;
+  const dy = mouseY - cy;
+
+  // 逆旋转（乘以负角度旋转矩阵）
+  const cos = Math.cos(-angle);
+  const sin = Math.sin(-angle);
+  const localX = dx * cos - dy * sin;
+  const localY = dx * sin + dy * cos;
+
+  // 在局部坐标系做 AABB 检测
+  return (
+    Math.abs(localX) <= rect.width / 2 &&
+    Math.abs(localY) <= rect.height / 2
+  );
+}</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q6: 算法题：实现粒子群沿三次贝塞尔曲线均匀流动，如何避免 GC 卡顿？</div>
+        <span class="q-tag">粒子系统</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>三次贝塞尔公式</strong>：<code>B(t) = (1-t)³P0 + 3(1-t)²tP1 + 3(1-t)t²P2 + t³P3</code>。</li>
+            <li><strong>对象池 (Object Pool)</strong>：预先创建固定数量的粒子对象，死亡后回收复用，避免频繁 new/GC。</li>
+            <li><strong>均匀采样问题</strong>：t 值均匀分布不等于路径上等距，需用 LUT（查找表）预采样等弧长点。</li>
+            <li><strong>Canvas vs DOM</strong>：超过 100 个粒子必须用 Canvas；超过 5000 个考虑 WebGL Instancing。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能说明对象池实现原理；提出 LUT 解决弧长均匀分布问题；计算切线方向旋转粒子朝向；主动提及 Canvas vs WebGL 性能边界。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">能写出贝塞尔公式，考虑到对象池，但不知道等弧长采样问题。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">每帧 new 粒子对象，不考虑内存问题。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案解析</summary>
+        <div class="answer-key">
+<pre><code>// 三次贝塞尔公式
+const bezier = (p0, p1, p2, p3, t) => {
+  const mt = 1 - t;
+  return mt**3 * p0 + 3 * mt**2 * t * p1 +
+         3 * mt * t**2 * p2 + t**3 * p3;
+};
+
+// 对象池：预创建 N 个粒子
+class ParticlePool {
+  constructor(size) {
+    this.pool = Array.from({ length: size }, () => ({
+      x: 0, y: 0, t: 0, speed: 0, alive: false
+    }));
+  }
+  get() {
+    return this.pool.find(p => !p.alive) || this.pool[0];
+  }
+  release(p) { p.alive = false; }
+}</code></pre>
+          <p><strong>等弧长采样</strong>：预先在路径上采样 1000 个点存入 LUT，用线性插值按距离均匀取点，避免"曲率大的地方粒子慢"的问题。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q7: 什么是四元数 (Quaternion)？在 3D 动画中为什么比欧拉角 (Euler Angles) 更好？</div>
+        <span class="q-tag">3D 基础</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>万向节死锁 (Gimbal Lock)</strong>：三轴欧拉角顺序旋转时，当某轴旋转 90° 会使另两轴对齐，导致丢失一个自由度，飞机"锁死"无法继续旋转。</li>
+            <li><strong>SLERP 插值</strong>：四元数的球面线性插值保证旋转走最短圆弧路径，不会出现欧拉角插值的奇怪绕路。</li>
+            <li><strong>Three.js 实践</strong>：同时设置 <code>.rotation</code> 和 <code>.quaternion</code> 时，Three.js 以后者为准。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能用具体场景解释 Gimbal Lock；对比 Lerp 与 SLERP 的差异；在 Three.js 中正确使用 quaternion.slerp()。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道"欧拉角有问题，四元数更好"，但无法准确解释现象。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">只用 rotation.x/y/z，不了解四元数概念。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 模块 3 ==================== -->
+    <div class="section-title">
+      三、React / Next.js 动画架构
+      <span class="section-tag">40 分 · Architecture</span>
+    </div>
+
+    <!-- Q8 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q8: 在 Next.js 中实现高性能 Scroll-driven Animation，对比 GSAP / Framer Motion / 原生 CSS 的选型。</div>
+        <span class="q-tag">技术选型</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>CSS Scroll Timeline（原生）</strong>：零 JS 开销，在合成线程运行，未来趋势，但兼容性还需 Polyfill。</li>
+            <li><strong>GSAP ScrollTrigger</strong>：工业级方案，功能最强（Pin/Scrub），命令式风格，体积较大。</li>
+            <li><strong>Framer Motion useScroll</strong>：React 声明式友好，MotionValue 不触发重渲染，但功能略弱于 GSAP。</li>
+            <li><strong>React 核心陷阱</strong>：绝对不能在 onScroll 回调中 setState；应使用 useRef 或 MotionValue 直接操作 DOM。</li>
+            <li><strong>Lenis</strong>：统一化平滑滚动底层，配合任何动画库使用。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能给出不同场景下的最优选择；知道 CSS Scroll Timeline 的线程优势；推荐 Lenis 做底层平滑滚动；理解 Direct Manipulation 绕过 React Render Cycle。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">了解至少两种方案，能解释为何不用 setState。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">在 scroll 事件中 setState 更新位置。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案解析</summary>
+        <div class="answer-key">
+          <p><strong>选型决策树：</strong></p>
+          <ul>
+            <li>追求极致性能 + 未来兼容 → <strong>CSS Scroll Timeline</strong></li>
+            <li>复杂叙事型官网 + Pin 效果 → <strong>GSAP ScrollTrigger</strong></li>
+            <li>React 组件内联动画 → <strong>Framer Motion useScroll</strong></li>
+            <li>平滑滚动基础层 → <strong>Lenis</strong>（与以上任意组合）</li>
+          </ul>
+          <p><strong>避坑要点</strong>：Framer Motion 的 MotionValue 是 React 外部值，更新时不触发组件 re-render，这正是它在高频滚动中高效的原因。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q9 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q9: React 并发模式 (Concurrent Mode) 对动画有何影响？如何避免动画撕裂 (Tearing)？</div>
+        <span class="q-tag">React 深度</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>渲染可中断</strong>：React 18 可暂停低优先级渲染让位给高优先任务，导致动画值可能在多帧间读到不一致状态（Tearing）。</li>
+            <li><strong>useLayoutEffect vs useEffect</strong>：动画 DOM 初始化必须用 useLayoutEffect（同步，在 Paint 前执行），否则会有一帧闪烁。</li>
+            <li><strong>动画状态外置</strong>：将动画数据存在 Ref 或 Zustand 等外部 Store，完全绕过 React Render 流，不受调度影响。</li>
+            <li><strong>useSyncExternalStore</strong>：React 18 提供的 API，专门解决外部 Store 的 Tearing 问题。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能解释 Tearing 的具体表现；区分 useLayoutEffect 和 useEffect 的执行时机；知道 GSAP 和 Framer Motion 都绕过了 React 渲染流。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道用 useRef 保存动画实例，避免重渲染销毁。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">在 useEffect 初始化动画，在 useState 存储动画值。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q10: 设计 "离场动画 + 数据预加载同步" 架构（Next.js App Router）。</div>
+        <span class="q-tag">架构设计</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>layout.tsx vs template.tsx</strong>：layout 在路由切换间保持挂载，template 每次路由都重新挂载——后者适合做入场动画容器。</li>
+            <li><strong>阻塞跳转</strong>：Link 的 onClick 中拦截默认行为，播放离场动画，动画结束后再调用 <code>router.push()</code>。</li>
+            <li><strong>并行预取</strong>：离场动画播放期间同时 <code>router.prefetch(href)</code>，动画结束时数据已准备好。</li>
+            <li><strong>Scroll Restoration</strong>：跳转后禁止自动滚动，待入场动画结束后再恢复 scroll-behavior。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">完整设计包含：阻塞跳转 → 并行预取 → 离场动画 → push → 入场动画 → 恢复滚动；能处理快速多次点击的竞态条件（abort controller）。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">能做基本的页面转场，了解 AnimatePresence + usePathname 方案。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不知道 layout 和 template 的区别，转场动画直接闪烁。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q11 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q11: FLIP 技术（First Last Invert Play）原理与实战 — 手写伪代码并指出 Scale 变换的子元素扭曲问题。</div>
+        <span class="q-tag">性能模式</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>解决的问题</strong>：DOM 布局改变（如 Flex 排序、Grid 重排）无法直接 CSS transition，因为新位置在下一帧才生效。</li>
+            <li><strong>四步流程</strong>：① 记录初始位置 (First) → ② 触发布局变化 → ③ 记录新位置 (Last) → ④ 用 transform 将元素"拉回"初始位置 (Invert) → ⑤ 移除 transform 触发过渡 (Play)。</li>
+            <li><strong>Scale 扭曲问题</strong>：父元素做 scale 变换时，子元素会跟着被拉伸，需要给子元素应用反向 Scale（Inverse Scale）修正。</li>
+            <li><strong>Framer Motion</strong>：layout prop 自动处理 FLIP + Scale 修正。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能完整手写 FLIP 四步伪代码；指出 Scale 修正问题（反向 scaleX/Y = 1 / parentScaleX）；提到 Framer Motion layout 的底层就是 FLIP。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">理解 FLIP 原理，知道用 getBoundingClientRect，但细节不完整。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不了解 FLIP，用 CSS transition: all 0.3s 解决布局动画。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考代码</summary>
+        <div class="answer-key">
+<pre><code>async function flipAnimate(el, changeLayout) {
+  // 1. First — 记录初始位置
+  const first = el.getBoundingClientRect();
+
+  // 2. 触发布局变化
+  changeLayout();
+
+  // 3. Last — 记录新位置（需等 DOM 更新）
+  await Promise.resolve(); // 或 requestAnimationFrame
+  const last = el.getBoundingClientRect();
+
+  // 4. Invert — 用 transform 还原到初始位置
+  const dx = first.left - last.left;
+  const dy = first.top - last.top;
+  const dw = first.width / last.width;
+  const dh = first.height / last.height;
+
+  el.style.transform =
+    `translate(${dx}px, ${dy}px) scale(${dw}, ${dh})`;
+  el.style.transition = 'none';
+
+  // 5. Play — 移除 transform，触发过渡动画
+  requestAnimationFrame(() => {
+    el.style.transition = 'transform 0.4s ease-out';
+    el.style.transform = 'none';
+  });
+}</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 4 ==================== -->
+    <div class="section-title">
+      四、WebGL 与高级视觉特效
+      <span class="section-tag">20 分 · Visual FX</span>
+    </div>
+
+    <!-- Q12 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q12: 区分 Vertex Shader 和 Fragment Shader，并说明如何用 GLSL 实现"图片水波纹"效果。</div>
+        <span class="q-tag">WebGL</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>Vertex Shader</strong>：处理每个顶点的位置（<code>gl_Position</code>），运行次数 = 顶点数量。</li>
+            <li><strong>Fragment Shader</strong>：处理每个像素的颜色（<code>gl_FragColor</code>），运行次数 = 屏幕像素数量。</li>
+            <li><strong>水波纹原理</strong>：在 Fragment Shader 中对 UV 坐标叠加 sin 扰动后再采样纹理（Texture Distortion）。</li>
+            <li><strong>传值方式</strong>：通过 <code>uniform float uTime</code> 传递时间，驱动动态波纹。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能写出 UV 扰动的 GLSL 核心逻辑；理解 uniform/varying 的作用；提及 Perlin Noise 比 sin 更自然；知道 OffscreenCanvas + Worker 的性能优化手段。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">理解两种 Shader 的作用，有 UV 坐标概念，但无法写出具体 GLSL 代码。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不了解 Shader，只知道用 CSS filter 做特效。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考代码（GLSL Fragment Shader）</summary>
+        <div class="answer-key">
+<pre><code>// Fragment Shader — 水波纹效果
+uniform sampler2D uTexture;
+uniform float uTime;
+varying vec2 vUv;  // 从 vertex shader 传入的 UV 坐标
+
+void main() {
+  vec2 uv = vUv;
+
+  // sin 波纹扰动 UV 坐标
+  float dist = length(uv - 0.5);
+  float wave = sin(dist * 30.0 - uTime * 3.0) * 0.02;
+  uv += wave;
+
+  // 用扰动后的 UV 采样纹理
+  gl_FragColor = texture2D(uTexture, uv);
+}</code></pre>
+          <p><strong>Perlin Noise 升级版</strong>：用噪声函数替代 sin 可获得更有机的水波效果，避免规则重复感。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q13 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q13: 在 React 中使用 Three.js (react-three-fiber) 如何优化性能？举例说明 Instancing、按需渲染与资源销毁。</div>
+        <span class="q-tag">R3F 实战</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>InstancedMesh</strong>：用一次 Draw Call 绘制数千个相同几何体，Draw Call 数量是 GPU 性能杀手。</li>
+            <li><strong>按需渲染 (Demand)</strong>：静态场景设置 <code>frameloop="demand"</code>，仅在 <code>invalidate()</code> 调用时才渲染，节省 90% 电量。</li>
+            <li><strong>资源销毁</strong>：组件卸载时 <code>geometry.dispose()</code> + <code>material.dispose()</code>，否则 WebGL context 内存泄漏，最终导致黑屏。</li>
+            <li><strong>useFrame 优先级</strong>：传入第二参数控制执行顺序，避免物理引擎和渲染的顺序问题。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能写出 InstancedMesh 的矩阵更新模式；知道 <code>@react-three/drei</code> 中的 Instances 组件；提及 BVH（Bounding Volume Hierarchy）优化 Raycasting。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">用过 R3F，知道 useFrame，但对 dispose 和 Instancing 不熟。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">每个物体单独一个 Mesh，不考虑内存泄漏。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 模块 5 ==================== -->
+    <div class="section-title">
+      五、综合压轴题
+      <span class="section-tag">20 分 · Masterpiece</span>
+    </div>
+
+    <!-- Q14 -->
+    <div class="question-card accent">
+      <div class="q-header">
+        <div class="q-title">Q14: 系统设计：复刻 Apple 官网 AirPods 滚动序列帧动画，如何解决移动端加载慢、内存溢出问题，给出完整方案。</div>
+        <span class="q-tag warn">压轴综合</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>Canvas 序列帧</strong>：用 Canvas drawImage 绘制图片序列，Sticky 容器固定，ScrollY 映射帧索引。</li>
+            <li><strong>预加载策略</strong>：<code>Promise.all</code> 并发加载，<code>createImageBitmap</code> 在解码线程处理，不阻塞主线程。</li>
+            <li><strong>移动端降级</strong>：检测 <code>navigator.connection.effectiveType</code> 或 UA，2G/3G 降为低分辨率序列或静态图/视频。</li>
+            <li><strong>内存管理</strong>：视口外的帧 <code>ImageBitmap.close()</code> 释放；分段加载（不一次性加载全部 150 帧）。</li>
+            <li><strong>Retina 处理</strong>：<code>canvas.width = clientWidth * devicePixelRatio</code>，确保高清屏不模糊。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (20分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">16–20 分</span>
+            <div class="score-desc">方案完整：Canvas Sticky + 分段预加载 + 网络检测降级 + ImageBitmap 解码 + 内存释放 + DPR 适配 + Worker 处理解压。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">9–15 分</span>
+            <div class="score-desc">提到 Canvas 绘制序列帧，知道预加载，有 Sticky 定位思路，考虑部分性能问题。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–8 分</span>
+            <div class="score-desc">用 video 标签控制 currentTime（严重卡顿）；或 img 标签批量切换（DOM 爆炸）。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考实现架构</summary>
+        <div class="answer-key">
+          <p><strong>完整技术方案：</strong></p>
+<pre><code>// 1. Sticky 容器结构
+// &lt;div style="height: 500vh"&gt;
+//   &lt;canvas style="position: sticky; top: 0" /&gt;
+// &lt;/div&gt;
+
+// 2. 分段预加载 + createImageBitmap
+const loadFrames = async (start, end) => {
+  const promises = Array.from({ length: end - start }, (_, i) => {
+    return fetch(`/frames/${start + i}.webp`)
+      .then(r => r.blob())
+      .then(blob => createImageBitmap(blob)); // 解码线程
+  });
+  return Promise.all(promises);
+};
+
+// 3. 滚动映射帧索引
+const onScroll = () => {
+  const section = container.getBoundingClientRect();
+  const progress = -section.top / (section.height - window.innerHeight);
+  const frameIdx = Math.floor(
+    Math.max(0, Math.min(1, progress)) * (TOTAL_FRAMES - 1)
+  );
+  ctx.drawImage(frames[frameIdx], 0, 0, canvas.width, canvas.height);
+};
+
+// 4. Retina 适配
+const dpr = window.devicePixelRatio || 1;
+canvas.width = canvas.clientWidth * dpr;
+canvas.height = canvas.clientHeight * dpr;
+ctx.scale(dpr, dpr);</code></pre>
+          <p><strong>移动端降级策略</strong>：通过 <code>navigator.connection.effectiveType</code> 判断网速，慢速网络直接 <code>autoplay</code> 视频替代序列帧。</p>
+        </div>
+      </details>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+
+    const STORAGE_KEY = "interview-theme";
+
+    const applyTheme = (isLight) => {
+      if (isLight) {
+        html.classList.add("light");
+        thumb.textContent = "🌙";
+        label.textContent = "浅色";
+      } else {
+        html.classList.remove("light");
+        thumb.textContent = "☀️";
+        label.textContent = "深色";
+      }
+    };
+
+    // 初始化：读取用户上次选择，或跟随系统
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const preferLight = saved
+      ? saved === "light"
+      : window.matchMedia("(prefers-color-scheme: light)").matches;
+
+    applyTheme(preferLight);
+
+    btn.addEventListener("click", () => {
+      const isNowLight = html.classList.contains("light");
+      applyTheme(!isNowLight);
+      localStorage.setItem(STORAGE_KEY, !isNowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>
