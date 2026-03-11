@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linux & Shell 大数据开发必备</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>Linux & Shell 大数据开发必备</h1>
+    <p class="hero-sub">大数据开发工程师日常必备的 Linux 操作与 Shell 脚本知识</p>
+    <div class="tags">
+      <span class="tag tag-blue">Linux 基础命令</span>
+      <span class="tag tag-green">文件与目录</span>
+      <span class="tag tag-purple">权限管理</span>
+      <span class="tag tag-orange">Shell 脚本</span>
+      <span class="tag tag-pink">文本处理三剑客</span>
+      <span class="tag tag-blue">系统监控</span>
+      <span class="tag tag-orange">Crontab 定时</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">💻</div>
+      一、Linux 基础命令速查
+      <span class="chapter-count">日常高频使用</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">文件目录操作 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>命令</th><th>说明</th><th>常用示例</th></tr></thead>
+          <tbody>
+            <tr><td>ls</td><td>列出目录内容</td><td>ls -la（详细+隐藏文件）</td></tr>
+            <tr><td>cd</td><td>切换目录</td><td>cd ~（家目录）cd -（上一个目录）</td></tr>
+            <tr><td>pwd</td><td>显示当前路径</td><td>pwd</td></tr>
+            <tr><td>mkdir</td><td>创建目录</td><td>mkdir -p a/b/c（递归创建）</td></tr>
+            <tr><td>cp</td><td>复制文件/目录</td><td>cp -r dir1 dir2（递归复制目录）</td></tr>
+            <tr><td>mv</td><td>移动/重命名</td><td>mv old.txt new.txt</td></tr>
+            <tr><td>rm</td><td>删除文件/目录</td><td>rm -rf dir/（强制递归删除，慎用）</td></tr>
+            <tr><td>find</td><td>查找文件</td><td>find / -name "*.log" -mtime -7</td></tr>
+            <tr><td>tree</td><td>树形显示目录</td><td>tree -L 2（只展示2层）</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">文件查看命令 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>命令</th><th>说明</th><th>常用示例</th></tr></thead>
+          <tbody>
+            <tr><td>cat</td><td>输出整个文件内容</td><td>cat config.xml</td></tr>
+            <tr><td>head</td><td>查看文件头部</td><td>head -n 20 app.log（前20行）</td></tr>
+            <tr><td>tail</td><td>查看文件尾部</td><td>tail -f app.log（实时追踪日志）</td></tr>
+            <tr><td>less</td><td>分页浏览（支持搜索）</td><td>less huge.log（/关键词 搜索）</td></tr>
+            <tr><td>more</td><td>分页浏览（只能向下）</td><td>more data.csv</td></tr>
+            <tr><td>wc</td><td>统计行/词/字符数</td><td>wc -l access.log（统计行数）</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          <span class="label">大数据场景：实时查看 Spark 日志</span>
+          tail -f /var/log/spark/spark-executor.log | grep ERROR
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">搜索过滤命令</div>
+        <table class="compare-table">
+          <thead><tr><th>命令</th><th>说明</th><th>常用示例</th></tr></thead>
+          <tbody>
+            <tr><td>grep</td><td>文本搜索（正则）</td><td>grep -rn "Exception" logs/</td></tr>
+            <tr><td>awk</td><td>列处理/文本分割</td><td>awk '{print $1,$4}' access.log</td></tr>
+            <tr><td>sed</td><td>流式文本替换</td><td>sed 's/old/new/g' file.txt</td></tr>
+            <tr><td>sort</td><td>排序</td><td>sort -t',' -k3 -nr data.csv</td></tr>
+            <tr><td>uniq</td><td>去重（需先排序）</td><td>sort file | uniq -c（计数去重）</td></tr>
+            <tr><td>cut</td><td>按分隔符取列</td><td>cut -d',' -f1,3 data.csv</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">压缩解压命令</div>
+        <table class="compare-table">
+          <thead><tr><th>命令</th><th>说明</th><th>常用示例</th></tr></thead>
+          <tbody>
+            <tr><td>tar -czf</td><td>打包并 gzip 压缩</td><td>tar -czf backup.tar.gz /data/</td></tr>
+            <tr><td>tar -xzf</td><td>解压 .tar.gz</td><td>tar -xzf backup.tar.gz -C /opt/</td></tr>
+            <tr><td>tar -xjf</td><td>解压 .tar.bz2</td><td>tar -xjf archive.tar.bz2</td></tr>
+            <tr><td>gzip / gunzip</td><td>单文件压缩/解压</td><td>gzip large.log → large.log.gz</td></tr>
+            <tr><td>zip / unzip</td><td>zip 格式压缩/解压</td><td>zip -r app.zip app/</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          <span class="label">记忆口诀</span>
+          tar 参数：c=创建 x=解压 z=gzip j=bzip2 f=文件名（f 必须放最后）
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🔐</div>
+      二、文件权限与用户管理
+      <span class="chapter-count">安全基础</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">rwx 权限含义 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">Linux 中每个文件/目录都有三组权限：<strong>所有者(u)</strong>、<strong>所属组(g)</strong>、<strong>其他用户(o)</strong>。每组包含读(r)、写(w)、执行(x) 三种权限。</div>
+        <table class="compare-table" style="margin-top:10px">
+          <thead><tr><th>权限</th><th>字母</th><th>数字</th><th>对文件</th><th>对目录</th></tr></thead>
+          <tbody>
+            <tr><td>读</td><td>r</td><td>4</td><td>查看文件内容</td><td>列出目录内容 (ls)</td></tr>
+            <tr><td>写</td><td>w</td><td>2</td><td>修改文件内容</td><td>在目录中创建/删除文件</td></tr>
+            <tr><td>执行</td><td>x</td><td>1</td><td>运行脚本/程序</td><td>进入目录 (cd)</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">示例：-rwxr-xr-- 解读</span>
+          所有者：rwx (4+2+1=7) → 读写执行<br>
+          所属组：r-x (4+0+1=5) → 读和执行<br>
+          其他人：r-- (4+0+0=4) → 只读<br>
+          数字表示：754
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">权限管理命令</div>
+        <ul class="card-points">
+          <li><strong>chmod 755 script.sh</strong>：设置权限为 rwxr-xr-x</li>
+          <li><strong>chmod +x script.sh</strong>：给所有人添加执行权限</li>
+          <li><strong>chmod u+w,g-x file</strong>：所有者加写权限、组去掉执行权限</li>
+          <li><strong>chown hadoop:hadoop file</strong>：修改文件所有者和所属组</li>
+          <li><strong>chown -R hadoop:hadoop /data/</strong>：递归修改目录所有者</li>
+          <li><strong>chgrp devteam file</strong>：仅修改所属组</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">常见权限数字</span>
+          755：目录/脚本（所有者全部权限，其他人可读可执行）<br>
+          644：普通文件（所有者可读写，其他人只读）<br>
+          600：敏感文件（仅所有者可读写，如 SSH 私钥）<br>
+          777：所有权限全开（极度不安全，生产环境禁用）
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">sudo 与 root 权限</div>
+        <ul class="card-points">
+          <li><strong>root</strong>：超级管理员，拥有系统一切权限，生产环境不建议直接登录 root</li>
+          <li><strong>sudo</strong>：普通用户临时获取 root 权限执行单条命令</li>
+          <li><strong>sudo su -</strong>：切换到 root 用户</li>
+          <li><strong>/etc/sudoers</strong>：配置哪些用户可以使用 sudo（通过 visudo 编辑）</li>
+          <li><strong>sudo -u hadoop hdfs dfs -ls /</strong>：以 hadoop 用户身份执行命令</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">大数据场景：HDFS 权限 vs Linux 权限 <span class="card-badge badge-adv">进阶</span></div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>Linux 文件权限</th><th>HDFS 文件权限</th></tr></thead>
+          <tbody>
+            <tr><td>存储位置</td><td>本地磁盘文件系统</td><td>HDFS 分布式文件系统</td></tr>
+            <tr><td>权限模型</td><td>标准 POSIX rwx</td><td>模仿 POSIX 但不完全一致</td></tr>
+            <tr><td>用户验证</td><td>系统 /etc/passwd</td><td>默认信任客户端用户名（不安全）</td></tr>
+            <tr><td>权限命令</td><td>chmod / chown</td><td>hdfs dfs -chmod / -chown</td></tr>
+            <tr><td>企业安全</td><td>PAM / LDAP</td><td>Kerberos + Ranger 精细权限控制</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          注意：HDFS 默认不强制检查权限（dfs.permissions.enabled=false 时），<br>
+          生产集群必须开启权限检查并配合 Kerberos 认证
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">⚔️</div>
+      三、文本处理三剑客（grep / awk / sed）
+      <span class="chapter-count">日志分析利器</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">grep — 文本搜索 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">在文件中搜索匹配正则表达式的行，是日志排查的第一选择。</div>
+        <table class="compare-table" style="margin-top:8px">
+          <thead><tr><th>参数</th><th>说明</th><th>示例</th></tr></thead>
+          <tbody>
+            <tr><td>-i</td><td>忽略大小写</td><td>grep -i "error" app.log</td></tr>
+            <tr><td>-r</td><td>递归搜索目录</td><td>grep -r "NullPointer" logs/</td></tr>
+            <tr><td>-n</td><td>显示行号</td><td>grep -n "WARN" app.log</td></tr>
+            <tr><td>-v</td><td>反向匹配（排除）</td><td>grep -v "DEBUG" app.log</td></tr>
+            <tr><td>-c</td><td>统计匹配行数</td><td>grep -c "ERROR" app.log</td></tr>
+            <tr><td>-A/-B/-C</td><td>显示匹配行的上下文</td><td>grep -A 5 "Exception" app.log</td></tr>
+            <tr><td>-E</td><td>扩展正则（等同 egrep）</td><td>grep -E "ERROR|FATAL" app.log</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">实用组合：统计每小时错误数量</span>
+          grep "ERROR" app.log | awk '{print $2}' | cut -c1-13 | sort | uniq -c
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">awk — 列处理利器 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">按行读取文件，自动按分隔符切分为字段（$1, $2, $3...），支持条件过滤和聚合计算。</div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">基本语法</span>
+          awk -F'分隔符' '条件 {动作}' 文件名
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>$0</strong>：整行内容；<strong>$1</strong>：第一列；<strong>$NF</strong>：最后一列</li>
+          <li><strong>NR</strong>：当前行号；<strong>NF</strong>：当前行字段数</li>
+          <li><strong>-F','</strong>：指定逗号为分隔符（默认空格/Tab）</li>
+          <li><strong>条件过滤</strong>：awk '$3 > 100 {print $1, $3}' data.csv</li>
+          <li><strong>聚合统计</strong>：awk '{sum+=$3} END {print sum}' data.csv</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">实战：分析 Spark 日志中各 Stage 耗时</span>
+          grep "finished in" spark.log | awk '{print $4, $NF}' | sort -t' ' -k2 -nr | head -10
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">sed — 流式文本编辑</div>
+        <div class="card-desc">对文本进行替换、删除、插入操作，支持正则表达式，可直接修改文件。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>替换</strong>：sed 's/old/new/g' file（g = 全局替换）</li>
+          <li><strong>删除行</strong>：sed '/pattern/d' file（删除匹配行）</li>
+          <li><strong>删除空行</strong>：sed '/^$/d' file</li>
+          <li><strong>插入行</strong>：sed '3i\插入的文本' file（第3行前插入）</li>
+          <li><strong>只看指定行</strong>：sed -n '10,20p' file（打印10-20行）</li>
+          <li><strong>直接修改文件</strong>：sed -i 's/old/new/g' file（-i 原地修改）</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">批量修改配置文件</span>
+          sed -i 's/spark.executor.memory=2g/spark.executor.memory=4g/g' spark-defaults.conf
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">管道串联与典型场景 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">管道 <strong>|</strong> 将前一个命令的输出作为下一个命令的输入，是 Linux 最强大的组合能力。</div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">场景1：从 Spark 日志提取错误信息并去重统计</span>
+          grep "ERROR" spark-executor.log \<br>
+          &nbsp;&nbsp;| awk -F':' '{print $4}' \<br>
+          &nbsp;&nbsp;| sort | uniq -c | sort -rn | head -20
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">场景2：统计 Nginx 日志中接口调用频率 TOP10</span>
+          awk '{print $7}' access.log \<br>
+          &nbsp;&nbsp;| grep -v "\.(css|js|png)" \<br>
+          &nbsp;&nbsp;| sort | uniq -c | sort -rn | head -10
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">场景3：查找占用磁盘最大的日志文件</span>
+          find /var/log -name "*.log" -exec du -sh {} \; | sort -rh | head -10
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">📜</div>
+      四、Shell 脚本基础
+      <span class="chapter-count">自动化运维第一步</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">变量定义与引号区别 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>变量赋值</strong>：NAME="hadoop"（等号两边不能有空格）</li>
+          <li><strong>使用变量</strong>：echo $NAME 或 echo ${NAME}</li>
+          <li><strong>双引号 ""</strong>：会解析变量和命令替换，echo "user is $NAME"</li>
+          <li><strong>单引号 ''</strong>：原样输出，不解析变量，echo 'user is $NAME'</li>
+          <li><strong>反引号 ``</strong>：执行命令并返回结果，TODAY=`date +%Y%m%d`</li>
+          <li><strong>$(...) </strong>：等同反引号但可嵌套，TODAY=$(date +%Y%m%d)</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">常用内置变量</span>
+          $HOME（家目录） $USER（当前用户） $PWD（当前路径）<br>
+          $PATH（命令搜索路径） $SHELL（当前使用的Shell）
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">条件判断 if / elif / else</div>
+        <div class="card-formula">
+          <span class="label">基本语法</span>
+          #!/bin/bash<br>
+          if [ -f "/data/input.csv" ]; then<br>
+          &nbsp;&nbsp;echo "文件存在，开始处理"<br>
+          elif [ -d "/data/" ]; then<br>
+          &nbsp;&nbsp;echo "目录存在但文件不存在"<br>
+          else<br>
+          &nbsp;&nbsp;echo "目录和文件都不存在"<br>
+          fi
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>-f file</strong>：文件是否存在且为普通文件</li>
+          <li><strong>-d dir</strong>：目录是否存在</li>
+          <li><strong>-z "$var"</strong>：变量是否为空字符串</li>
+          <li><strong>-n "$var"</strong>：变量是否非空</li>
+          <li><strong>数值比较</strong>：-eq（等于） -ne（不等） -gt（大于） -lt（小于）</li>
+          <li><strong>字符串比较</strong>：= 和 !=（在 [ ] 中使用）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">循环 for / while</div>
+        <div class="card-formula">
+          <span class="label">for 循环：遍历列表</span>
+          for node in master slave1 slave2 slave3; do<br>
+          &nbsp;&nbsp;echo "正在同步配置到 $node ..."<br>
+          &nbsp;&nbsp;scp hadoop-env.sh $node:/opt/hadoop/etc/<br>
+          done
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">for 循环：遍历数字范围</span>
+          for i in $(seq 1 10); do<br>
+          &nbsp;&nbsp;echo "处理分区 partition_$i"<br>
+          done
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">while 循环：逐行读取文件</span>
+          while IFS= read -r line; do<br>
+          &nbsp;&nbsp;echo "处理: $line"<br>
+          done &lt; node_list.txt
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">函数与命令行参数</div>
+        <div class="card-formula">
+          <span class="label">函数定义与调用</span>
+          check_hdfs_path() {<br>
+          &nbsp;&nbsp;local path=$1<br>
+          &nbsp;&nbsp;if hdfs dfs -test -d "$path"; then<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;echo "路径存在: $path"<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;return 0<br>
+          &nbsp;&nbsp;else<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;echo "路径不存在: $path"<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;return 1<br>
+          &nbsp;&nbsp;fi<br>
+          }<br><br>
+          check_hdfs_path "/user/hive/warehouse/orders"
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>$1 $2 $3</strong>：第 1、2、3 个参数</li>
+          <li><strong>$#</strong>：参数个数</li>
+          <li><strong>$@</strong>：所有参数（作为独立字符串列表）</li>
+          <li><strong>$*</strong>：所有参数（作为一个字符串）</li>
+          <li><strong>$?</strong>：上一条命令的退出码（0=成功，非0=失败）</li>
+          <li><strong>set -e</strong>：脚本中任何命令失败立即退出（推荐开启）</li>
+        </ul>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1">
+        <div class="card-title">实用示例：自动备份 Hive 表数据脚本 <span class="card-badge badge-biz">实战</span></div>
+        <div class="card-formula">
+          <span class="label">backup_hive_table.sh</span>
+          #!/bin/bash<br>
+          set -e<br><br>
+          TABLE_NAME=${1:?"用法: $0 &lt;表名&gt; [日期]"}<br>
+          DT=${2:-$(date -d "yesterday" +%Y-%m-%d)}<br>
+          BACKUP_DIR="/user/backup/hive/${TABLE_NAME}/${DT}"<br>
+          SOURCE_DIR="/user/hive/warehouse/${TABLE_NAME}/dt=${DT}"<br><br>
+          echo "[$(date)] 开始备份: ${TABLE_NAME}, 分区: ${DT}"<br><br>
+          if ! hdfs dfs -test -d "${SOURCE_DIR}"; then<br>
+          &nbsp;&nbsp;echo "源路径不存在: ${SOURCE_DIR}，跳过"<br>
+          &nbsp;&nbsp;exit 0<br>
+          fi<br><br>
+          hdfs dfs -mkdir -p "${BACKUP_DIR}"<br>
+          hdfs dfs -cp "${SOURCE_DIR}/*" "${BACKUP_DIR}/"<br><br>
+          FILE_COUNT=$(hdfs dfs -ls "${BACKUP_DIR}" | wc -l)<br>
+          echo "[$(date)] 备份完成，共 ${FILE_COUNT} 个文件 → ${BACKUP_DIR}"
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">调用方式</span>
+          chmod +x backup_hive_table.sh<br>
+          ./backup_hive_table.sh ods_order_detail 2025-03-10
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">📊</div>
+      五、系统资源监控
+      <span class="chapter-count">集群运维必备</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">CPU 与内存监控 <span class="card-badge badge-core">核心</span></div>
+        <ul class="card-points">
+          <li><strong>top</strong>：实时查看 CPU / 内存 / 进程，按 P 按 CPU 排序、按 M 按内存排序、按 q 退出</li>
+          <li><strong>htop</strong>：top 的增强版，支持鼠标操作，可视化 CPU 核心使用率（需安装 yum install htop）</li>
+          <li><strong>free -h</strong>：查看内存总量、已用、可用、缓存，-h 以人类可读格式显示</li>
+          <li><strong>vmstat 1 5</strong>：每秒采样一次共5次，查看 CPU/内存/IO/swap 综合状态</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">free -h 输出关键列</span>
+          total（总量） used（已用） free（空闲） buff/cache（缓存）<br>
+          available（可用）= free + 可回收的 buff/cache
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">磁盘空间监控</div>
+        <ul class="card-points">
+          <li><strong>df -h</strong>：查看各挂载点磁盘使用情况（-h 人类可读）</li>
+          <li><strong>df -i</strong>：查看 inode 使用率（大量小文件会耗尽 inode）</li>
+          <li><strong>du -sh *</strong>：查看当前目录下每个文件/子目录的大小</li>
+          <li><strong>du -sh /data/*</strong>：查看 /data 下各子目录大小</li>
+          <li><strong>du -sh /data/ --max-depth=1</strong>：只显示第一层目录大小</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">快速找出大文件</span>
+          find / -type f -size +1G -exec ls -lh {} \; 2>/dev/null
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">进程管理</div>
+        <ul class="card-points">
+          <li><strong>ps aux</strong>：查看所有进程的详细信息（CPU%、MEM%、PID）</li>
+          <li><strong>ps aux | grep spark</strong>：筛选 Spark 相关进程</li>
+          <li><strong>kill PID</strong>：发送 SIGTERM 信号（优雅终止）</li>
+          <li><strong>kill -9 PID</strong>：发送 SIGKILL 信号（强制终止）</li>
+          <li><strong>nohup command &</strong>：后台运行且终端关闭不中断</li>
+          <li><strong>jobs / fg / bg</strong>：查看/切换前后台任务</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">网络与端口 + Java 进程</div>
+        <ul class="card-points">
+          <li><strong>netstat -tlnp</strong>：查看监听中的 TCP 端口及对应进程</li>
+          <li><strong>ss -tlnp</strong>：netstat 的替代工具，更快（推荐使用）</li>
+          <li><strong>lsof -i :8080</strong>：查看占用 8080 端口的进程</li>
+          <li><strong>jps</strong>：查看当前运行的 Java 进程（Hadoop 生态必备）</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">大数据常见 Java 进程（jps 输出）</span>
+          NameNode / DataNode / ResourceManager / NodeManager<br>
+          HiveServer2 / HiveMetaStore<br>
+          Kafka / QuorumPeerMain (ZooKeeper)<br>
+          SparkSubmit / CoarseGrainedExecutorBackend
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">快速检查集群关键进程是否存活</span>
+          for node in master slave1 slave2; do<br>
+          &nbsp;&nbsp;echo "=== $node ==="; ssh $node "jps"<br>
+          done
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">⏰</div>
+      六、Crontab 定时任务
+      <span class="chapter-count">自动化调度基础</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">Crontab 基本操作 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>crontab -e</strong>：编辑当前用户的定时任务</li>
+          <li><strong>crontab -l</strong>：查看当前用户的定时任务列表</li>
+          <li><strong>crontab -r</strong>：删除当前用户的所有定时任务（慎用）</li>
+          <li><strong>crontab -u hadoop -l</strong>：查看 hadoop 用户的定时任务（需 root 权限）</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">五段式时间表达式</span>
+          ┌───────── 分钟 (0-59)<br>
+          │ ┌─────── 小时 (0-23)<br>
+          │ │ ┌───── 日 (1-31)<br>
+          │ │ │ ┌─── 月 (1-12)<br>
+          │ │ │ │ ┌─ 星期 (0-7，0和7都是周日)<br>
+          * * * * * command
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常见定时表达式示例</div>
+        <table class="compare-table">
+          <thead><tr><th>表达式</th><th>含义</th></tr></thead>
+          <tbody>
+            <tr><td>0 2 * * *</td><td>每天凌晨 2:00</td></tr>
+            <tr><td>0 */1 * * *</td><td>每小时整点执行</td></tr>
+            <tr><td>*/5 * * * *</td><td>每 5 分钟执行一次</td></tr>
+            <tr><td>30 1 * * 1</td><td>每周一凌晨 1:30</td></tr>
+            <tr><td>0 3 1 * *</td><td>每月 1 日凌晨 3:00</td></tr>
+            <tr><td>0 2 * * 1-5</td><td>工作日每天凌晨 2:00</td></tr>
+            <tr><td>0 0,12 * * *</td><td>每天 0:00 和 12:00</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">输出重定向与日志记录</span>
+          0 2 * * * /opt/scripts/etl.sh >> /var/log/etl.log 2>&1<br><br>
+          >> 追加输出 &nbsp;| &nbsp;2>&1 将错误也重定向到日志<br>
+          不加重定向 → 输出默认发邮件给用户 → 容易积压
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1">
+        <div class="card-title">Crontab vs 企业级调度系统 <span class="card-badge badge-adv">进阶</span></div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>Crontab</th><th>Airflow / DolphinScheduler</th></tr></thead>
+          <tbody>
+            <tr><td>任务依赖</td><td>不支持任务间依赖，只能通过脚本手动控制</td><td>原生 DAG 依赖管理，上游成功才执行下游</td></tr>
+            <tr><td>失败重试</td><td>不支持，需自己在脚本中实现</td><td>内置重试策略，支持指定重试次数和间隔</td></tr>
+            <tr><td>告警通知</td><td>无（需自己写邮件/钉钉通知脚本）</td><td>内置邮件/企微/钉钉/Slack 告警</td></tr>
+            <tr><td>可视化</td><td>纯命令行，不直观</td><td>Web UI 管理，任务状态一目了然</td></tr>
+            <tr><td>分布式</td><td>单机运行</td><td>支持 Worker 集群分布式执行</td></tr>
+            <tr><td>适用场景</td><td>简单脚本、开发测试、个人任务</td><td>生产 ETL 流水线、复杂依赖调度</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          生产建议：开发测试可用 Crontab 快速验证，正式上线后迁移到 Airflow / DolphinScheduler 管理
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🌐</div>
+      七、网络与传输命令
+      <span class="chapter-count">集群运维常用</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">SSH 远程登录与免密配置 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>ssh user@host</strong>：远程登录服务器</li>
+          <li><strong>ssh -p 2222 user@host</strong>：指定端口登录</li>
+          <li><strong>ssh user@host "command"</strong>：远程执行命令后返回</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">免密登录配置（大数据集群必备）</span>
+          # 1. 生成密钥对（一路回车）<br>
+          ssh-keygen -t rsa<br><br>
+          # 2. 将公钥发送到目标机器<br>
+          ssh-copy-id hadoop@slave1<br>
+          ssh-copy-id hadoop@slave2<br>
+          ssh-copy-id hadoop@slave3<br><br>
+          # 3. 验证免密登录<br>
+          ssh slave1  # 不再需要输入密码
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          Hadoop/Spark 集群节点间通信依赖 SSH 免密，未配置会导致集群启动失败
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">文件传输：scp / rsync</div>
+        <ul class="card-points">
+          <li><strong>scp file user@host:/path/</strong>：上传文件到远程服务器</li>
+          <li><strong>scp user@host:/path/file .</strong>：从远程下载文件到本地</li>
+          <li><strong>scp -r dir/ user@host:/path/</strong>：递归传输目录</li>
+          <li><strong>rsync -avz dir/ user@host:/path/</strong>：增量同步（只传变化部分，更高效）</li>
+          <li><strong>rsync --delete</strong>：同步并删除目标端多余的文件</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">scp vs rsync</span>
+          scp：全量传输，简单直接<br>
+          rsync：增量传输，断点续传，大文件/大目录首选
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">curl / wget 下载</div>
+        <ul class="card-points">
+          <li><strong>curl -O url</strong>：下载文件并保留原始文件名</li>
+          <li><strong>curl -o name url</strong>：下载并指定保存文件名</li>
+          <li><strong>curl -X POST -d 'data' url</strong>：发送 POST 请求</li>
+          <li><strong>wget url</strong>：下载文件（支持断点续传 -c）</li>
+          <li><strong>wget -r -l 2 url</strong>：递归下载，深度2层</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">HDFS 常用命令 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">HDFS Shell 命令格式与 Linux 类似，加 <strong>hdfs dfs</strong> 前缀即可。</div>
+        <table class="compare-table" style="margin-top:8px">
+          <thead><tr><th>命令</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>hdfs dfs -ls /path</td><td>列出 HDFS 目录内容</td></tr>
+            <tr><td>hdfs dfs -put local remote</td><td>上传本地文件到 HDFS</td></tr>
+            <tr><td>hdfs dfs -get remote local</td><td>从 HDFS 下载文件到本地</td></tr>
+            <tr><td>hdfs dfs -cat /path/file</td><td>查看 HDFS 文件内容</td></tr>
+            <tr><td>hdfs dfs -mkdir -p /path</td><td>递归创建 HDFS 目录</td></tr>
+            <tr><td>hdfs dfs -rm -r /path</td><td>递归删除 HDFS 文件/目录</td></tr>
+            <tr><td>hdfs dfs -du -s -h /path</td><td>查看 HDFS 路径占用空间</td></tr>
+            <tr><td>hdfs dfs -chmod 755 /path</td><td>修改 HDFS 文件权限</td></tr>
+            <tr><td>hdfs dfs -text /path/file.gz</td><td>查看压缩文件内容</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">集群间数据分发</span>
+          hadoop distcp hdfs://cluster-a/data/ hdfs://cluster-b/data/<br>
+          使用 MapReduce 并行复制，适合大规模数据迁移
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">✏️</div>
+      八、Vim 编辑器必会操作
+      <span class="chapter-count">服务器上改配置必备</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">三种模式切换 <span class="card-badge badge-must">必背</span></div>
+        <div class="flow" style="margin-top:8px">
+          <span class="flow-step fs-blue">普通模式<br><small>默认进入</small></span>
+          <span class="flow-arrow">→ 按 i/a/o</span>
+          <span class="flow-step fs-green">插入模式<br><small>编辑文本</small></span>
+          <span class="flow-arrow">→ 按 Esc</span>
+          <span class="flow-step fs-blue">普通模式</span>
+          <span class="flow-arrow">→ 按 :</span>
+          <span class="flow-step fs-purple">命令行模式<br><small>保存/退出/搜索</small></span>
+        </div>
+        <ul class="card-points" style="margin-top:12px">
+          <li><strong>i</strong>：在光标前插入 &nbsp;|&nbsp; <strong>a</strong>：在光标后插入 &nbsp;|&nbsp; <strong>o</strong>：在下方新开一行插入</li>
+          <li><strong>I</strong>：在行首插入 &nbsp;|&nbsp; <strong>A</strong>：在行尾插入 &nbsp;|&nbsp; <strong>O</strong>：在上方新开一行插入</li>
+          <li><strong>Esc</strong>：从任何模式返回普通模式</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常用操作速查</div>
+        <table class="compare-table">
+          <thead><tr><th>操作</th><th>命令</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>保存退出</td><td>:wq</td><td>保存文件并退出</td></tr>
+            <tr><td>不保存退出</td><td>:q!</td><td>强制退出不保存</td></tr>
+            <tr><td>搜索</td><td>/keyword</td><td>向下搜索，n 下一个 N 上一个</td></tr>
+            <tr><td>删除行</td><td>dd</td><td>删除当前行，5dd 删除5行</td></tr>
+            <tr><td>复制行</td><td>yy</td><td>复制当前行，5yy 复制5行</td></tr>
+            <tr><td>粘贴</td><td>p</td><td>在光标下方粘贴</td></tr>
+            <tr><td>撤销</td><td>u</td><td>撤销上一步操作</td></tr>
+            <tr><td>恢复撤销</td><td>Ctrl+r</td><td>恢复被撤销的操作</td></tr>
+            <tr><td>跳到行首/尾</td><td>gg / G</td><td>gg 跳到第1行，G 跳到最后一行</td></tr>
+            <tr><td>跳到指定行</td><td>:100</td><td>跳到第100行</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">实用技巧 <span class="card-badge badge-biz">实战</span></div>
+        <ul class="card-points">
+          <li><strong>:set number</strong>：显示行号（:set nonumber 关闭）</li>
+          <li><strong>:set paste</strong>：粘贴模式，避免缩进错乱（粘贴完后 :set nopaste）</li>
+          <li><strong>:%s/old/new/g</strong>：全局替换 old 为 new</li>
+          <li><strong>:%s/old/new/gc</strong>：全局替换，每次替换前确认</li>
+          <li><strong>:10,20s/old/new/g</strong>：只在第10-20行范围内替换</li>
+          <li><strong>:w !sudo tee %</strong>：以 root 权限保存（忘记 sudo vim 时的救命命令）</li>
+          <li><strong>:e /path/file</strong>：在 Vim 中打开另一个文件</li>
+          <li><strong>v + 方向键</strong>：进入可视模式选中文本，然后 y 复制或 d 删除</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">大数据场景：快速修改 Hadoop 配置</span>
+          vim /opt/hadoop/etc/hadoop/core-site.xml<br>
+          → /fs.defaultFS 搜索定位 → i 进入编辑 → 修改值 → Esc → :wq 保存退出
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "linux-shell-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

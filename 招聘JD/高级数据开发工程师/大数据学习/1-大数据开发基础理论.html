@@ -405,6 +405,9 @@
       <span class="tag tag-purple">Spark / Flink</span>
       <span class="tag tag-orange">跨境电商指标</span>
       <span class="tag tag-pink">用户行为分析</span>
+      <span class="tag tag-blue">YARN 资源管理</span>
+      <span class="tag tag-orange">数据倾斜</span>
+      <span class="tag tag-green">数据质量治理</span>
     </div>
   </div>
 
@@ -1062,6 +1065,237 @@
           <li><strong>阿里云 MaxCompute</strong>：国内大数据首选，与 DataWorks 配合</li>
           <li><strong>Snowflake</strong>：多云数仓，数据共享能力强，跨境 SaaS 公司常用</li>
         </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">⚙️</div>
+      十、YARN 资源管理入门
+      <span class="chapter-count">理解集群资源分配</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">YARN 是什么？ <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">
+          <strong>YARN（Yet Another Resource Negotiator）</strong>是 Hadoop 2.x 引入的资源管理系统，负责为 Spark / Hive / Flink 等计算引擎统一分配集群资源（CPU + 内存）。
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>ResourceManager（RM）</strong>：集群唯一的资源调度中心，接收任务提交请求，分配资源</li>
+          <li><strong>NodeManager（NM）</strong>：每台机器一个，负责管理本机资源，启动 / 销毁 Container</li>
+          <li><strong>Container</strong>：资源最小单元，封装 CPU + 内存，是任务真正执行的"沙箱"</li>
+          <li><strong>ApplicationMaster（AM）</strong>：每个应用一个，向 RM 申请资源，管理任务的执行和容错</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">YARN 任务提交流程</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">Client 提交任务</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">RM 分配 Container</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">启动 ApplicationMaster</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">AM 申请更多资源</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">NM 启动 Task Container</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">执行完毕释放资源</span>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          Spark on YARN：Driver = AM / Executor = Container<br>
+          Flink on YARN：JobManager = AM / TaskManager = Container
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">资源队列与调度策略</div>
+        <ul class="card-points">
+          <li><strong>公平调度（Fair Scheduler）</strong>：多个队列公平分享集群资源，空闲时可借用其他队列资源</li>
+          <li><strong>容量调度（Capacity Scheduler）</strong>：每个队列预分配固定比例的资源，保证最低资源量</li>
+          <li><strong>队列隔离</strong>：生产任务和开发任务分不同队列，避免开发任务抢占生产资源</li>
+          <li><strong>常见配置</strong>：<code>yarn.nodemanager.resource.memory-mb</code>（单节点可用内存）、<code>yarn.scheduler.maximum-allocation-mb</code>（单个 Container 最大内存）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Spark on YARN 两种部署模式</div>
+        <table class="compare-table">
+          <thead><tr><th>模式</th><th>Driver 位置</th><th>适用场景</th></tr></thead>
+          <tbody>
+            <tr><td>client 模式</td><td>运行在提交机器上</td><td>调试开发（可直接看日志输出）</td></tr>
+            <tr><td>cluster 模式</td><td>运行在 YARN Container 中</td><td>生产环境（提交后可断开连接）</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          生产环境统一使用 cluster 模式：spark-submit --master yarn --deploy-mode cluster
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第十一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">⚠️</div>
+      十一、数据倾斜基础概念
+      <span class="chapter-count">面试高频考点</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">什么是数据倾斜？ <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">在分布式计算中，数据被分到多个 Task 并行处理。如果某些 Task 分到的数据量远超其他 Task，就会出现<strong>"一个人干活，其他人等待"</strong>的现象。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>表现</strong>：Spark / Hive 任务大部分 Task 秒完，但 1~2 个 Task 卡住几十分钟甚至 OOM</li>
+          <li><strong>本质</strong>：某个 Key 的数据量远超其他 Key，Shuffle 后集中到少数分区</li>
+          <li><strong>常见场景</strong>：JOIN Key 中大量 NULL 值、GROUP BY 某个热点值（如"未知"分类）</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          例：100 万订单中有 50 万的 user_id = NULL<br>
+          → JOIN 时 NULL 全部路由到同一个 Reducer → 该 Task 处理 50% 的数据
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据倾斜的基本解决思路</div>
+        <ul class="card-points">
+          <li><strong>过滤空值</strong>：JOIN 前过滤 NULL Key，或将 NULL 替换为随机值分散处理</li>
+          <li><strong>广播小表</strong>：如果 JOIN 一侧是小表（&lt; 几十 MB），广播到每个 Executor 内存，避免 Shuffle</li>
+          <li><strong>加盐打散</strong>：给热点 Key 加随机前缀（如 vip_0, vip_1 ... vip_9），分散到多个分区处理</li>
+          <li><strong>提高并行度</strong>：增加 Shuffle 分区数，减少单个 Task 的数据量</li>
+          <li><strong>AQE 自适应</strong>：Spark 3.x 开启 AQE 自动检测并拆分倾斜分区</li>
+        </ul>
+        <div class="card-formula">
+          初级工程师：能识别数据倾斜现象并知道基本解决方法即可<br>
+          高级工程师：需要掌握加盐全流程、AQE 原理、倾斜诊断方法
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第十二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">🛡️</div>
+      十二、数据质量与数据治理入门
+      <span class="chapter-count">数据可信的基础</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">数据质量的六个维度 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>完整性</strong>：数据是否缺失？关键字段是否有 NULL？每天数据行数是否正常？</li>
+          <li><strong>准确性</strong>：数值是否合理？金额是否为负数？日期是否在合理范围内？</li>
+          <li><strong>一致性</strong>：同一数据在不同系统 / 表中是否一致？（如订单数在 DWD 和 ADS 是否匹配）</li>
+          <li><strong>时效性</strong>：数据是否按时产出？T+1 报表是否每天 8 点前就绪？</li>
+          <li><strong>唯一性</strong>：是否有重复数据？主键是否唯一？</li>
+          <li><strong>规范性</strong>：数据格式是否统一？日期格式是 yyyy-MM-dd 还是 yyyyMMdd？</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常见数据质量问题</div>
+        <table class="compare-table">
+          <thead><tr><th>问题类型</th><th>具体表现</th><th>影响</th></tr></thead>
+          <tbody>
+            <tr><td>数据丢失</td><td>某天数据行数骤降，部分时段数据缺失</td><td>指标偏低，决策失误</td></tr>
+            <tr><td>数据重复</td><td>同一订单出现多条记录</td><td>GMV 虚高，指标不准</td></tr>
+            <tr><td>脏数据</td><td>金额为负、日期为 1970-01-01、乱码</td><td>统计结果异常</td></tr>
+            <tr><td>延迟到达</td><td>数据采集延迟，T+1 报表数据不全</td><td>报表数据波动</td></tr>
+            <tr><td>口径不一致</td><td>不同报表的 GMV 定义不同（含不含退款）</td><td>业务混淆，信任下降</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据血缘（Data Lineage）</div>
+        <div class="card-desc">追踪数据从源头到最终报表的完整链路：<strong>这条数据从哪来？经过了哪些处理？被哪些下游使用？</strong></div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">MySQL 订单表</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">ODS 层落表</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">DWD 清洗宽表</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">DWS 用户汇总</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">ADS GMV 报表</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li>数据血缘帮助快速定位问题：ADS 报表数据异常 → 追溯到 DWD 层 ETL 逻辑有 bug</li>
+          <li>常用工具：Apache Atlas、DataHub、OpenLineage</li>
+          <li>血缘对<strong>影响分析</strong>也很关键：修改某张表前，先看有多少下游依赖</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">元数据管理（Metadata）</div>
+        <div class="card-desc"><strong>元数据 = 描述数据的数据</strong>，包括表名、字段名、字段类型、分区信息、负责人、更新频率等。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>技术元数据</strong>：表结构、字段类型、存储位置、文件格式</li>
+          <li><strong>业务元数据</strong>：字段含义、业务口径定义、数据负责人</li>
+          <li><strong>操作元数据</strong>：任务运行日志、数据更新时间、执行耗时</li>
+        </ul>
+        <div class="card-formula">
+          元数据管理好 → 新人快速了解数据全貌 → 避免"只有写 SQL 的人知道这张表是干嘛的"
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第十三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🔄</div>
+      十三、数据同步方式
+      <span class="chapter-count">数据怎么进仓库</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">全量同步 vs 增量同步 vs CDC <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>方式</th><th>原理</th><th>优点</th><th>缺点</th></tr></thead>
+          <tbody>
+            <tr><td>全量同步</td><td>每次导入源表全量数据</td><td>逻辑简单，数据一定完整</td><td>数据量大时耗时长、浪费资源</td></tr>
+            <tr><td>增量同步</td><td>根据时间戳 / 自增 ID 只导入新增和变更数据</td><td>速度快，资源占用少</td><td>无法捕获物理删除</td></tr>
+            <tr><td>CDC</td><td>监听数据库 Binlog，实时捕获增删改</td><td>实时性强，能捕获删除操作</td><td>架构复杂，需维护 Binlog</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">CDC 实时同步流程</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">MySQL 写入 / 更新 / 删除</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">Binlog 记录变更</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">Canal / Debezium 解析</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">写入 Kafka Topic</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">Flink / Spark 消费入仓</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>Canal</strong>：阿里开源，Java 生态，部署简单，国内广泛使用</li>
+          <li><strong>Debezium</strong>：Red Hat 开源，支持 MySQL / PostgreSQL / MongoDB / Oracle，与 Kafka Connect 深度集成</li>
+          <li><strong>Flink CDC</strong>：直接在 Flink 中内置 CDC 能力，无需额外部署 Canal / Debezium</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">同步方式选择建议</div>
+        <ul class="card-points">
+          <li><strong>数据量小 + 更新频率低</strong>（如配置表、字典表）→ <strong>全量同步</strong>，每天凌晨全量覆盖</li>
+          <li><strong>数据量大 + 只追加不更新</strong>（如日志、埋点）→ <strong>增量同步</strong>，按时间分区追加</li>
+          <li><strong>数据量大 + 有更新和删除</strong>（如订单、用户）→ <strong>CDC 同步</strong>，实时捕获变更</li>
+          <li><strong>混合策略</strong>：首次全量 + 后续 CDC 增量，是生产环境最常见的方案</li>
+        </ul>
+        <div class="card-formula">
+          跨境电商典型配置：<br>
+          订单表 → CDC 实时同步（支持实时大屏）<br>
+          商品表 → 每日全量同步（数据量可控）<br>
+          埋点日志 → 增量追加（只追加不更新）
+        </div>
       </div>
     </div>
 

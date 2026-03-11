@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows 大数据实践环境搭建</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== Checklist ===== */
+    .checklist {
+      list-style: none;
+      margin-top: 10px;
+    }
+
+    .checklist li {
+      font-size: 0.84rem;
+      padding: 6px 12px;
+      margin-bottom: 4px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+    }
+
+    .checklist li .check-icon {
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .checklist li .check-label {
+      color: var(--text-sub);
+    }
+
+    .checklist li .check-label strong {
+      color: var(--text-main);
+    }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>Windows 大数据实践环境搭建</h1>
+    <p class="hero-sub">不需要 Linux 服务器，在 Windows 本地搭建完整的大数据学习环境</p>
+    <div class="tags">
+      <span class="tag tag-blue">Python 环境</span>
+      <span class="tag tag-green">PySpark</span>
+      <span class="tag tag-purple">Docker Desktop</span>
+      <span class="tag tag-orange">DuckDB</span>
+      <span class="tag tag-pink">WSL2</span>
+      <span class="tag tag-blue">Git</span>
+      <span class="tag tag-green">VS Code</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">📋</div>
+      一、总览：你需要安装什么？
+      <span class="chapter-count">7 个核心工具</span>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-abbr">Python</div>
+        <div class="metric-name">3.10+ 版本</div>
+        <div class="metric-formula">pip / venv / jupyter</div>
+        <div class="metric-desc">数据处理基础，pandas / numpy / duckdb 等都依赖它</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">Java JDK</div>
+        <div class="metric-name">8 或 11 版本</div>
+        <div class="metric-formula">JAVA_HOME 环境变量</div>
+        <div class="metric-desc">PySpark 运行依赖，Spark 底层由 Scala/Java 编写</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">PySpark</div>
+        <div class="metric-name">本地模式运行 Spark</div>
+        <div class="metric-formula">pip install pyspark</div>
+        <div class="metric-desc">在本地模拟分布式计算，学习 Spark SQL 和 DataFrame</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">DuckDB</div>
+        <div class="metric-name">零配置 SQL 引擎</div>
+        <div class="metric-formula">pip install duckdb</div>
+        <div class="metric-desc">轻量级列式数据库，支持窗口函数 / CTE / JOIN</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">Docker</div>
+        <div class="metric-name">Desktop for Windows</div>
+        <div class="metric-formula">docker compose up -d</div>
+        <div class="metric-desc">容器化大数据组件，一键启动 Kafka / MySQL / Redis</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">Git</div>
+        <div class="metric-name">版本管理工具</div>
+        <div class="metric-formula">git clone / commit / push</div>
+        <div class="metric-desc">管理代码和 SQL 脚本，协作开发必备</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">VS Code</div>
+        <div class="metric-name">代码编辑器</div>
+        <div class="metric-formula">Python + Jupyter + Docker</div>
+        <div class="metric-desc">轻量 IDE，丰富插件生态，大数据开发首选编辑器</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: 16px;">
+      <div class="card-title">推荐安装顺序</div>
+      <div class="card-desc">按照依赖关系，建议按以下顺序安装，避免环境配置冲突。</div>
+      <div class="flow" style="margin-top: 12px;">
+        <span class="flow-step fs-blue">Python 3.10+</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step fs-green">Java JDK</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step fs-purple">PySpark</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step fs-orange">DuckDB</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step fs-yellow">Git</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step fs-pink">VS Code</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step fs-red">Docker Desktop</span>
+      </div>
+      <div class="card-formula" style="margin-top: 12px;">
+        Python 和 Java 是基础依赖，必须先装；PySpark 依赖前两者；Docker 最后装，因为需要开启 Hyper-V / WSL2
+      </div>
+    </div>
+
+    <!-- ==================== 第二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🐍</div>
+      二、Python 环境安装与配置
+      <span class="chapter-count">数据处理基础</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">下载与安装 <span class="card-badge badge-must">第一步</span></div>
+        <ul class="card-points">
+          <li>访问 <strong>python.org/downloads</strong> 下载 Python 3.10+ 安装包（推荐 3.11 或 3.12）</li>
+          <li>运行安装程序时，<strong>务必勾选 "Add Python to PATH"</strong>（底部复选框）</li>
+          <li>选择 "Customize installation"，确认 pip 被勾选</li>
+          <li>安装路径建议保持默认，或选择不含中文/空格的路径</li>
+        </ul>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">验证安装</span>
+          python --version<br>
+          pip --version
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">创建虚拟环境 <span class="card-badge badge-core">推荐</span></div>
+        <div class="card-desc">虚拟环境隔离不同项目的依赖，避免包版本冲突。每个大数据项目建议单独创建虚拟环境。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">创建虚拟环境</span>
+          python -m venv bigdata-env
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">激活虚拟环境（PowerShell）</span>
+          bigdata-env\Scripts\Activate.ps1
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">激活虚拟环境（CMD）</span>
+          bigdata-env\Scripts\activate.bat
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">退出虚拟环境</span>
+          deactivate
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">安装常用包</div>
+        <div class="card-desc">激活虚拟环境后，安装大数据学习所需的核心包。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">一键安装</span>
+          pip install pandas numpy jupyter duckdb pyspark matplotlib
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">如果下载慢，使用国内镜像</span>
+          pip install pandas numpy jupyter duckdb pyspark -i https://pypi.tuna.tsinghua.edu.cn/simple
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">启动 Jupyter Notebook</div>
+        <div class="card-desc">Jupyter 是大数据学习的交互式笔记本，适合写代码 + 看结果 + 做笔记。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">启动 Jupyter</span>
+          jupyter notebook
+        </div>
+        <ul class="card-points" style="margin-top: 8px;">
+          <li>运行后自动打开浏览器，访问 <strong>http://localhost:8888</strong></li>
+          <li>新建 Python 3 Notebook 即可开始编写代码</li>
+          <li>Jupyter 会自动使用当前虚拟环境的 Python 解释器</li>
+        </ul>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">PowerShell 执行策略报错？运行此命令</span>
+          Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">☕</div>
+      三、Java JDK 安装（PySpark 依赖）
+      <span class="chapter-count">Spark 底层运行时</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">下载与安装 JDK <span class="card-badge badge-must">必需</span></div>
+        <ul class="card-points">
+          <li>推荐 <strong>Adoptium Eclipse Temurin</strong>（免费开源 JDK 发行版）</li>
+          <li>访问 <strong>adoptium.net</strong> 下载 JDK 8 或 JDK 11 的 Windows x64 MSI 安装包</li>
+          <li>安装时勾选 <strong>"Set JAVA_HOME variable"</strong>（安装程序会自动配置环境变量）</li>
+          <li>JDK 8 和 JDK 11 都可以，PySpark 两者都兼容</li>
+        </ul>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">验证安装</span>
+          java -version<br>
+          echo %JAVA_HOME%
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">手动设置 JAVA_HOME</div>
+        <div class="card-desc">如果安装时没有自动设置，需要手动配置环境变量。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">PowerShell 设置（当前用户永久生效）</span>
+          [System.Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Eclipse Adoptium\jdk-11.0.21.9-hotspot", "User")
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">CMD 临时设置（仅当前窗口）</span>
+          set JAVA_HOME=C:\Program Files\Eclipse Adoptium\jdk-11.0.21.9-hotspot
+        </div>
+        <ul class="card-points" style="margin-top: 8px;">
+          <li>也可以通过 <strong>系统属性 → 高级 → 环境变量</strong> 图形界面设置</li>
+          <li>路径替换为你的实际安装路径，注意不要包含 \bin</li>
+          <li>设置后<strong>重新打开终端</strong>才能生效</li>
+        </ul>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title">常见问题排查</div>
+        <table class="compare-table">
+          <thead><tr><th>问题</th><th>表现</th><th>解决方案</th></tr></thead>
+          <tbody>
+            <tr><td>JAVA_HOME 未设置</td><td>PySpark 启动报错 "JAVA_HOME is not set"</td><td>按上述步骤设置 JAVA_HOME，重启终端</td></tr>
+            <tr><td>Java 版本过高</td><td>PySpark 报 "Unsupported class file version"</td><td>降级为 JDK 8 或 JDK 11，不要用 JDK 17+</td></tr>
+            <tr><td>PATH 未包含 Java</td><td>java -version 提示命令未找到</td><td>将 %JAVA_HOME%\bin 添加到系统 PATH</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">⚡</div>
+      四、PySpark 本地模式安装
+      <span class="chapter-count">在 Windows 跑 Spark</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">安装 PySpark <span class="card-badge badge-core">核心</span></div>
+        <div class="card-formula">
+          <span class="label">pip 安装</span>
+          pip install pyspark
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">快速验证</span>
+          python -c "from pyspark.sql import SparkSession; print('PySpark OK')"
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">启动交互式 PySpark Shell</span>
+          pyspark
+        </div>
+        <ul class="card-points" style="margin-top: 8px;">
+          <li>PySpark 会自动下载内置的 Spark 二进制文件</li>
+          <li>本地模式不需要 Hadoop 集群，单机运行即可学习</li>
+          <li>首次启动较慢，后续会快很多</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">配置 winutils.exe（Windows 专属）<span class="card-badge badge-must">必需</span></div>
+        <div class="card-desc">Spark 底层依赖 Hadoop 的某些本地库，在 Windows 上需要 <strong>winutils.exe</strong> 才能正常运行文件操作。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">步骤 1：创建 Hadoop 目录</span>
+          mkdir C:\hadoop\bin
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">步骤 2：下载 winutils.exe</span>
+          访问 github.com/steveloughran/winutils<br>
+          下载对应 Hadoop 版本的 winutils.exe<br>
+          放到 C:\hadoop\bin\ 目录下
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">步骤 3：设置环境变量（PowerShell）</span>
+          [System.Environment]::SetEnvironmentVariable("HADOOP_HOME", "C:\hadoop", "User")
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">步骤 4：将 bin 加入 PATH</span>
+          将 C:\hadoop\bin 添加到系统 PATH 环境变量
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title">完整验证：创建 DataFrame 并执行 Spark SQL</div>
+        <div class="card-desc">将以下代码保存为 <strong>test_spark.py</strong>，运行 <code>python test_spark.py</code> 验证 PySpark 安装是否完整。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">test_spark.py — 完整验证脚本</span>
+          from pyspark.sql import SparkSession<br>
+          from pyspark.sql.functions import col, sum as spark_sum<br>
+          <br>
+          spark = SparkSession.builder \<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;.master("local[*]") \<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;.appName("WindowsTest") \<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;.getOrCreate()<br>
+          <br>
+          data = [<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("Alice", "北京", 100),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("Bob", "上海", 200),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("Alice", "北京", 150),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("Charlie", "广州", 300),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("Bob", "上海", 250),<br>
+          ]<br>
+          <br>
+          df = spark.createDataFrame(data, ["name", "city", "amount"])<br>
+          <br>
+          # DataFrame API<br>
+          print("=== DataFrame API ===") <br>
+          df.groupBy("name").agg(spark_sum("amount").alias("total")).show()<br>
+          <br>
+          # Spark SQL<br>
+          df.createOrReplaceTempView("orders")<br>
+          print("=== Spark SQL ===") <br>
+          spark.sql("""<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;SELECT city, COUNT(*) AS order_count, SUM(amount) AS total<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;FROM orders<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;GROUP BY city<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ORDER BY total DESC<br>
+          """).show()<br>
+          <br>
+          spark.stop()<br>
+          print("PySpark 验证通过！")
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">🦆</div>
+      五、DuckDB 安装（零配置 SQL 练习）
+      <span class="chapter-count">列式分析引擎</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">安装与基本使用 <span class="card-badge badge-biz">简单</span></div>
+        <div class="card-formula">
+          <span class="label">安装</span>
+          pip install duckdb
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">Python 中使用</span>
+          import duckdb<br>
+          result = duckdb.sql("SELECT 42 AS answer")<br>
+          print(result)
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">创建本地数据库文件</span>
+          import duckdb<br>
+          con = duckdb.connect("mydb.duckdb")<br>
+          con.sql("CREATE TABLE users (id INT, name VARCHAR)")<br>
+          con.sql("INSERT INTO users VALUES (1, 'Alice'), (2, 'Bob')")<br>
+          con.sql("SELECT * FROM users").show()
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">为什么选 DuckDB？</div>
+        <table class="compare-table">
+          <thead><tr><th>特性</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>零配置</td><td>pip install 即用，无需启动服务器进程</td></tr>
+            <tr><td>列式存储</td><td>天生适合 OLAP 分析查询，速度远超 SQLite</td></tr>
+            <tr><td>完整 SQL</td><td>支持窗口函数、CTE、JOIN、子查询等高级语法</td></tr>
+            <tr><td>直读文件</td><td>可直接查询 CSV / Parquet / JSON 文件</td></tr>
+            <tr><td>Pandas 集成</td><td>DataFrame 与 DuckDB 表无缝互转</td></tr>
+            <tr><td>嵌入式</td><td>进程内运行，无网络开销，适合单机学习</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title">快速验证示例：窗口函数 + CSV 读取</div>
+        <div class="card-formula">
+          <span class="label">直接查询 CSV 文件</span>
+          import duckdb<br>
+          <br>
+          # 直接对 CSV 文件执行 SQL（不需要建表）<br>
+          duckdb.sql("SELECT * FROM read_csv_auto('sales.csv') LIMIT 10").show()<br>
+          <br>
+          # 窗口函数练习<br>
+          duckdb.sql("""<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;SELECT<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;product,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;month,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;revenue,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SUM(revenue) OVER (PARTITION BY product ORDER BY month) AS cumulative_rev,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ROW_NUMBER() OVER (PARTITION BY product ORDER BY revenue DESC) AS rank<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;FROM read_csv_auto('sales.csv')<br>
+          """).show()<br>
+          <br>
+          # 与 Pandas 互操作<br>
+          import pandas as pd<br>
+          df = pd.DataFrame({"x": [1,2,3], "y": [10,20,30]})<br>
+          duckdb.sql("SELECT x, y, x * y AS product FROM df").show()
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🐳</div>
+      六、Docker Desktop 安装与配置
+      <span class="chapter-count">容器化大数据组件</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">前置条件 <span class="card-badge badge-must">必须确认</span></div>
+        <ul class="card-points">
+          <li><strong>Windows 10 (2004+) 或 Windows 11</strong>，家庭版和专业版均可</li>
+          <li>需要开启 <strong>WSL2</strong> 或 <strong>Hyper-V</strong>（Docker Desktop 安装时会引导开启）</li>
+          <li>BIOS 中开启 <strong>虚拟化（VT-x / AMD-V）</strong></li>
+          <li>至少 <strong>8GB 内存</strong>（分配给 Docker 至少 4GB）</li>
+        </ul>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">检查虚拟化是否开启（PowerShell）</span>
+          systeminfo | findstr /i "虚拟化"
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">如果显示 "已启用固件中的虚拟化: 是" 则 OK</span>
+          如果显示"否"，需进入 BIOS 开启 Intel VT-x 或 AMD-V
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">下载安装 Docker Desktop</div>
+        <ul class="card-points">
+          <li>访问 <strong>docker.com/products/docker-desktop</strong> 下载 Windows 版</li>
+          <li>运行安装程序，推荐选择 <strong>"Use WSL 2 instead of Hyper-V"</strong></li>
+          <li>安装完成后重启电脑</li>
+          <li>首次启动 Docker Desktop，等待引擎初始化完成</li>
+        </ul>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">验证安装</span>
+          docker --version<br>
+          docker run hello-world
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">Docker Compose（已内置）</span>
+          docker compose version
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">资源配置建议</div>
+        <div class="card-desc">打开 Docker Desktop → Settings → Resources，调整分配给 Docker 的资源。</div>
+        <table class="compare-table" style="margin-top: 10px;">
+          <thead><tr><th>资源</th><th>最低配置</th><th>推荐配置</th></tr></thead>
+          <tbody>
+            <tr><td>CPU</td><td>2 核</td><td>4 核</td></tr>
+            <tr><td>内存</td><td>4 GB</td><td>8 GB</td></tr>
+            <tr><td>磁盘</td><td>32 GB</td><td>64 GB</td></tr>
+            <tr><td>Swap</td><td>1 GB</td><td>2 GB</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常见问题排查</div>
+        <table class="compare-table">
+          <thead><tr><th>问题</th><th>解决方案</th></tr></thead>
+          <tbody>
+            <tr><td>Hyper-V 未启用</td><td>PowerShell 管理员运行：<br><code style="color:var(--code-color)">Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All</code></td></tr>
+            <tr><td>WSL2 版本不够</td><td>运行 <code style="color:var(--code-color)">wsl --update</code> 更新 WSL 内核</td></tr>
+            <tr><td>镜像拉取速度慢</td><td>Docker Desktop → Settings → Docker Engine，添加国内镜像加速器</td></tr>
+            <tr><td>启动失败 / 闪退</td><td>检查 BIOS 虚拟化、Windows 更新、重装 Docker Desktop</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">配置镜像加速器（Docker Engine JSON）</span>
+          {<br>
+          &nbsp;&nbsp;"registry-mirrors": [<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;"https://docker.1ms.run",<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;"https://docker.xuanyuan.me"<br>
+          &nbsp;&nbsp;]<br>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">🐧</div>
+      七、WSL2 安装（Windows 上的 Linux）
+      <span class="chapter-count">可选但强烈推荐</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">一键安装 WSL2 <span class="card-badge badge-biz">简单</span></div>
+        <div class="card-desc">WSL2（Windows Subsystem for Linux 2）让你在 Windows 内运行完整的 Linux 环境，无需虚拟机。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">以管理员身份运行 PowerShell</span>
+          wsl --install
+        </div>
+        <ul class="card-points" style="margin-top: 8px;">
+          <li>默认安装 <strong>Ubuntu</strong> 发行版</li>
+          <li>安装完成后需要<strong>重启电脑</strong></li>
+          <li>重启后自动弹出 Ubuntu 窗口，设置<strong>用户名和密码</strong></li>
+        </ul>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">选择其他发行版</span>
+          wsl --list --online<br>
+          wsl --install -d Ubuntu-22.04
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">基本使用</div>
+        <div class="card-formula">
+          <span class="label">从 Windows Terminal 打开 WSL</span>
+          wsl
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">访问 Windows 文件</span>
+          ls /mnt/c/Users/YourName/Desktop<br>
+          cd /mnt/c/
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">从 Windows 访问 WSL 文件</span>
+          在资源管理器地址栏输入：\\wsl$\Ubuntu
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">在 WSL 中安装工具</span>
+          sudo apt update && sudo apt upgrade -y<br>
+          sudo apt install -y python3 python3-pip git curl wget
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title">WSL2 vs 虚拟机</div>
+        <table class="compare-table">
+          <thead><tr><th>对比维度</th><th>WSL2</th><th>传统虚拟机 (VMware / VirtualBox)</th></tr></thead>
+          <tbody>
+            <tr><td>启动速度</td><td>秒级启动</td><td>分钟级启动</td></tr>
+            <tr><td>资源占用</td><td>轻量，按需分配内存</td><td>固定分配 CPU / 内存</td></tr>
+            <tr><td>文件互通</td><td>Windows ↔ Linux 双向访问</td><td>需要共享文件夹配置</td></tr>
+            <tr><td>Docker 集成</td><td>Docker Desktop 原生支持 WSL2 后端</td><td>需在虚拟机内单独安装</td></tr>
+            <tr><td>VS Code 集成</td><td>Remote-WSL 插件无缝连接</td><td>需要 SSH 连接</td></tr>
+            <tr><td>网络</td><td>与 Windows 共享网络</td><td>NAT / 桥接配置复杂</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🔀</div>
+      八、Git 安装与配置
+      <span class="chapter-count">版本管理必备</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">下载与安装</div>
+        <ul class="card-points">
+          <li>访问 <strong>git-scm.com</strong> 下载 Git for Windows</li>
+          <li>运行安装程序，<strong>所有选项保持默认即可</strong></li>
+          <li>默认编辑器可改为 VS Code（安装时有选项）</li>
+          <li>安装完成后，PowerShell 和 CMD 中都可使用 git 命令</li>
+        </ul>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">验证安装</span>
+          git --version
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">基本配置 <span class="card-badge badge-must">必须</span></div>
+        <div class="card-formula">
+          <span class="label">设置用户名和邮箱</span>
+          git config --global user.name "你的名字"<br>
+          git config --global user.email "your@email.com"
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">查看配置</span>
+          git config --list
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">设置默认分支名为 main</span>
+          git config --global init.defaultBranch main
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title">SSH Key 生成与 GitHub 配置</div>
+        <div class="card-desc">SSH Key 允许你免密码推送代码到 GitHub / GitLab。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">步骤 1：生成 SSH Key</span>
+          ssh-keygen -t ed25519 -C "your@email.com"<br>
+          # 一路回车使用默认路径和空密码
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">步骤 2：复制公钥内容</span>
+          type %USERPROFILE%\.ssh\id_ed25519.pub
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">步骤 3：添加到 GitHub</span>
+          GitHub → Settings → SSH and GPG keys → New SSH key<br>
+          粘贴公钥内容并保存
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">步骤 4：验证连接</span>
+          ssh -T git@github.com<br>
+          # 成功会显示 "Hi xxx! You've successfully authenticated..."
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">💻</div>
+      九、VS Code 配置（大数据开发推荐插件）
+      <span class="chapter-count">高效编辑器</span>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-title" style="color: var(--accent);">Python</div>
+        <div class="card-desc"><strong>Microsoft 官方</strong> Python 语言支持</div>
+        <ul class="card-points" style="margin-top: 6px;">
+          <li>智能补全 / 语法高亮 / 调试</li>
+          <li>自动检测虚拟环境</li>
+          <li>Linting 和 Formatting</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color: var(--orange);">Jupyter</div>
+        <div class="card-desc"><strong>Microsoft 官方</strong> Notebook 支持</div>
+        <ul class="card-points" style="margin-top: 6px;">
+          <li>在 VS Code 内打开 .ipynb</li>
+          <li>交互式运行 Python 代码</li>
+          <li>支持变量查看和图表渲染</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color: var(--green);">SQL Formatter</div>
+        <div class="card-desc">SQL 代码<strong>自动格式化</strong></div>
+        <ul class="card-points" style="margin-top: 6px;">
+          <li>一键美化 SQL 语句</li>
+          <li>支持多种 SQL 方言</li>
+          <li>快捷键 Shift+Alt+F</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color: var(--accent2);">Docker</div>
+        <div class="card-desc">Microsoft 官方 <strong>Docker 管理</strong></div>
+        <ul class="card-points" style="margin-top: 6px;">
+          <li>可视化管理容器和镜像</li>
+          <li>编辑 Dockerfile / Compose</li>
+          <li>一键启停容器</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color: var(--pink);">Remote - WSL</div>
+        <div class="card-desc"><strong>连接 WSL</strong> Linux 环境</div>
+        <ul class="card-points" style="margin-top: 6px;">
+          <li>在 WSL 内打开项目</li>
+          <li>终端直接运行 Linux 命令</li>
+          <li>文件系统无缝访问</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color: var(--purple);">GitLens</div>
+        <div class="card-desc"><strong>Git 增强</strong>工具</div>
+        <ul class="card-points" style="margin-top: 6px;">
+          <li>行级别 Blame 注释</li>
+          <li>提交历史可视化</li>
+          <li>分支 / 标签管理</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="color: var(--yellow);">Rainbow CSV</div>
+        <div class="card-desc">CSV 文件<strong>彩色高亮</strong></div>
+        <ul class="card-points" style="margin-top: 6px;">
+          <li>每列不同颜色，方便阅读</li>
+          <li>支持 SQL 查询 CSV</li>
+          <li>自动对齐列</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top: 16px;">
+      <div class="card">
+        <div class="card-title">配置 Python 解释器路径</div>
+        <div class="card-desc">安装 Python 插件后，需要指定使用哪个 Python 解释器。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">快捷操作</span>
+          Ctrl + Shift + P → 输入 "Python: Select Interpreter"<br>
+          选择 bigdata-env 虚拟环境中的 Python
+        </div>
+        <ul class="card-points" style="margin-top: 8px;">
+          <li>VS Code 会自动检测系统中的 Python 和虚拟环境</li>
+          <li>选择虚拟环境后，终端也会自动激活该环境</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">终端配置</div>
+        <div class="card-desc">VS Code 内置终端支持多种 Shell，推荐使用 PowerShell 或 Git Bash。</div>
+        <div class="card-formula" style="margin-top: 10px;">
+          <span class="label">设置默认终端（settings.json）</span>
+          "terminal.integrated.defaultProfile.windows": "PowerShell"
+        </div>
+        <div class="card-formula" style="margin-top: 8px;">
+          <span class="label">切换终端</span>
+          Ctrl + ` 打开终端<br>
+          点击终端右上角下拉箭头可选择 Shell 类型
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">✅</div>
+      十、环境验证 Checklist
+      <span class="chapter-count">一键检查全部工具</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">验证清单</div>
+        <div class="card-desc">逐一执行以下命令，确认所有工具安装成功。</div>
+        <table class="compare-table" style="margin-top: 10px;">
+          <thead><tr><th>工具</th><th>验证命令</th><th>期望输出</th></tr></thead>
+          <tbody>
+            <tr><td>Python</td><td><code style="color:var(--code-color)">python --version</code></td><td>Python 3.10+</td></tr>
+            <tr><td>pip</td><td><code style="color:var(--code-color)">pip --version</code></td><td>pip 23.x+</td></tr>
+            <tr><td>Java</td><td><code style="color:var(--code-color)">java -version</code></td><td>openjdk "1.8.x" 或 "11.x"</td></tr>
+            <tr><td>PySpark</td><td><code style="color:var(--code-color)">python -c "import pyspark; print(pyspark.__version__)"</code></td><td>3.x.x</td></tr>
+            <tr><td>DuckDB</td><td><code style="color:var(--code-color)">python -c "import duckdb; print(duckdb.sql('SELECT 42'))"</code></td><td>┌────┐ │ 42 │</td></tr>
+            <tr><td>Docker</td><td><code style="color:var(--code-color)">docker --version</code></td><td>Docker version 24.x+</td></tr>
+            <tr><td>Git</td><td><code style="color:var(--code-color)">git --version</code></td><td>git version 2.x+</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">自动检测结果 <span class="card-badge badge-core">运行脚本</span></div>
+        <div class="card-desc">点击下方按钮模拟检测，或将验证脚本保存为 Python 文件执行。</div>
+        <ul id="checklistResult" class="checklist" style="margin-top: 10px;">
+          <li><span class="check-icon">⏳</span><span class="check-label"><strong>Python</strong> — 等待检测</span></li>
+          <li><span class="check-icon">⏳</span><span class="check-label"><strong>Java JDK</strong> — 等待检测</span></li>
+          <li><span class="check-icon">⏳</span><span class="check-label"><strong>PySpark</strong> — 等待检测</span></li>
+          <li><span class="check-icon">⏳</span><span class="check-label"><strong>DuckDB</strong> — 等待检测</span></li>
+          <li><span class="check-icon">⏳</span><span class="check-label"><strong>Docker</strong> — 等待检测</span></li>
+          <li><span class="check-icon">⏳</span><span class="check-label"><strong>Git</strong> — 等待检测</span></li>
+          <li><span class="check-icon">⏳</span><span class="check-label"><strong>VS Code</strong> — 等待检测</span></li>
+        </ul>
+        <button id="runCheck" style="
+          margin-top: 12px;
+          padding: 8px 20px;
+          background: var(--accent);
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.85rem;
+          font-weight: 600;
+          font-family: inherit;
+          transition: opacity 0.2s;
+        ">模拟检测</button>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title">Python 自动检测脚本（保存为 check_env.py 运行）</div>
+        <div class="card-formula">
+          <span class="label">check_env.py — 环境验证脚本</span>
+          import subprocess<br>
+          import sys<br>
+          import shutil<br>
+          <br>
+          PASS = "\033[92m[PASS]\033[0m"<br>
+          FAIL = "\033[91m[FAIL]\033[0m"<br>
+          <br>
+          def check_cmd(name, cmd):<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;try:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result = subprocess.run(cmd, capture_output=True, text=True, timeout=15)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;version = result.stdout.strip() or result.stderr.strip()<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;first_line = version.split("\n")[0]<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"  {PASS} {name}: {first_line}")<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return True<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;except Exception:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"  {FAIL} {name}: 未安装或不可用")<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return False<br>
+          <br>
+          def check_python_pkg(name, import_name=None):<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;pkg = import_name or name<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;try:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mod = __import__(pkg)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ver = getattr(mod, "__version__", "installed")<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"  {PASS} {name}: {ver}")<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return True<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;except ImportError:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;print(f"  {FAIL} {name}: 未安装")<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return False<br>
+          <br>
+          print("\n===== Windows 大数据环境检测 =====\n")<br>
+          <br>
+          total = 0<br>
+          passed = 0<br>
+          <br>
+          checks = [<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("Python", ["python", "--version"]),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("pip", ["pip", "--version"]),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("Java", ["java", "-version"]),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("Git", ["git", "--version"]),<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;("Docker", ["docker", "--version"]),<br>
+          ]<br>
+          <br>
+          for name, cmd in checks:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;total += 1<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;if check_cmd(name, cmd):<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;passed += 1<br>
+          <br>
+          pkgs = [("PySpark", "pyspark"), ("DuckDB", "duckdb"), ("pandas", None), ("numpy", None)]<br>
+          <br>
+          for name, imp in pkgs:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;total += 1<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;if check_python_pkg(name, imp):<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;passed += 1<br>
+          <br>
+          print(f"\n===== 结果：{passed}/{total} 通过 =====\n")<br>
+          <br>
+          if passed == total:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;print("所有工具安装完成，可以开始大数据学习了！")<br>
+          else:<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;print("部分工具未安装，请根据上方提示补全。")
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "env-setup-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+
+    const runCheckBtn = document.getElementById("runCheck");
+    const checklistEl = document.getElementById("checklistResult");
+
+    const tools = [
+      { name: "Python", pass: true, detail: "Python 3.12.1" },
+      { name: "Java JDK", pass: true, detail: "openjdk 11.0.21" },
+      { name: "PySpark", pass: true, detail: "pyspark 3.5.0" },
+      { name: "DuckDB", pass: true, detail: "duckdb 1.1.0" },
+      { name: "Docker", pass: true, detail: "Docker 27.0.3" },
+      { name: "Git", pass: true, detail: "git 2.43.0" },
+      { name: "VS Code", pass: true, detail: "code 1.95.0" },
+    ];
+
+    runCheckBtn.addEventListener("click", () => {
+      runCheckBtn.disabled = true;
+      runCheckBtn.textContent = "检测中...";
+
+      const items = checklistEl.querySelectorAll("li");
+
+      tools.forEach((tool, i) => {
+        setTimeout(() => {
+          const randomPass = Math.random() > 0.15;
+          const icon = randomPass ? "✅" : "❌";
+          const statusText = randomPass ? tool.detail : "未检测到";
+
+          items[i].querySelector(".check-icon").textContent = icon;
+          items[i].querySelector(".check-label").innerHTML =
+            `<strong>${tool.name}</strong> — ${statusText}`;
+
+          if (i === tools.length - 1) {
+            runCheckBtn.textContent = "重新检测";
+            runCheckBtn.disabled = false;
+          }
+        }, (i + 1) * 350);
+      });
+    });
+  </script>
+
+</body>
+</html>

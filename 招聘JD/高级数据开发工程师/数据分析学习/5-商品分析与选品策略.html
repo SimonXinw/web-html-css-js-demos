@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品分析与选品策略 · 跨境电商数据分析</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>商品分析与选品策略</h1>
+    <p class="hero-sub">跨境电商数据驱动选品 — 从指标体系到实战方法论，用数据找到下一个爆品</p>
+    <div class="tags">
+      <span class="tag tag-blue">商品KPI</span>
+      <span class="tag tag-green">ABC分析</span>
+      <span class="tag tag-purple">波士顿矩阵</span>
+      <span class="tag tag-orange">定价策略</span>
+      <span class="tag tag-pink">选品方法论</span>
+      <span class="tag tag-blue">购物篮分析</span>
+      <span class="tag tag-green">库存管理</span>
+      <span class="tag tag-orange">评论分析</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">📊</div>
+      一、商品核心KPI指标体系
+      <span class="chapter-count">选品第一步：看懂数据</span>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-abbr">GMV</div>
+        <div class="metric-name">商品交易总额</div>
+        <div class="metric-formula">GMV = 销量 × 客单价</div>
+        <div class="metric-desc">衡量商品整体销售规模的第一指标</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ASP</div>
+        <div class="metric-name">平均售价 (Average Selling Price)</div>
+        <div class="metric-formula">ASP = 总销售额 / 总销量</div>
+        <div class="metric-desc">反映商品实际成交价格水平，区别于标价</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CR%</div>
+        <div class="metric-name">转化率 (Conversion Rate)</div>
+        <div class="metric-formula">CR = 购买人数 / 商品页UV × 100%</div>
+        <div class="metric-desc">商品详情页转化能力的核心度量</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">GPM</div>
+        <div class="metric-name">毛利率 (Gross Profit Margin)</div>
+        <div class="metric-formula">GPM = (售价 - 成本) / 售价 × 100%</div>
+        <div class="metric-desc">扣除采购/物流/平台费后的利润空间</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ITO</div>
+        <div class="metric-name">库存周转天数</div>
+        <div class="metric-formula">ITO = 平均库存 / 日均销量</div>
+        <div class="metric-desc">数值越小说明商品流转越快、资金效率越高</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">RR%</div>
+        <div class="metric-name">退货率 (Return Rate)</div>
+        <div class="metric-formula">RR = 退货订单数 / 总订单数 × 100%</div>
+        <div class="metric-desc">跨境退货成本极高，>5% 需重点关注</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">BSR</div>
+        <div class="metric-name">畅销排名 (Best Seller Rank)</div>
+        <div class="metric-formula">平台算法综合销量+转化+时效</div>
+        <div class="metric-desc">Amazon BSR 越低越好，反映品类竞争力</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CTR</div>
+        <div class="metric-name">点击率 (Click Through Rate)</div>
+        <div class="metric-formula">CTR = 点击数 / 展示数 × 100%</div>
+        <div class="metric-desc">衡量主图/标题的吸引力，选品初筛关键指标</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ACOS</div>
+        <div class="metric-name">广告花费占比</div>
+        <div class="metric-formula">ACOS = 广告花费 / 广告销售额 × 100%</div>
+        <div class="metric-desc">ACOS < 毛利率时广告才盈利</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ROI</div>
+        <div class="metric-name">投资回报率</div>
+        <div class="metric-formula">ROI = 净利润 / 总投入 × 100%</div>
+        <div class="metric-desc">综合衡量单品盈利能力的终极指标</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">商品GMV拆解树 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-formula">
+          <span class="label">核心公式拆解</span>
+          GMV = 流量(UV) × 转化率(CR) × 客单价(ASP)<br><br>
+          流量 = 自然流量 + 广告流量 + 活动流量<br>
+          转化率 = f(详情页质量, 价格竞争力, 评论评分, 物流时效)<br>
+          客单价 = f(商品定价, 促销折扣, 捆绑销售)
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">商品健康度评分卡</div>
+        <div class="card-desc">多维度加权评分，快速筛选需要优化的商品：</div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>优秀</th><th>合格</th><th>预警</th></tr></thead>
+          <tbody>
+            <tr><td>转化率</td><td>> 8%</td><td>3%~8%</td><td>&lt; 3%</td></tr>
+            <tr><td>退货率</td><td>&lt; 3%</td><td>3%~8%</td><td>> 8%</td></tr>
+            <tr><td>毛利率</td><td>> 40%</td><td>20%~40%</td><td>&lt; 20%</td></tr>
+            <tr><td>库存周转</td><td>&lt; 30天</td><td>30~60天</td><td>> 60天</td></tr>
+            <tr><td>评分</td><td>> 4.5</td><td>4.0~4.5</td><td>&lt; 4.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🔢</div>
+      二、ABC分析法与SQL实现
+      <span class="chapter-count">二八法则的数据化落地</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">ABC分类原理 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">基于帕累托(二八)法则，将商品按贡献度分为三类，实现差异化管理。</div>
+        <table class="compare-table" style="margin-top:10px">
+          <thead><tr><th>类别</th><th>销售额占比</th><th>SKU占比</th><th>管理策略</th></tr></thead>
+          <tbody>
+            <tr><td>A类（明星）</td><td>~70%</td><td>~20%</td><td>重点备货、优先广告、频繁复盘</td></tr>
+            <tr><td>B类（潜力）</td><td>~20%</td><td>~30%</td><td>适度投入、监控趋势、寻找突破点</td></tr>
+            <tr><td>C类（长尾）</td><td>~10%</td><td>~50%</td><td>控制库存、定期清理、考虑淘汰</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SQL实现ABC分析 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-formula">
+          <span class="label">Hive / SparkSQL</span>
+          WITH product_sales AS (<br>
+          &nbsp;&nbsp;SELECT product_id, SUM(amount) AS total_sales<br>
+          &nbsp;&nbsp;FROM dwd_order_detail<br>
+          &nbsp;&nbsp;WHERE dt BETWEEN '2025-01-01' AND '2025-03-31'<br>
+          &nbsp;&nbsp;GROUP BY product_id<br>
+          ),<br>
+          ranked AS (<br>
+          &nbsp;&nbsp;SELECT *,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;SUM(total_sales) OVER (ORDER BY total_sales DESC) AS cum_sales,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;SUM(total_sales) OVER () AS grand_total<br>
+          &nbsp;&nbsp;FROM product_sales<br>
+          )<br>
+          SELECT *,<br>
+          &nbsp;&nbsp;CASE<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN cum_sales / grand_total &lt;= 0.7 THEN 'A'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN cum_sales / grand_total &lt;= 0.9 THEN 'B'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ELSE 'C'<br>
+          &nbsp;&nbsp;END AS abc_class<br>
+          FROM ranked;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">多维度ABC交叉分析</div>
+        <div class="card-desc">仅按销售额分类过于单一，实际中需要交叉考量多个维度：</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>销售额ABC × 毛利额ABC</strong>：找出高销低利的"赔本赚吆喝"商品</li>
+          <li><strong>销售额ABC × 库存周转ABC</strong>：找出高销慢转的"资金黑洞"商品</li>
+          <li><strong>销售额ABC × 退货率ABC</strong>：找出高销高退的"虚假繁荣"商品</li>
+        </ul>
+        <div class="card-formula">
+          交叉分析后的9宫格矩阵可快速定位问题商品：<br>
+          AA = 明星商品（高销高利）| AC = 引流款（高销低利）<br>
+          CA = 利基品（低销高利）| CC = 淘汰候选（低销低利）
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ABC分析的业务动作</div>
+        <ul class="card-points">
+          <li><strong>A类商品</strong>：保证不断货，提升广告预算占比，建立价格监控预警</li>
+          <li><strong>B→A转化</strong>：分析B类中增速最快的TOP10，测试加大流量投放</li>
+          <li><strong>C类清理</strong>：连续3个月为C类且无增长趋势 → 停止广告 → 清仓促销 → 下架</li>
+          <li><strong>动态更新</strong>：每月/每季度重新计算ABC分类，跟踪品类升降趋势</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🔄</div>
+      三、商品生命周期管理
+      <span class="chapter-count">不同阶段不同策略</span>
+    </div>
+
+    <div class="grid">
+      <div class="card" style="grid-column: 1 / -1">
+        <div class="card-title">商品生命周期四阶段 <span class="card-badge badge-must">必背</span></div>
+        <div class="flow" style="margin-top:10px; justify-content:center">
+          <span class="flow-step fs-blue" style="padding:10px 20px">📦 导入期<br><small>新品上架</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green" style="padding:10px 20px">📈 成长期<br><small>销量爬坡</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange" style="padding:10px 20px">🏆 成熟期<br><small>稳定出单</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red" style="padding:10px 20px">📉 衰退期<br><small>销量下滑</small></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">导入期策略</div>
+        <ul class="card-points">
+          <li><strong>核心目标</strong>：快速获取初始评论和销量排名</li>
+          <li><strong>广告策略</strong>：高竞价抢曝光，接受 ACOS > 100% 的亏损投放</li>
+          <li><strong>定价策略</strong>：低价渗透或首批优惠券吸引早期用户</li>
+          <li><strong>关键指标</strong>：点击率(CTR)、加购率、首评获取速度</li>
+          <li><strong>时间窗口</strong>：一般 2~4 周，超时未起量需评估是否放弃</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">成长期策略</div>
+        <ul class="card-points">
+          <li><strong>核心目标</strong>：放大流量，抢占品类排名</li>
+          <li><strong>广告策略</strong>：扩大关键词覆盖，增加 Sponsored Brand 广告</li>
+          <li><strong>定价策略</strong>：逐步提价至目标价位，测试价格弹性</li>
+          <li><strong>关键指标</strong>：销量增速、BSR排名变化、自然流量占比</li>
+          <li><strong>库存管理</strong>：提前备货，避免断货导致排名暴跌</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">成熟期策略</div>
+        <ul class="card-points">
+          <li><strong>核心目标</strong>：最大化利润，建立竞争壁垒</li>
+          <li><strong>广告策略</strong>：降低 ACOS，精准投放高转化关键词</li>
+          <li><strong>定价策略</strong>：稳定价格，通过捆绑/组合提升客单价</li>
+          <li><strong>关键指标</strong>：毛利率、复购率、自然流量占比 > 60%</li>
+          <li><strong>防御动作</strong>：监控竞品动态，品牌护城河建设</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">衰退期策略</div>
+        <ul class="card-points">
+          <li><strong>核心目标</strong>：控制损失，加速清仓</li>
+          <li><strong>广告策略</strong>：停止或大幅缩减广告预算</li>
+          <li><strong>定价策略</strong>：折扣清仓，捆绑新品出售</li>
+          <li><strong>关键指标</strong>：库存天数、清仓进度、仓储费占比</li>
+          <li><strong>决策依据</strong>：连续4周销量环比下滑 > 20% 且无季节因素</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SQL判断生命周期阶段</div>
+        <div class="card-formula">
+          <span class="label">基于销量趋势自动识别</span>
+          WITH weekly AS (<br>
+          &nbsp;&nbsp;SELECT product_id, weekofyear(dt) AS wk,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;SUM(qty) AS wk_qty,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;LAG(SUM(qty),1) OVER (PARTITION BY product_id ORDER BY weekofyear(dt)) AS prev_qty<br>
+          &nbsp;&nbsp;FROM dwd_order_detail GROUP BY product_id, weekofyear(dt)<br>
+          ),<br>
+          growth AS (<br>
+          &nbsp;&nbsp;SELECT *, (wk_qty - prev_qty) / NULLIF(prev_qty,0) AS wow_rate<br>
+          &nbsp;&nbsp;FROM weekly<br>
+          )<br>
+          SELECT product_id,<br>
+          &nbsp;&nbsp;CASE<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN avg(wow_rate) > 0.2 THEN '成长期'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN avg(wow_rate) BETWEEN -0.05 AND 0.2 THEN '成熟期'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN avg(wow_rate) &lt; -0.05 THEN '衰退期'<br>
+          &nbsp;&nbsp;END AS lifecycle_stage<br>
+          FROM growth GROUP BY product_id;
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🎯</div>
+      四、品类分析与波士顿矩阵
+      <span class="chapter-count">战略级品类决策</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">波士顿矩阵（BCG Matrix）<span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">以<strong>市场增长率</strong>（纵轴）和<strong>相对市场份额</strong>（横轴）划分四象限，指导品类资源分配。</div>
+        <table class="compare-table" style="margin-top:10px">
+          <thead><tr><th>象限</th><th>特征</th><th>策略</th><th>例子</th></tr></thead>
+          <tbody>
+            <tr><td>⭐ 明星品类</td><td>高增长 + 高份额</td><td>加大投入，抢占头部</td><td>新兴爆品类目</td></tr>
+            <tr><td>🐄 现金牛品类</td><td>低增长 + 高份额</td><td>维持份额，收割利润</td><td>成熟刚需品</td></tr>
+            <tr><td>❓ 问题品类</td><td>高增长 + 低份额</td><td>选择性投入或退出</td><td>新进入的蓝海品类</td></tr>
+            <tr><td>🐕 瘦狗品类</td><td>低增长 + 低份额</td><td>缩减投入，逐步退出</td><td>竞争激烈的红海品</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">波士顿矩阵SQL实现</div>
+        <div class="card-formula">
+          <span class="label">计算各品类的增长率和份额</span>
+          WITH cat_sales AS (<br>
+          &nbsp;&nbsp;SELECT category,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;SUM(CASE WHEN dt BETWEEN '2025-01-01' AND '2025-03-31' THEN amount END) AS q1,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;SUM(CASE WHEN dt BETWEEN '2024-10-01' AND '2024-12-31' THEN amount END) AS q0<br>
+          &nbsp;&nbsp;FROM dwd_order_detail GROUP BY category<br>
+          ),<br>
+          metrics AS (<br>
+          &nbsp;&nbsp;SELECT category, q1,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;(q1 - q0) / NULLIF(q0, 0) AS growth_rate,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;q1 / SUM(q1) OVER () AS market_share<br>
+          &nbsp;&nbsp;FROM cat_sales<br>
+          )<br>
+          SELECT category, growth_rate, market_share,<br>
+          &nbsp;&nbsp;CASE<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN growth_rate > 0.1 AND market_share > 0.1 THEN '明星'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN growth_rate &lt;= 0.1 AND market_share > 0.1 THEN '现金牛'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN growth_rate > 0.1 AND market_share &lt;= 0.1 THEN '问题'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ELSE '瘦狗'<br>
+          &nbsp;&nbsp;END AS bcg_quadrant<br>
+          FROM metrics;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">品类竞争度评估维度</div>
+        <ul class="card-points">
+          <li><strong>卖家集中度</strong>：TOP10卖家占品类销售额比例 >60% 说明垄断，新手慎入</li>
+          <li><strong>新品存活率</strong>：过去6个月新上架商品中仍在售的比例</li>
+          <li><strong>平均评论数</strong>：头部商品评论 >5000条，说明评论壁垒高</li>
+          <li><strong>价格区间分布</strong>：价格带集中 → 同质化严重，价格带分散 → 差异化空间大</li>
+          <li><strong>品牌垄断度</strong>：是否有知名品牌占据品类 >30% 份额</li>
+          <li><strong>季节性系数</strong>：月度销量标准差/均值，>0.5 为强季节性品类</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">品类机会评分模型</div>
+        <div class="card-desc">加权打分筛选值得进入的品类：</div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">品类机会分 = 加权求和</span>
+          机会分 = 需求分×0.3 + 竞争分×0.25 + 利润分×0.2 + 增长分×0.15 + 供应链分×0.1<br><br>
+          需求分：月搜索量 / 品类卖家数<br>
+          竞争分：1 - TOP10卖家集中度<br>
+          利润分：品类平均毛利率<br>
+          增长分：近3月环比增速<br>
+          供应链分：1688对应供应商数量和起订量评估
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">💰</div>
+      五、定价策略与价格分析
+      <span class="chapter-count">利润的起点是定价</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">跨境电商成本结构 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-formula">
+          <span class="label">完整成本公式</span>
+          总成本 = 采购成本 + 头程物流 + 平台佣金 + FBA费用 + 广告费 + 仓储费 + 退货成本<br><br>
+          毛利 = 售价 - 总成本<br>
+          目标售价 = 总成本 / (1 - 目标毛利率)
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>采购成本</strong>：产品出厂价（含MOQ优化）</li>
+          <li><strong>头程物流</strong>：中国→目的地仓库运费（海运/空运/快递）</li>
+          <li><strong>平台佣金</strong>：Amazon 8%~15%，视品类而定</li>
+          <li><strong>FBA费用</strong>：按尺寸重量计费，每单 $3~$8</li>
+          <li><strong>广告费</strong>：通常占销售额 10%~25%</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常见定价策略对比</div>
+        <table class="compare-table">
+          <thead><tr><th>策略</th><th>原理</th><th>适用场景</th><th>风险</th></tr></thead>
+          <tbody>
+            <tr><td>成本加成</td><td>成本 + 固定利润率</td><td>标品/刚需品</td><td>忽略竞争和需求弹性</td></tr>
+            <tr><td>竞品锚定</td><td>参考竞品价±一定比例</td><td>红海品类</td><td>容易陷入价格战</td></tr>
+            <tr><td>价值定价</td><td>基于用户感知价值定价</td><td>差异化/品牌商品</td><td>需要强产品力支撑</td></tr>
+            <tr><td>渗透定价</td><td>低价快速占领市场</td><td>新品上架期</td><td>短期亏损，后续提价难</td></tr>
+            <tr><td>撇脂定价</td><td>高价高利润，逐步降价</td><td>创新/独占商品</td><td>吸引竞品快速跟进</td></tr>
+            <tr><td>心理定价</td><td>$19.99 vs $20.00</td><td>所有品类</td><td>效果因市场而异</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">价格弹性分析</div>
+        <div class="card-desc">衡量价格变化对销量的影响程度，指导最优定价点。</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">价格弹性系数</span>
+          Ed = 销量变化率 / 价格变化率<br>
+          = (ΔQ/Q) / (ΔP/P)<br><br>
+          |Ed| > 1 → 弹性大（降价促销有效）<br>
+          |Ed| &lt; 1 → 弹性小（刚需品，提价对销量影响小）<br>
+          |Ed| ≈ 1 → 单位弹性（收入最大化的均衡点）
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">竞品价格监控SQL</div>
+        <div class="card-formula">
+          <span class="label">价格变动监控与预警</span>
+          WITH price_change AS (<br>
+          &nbsp;&nbsp;SELECT competitor_id, product_id, price, dt,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;LAG(price) OVER (PARTITION BY competitor_id, product_id ORDER BY dt) AS prev_price<br>
+          &nbsp;&nbsp;FROM ods_competitor_price<br>
+          )<br>
+          SELECT *,<br>
+          &nbsp;&nbsp;(price - prev_price) / NULLIF(prev_price, 0) AS price_change_rate<br>
+          FROM price_change<br>
+          WHERE ABS(price - prev_price) / NULLIF(prev_price, 0) > 0.1<br>
+          ORDER BY dt DESC;
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">📦</div>
+      六、库存管理与补货分析
+      <span class="chapter-count">断货 = 丢排名 = 白做广告</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">库存核心指标 <span class="card-badge badge-core">核心</span></div>
+        <div class="metric-grid" style="margin-top:8px">
+          <div class="metric-card">
+            <div class="metric-abbr">DOI</div>
+            <div class="metric-name">库存可售天数</div>
+            <div class="metric-formula">DOI = 当前库存 / 日均销量</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">SSR</div>
+            <div class="metric-name">安全库存</div>
+            <div class="metric-formula">SS = Z × σ × √(LT)</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">ROP</div>
+            <div class="metric-name">补货点</div>
+            <div class="metric-formula">ROP = 日均销量 × 补货周期 + 安全库存</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">OTB</div>
+            <div class="metric-name">可采购预算</div>
+            <div class="metric-formula">OTB = 预期销售 + 期末目标库存 - 在途 - 现有库存</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">FBA库存生命周期</div>
+        <div class="flow" style="flex-direction:column; align-items:flex-start; gap:4px; margin-top:8px">
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-blue">生产下单</span><small style="color:var(--text-muted)">→ 工厂生产周期 7~30天</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-green">头程运输</span><small style="color:var(--text-muted)">→ 海运35~45天 / 空运7~10天</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-yellow">入仓上架</span><small style="color:var(--text-muted)">→ FBA入仓处理 3~7天</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-orange">在售库存</span><small style="color:var(--text-muted)">→ 正常可售状态</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-red">长期仓储</span><small style="color:var(--text-muted)">→ >365天收取附加仓储费</small></div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          海运补货提前量 = (生产30天 + 海运40天 + 入仓7天) × 日均销量 + 安全库存<br>
+          ≈ 77天的销量储备 — 这就是为什么跨境库存管理极为重要
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">库存状态分级与预警</div>
+        <table class="compare-table">
+          <thead><tr><th>状态</th><th>DOI范围</th><th>动作</th><th>预警级别</th></tr></thead>
+          <tbody>
+            <tr><td>🔴 断货风险</td><td>&lt; 15天</td><td>紧急空运补货</td><td>P0 / 每日跟进</td></tr>
+            <tr><td>🟡 偏低</td><td>15~30天</td><td>加速在途货物入仓</td><td>P1 / 每周跟进</td></tr>
+            <tr><td>🟢 健康</td><td>30~60天</td><td>正常补货节奏</td><td>正常</td></tr>
+            <tr><td>🟠 偏高</td><td>60~90天</td><td>暂停补货，促销去化</td><td>P2 / 库存优化</td></tr>
+            <tr><td>🔴 滞销</td><td>> 90天</td><td>清仓折扣 / 移仓 / 销毁</td><td>P0 / 止损决策</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">智能补货计算SQL</div>
+        <div class="card-formula">
+          <span class="label">基于销量预测的补货建议</span>
+          WITH daily_sales AS (<br>
+          &nbsp;&nbsp;SELECT product_id,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;AVG(qty) AS avg_daily,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;STDDEV(qty) AS std_daily<br>
+          &nbsp;&nbsp;FROM dwd_order_detail<br>
+          &nbsp;&nbsp;WHERE dt >= date_sub(current_date, 30)<br>
+          &nbsp;&nbsp;GROUP BY product_id<br>
+          ),<br>
+          inventory AS (<br>
+          &nbsp;&nbsp;SELECT product_id, current_stock, in_transit_qty, lead_time_days<br>
+          &nbsp;&nbsp;FROM dim_product_inventory<br>
+          )<br>
+          SELECT d.product_id,<br>
+          &nbsp;&nbsp;i.current_stock / NULLIF(d.avg_daily, 0) AS doi_days,<br>
+          &nbsp;&nbsp;d.avg_daily * i.lead_time_days + 1.65 * d.std_daily * SQRT(i.lead_time_days) AS reorder_point,<br>
+          &nbsp;&nbsp;GREATEST(0, d.avg_daily * 60 - i.current_stock - i.in_transit_qty) AS suggested_order_qty<br>
+          FROM daily_sales d JOIN inventory i ON d.product_id = i.product_id;
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">💬</div>
+      七、评论分析与口碑洞察
+      <span class="chapter-count">用户反馈是最好的选品线索</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">评论分析框架 <span class="card-badge badge-biz">业务核心</span></div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">抓取评论数据</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">清洗 & 去噪</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">情感分类</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">主题提取</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">洞察输出</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-pink">产品改进</span>
+        </div>
+        <ul class="card-points" style="margin-top:12px">
+          <li><strong>情感分类</strong>：正面(4~5星) / 中性(3星) / 负面(1~2星)，计算情感比率</li>
+          <li><strong>主题提取</strong>：提取高频关键词，归类为质量/物流/包装/功能/性价比</li>
+          <li><strong>趋势监控</strong>：按周统计差评率，突增则触发产品质量预警</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">评论指标体系</div>
+        <div class="metric-grid" style="margin-top:8px">
+          <div class="metric-card">
+            <div class="metric-abbr">4.2★</div>
+            <div class="metric-name">平均评分</div>
+            <div class="metric-desc">Amazon 上 4.0 以下会严重影响转化</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">NSR</div>
+            <div class="metric-name">负评率 (Negative Sentiment Ratio)</div>
+            <div class="metric-formula">NSR = 1~2星数 / 总评论数</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">VoC</div>
+            <div class="metric-name">客户之声 (Voice of Customer)</div>
+            <div class="metric-desc">从评论中提取的结构化用户需求</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">RVR</div>
+            <div class="metric-name">评论速率 (Review Velocity Rate)</div>
+            <div class="metric-formula">RVR = 近30天新增评论数</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">差评根因分类表</div>
+        <table class="compare-table">
+          <thead><tr><th>差评类型</th><th>关键词示例</th><th>责任方</th><th>改进方向</th></tr></thead>
+          <tbody>
+            <tr><td>质量问题</td><td>broken, defective, cheap</td><td>供应商/QC</td><td>加强品控、更换供应商</td></tr>
+            <tr><td>尺寸偏差</td><td>too small, doesn't fit</td><td>Listing</td><td>优化尺码表，增加实拍对比图</td></tr>
+            <tr><td>与描述不符</td><td>not as described, fake</td><td>运营</td><td>修正产品描述和图片</td></tr>
+            <tr><td>物流问题</td><td>late delivery, damaged box</td><td>物流/FBA</td><td>改善包装、选择可靠物流</td></tr>
+            <tr><td>功能缺失</td><td>missing feature, can't use</td><td>产品</td><td>迭代新版本，补充说明书</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">竞品评论挖掘选品法</div>
+        <div class="card-desc">分析竞品差评 = 找到用户未满足的需求 = 选品机会。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>Step 1</strong>：抓取目标品类 TOP20 竞品的全部评论</li>
+          <li><strong>Step 2</strong>：筛选 1~3 星评论，提取高频抱怨关键词</li>
+          <li><strong>Step 3</strong>：按出现频率排序，找到用户最痛的 TOP5 问题</li>
+          <li><strong>Step 4</strong>：评估是否可通过产品改进解决 → 如果能 → 差异化选品机会</li>
+        </ul>
+        <div class="card-formula" style="margin-top:8px">
+          案例：竞品瑜伽垫差评集中在"太薄""易滑""气味大"<br>
+          → 选品方向：加厚(8mm+) + 双面防滑纹理 + 无毒TPE材质<br>
+          → Listing 卖点直击竞品痛点，转化率显著提升
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🧭</div>
+      八、选品方法论
+      <span class="chapter-count">数据驱动找到下一个爆品</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">选品决策漏斗 <span class="card-badge badge-must">必背</span></div>
+        <div class="flow" style="flex-direction:column; gap:6px; margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-blue" style="width:180px;text-align:center">市场调研<br><small>10,000+ 品类</small></span>
+            <small style="color:var(--text-muted)">→ 筛选：需求量>1000/月，增长>10%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-green" style="width:180px;text-align:center">品类筛选<br><small>500 品类</small></span>
+            <small style="color:var(--text-muted)">→ 竞争度评估，淘汰垄断品类</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-yellow" style="width:180px;text-align:center">竞品分析<br><small>100 品类</small></span>
+            <small style="color:var(--text-muted)">→ 差异化空间 + 利润空间评估</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-orange" style="width:180px;text-align:center">供应链验证<br><small>30 候选品</small></span>
+            <small style="color:var(--text-muted)">→ 打样、报价、MOQ、品控确认</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-purple" style="width:180px;text-align:center">小批量测试<br><small>10 测品</small></span>
+            <small style="color:var(--text-muted)">→ 上架测款，数据验证</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-pink" style="width:180px;text-align:center">规模化推广<br><small>3~5 爆品</small></span>
+            <small style="color:var(--text-muted)">→ CR>5%, 毛利>30% → 全力推广</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">选品数据来源矩阵</div>
+        <table class="compare-table">
+          <thead><tr><th>数据来源</th><th>获取方式</th><th>核心价值</th></tr></thead>
+          <tbody>
+            <tr><td>Amazon BSR</td><td>Jungle Scout / Helium10</td><td>品类需求量、竞争格局</td></tr>
+            <tr><td>Google Trends</td><td>免费查询</td><td>需求趋势、季节性判断</td></tr>
+            <tr><td>关键词搜索量</td><td>Helium10 Cerebro</td><td>精准需求规模</td></tr>
+            <tr><td>社交媒体</td><td>TikTok/Pinterest 热度</td><td>发现新兴需求趋势</td></tr>
+            <tr><td>1688/速卖通</td><td>供应端数据</td><td>成本评估、供应链可行性</td></tr>
+            <tr><td>竞品评论</td><td>爬虫/工具抓取</td><td>用户痛点与改进方向</td></tr>
+            <tr><td>专利数据库</td><td>Google Patents</td><td>规避侵权风险</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">选品评分卡模型 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">对每个候选商品进行多维度评分（1~5分），加权汇总后排序：</div>
+        <table class="compare-table" style="margin-top:8px">
+          <thead><tr><th>维度</th><th>权重</th><th>5分标准</th><th>1分标准</th></tr></thead>
+          <tbody>
+            <tr><td>市场需求</td><td>25%</td><td>月搜索量 >50K</td><td>月搜索量 &lt;5K</td></tr>
+            <tr><td>竞争强度</td><td>20%</td><td>头部评论 &lt;500</td><td>头部评论 >5000</td></tr>
+            <tr><td>利润空间</td><td>20%</td><td>毛利率 >50%</td><td>毛利率 &lt;15%</td></tr>
+            <tr><td>差异化潜力</td><td>15%</td><td>可明显改进</td><td>完全同质化</td></tr>
+            <tr><td>供应链</td><td>10%</td><td>多供应商，低MOQ</td><td>独家/高MOQ</td></tr>
+            <tr><td>合规风险</td><td>10%</td><td>无认证/专利风险</td><td>高侵权风险</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:8px">
+          总分 ≥ 4.0 → 优先测品 | 3.0~4.0 → 备选池 | &lt; 3.0 → 淘汰
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">测品验证流程与数据判定</div>
+        <ul class="card-points">
+          <li><strong>阶段1（第1~2周）</strong>：关注 CTR 和 Sessions，CTR &lt; 0.3% 说明主图/标题问题</li>
+          <li><strong>阶段2（第3~4周）</strong>：关注 CVR 和加购率，CVR &lt; 5% 需优化详情页</li>
+          <li><strong>阶段3（第5~8周）</strong>：关注 ACOS 和自然出单占比，ACOS 持续 > 50% 且无改善趋势 → 放弃</li>
+          <li><strong>成功标准</strong>：自然订单占比 > 40%，ACOS &lt; 毛利率，评分 ≥ 4.0</li>
+        </ul>
+        <div class="card-formula" style="margin-top:8px">
+          选品成功率参考：10个测品 → 3~4个存活 → 1~2个成为主力<br>
+          关键是快速试错、数据判定、果断止损
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🛒</div>
+      九、购物篮分析（关联分析）
+      <span class="chapter-count">谁和谁一起被买走</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">关联分析核心概念 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">分析"哪些商品经常一起被购买"，用于捆绑销售、推荐系统和交叉营销。</div>
+        <div class="metric-grid" style="margin-top:12px">
+          <div class="metric-card">
+            <div class="metric-abbr">Sup</div>
+            <div class="metric-name">支持度 (Support)</div>
+            <div class="metric-formula">Sup(A∧B) = 包含A和B的订单数 / 总订单数</div>
+            <div class="metric-desc">A和B同时出现的概率，反映组合的普遍性</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">Conf</div>
+            <div class="metric-name">置信度 (Confidence)</div>
+            <div class="metric-formula">Conf(A→B) = Sup(A∧B) / Sup(A)</div>
+            <div class="metric-desc">买了A的人中同时买B的比例</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">Lift</div>
+            <div class="metric-name">提升度 (Lift)</div>
+            <div class="metric-formula">Lift = Conf(A→B) / Sup(B)</div>
+            <div class="metric-desc">Lift>1 说明正相关，A促进B的购买</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SQL实现购物篮分析</div>
+        <div class="card-formula">
+          <span class="label">计算商品对的支持度、置信度、提升度</span>
+          WITH basket AS (<br>
+          &nbsp;&nbsp;SELECT order_id, product_id FROM dwd_order_detail<br>
+          ),<br>
+          pairs AS (<br>
+          &nbsp;&nbsp;SELECT a.product_id AS prod_a, b.product_id AS prod_b,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;COUNT(DISTINCT a.order_id) AS pair_count<br>
+          &nbsp;&nbsp;FROM basket a JOIN basket b<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ON a.order_id = b.order_id AND a.product_id &lt; b.product_id<br>
+          &nbsp;&nbsp;GROUP BY a.product_id, b.product_id<br>
+          ),<br>
+          singles AS (<br>
+          &nbsp;&nbsp;SELECT product_id, COUNT(DISTINCT order_id) AS single_count<br>
+          &nbsp;&nbsp;FROM basket GROUP BY product_id<br>
+          ),<br>
+          total AS (SELECT COUNT(DISTINCT order_id) AS n FROM basket)<br>
+          SELECT p.prod_a, p.prod_b,<br>
+          &nbsp;&nbsp;p.pair_count / t.n AS support,<br>
+          &nbsp;&nbsp;p.pair_count / sa.single_count AS confidence_a_to_b,<br>
+          &nbsp;&nbsp;(p.pair_count / sa.single_count) / (sb.single_count / t.n) AS lift<br>
+          FROM pairs p<br>
+          &nbsp;&nbsp;JOIN singles sa ON p.prod_a = sa.product_id<br>
+          &nbsp;&nbsp;JOIN singles sb ON p.prod_b = sb.product_id<br>
+          &nbsp;&nbsp;CROSS JOIN total t<br>
+          WHERE p.pair_count >= 50<br>
+          ORDER BY lift DESC;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">关联分析的业务应用</div>
+        <ul class="card-points">
+          <li><strong>捆绑销售 (Bundle)</strong>：Lift > 2 的商品对可设计组合套装，提升客单价 15%~30%</li>
+          <li><strong>交叉推荐</strong>：商品详情页展示"经常一起购买"，提升关联转化</li>
+          <li><strong>广告定向</strong>：买了A的用户，Retargeting推送B的广告</li>
+          <li><strong>库存联动</strong>：强关联商品需同步备货，避免一方断货影响另一方销售</li>
+          <li><strong>选品延伸</strong>：主力商品的高关联品类就是最佳的品线扩展方向</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">关联规则筛选标准</div>
+        <table class="compare-table">
+          <thead><tr><th>指标</th><th>推荐阈值</th><th>含义</th></tr></thead>
+          <tbody>
+            <tr><td>Support</td><td>> 0.01 (1%)</td><td>至少1%的订单包含该组合，确保统计意义</td></tr>
+            <tr><td>Confidence</td><td>> 0.2 (20%)</td><td>买A的人中至少20%也买了B</td></tr>
+            <tr><td>Lift</td><td>> 2.0</td><td>A对B的购买有显著促进作用</td></tr>
+            <tr><td>pair_count</td><td>> 50</td><td>最少出现次数，排除偶然共现</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:8px">
+          注意：高Support+低Lift 说明B本身就是热销品（如手机壳），关联性弱<br>
+          低Support+高Lift 说明小众但强关联（如相机+存储卡），有定向营销价值
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">📋</div>
+      十、商品分析报表模板
+      <span class="chapter-count">可复用的分析框架</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">日度商品经营看板 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">每日自动产出，覆盖核心商品经营指标：</div>
+        <table class="compare-table" style="margin-top:8px">
+          <thead><tr><th>模块</th><th>指标</th><th>粒度</th></tr></thead>
+          <tbody>
+            <tr><td>流量概览</td><td>Sessions, UV, PV, CTR</td><td>商品/品类/站点</td></tr>
+            <tr><td>销售核心</td><td>GMV, 销量, ASP, AOV</td><td>商品/品类/站点</td></tr>
+            <tr><td>转化漏斗</td><td>曝光→点击→加购→支付</td><td>商品维度</td></tr>
+            <tr><td>广告效率</td><td>ACOS, ROAS, CPC, CTR</td><td>广告组/商品</td></tr>
+            <tr><td>库存状态</td><td>DOI, 断货SKU数, 滞销SKU数</td><td>仓库/商品</td></tr>
+            <tr><td>用户反馈</td><td>评分, 差评数, 退货率</td><td>商品维度</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">周度商品分析报告模板</div>
+        <ul class="card-points">
+          <li><strong>一、本周概览</strong>：GMV/销量/毛利 与上周对比 + 与去年同期对比</li>
+          <li><strong>二、TOP商品排行</strong>：销售额TOP20、增速TOP10、下滑TOP10</li>
+          <li><strong>三、ABC变动追踪</strong>：本周升级/降级的SKU列表及原因</li>
+          <li><strong>四、新品表现</strong>：上架&lt;30天新品的CTR/CVR/ACOS达标率</li>
+          <li><strong>五、库存预警</strong>：断货风险SKU + 滞销清仓SKU</li>
+          <li><strong>六、竞品动态</strong>：竞品价格变动、新品上架、排名变化</li>
+          <li><strong>七、下周行动计划</strong>：优化清单 + 补货计划 + 推广计划</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">月度选品复盘报告</div>
+        <div class="card-desc">回顾选品决策的准确性，持续优化选品模型：</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>选品成功率</strong>：本月测品N个，存活M个，成功率 M/N</li>
+          <li><strong>爆品复盘</strong>：成功商品的选品依据、关键成功因素拆解</li>
+          <li><strong>失败复盘</strong>：淘汰商品的失败原因分类（需求误判/竞争低估/品质问题）</li>
+          <li><strong>品类趋势</strong>：各品类波士顿矩阵变动，新兴品类信号</li>
+          <li><strong>模型校准</strong>：根据结果调整选品评分卡的权重和阈值</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">报表自动化架构</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">数据源<br><small>API/DB/埋点</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">ETL调度<br><small>Airflow DAG</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">数仓ADS层<br><small>商品主题表</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">BI工具<br><small>Superset/Metabase</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-pink">推送通知<br><small>邮件/钉钉/Slack</small></span>
+        </div>
+        <div class="card-formula" style="margin-top:12px">
+          <span class="label">ADS层核心表设计</span>
+          ads_product_daily_report — 商品日度汇总宽表<br>
+          ads_category_weekly_report — 品类周度汇总表<br>
+          ads_product_abc_monthly — 月度ABC分类结果表<br>
+          ads_product_lifecycle — 商品生命周期状态表<br>
+          ads_basket_association — 购物篮关联规则表<br>
+          ads_inventory_alert — 库存预警实时表
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据指标字典（示例）</div>
+        <table class="compare-table">
+          <thead><tr><th>指标名</th><th>英文</th><th>计算口径</th><th>数据源</th></tr></thead>
+          <tbody>
+            <tr><td>实际销售额</td><td>Net Sales</td><td>GMV - 退款 - 折扣</td><td>dwd_order_detail</td></tr>
+            <tr><td>广告销售占比</td><td>Ad Sales Ratio</td><td>广告带来的销售额 / 总销售额</td><td>dwd_ad_report</td></tr>
+            <tr><td>有效库存天数</td><td>Effective DOI</td><td>可售库存 / 近7日日均销量</td><td>dim_inventory</td></tr>
+            <tr><td>商品存活率</td><td>Product Survival Rate</td><td>上架>60天且仍有销售的SKU / 同期上架SKU总数</td><td>dwd_product_status</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:8px">
+          统一口径是数据治理的基础 — 同一个指标在所有报表中的定义必须一致<br>
+          建立指标字典 → 评审确认 → 代码落地 → 定期审计
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">商品分析完整知识图谱</div>
+        <div class="card-desc">从数据到决策的完整闭环：</div>
+        <div class="flow" style="margin-top:10px; flex-direction:column; gap:6px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-blue" style="min-width:120px;text-align:center">指标体系</span>
+            <small style="color:var(--text-muted)">→ 建立商品KPI度量标准</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-green" style="min-width:120px;text-align:center">ABC分类</span>
+            <small style="color:var(--text-muted)">→ 识别核心商品与长尾商品</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-purple" style="min-width:120px;text-align:center">生命周期</span>
+            <small style="color:var(--text-muted)">→ 不同阶段匹配不同策略</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-orange" style="min-width:120px;text-align:center">品类矩阵</span>
+            <small style="color:var(--text-muted)">→ 战略级品类投资组合决策</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-yellow" style="min-width:120px;text-align:center">选品落地</span>
+            <small style="color:var(--text-muted)">→ 数据驱动选品、测品、推品</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-pink" style="min-width:120px;text-align:center">持续优化</span>
+            <small style="color:var(--text-muted)">→ 复盘迭代，模型校准，闭环运营</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "product-analysis-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

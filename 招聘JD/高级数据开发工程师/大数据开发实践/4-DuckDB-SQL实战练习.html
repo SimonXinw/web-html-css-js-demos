@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DuckDB SQL 实战练习</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow-x: auto;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    details {
+      margin-top: 10px;
+      border: 1px solid var(--border-light);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    details summary {
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--accent);
+      cursor: pointer;
+      background: rgba(14,165,233,0.04);
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    details summary:hover { background: rgba(14,165,233,0.1); }
+
+    details[open] summary { border-bottom: 1px solid var(--border-light); }
+
+    details .answer-body {
+      padding: 10px 12px;
+      background: rgba(14,165,233,0.03);
+    }
+
+    details .card-formula {
+      margin-top: 0;
+    }
+
+    .card-full {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>DuckDB SQL 实战练习</h1>
+    <p class="hero-sub">零配置、嵌入式 OLAP 数据库，pip install 即可在 Windows 本地练习全套 SQL</p>
+    <div class="tags">
+      <span class="tag tag-blue">DuckDB</span>
+      <span class="tag tag-green">窗口函数</span>
+      <span class="tag tag-purple">CTE</span>
+      <span class="tag tag-orange">JOIN</span>
+      <span class="tag tag-pink">聚合分析</span>
+      <span class="tag tag-blue">电商数据</span>
+      <span class="tag tag-green">Parquet</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🦆</div>
+      一、为什么选 DuckDB？
+      <span class="chapter-count">零门槛 OLAP 利器</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">DuckDB 核心优势 <span class="card-badge badge-must">必知</span></div>
+        <ul class="card-points">
+          <li><strong>零安装</strong>：pip install duckdb，一行命令搞定，无需 Java / 无需配置</li>
+          <li><strong>功能完整</strong>：窗口函数 / CTE / JOIN / QUALIFY / PIVOT，语法比 MySQL 更丰富</li>
+          <li><strong>列式存储</strong>：分析型查询天然快，百万行聚合秒出结果</li>
+          <li><strong>直接读文件</strong>：CSV / Parquet / JSON 文件无需导入即可 SQL 查询</li>
+          <li><strong>与 Pandas 互通</strong>：DataFrame 直接当表查，零拷贝高性能</li>
+          <li><strong>嵌入式</strong>：无服务端进程，直接嵌入 Python/Node.js/Java 应用</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">DuckDB vs 其他数据库对比</div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>DuckDB</th><th>MySQL</th><th>Hive</th><th>ClickHouse</th></tr></thead>
+          <tbody>
+            <tr><td>部署方式</td><td>嵌入式，无服务端</td><td>C/S 架构</td><td>依赖 Hadoop 集群</td><td>C/S 架构</td></tr>
+            <tr><td>安装难度</td><td>pip install</td><td>中等</td><td>极复杂</td><td>较复杂</td></tr>
+            <tr><td>存储模型</td><td>列式</td><td>行式</td><td>列式（Parquet/ORC）</td><td>列式</td></tr>
+            <tr><td>适合场景</td><td>本地分析/原型</td><td>OLTP 事务</td><td>离线批处理</td><td>实时 OLAP</td></tr>
+            <tr><td>窗口函数</td><td>完整 + QUALIFY</td><td>8.0+ 支持</td><td>完整</td><td>完整</td></tr>
+            <tr><td>PIVOT</td><td>原生支持</td><td>不支持</td><td>不支持</td><td>不支持</td></tr>
+            <tr><td>读 Parquet</td><td>原生支持</td><td>不支持</td><td>原生支持</td><td>需导入</td></tr>
+            <tr><td>数据规模</td><td>单机 GB~百GB</td><td>单机 GB</td><td>PB 级集群</td><td>TB 级集群</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">学习路径建议</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">DuckDB 本地练 SQL</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">PySpark 分布式计算</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">Hive SQL 生产数仓</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">ClickHouse 实时分析</span>
+        </div>
+        <div class="card-formula" style="margin-top:12px">
+          DuckDB 的 SQL 语法是 PostgreSQL 系，95% 以上可直接迁移到 Hive / Spark SQL
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🛠️</div>
+      二、环境搭建与基本使用
+      <span class="chapter-count">5 分钟上手</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">安装与基本连接 <span class="card-badge badge-must">必做</span></div>
+        <div class="card-formula">
+<span class="label">安装（Windows CMD / PowerShell）</span>
+pip install duckdb</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">Python 内存模式（数据不持久化）</span>
+import duckdb
+
+con = duckdb.connect()
+result = con.sql("SELECT 42 AS answer, 'hello DuckDB' AS greeting")
+print(result.fetchall())
+# [(42, 'hello DuckDB')]</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">持久化模式（数据存磁盘）</span>
+con = duckdb.connect("my_data.duckdb")
+con.sql("CREATE TABLE test (id INT, name VARCHAR)")
+con.sql("INSERT INTO test VALUES (1, 'Alice'), (2, 'Bob')")
+con.sql("SELECT * FROM test").show()
+con.close()
+
+# 下次打开同一文件，数据仍在
+con2 = duckdb.connect("my_data.duckdb")
+con2.sql("SELECT * FROM test").show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">与 Pandas 互通</div>
+        <div class="card-formula">
+<span class="label">DataFrame ↔ DuckDB 零拷贝</span>
+import duckdb
+import pandas as pd
+
+df = pd.DataFrame({
+    "user_id": [1, 2, 3, 4, 5],
+    "city": ["北京", "上海", "北京", "深圳", "上海"],
+    "amount": [100, 200, 150, 300, 250]
+})
+
+# 直接对 DataFrame 写 SQL
+result = duckdb.sql("SELECT city, SUM(amount) AS total FROM df GROUP BY city ORDER BY total DESC")
+print(result.fetchdf())
+
+# 查询结果转回 DataFrame
+result_df = duckdb.sql("SELECT * FROM df WHERE amount > 150").fetchdf()</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">在 Jupyter Notebook 中使用</span>
+# 安装：pip install duckdb jupyterlab
+# 在 Cell 中直接使用
+import duckdb
+duckdb.sql("SELECT 1+1 AS result").show()
+
+# .show() 在 Jupyter 中自动渲染为表格
+# .fetchdf() 返回 Pandas DataFrame，Jupyter 自动美化显示</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">📊</div>
+      三、创建电商模拟数据集
+      <span class="chapter-count">4 张表 · 跨境电商场景</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card card-full">
+        <div class="card-title">数据模型概览</div>
+        <div class="flow" style="margin-top:8px">
+          <span class="flow-step fs-blue">users（10+ 行）</span>
+          <span class="flow-arrow">←</span>
+          <span class="flow-step fs-green">orders（30+ 行）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">products（10+ 行）</span>
+        </div>
+        <div class="flow" style="margin-top:6px">
+          <span class="flow-step fs-orange">page_views（20+ 行）</span>
+          <span class="flow-arrow">←</span>
+          <span class="flow-step fs-blue">users</span>
+        </div>
+        <div class="card-desc" style="margin-top:10px">跨境电商场景：多国家（US/UK/DE/JP/AU）、多品类（Electronics/Clothing/Home/Sports/Beauty）、多品牌</div>
+      </div>
+
+      <div class="card card-full">
+        <div class="card-title">完整建表 + 数据插入（复制到 Python 直接运行）<span class="card-badge badge-must">核心数据</span></div>
+        <div class="card-formula">
+<span class="label">全部建表与数据 — 复制到 Python 中执行</span>
+import duckdb
+
+con = duckdb.connect()
+
+# ========== users 表 ==========
+con.sql("""
+CREATE TABLE users (
+    user_id    INT PRIMARY KEY,
+    username   VARCHAR,
+    country    VARCHAR,
+    city       VARCHAR,
+    gender     VARCHAR,
+    age        INT,
+    reg_date   DATE
+);
+INSERT INTO users VALUES
+(1,  'alice',    'US', 'New York',    'F', 28, '2024-01-05'),
+(2,  'bob',      'UK', 'London',      'M', 35, '2024-01-10'),
+(3,  'charlie',  'DE', 'Berlin',      'M', 22, '2024-02-01'),
+(4,  'diana',    'JP', 'Tokyo',       'F', 30, '2024-02-14'),
+(5,  'eve',      'US', 'Los Angeles', 'F', 26, '2024-03-01'),
+(6,  'frank',    'AU', 'Sydney',      'M', 40, '2024-03-15'),
+(7,  'grace',    'UK', 'Manchester',  'F', 33, '2024-04-01'),
+(8,  'henry',    'DE', 'Munich',      'M', 29, '2024-04-20'),
+(9,  'ivy',      'JP', 'Osaka',       'F', 24, '2024-05-10'),
+(10, 'jack',     'US', 'Chicago',     'M', 37, '2024-05-25'),
+(11, 'karen',    'AU', 'Melbourne',   'F', 31, '2024-06-08'),
+(12, 'leo',      'UK', 'Birmingham',  'M', 27, '2024-06-20');
+""")
+
+# ========== products 表 ==========
+con.sql("""
+CREATE TABLE products (
+    product_id   INT PRIMARY KEY,
+    product_name VARCHAR,
+    category     VARCHAR,
+    brand        VARCHAR,
+    price        DECIMAL(10,2)
+);
+INSERT INTO products VALUES
+(101, 'Wireless Headphones',  'Electronics', 'SoundMax',   79.99),
+(102, 'Running Shoes',        'Sports',      'SpeedRun',   129.99),
+(103, 'Cotton T-Shirt',       'Clothing',    'ComfortWear', 24.99),
+(104, 'Yoga Mat',             'Sports',      'FlexFit',     39.99),
+(105, 'Face Cream',           'Beauty',      'GlowUp',      34.99),
+(106, 'Desk Lamp',            'Home',        'BrightLife',   49.99),
+(107, 'Bluetooth Speaker',    'Electronics', 'SoundMax',    59.99),
+(108, 'Winter Jacket',        'Clothing',    'WarmStyle',   149.99),
+(109, 'Vitamin C Serum',      'Beauty',      'GlowUp',      29.99),
+(110, 'Throw Pillow Set',     'Home',        'CozyNest',    44.99),
+(111, 'Smart Watch',          'Electronics', 'TechPulse',  199.99),
+(112, 'Protein Powder',       'Sports',      'FuelBody',    54.99);
+""")
+
+# ========== orders 表 ==========
+con.sql("""
+CREATE TABLE orders (
+    order_id    INT PRIMARY KEY,
+    user_id     INT,
+    product_id  INT,
+    quantity    INT,
+    total_amount DECIMAL(10,2),
+    order_date  DATE,
+    status      VARCHAR
+);
+INSERT INTO orders VALUES
+(1001, 1,  101, 1,  79.99,  '2024-03-01', 'paid'),
+(1002, 1,  103, 2,  49.98,  '2024-03-05', 'paid'),
+(1003, 2,  102, 1,  129.99, '2024-03-08', 'paid'),
+(1004, 3,  106, 1,  49.99,  '2024-03-10', 'paid'),
+(1005, 4,  105, 3,  104.97, '2024-03-12', 'paid'),
+(1006, 1,  107, 1,  59.99,  '2024-03-15', 'paid'),
+(1007, 5,  108, 1,  149.99, '2024-03-18', 'cancelled'),
+(1008, 2,  111, 1,  199.99, '2024-03-20', 'paid'),
+(1009, 6,  104, 2,  79.98,  '2024-03-22', 'paid'),
+(1010, 3,  103, 3,  74.97,  '2024-03-25', 'paid'),
+(1011, 7,  109, 1,  29.99,  '2024-03-28', 'paid'),
+(1012, 4,  110, 2,  89.98,  '2024-04-01', 'paid'),
+(1013, 8,  101, 1,  79.99,  '2024-04-03', 'refunded'),
+(1014, 1,  112, 2,  109.98, '2024-04-05', 'paid'),
+(1015, 9,  105, 1,  34.99,  '2024-04-08', 'paid'),
+(1016, 2,  104, 1,  39.99,  '2024-04-10', 'paid'),
+(1017, 10, 102, 1,  129.99, '2024-04-12', 'paid'),
+(1018, 5,  103, 1,  24.99,  '2024-04-15', 'paid'),
+(1019, 3,  107, 2,  119.98, '2024-04-18', 'paid'),
+(1020, 6,  111, 1,  199.99, '2024-04-20', 'paid'),
+(1021, 4,  101, 1,  79.99,  '2024-04-22', 'paid'),
+(1022, 7,  108, 1,  149.99, '2024-04-25', 'paid'),
+(1023, 1,  105, 2,  69.98,  '2024-04-28', 'paid'),
+(1024, 2,  106, 1,  49.99,  '2024-05-01', 'paid'),
+(1025, 9,  103, 2,  49.98,  '2024-05-05', 'paid'),
+(1026, 10, 110, 1,  44.99,  '2024-05-08', 'paid'),
+(1027, 3,  111, 1,  199.99, '2024-05-10', 'paid'),
+(1028, 5,  109, 1,  29.99,  '2024-05-12', 'paid'),
+(1029, 6,  102, 1,  129.99, '2024-05-15', 'paid'),
+(1030, 8,  112, 1,  54.99,  '2024-05-18', 'paid'),
+(1031, 4,  107, 1,  59.99,  '2024-05-20', 'paid'),
+(1032, 7,  101, 2,  159.98, '2024-05-22', 'paid'),
+(1033, 1,  110, 1,  44.99,  '2024-05-25', 'paid'),
+(1034, 11, 103, 1,  24.99,  '2024-05-28', 'paid');
+""")
+
+# ========== page_views 表 ==========
+con.sql("""
+CREATE TABLE page_views (
+    view_id     INT PRIMARY KEY,
+    user_id     INT,
+    page_url    VARCHAR,
+    view_time   TIMESTAMP,
+    device      VARCHAR,
+    source      VARCHAR
+);
+INSERT INTO page_views VALUES
+(1,  1,  '/home',                '2024-03-01 08:10:00', 'mobile',  'google'),
+(2,  1,  '/products/101',        '2024-03-01 08:12:00', 'mobile',  'google'),
+(3,  1,  '/cart',                '2024-03-01 08:15:00', 'mobile',  'google'),
+(4,  1,  '/checkout',            '2024-03-01 08:18:00', 'mobile',  'google'),
+(5,  2,  '/home',                '2024-03-08 10:00:00', 'desktop', 'facebook'),
+(6,  2,  '/products/102',        '2024-03-08 10:05:00', 'desktop', 'facebook'),
+(7,  2,  '/cart',                '2024-03-08 10:08:00', 'desktop', 'facebook'),
+(8,  3,  '/home',                '2024-03-10 14:00:00', 'desktop', 'direct'),
+(9,  3,  '/products/106',        '2024-03-10 14:03:00', 'desktop', 'direct'),
+(10, 4,  '/home',                '2024-03-12 09:00:00', 'mobile',  'tiktok'),
+(11, 4,  '/products/105',        '2024-03-12 09:05:00', 'mobile',  'tiktok'),
+(12, 4,  '/products/110',        '2024-03-12 09:10:00', 'mobile',  'tiktok'),
+(13, 4,  '/cart',                '2024-03-12 09:15:00', 'mobile',  'tiktok'),
+(14, 5,  '/home',                '2024-03-18 16:00:00', 'tablet',  'instagram'),
+(15, 5,  '/products/108',        '2024-03-18 16:05:00', 'tablet',  'instagram'),
+(16, 6,  '/home',                '2024-03-22 11:00:00', 'desktop', 'google'),
+(17, 6,  '/products/104',        '2024-03-22 11:03:00', 'desktop', 'google'),
+(18, 6,  '/cart',                '2024-03-22 11:08:00', 'desktop', 'google'),
+(19, 6,  '/checkout',            '2024-03-22 11:12:00', 'desktop', 'google'),
+(20, 7,  '/home',                '2024-03-28 15:00:00', 'mobile',  'email'),
+(21, 7,  '/products/109',        '2024-03-28 15:04:00', 'mobile',  'email'),
+(22, 12, '/home',                '2024-04-01 12:00:00', 'desktop', 'direct'),
+(23, 12, '/products/103',        '2024-04-01 12:05:00', 'desktop', 'direct'),
+(24, 8,  '/home',                '2024-04-03 18:00:00', 'mobile',  'facebook'),
+(25, 8,  '/products/101',        '2024-04-03 18:03:00', 'mobile',  'facebook');
+""")
+
+print("✅ 4 张表创建完成！")
+con.sql("SELECT table_name FROM information_schema.tables WHERE table_schema='main'").show()</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">📝</div>
+      四、基础 SQL 练习
+      <span class="chapter-count">5 题</span>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Q1 -->
+      <div class="card">
+        <div class="card-title">Q1：各城市订单数和 GMV <span class="card-badge badge-core">基础</span></div>
+        <div class="card-desc">统计每个城市的<strong>已支付订单数</strong>和<strong>GMV（总金额）</strong>，按 GMV 降序排列。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+GROUP BY + 聚合函数 + WHERE 过滤 + ORDER BY</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT u.city,
+       COUNT(*)          AS order_cnt,
+       SUM(o.total_amount) AS gmv
+FROM orders o
+JOIN users u ON o.user_id = u.user_id
+WHERE o.status = 'paid'
+GROUP BY u.city
+ORDER BY gmv DESC;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q2 -->
+      <div class="card">
+        <div class="card-title">Q2：2024年4月已支付订单 <span class="card-badge badge-core">基础</span></div>
+        <div class="card-desc">查询 <strong>2024年4月</strong> 所有已支付订单的 order_id、用户名、商品名、金额，按日期升序。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+日期范围过滤 + 多表 JOIN</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT o.order_id, u.username, p.product_name, o.total_amount, o.order_date
+FROM orders o
+JOIN users u ON o.user_id = u.user_id
+JOIN products p ON o.product_id = p.product_id
+WHERE o.status = 'paid'
+  AND o.order_date >= '2024-04-01'
+  AND o.order_date < '2024-05-01'
+ORDER BY o.order_date;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q3 -->
+      <div class="card">
+        <div class="card-title">Q3：客单价 Top 10 订单 <span class="card-badge badge-core">基础</span></div>
+        <div class="card-desc">查询单笔金额最高的前 10 笔已支付订单，显示用户名、商品名、金额。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+ORDER BY + LIMIT</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT o.order_id, u.username, p.product_name,
+       o.total_amount
+FROM orders o
+JOIN users u ON o.user_id = u.user_id
+JOIN products p ON o.product_id = p.product_id
+WHERE o.status = 'paid'
+ORDER BY o.total_amount DESC
+LIMIT 10;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q4 -->
+      <div class="card">
+        <div class="card-title">Q4：各品类订单数和销售额 <span class="card-badge badge-core">基础</span></div>
+        <div class="card-desc">按商品品类统计<strong>已支付订单数</strong>和<strong>总销售额</strong>，找出最畅销的品类。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+JOIN + GROUP BY 维度列</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT p.category,
+       COUNT(*)            AS order_cnt,
+       SUM(o.total_amount) AS total_sales
+FROM orders o
+JOIN products p ON o.product_id = p.product_id
+WHERE o.status = 'paid'
+GROUP BY p.category
+ORDER BY total_sales DESC;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q5 -->
+      <div class="card">
+        <div class="card-title">Q5：未下单用户列表 <span class="card-badge badge-core">基础</span></div>
+        <div class="card-desc">找出<strong>注册但从未下过已支付订单</strong>的用户（user_id、用户名、国家）。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+LEFT JOIN + IS NULL / NOT IN / NOT EXISTS</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+<span class="label">写法一：LEFT JOIN + IS NULL</span>
+SELECT u.user_id, u.username, u.country
+FROM users u
+LEFT JOIN orders o ON u.user_id = o.user_id AND o.status = 'paid'
+WHERE o.order_id IS NULL;</div>
+            <div class="card-formula" style="margin-top:8px">
+<span class="label">写法二：NOT EXISTS</span>
+SELECT u.user_id, u.username, u.country
+FROM users u
+WHERE NOT EXISTS (
+    SELECT 1 FROM orders o
+    WHERE o.user_id = u.user_id AND o.status = 'paid'
+);</div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">🔗</div>
+      五、JOIN 进阶
+      <span class="chapter-count">4 题</span>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Q6 -->
+      <div class="card">
+        <div class="card-title">Q6：三表 JOIN — 订单明细宽表 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">构建一张<strong>订单明细宽表</strong>，包含：order_id、用户名、国家、商品名、品类、品牌、金额、日期。只保留已支付订单。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+三表 JOIN + 字段选择，模拟 DWD 层宽表构建</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT o.order_id,
+       u.username,
+       u.country,
+       p.product_name,
+       p.category,
+       p.brand,
+       o.total_amount,
+       o.order_date
+FROM orders o
+JOIN users u ON o.user_id = u.user_id
+JOIN products p ON o.product_id = p.product_id
+WHERE o.status = 'paid'
+ORDER BY o.order_date;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q7 -->
+      <div class="card">
+        <div class="card-title">Q7：同天购买多品类的用户 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">找出在<strong>同一天</strong>购买了<strong>2个及以上不同品类</strong>商品的用户。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+JOIN + GROUP BY 多列 + HAVING + COUNT(DISTINCT)</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT u.username, o.order_date,
+       COUNT(DISTINCT p.category) AS cat_cnt
+FROM orders o
+JOIN users u ON o.user_id = u.user_id
+JOIN products p ON o.product_id = p.product_id
+WHERE o.status = 'paid'
+GROUP BY u.username, o.order_date
+HAVING COUNT(DISTINCT p.category) >= 2
+ORDER BY o.order_date;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q8 -->
+      <div class="card">
+        <div class="card-title">Q8：每位用户首购品类分布 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">统计每位用户<strong>首次购买</strong>的商品品类，然后汇总各品类的首购人数。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+子查询/CTE + MIN(order_date) + JOIN</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH first_order AS (
+    SELECT user_id,
+           MIN(order_date) AS first_date
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY user_id
+)
+SELECT p.category,
+       COUNT(*) AS first_purchase_users
+FROM first_order fo
+JOIN orders o ON fo.user_id = o.user_id
+             AND fo.first_date = o.order_date
+             AND o.status = 'paid'
+JOIN products p ON o.product_id = p.product_id
+GROUP BY p.category
+ORDER BY first_purchase_users DESC;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q9 -->
+      <div class="card">
+        <div class="card-title">Q9：用户最常购买的品牌 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">找出每位用户下单次数<strong>最多的品牌</strong>（如有并列取任一）。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+窗口函数 ROW_NUMBER + GROUP BY + 子查询</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH brand_cnt AS (
+    SELECT o.user_id, p.brand,
+           COUNT(*) AS buy_cnt
+    FROM orders o
+    JOIN products p ON o.product_id = p.product_id
+    WHERE o.status = 'paid'
+    GROUP BY o.user_id, p.brand
+),
+ranked AS (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY buy_cnt DESC) AS rn
+    FROM brand_cnt
+)
+SELECT u.username, r.brand, r.buy_cnt
+FROM ranked r
+JOIN users u ON r.user_id = u.user_id
+WHERE r.rn = 1
+ORDER BY r.buy_cnt DESC;</div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">🪟</div>
+      六、窗口函数实战
+      <span class="chapter-count">7 题</span>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Q10 -->
+      <div class="card">
+        <div class="card-title">Q10：ROW_NUMBER — 每用户最近一单 <span class="card-badge badge-must">高频</span></div>
+        <div class="card-desc">取每位用户<strong>最近一笔已支付订单</strong>的全部信息。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+ROW_NUMBER() OVER (PARTITION BY ... ORDER BY ... DESC)</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT * FROM (
+    SELECT o.*,
+           ROW_NUMBER() OVER (PARTITION BY o.user_id ORDER BY o.order_date DESC) AS rn
+    FROM orders o
+    WHERE o.status = 'paid'
+) sub
+WHERE rn = 1;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q11 -->
+      <div class="card">
+        <div class="card-title">Q11：RANK — 品类内销售额排名 <span class="card-badge badge-must">高频</span></div>
+        <div class="card-desc">在每个品类内，按商品<strong>总销售额</strong>排名，找出每个品类的 Top 2。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+RANK() vs DENSE_RANK() + PARTITION BY category</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH product_sales AS (
+    SELECT p.category, p.product_name,
+           SUM(o.total_amount) AS total_sales
+    FROM orders o
+    JOIN products p ON o.product_id = p.product_id
+    WHERE o.status = 'paid'
+    GROUP BY p.category, p.product_name
+),
+ranked AS (
+    SELECT *,
+           RANK() OVER (PARTITION BY category ORDER BY total_sales DESC) AS rk
+    FROM product_sales
+)
+SELECT * FROM ranked WHERE rk <= 2;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q12 -->
+      <div class="card">
+        <div class="card-title">Q12：LAG — 每用户订单间隔天数 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">计算每位用户<strong>相邻两笔订单之间的间隔天数</strong>。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+LAG() + DATE_DIFF / date subtraction</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT user_id, order_id, order_date,
+       LAG(order_date) OVER (PARTITION BY user_id ORDER BY order_date) AS prev_date,
+       order_date - LAG(order_date) OVER (PARTITION BY user_id ORDER BY order_date) AS gap_days
+FROM orders
+WHERE status = 'paid'
+ORDER BY user_id, order_date;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q13 -->
+      <div class="card">
+        <div class="card-title">Q13：SUM OVER — 用户累计消费 <span class="card-badge badge-must">高频</span></div>
+        <div class="card-desc">计算每位用户按时间顺序的<strong>累计消费金额</strong>。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+SUM() OVER (PARTITION BY ... ORDER BY ... ROWS UNBOUNDED PRECEDING)</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT user_id, order_id, order_date, total_amount,
+       SUM(total_amount) OVER (
+           PARTITION BY user_id
+           ORDER BY order_date
+           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+       ) AS cumulative_amount
+FROM orders
+WHERE status = 'paid'
+ORDER BY user_id, order_date;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q14 -->
+      <div class="card">
+        <div class="card-title">Q14：NTILE — 用户消费分层 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">将所有用户按总消费金额分为<strong>高/中/低</strong>三个等级（NTILE(3)）。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+NTILE() + 子查询聚合</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH user_total AS (
+    SELECT user_id,
+           SUM(total_amount) AS total_spend
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY user_id
+)
+SELECT u.username, ut.total_spend,
+       NTILE(3) OVER (ORDER BY ut.total_spend DESC) AS spend_tier,
+       CASE NTILE(3) OVER (ORDER BY ut.total_spend DESC)
+           WHEN 1 THEN '高消费'
+           WHEN 2 THEN '中消费'
+           WHEN 3 THEN '低消费'
+       END AS tier_label
+FROM user_total ut
+JOIN users u ON ut.user_id = u.user_id
+ORDER BY ut.total_spend DESC;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q15 -->
+      <div class="card">
+        <div class="card-title">Q15：FIRST_VALUE — 用户首购商品 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">查询每位用户的每笔订单，同时显示该用户<strong>首次购买的商品名</strong>。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+FIRST_VALUE() OVER (PARTITION BY ... ORDER BY ...)</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+SELECT o.user_id, u.username,
+       o.order_id, o.order_date,
+       p.product_name,
+       FIRST_VALUE(p.product_name) OVER (
+           PARTITION BY o.user_id ORDER BY o.order_date
+       ) AS first_product
+FROM orders o
+JOIN users u ON o.user_id = u.user_id
+JOIN products p ON o.product_id = p.product_id
+WHERE o.status = 'paid'
+ORDER BY o.user_id, o.order_date;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q16 -->
+      <div class="card">
+        <div class="card-title">Q16：滑动平均 — 每日 GMV 的 3 日移动平均 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">计算每日 GMV，然后求<strong>最近 3 天的移动平均 GMV</strong>。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+AVG() OVER (ORDER BY ... ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH daily_gmv AS (
+    SELECT order_date,
+           SUM(total_amount) AS gmv
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY order_date
+)
+SELECT order_date, gmv,
+       ROUND(AVG(gmv) OVER (
+           ORDER BY order_date
+           ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+       ), 2) AS ma3_gmv
+FROM daily_gmv
+ORDER BY order_date;</div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🧩</div>
+      七、CTE 与复杂查询
+      <span class="chapter-count">5 题</span>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Q17 -->
+      <div class="card">
+        <div class="card-title">Q17：RFM 用户分层 <span class="card-badge badge-must">高频</span></div>
+        <div class="card-desc">基于 RFM 模型为每位用户打分：<strong>R</strong>（最近购买距今天数）、<strong>F</strong>（购买频次）、<strong>M</strong>（累计消费金额），并用 NTILE(3) 分别打 1-3 分后求总分。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+多层 CTE + 聚合 + NTILE 窗口函数</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH rfm_raw AS (
+    SELECT user_id,
+           CURRENT_DATE - MAX(order_date) AS recency_days,
+           COUNT(*)                       AS frequency,
+           SUM(total_amount)              AS monetary
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY user_id
+),
+rfm_scored AS (
+    SELECT *,
+           NTILE(3) OVER (ORDER BY recency_days ASC)  AS r_score,
+           NTILE(3) OVER (ORDER BY frequency DESC)     AS f_score,
+           NTILE(3) OVER (ORDER BY monetary DESC)      AS m_score
+    FROM rfm_raw
+)
+SELECT u.username, u.country,
+       rs.recency_days, rs.frequency, ROUND(rs.monetary, 2) AS monetary,
+       rs.r_score, rs.f_score, rs.m_score,
+       rs.r_score + rs.f_score + rs.m_score AS rfm_total,
+       CASE
+           WHEN rs.r_score + rs.f_score + rs.m_score >= 8 THEN '高价值用户'
+           WHEN rs.r_score + rs.f_score + rs.m_score >= 5 THEN '中价值用户'
+           ELSE '低价值用户'
+       END AS user_tier
+FROM rfm_scored rs
+JOIN users u ON rs.user_id = u.user_id
+ORDER BY rfm_total DESC;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q18 -->
+      <div class="card">
+        <div class="card-title">Q18：日期序列填充 — 无订单日补零 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">生成 2024-03-01 到 2024-05-31 的<strong>完整日期序列</strong>，LEFT JOIN 订单表，没有订单的日期 GMV 显示为 0。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+generate_series + LEFT JOIN + COALESCE</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH date_series AS (
+    SELECT CAST(dt AS DATE) AS dt
+    FROM generate_series(DATE '2024-03-01', DATE '2024-05-31', INTERVAL 1 DAY) AS t(dt)
+),
+daily_gmv AS (
+    SELECT order_date,
+           SUM(total_amount) AS gmv
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY order_date
+)
+SELECT ds.dt,
+       COALESCE(dg.gmv, 0) AS gmv
+FROM date_series ds
+LEFT JOIN daily_gmv dg ON ds.dt = dg.order_date
+ORDER BY ds.dt;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q19 -->
+      <div class="card">
+        <div class="card-title">Q19：漏斗分析 — 页面转化率 <span class="card-badge badge-must">高频</span></div>
+        <div class="card-desc">基于 page_views 表，统计 /home → /products → /cart → /checkout 各步骤的<strong>独立用户数</strong>和<strong>转化率</strong>。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+CTE + CASE WHEN + COUNT(DISTINCT) + 漏斗思维</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH funnel AS (
+    SELECT
+        COUNT(DISTINCT CASE WHEN page_url = '/home'     THEN user_id END) AS step1_home,
+        COUNT(DISTINCT CASE WHEN page_url LIKE '/products%' THEN user_id END) AS step2_product,
+        COUNT(DISTINCT CASE WHEN page_url = '/cart'     THEN user_id END) AS step3_cart,
+        COUNT(DISTINCT CASE WHEN page_url = '/checkout' THEN user_id END) AS step4_checkout
+    FROM page_views
+)
+SELECT
+    step1_home,
+    step2_product,
+    step3_cart,
+    step4_checkout,
+    ROUND(step2_product * 100.0 / step1_home, 1)     AS home_to_product_pct,
+    ROUND(step3_cart * 100.0 / step2_product, 1)      AS product_to_cart_pct,
+    ROUND(step4_checkout * 100.0 / step3_cart, 1)     AS cart_to_checkout_pct,
+    ROUND(step4_checkout * 100.0 / step1_home, 1)     AS overall_cvr_pct
+FROM funnel;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q20 -->
+      <div class="card">
+        <div class="card-title">Q20：月度留存率 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">计算<strong>3月购买用户</strong>在 4月、5月的<strong>留存率</strong>（后续月份仍有购买的用户占比）。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+多 CTE + CROSS JOIN 月份 + LEFT JOIN + 留存定义</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH mar_users AS (
+    SELECT DISTINCT user_id
+    FROM orders
+    WHERE status = 'paid'
+      AND order_date >= '2024-03-01'
+      AND order_date < '2024-04-01'
+),
+user_months AS (
+    SELECT DISTINCT user_id,
+           DATE_TRUNC('month', order_date) AS order_month
+    FROM orders
+    WHERE status = 'paid'
+)
+SELECT
+    um.order_month,
+    COUNT(DISTINCT um.user_id)             AS retained_users,
+    (SELECT COUNT(*) FROM mar_users)       AS base_users,
+    ROUND(COUNT(DISTINCT um.user_id) * 100.0
+          / (SELECT COUNT(*) FROM mar_users), 1) AS retention_pct
+FROM mar_users mu
+JOIN user_months um ON mu.user_id = um.user_id
+WHERE um.order_month >= '2024-03-01'
+GROUP BY um.order_month
+ORDER BY um.order_month;</div>
+          </div>
+        </details>
+      </div>
+
+      <!-- Q21 -->
+      <div class="card">
+        <div class="card-title">Q21：月度 GMV 同比环比 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">计算每月 GMV，以及相对上月的<strong>环比增长率</strong>。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">考察点</span>
+DATE_TRUNC + LAG + 百分比计算</div>
+        <details>
+          <summary>查看答案</summary>
+          <div class="answer-body">
+            <div class="card-formula">
+WITH monthly AS (
+    SELECT DATE_TRUNC('month', order_date) AS month,
+           SUM(total_amount) AS gmv
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY DATE_TRUNC('month', order_date)
+)
+SELECT month,
+       ROUND(gmv, 2) AS gmv,
+       ROUND(LAG(gmv) OVER (ORDER BY month), 2) AS prev_gmv,
+       ROUND((gmv - LAG(gmv) OVER (ORDER BY month))
+             / LAG(gmv) OVER (ORDER BY month) * 100, 1) AS mom_growth_pct
+FROM monthly
+ORDER BY month;</div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">⚡</div>
+      八、DuckDB 高级特性
+      <span class="chapter-count">DuckDB 独有语法</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">QUALIFY — 窗口函数直接筛选 <span class="card-badge badge-must">DuckDB特色</span></div>
+        <div class="card-desc">QUALIFY 子句在窗口函数计算<strong>之后</strong>过滤，取代外层嵌套子查询，极大简化代码。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">传统写法 vs QUALIFY 写法</span>
+-- 传统：需要嵌套子查询
+SELECT * FROM (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date DESC) AS rn
+    FROM orders WHERE status = 'paid'
+) WHERE rn = 1;
+
+-- DuckDB QUALIFY：一步搞定
+SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY order_date DESC) AS rn
+FROM orders
+WHERE status = 'paid'
+QUALIFY rn = 1;</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">更多示例：每品类销售额 Top 1 的商品</span>
+SELECT p.category, p.product_name,
+       SUM(o.total_amount) AS sales,
+       RANK() OVER (PARTITION BY p.category ORDER BY SUM(o.total_amount) DESC) AS rk
+FROM orders o
+JOIN products p ON o.product_id = p.product_id
+WHERE o.status = 'paid'
+GROUP BY p.category, p.product_name
+QUALIFY rk = 1;</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">PIVOT / UNPIVOT — 行列转换 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-formula">
+<span class="label">PIVOT：按月份将 GMV 展开为列</span>
+PIVOT (
+    SELECT DATE_TRUNC('month', order_date) AS month,
+           total_amount
+    FROM orders
+    WHERE status = 'paid'
+) ON month
+USING SUM(total_amount);</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">UNPIVOT：将列转行</span>
+-- 假设有宽表 monthly_sales(jan, feb, mar)
+-- UNPIVOT 可将月份列转为行
+CREATE TABLE wide_sales AS
+SELECT 'US' AS country, 1000 AS jan, 1200 AS feb, 1500 AS mar;
+
+UNPIVOT wide_sales
+ON jan, feb, mar
+INTO NAME month VALUE sales;</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">EXCLUDE / REPLACE — 简化 SELECT <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-formula">
+<span class="label">EXCLUDE：选所有列但排除指定列</span>
+SELECT * EXCLUDE (status)
+FROM orders
+WHERE status = 'paid';</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">REPLACE：选所有列但替换指定列的表达式</span>
+SELECT * REPLACE (ROUND(total_amount, 0) AS total_amount)
+FROM orders
+LIMIT 5;</div>
+        <div class="card-desc" style="margin-top:10px">这两个语法在列很多的宽表场景尤其好用，避免逐一列出字段名。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">read_csv_auto / COPY TO — 文件读写 <span class="card-badge badge-core">实用</span></div>
+        <div class="card-formula">
+<span class="label">直接查询 CSV 文件</span>
+SELECT * FROM read_csv_auto('orders.csv') LIMIT 10;
+
+-- 指定分隔符、编码
+SELECT * FROM read_csv('data.csv',
+    delim=',', header=true, encoding='utf-8'
+);</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">导出为 Parquet 文件</span>
+COPY (SELECT * FROM orders WHERE status = 'paid')
+TO 'paid_orders.parquet' (FORMAT PARQUET);
+
+-- 再读回来验证
+SELECT COUNT(*) FROM read_parquet('paid_orders.parquet');</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">直接对 Parquet 文件做分析</span>
+SELECT order_date, SUM(total_amount) AS gmv
+FROM read_parquet('paid_orders.parquet')
+GROUP BY order_date
+ORDER BY order_date;</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🏎️</div>
+      九、性能对比体验
+      <span class="chapter-count">感受列式存储的速度</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">生成 100 万行测试数据 <span class="card-badge badge-core">实验</span></div>
+        <div class="card-formula">
+<span class="label">DuckDB generate_series 生成大数据</span>
+import duckdb
+import time
+
+con = duckdb.connect()
+
+con.sql("""
+CREATE TABLE big_orders AS
+SELECT
+    row_number() OVER () AS order_id,
+    (random() * 10000 + 1)::INT AS user_id,
+    (random() * 100 + 1)::INT AS product_id,
+    (random() * 5 + 1)::INT AS quantity,
+    ROUND((random() * 500 + 10)::DECIMAL(10,2), 2) AS amount,
+    DATE '2023-01-01' + INTERVAL (random() * 730)::INT DAY AS order_date
+FROM generate_series(1, 1000000)
+""")
+
+con.sql("SELECT COUNT(*) AS cnt FROM big_orders").show()
+# cnt = 1,000,000</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">聚合查询速度体验</div>
+        <div class="card-formula">
+<span class="label">100 万行聚合 — 毫秒级</span>
+import time
+
+start = time.time()
+result = con.sql("""
+    SELECT DATE_TRUNC('month', order_date) AS month,
+           COUNT(*) AS order_cnt,
+           ROUND(SUM(amount), 2) AS total_amount,
+           ROUND(AVG(amount), 2) AS avg_amount
+    FROM big_orders
+    GROUP BY DATE_TRUNC('month', order_date)
+    ORDER BY month
+""")
+result.show()
+print(f"耗时: {time.time() - start:.3f} 秒")</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">窗口函数在百万行上</span>
+start = time.time()
+con.sql("""
+    SELECT order_id, user_id, amount,
+           SUM(amount) OVER (PARTITION BY user_id ORDER BY order_date) AS cum_amount
+    FROM big_orders
+    LIMIT 20
+""").show()
+print(f"耗时: {time.time() - start:.3f} 秒")</div>
+      </div>
+
+      <div class="card card-full">
+        <div class="card-title">DuckDB vs Pandas 对比 <span class="card-badge badge-adv">对比实验</span></div>
+        <div class="card-formula">
+<span class="label">同一聚合操作 — DuckDB vs Pandas</span>
+import duckdb
+import pandas as pd
+import time
+
+con = duckdb.connect()
+
+# 生成 DataFrame（100 万行）
+df = con.sql("""
+    SELECT (random() * 10000 + 1)::INT AS user_id,
+           ROUND((random() * 500 + 10)::DECIMAL(10,2), 2) AS amount
+    FROM generate_series(1, 1000000)
+""").fetchdf()
+
+# Pandas 聚合
+start = time.time()
+result_pd = df.groupby("user_id")["amount"].agg(["count", "sum", "mean"])
+t_pandas = time.time() - start
+
+# DuckDB 聚合同一个 DataFrame
+start = time.time()
+result_duck = duckdb.sql("""
+    SELECT user_id, COUNT(*) AS cnt, SUM(amount) AS total, AVG(amount) AS avg_amt
+    FROM df
+    GROUP BY user_id
+""").fetchdf()
+t_duckdb = time.time() - start
+
+print(f"Pandas 耗时: {t_pandas:.3f}s")
+print(f"DuckDB 耗时: {t_duckdb:.3f}s")
+print(f"DuckDB 快 {t_pandas/t_duckdb:.1f}x")</div>
+        <div class="card-desc" style="margin-top:10px">
+          典型结果：DuckDB 比 Pandas 快 <strong>2~10 倍</strong>（取决于操作类型）。数据量越大差距越明显，DuckDB 的列式引擎在聚合、过滤、窗口函数场景优势突出。
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🎯</div>
+      十、答案总结与扩展学习
+      <span class="chapter-count">进阶路径</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">题目索引与难度</div>
+        <table class="compare-table">
+          <thead><tr><th>编号</th><th>题目</th><th>难度</th><th>核心知识点</th></tr></thead>
+          <tbody>
+            <tr><td>Q1</td><td>城市订单数和 GMV</td><td>⭐</td><td>GROUP BY + SUM</td></tr>
+            <tr><td>Q2</td><td>月度筛选</td><td>⭐</td><td>日期过滤 + 多表 JOIN</td></tr>
+            <tr><td>Q3</td><td>Top 10 客单价</td><td>⭐</td><td>ORDER BY + LIMIT</td></tr>
+            <tr><td>Q4</td><td>品类统计</td><td>⭐</td><td>JOIN + GROUP BY</td></tr>
+            <tr><td>Q5</td><td>未下单用户</td><td>⭐</td><td>LEFT JOIN + IS NULL</td></tr>
+            <tr><td>Q6</td><td>三表 JOIN 宽表</td><td>⭐⭐</td><td>多表 JOIN</td></tr>
+            <tr><td>Q7</td><td>同天多品类</td><td>⭐⭐</td><td>HAVING + COUNT(DISTINCT)</td></tr>
+            <tr><td>Q8</td><td>首购品类分布</td><td>⭐⭐</td><td>CTE + MIN + JOIN</td></tr>
+            <tr><td>Q9</td><td>最常购买品牌</td><td>⭐⭐</td><td>ROW_NUMBER + GROUP BY</td></tr>
+            <tr><td>Q10</td><td>每用户最近一单</td><td>⭐⭐</td><td>ROW_NUMBER</td></tr>
+            <tr><td>Q11</td><td>品类内排名</td><td>⭐⭐</td><td>RANK</td></tr>
+            <tr><td>Q12</td><td>订单间隔天数</td><td>⭐⭐⭐</td><td>LAG + 日期运算</td></tr>
+            <tr><td>Q13</td><td>累计消费</td><td>⭐⭐</td><td>SUM OVER</td></tr>
+            <tr><td>Q14</td><td>消费分层</td><td>⭐⭐⭐</td><td>NTILE</td></tr>
+            <tr><td>Q15</td><td>首购商品</td><td>⭐⭐⭐</td><td>FIRST_VALUE</td></tr>
+            <tr><td>Q16</td><td>3日移动平均</td><td>⭐⭐⭐</td><td>AVG OVER + ROWS</td></tr>
+            <tr><td>Q17</td><td>RFM 分层</td><td>⭐⭐⭐</td><td>多 CTE + NTILE</td></tr>
+            <tr><td>Q18</td><td>日期序列填充</td><td>⭐⭐⭐</td><td>generate_series + LEFT JOIN</td></tr>
+            <tr><td>Q19</td><td>漏斗分析</td><td>⭐⭐⭐</td><td>CASE WHEN + COUNT DISTINCT</td></tr>
+            <tr><td>Q20</td><td>月度留存率</td><td>⭐⭐⭐⭐</td><td>多 CTE + 留存定义</td></tr>
+            <tr><td>Q21</td><td>同比环比</td><td>⭐⭐⭐</td><td>DATE_TRUNC + LAG</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">学习路径推荐</div>
+        <div class="flow" style="flex-direction:column; align-items:flex-start; gap:6px; margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-blue" style="width:180px;text-align:center">DuckDB 本地练 SQL</span><small style="color:var(--text-muted)">← 你在这里</small></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-green" style="width:180px;text-align:center">PySpark 本地模式</span><small style="color:var(--text-muted)">→ 分布式计算思维</small></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-purple" style="width:180px;text-align:center">Hive SQL 生产数仓</span><small style="color:var(--text-muted)">→ 真实集群环境</small></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-orange" style="width:180px;text-align:center">ClickHouse / Doris</span><small style="color:var(--text-muted)">→ 实时 OLAP 引擎</small></div>
+        </div>
+
+        <div class="card-formula" style="margin-top:16px">
+<span class="label">DuckDB vs HiveSQL 常见语法差异</span>
+DuckDB 的 SQL 语法基于 PostgreSQL，与 HiveSQL 有以下差异需注意：</div>
+        <table class="compare-table" style="margin-top:10px">
+          <thead><tr><th>功能</th><th>DuckDB</th><th>HiveSQL</th></tr></thead>
+          <tbody>
+            <tr><td>字符串拼接</td><td>'a' || 'b'</td><td>CONCAT('a','b')</td></tr>
+            <tr><td>日期截断</td><td>DATE_TRUNC('month', dt)</td><td>TRUNC(dt, 'MM')</td></tr>
+            <tr><td>日期差</td><td>date1 - date2</td><td>DATEDIFF(date1, date2)</td></tr>
+            <tr><td>QUALIFY</td><td>原生支持</td><td>不支持（需嵌套子查询）</td></tr>
+            <tr><td>PIVOT</td><td>原生支持</td><td>不支持</td></tr>
+            <tr><td>EXCLUDE</td><td>原生支持</td><td>不支持</td></tr>
+            <tr><td>LIMIT</td><td>LIMIT n</td><td>LIMIT n</td></tr>
+            <tr><td>类型转换</td><td>CAST(x AS INT) 或 x::INT</td><td>CAST(x AS INT)</td></tr>
+            <tr><td>数组展开</td><td>UNNEST(array)</td><td>LATERAL VIEW explode(array)</td></tr>
+            <tr><td>文件读取</td><td>read_csv_auto / read_parquet</td><td>CREATE EXTERNAL TABLE</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card card-full">
+        <div class="card-title">推荐资源</div>
+        <ul class="card-points">
+          <li><strong>DuckDB 官方文档</strong>：<a href="https://duckdb.org/docs/" style="color:var(--accent)">duckdb.org/docs</a> — 最全语法参考</li>
+          <li><strong>DuckDB Python API</strong>：<a href="https://duckdb.org/docs/api/python/overview" style="color:var(--accent)">duckdb.org/docs/api/python</a> — Python 集成完整指南</li>
+          <li><strong>SQL 练习平台</strong>：LeetCode SQL / HackerRank SQL — 刷题巩固</li>
+          <li><strong>PySpark 文档</strong>：<a href="https://spark.apache.org/docs/latest/api/python/" style="color:var(--accent)">spark.apache.org</a> — 下一阶段学习</li>
+          <li><strong>ClickHouse 教程</strong>：<a href="https://clickhouse.com/docs" style="color:var(--accent)">clickhouse.com/docs</a> — 实时 OLAP 进阶</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "duckdb-practice-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

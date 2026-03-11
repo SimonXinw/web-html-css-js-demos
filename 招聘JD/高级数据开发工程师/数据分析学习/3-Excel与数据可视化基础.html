@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel与数据可视化基础 · 数据分析学习</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>Excel与数据可视化基础</h1>
+    <p class="hero-sub">从 Excel 核心函数到 BI 工具，系统掌握数据分析与可视化的必备技能</p>
+    <div class="tags">
+      <span class="tag tag-blue">VLOOKUP / SUMIF</span>
+      <span class="tag tag-green">数据透视表</span>
+      <span class="tag tag-purple">图表设计</span>
+      <span class="tag tag-orange">Dashboard</span>
+      <span class="tag tag-pink">Tableau / PowerBI</span>
+      <span class="tag tag-blue">电商报表</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">📐</div>
+      一、Excel核心函数（VLOOKUP / SUMIF / IF）
+      <span class="chapter-count">必背</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">VLOOKUP 查找匹配 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">根据查找值在表格首列中查找，返回对应行指定列的值。</div>
+        <div class="card-formula">
+          <span class="label">语法</span>
+          =VLOOKUP(查找值, 数据范围, 列序号, 精确/模糊)
+        </div>
+        <ul class="card-points">
+          <li><strong>查找值</strong>：要匹配的值（如商品ID）</li>
+          <li><strong>数据范围</strong>：查找列必须在首列</li>
+          <li><strong>列序号</strong>：返回第几列</li>
+          <li><strong>FALSE</strong>：精确匹配；TRUE：近似匹配</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">示例：根据商品ID查价格</span>
+          =VLOOKUP(A2, 商品表!$A:$D, 3, FALSE)
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SUMIF 条件求和</div>
+        <div class="card-desc">对满足条件的单元格求和，是日报/周报/月报的核心函数。</div>
+        <div class="card-formula">
+          <span class="label">语法</span>
+          =SUMIF(条件区域, 条件, 求和区域)
+        </div>
+        <ul class="card-points">
+          <li><strong>条件区域</strong>：判断条件的列</li>
+          <li><strong>条件</strong>：如 ">100"、">=2024-01-01"、"*北京*"</li>
+          <li><strong>求和区域</strong>：可选，省略时对条件区域求和</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">示例：某品类销售额</span>
+          =SUMIF(B:B, "电子产品", C:C)
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">IF 条件判断</div>
+        <div class="card-desc">根据条件返回不同值，可嵌套实现复杂逻辑。</div>
+        <div class="card-formula">
+          <span class="label">语法</span>
+          =IF(条件, 真时返回值, 假时返回值)
+        </div>
+        <ul class="card-points">
+          <li><strong>嵌套IF</strong>：多条件分级（如业绩等级划分）</li>
+          <li><strong>IFERROR</strong>：VLOOKUP 失败时返回默认值</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">示例：VLOOKUP 容错</span>
+          =IFERROR(VLOOKUP(A2, 表!$A:$D, 3, FALSE), "未找到")
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常用组合函数</div>
+        <table class="compare-table">
+          <thead><tr><th>函数</th><th>用途</th></tr></thead>
+          <tbody>
+            <tr><td>INDEX+MATCH</td><td>替代 VLOOKUP，支持反向查找</td></tr>
+            <tr><td>SUMIFS</td><td>多条件求和（SUMIF 升级版）</td></tr>
+            <tr><td>COUNTIF</td><td>条件计数</td></tr>
+            <tr><td>AVERAGEIF</td><td>条件求平均</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">📊</div>
+      二、数据透视表
+      <span class="chapter-count">多维分析利器</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">数据透视表核心概念 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">将明细数据按维度聚合，支持拖拽式分析，无需写公式。</div>
+        <div class="flow" style="margin-top:12px">
+          <span class="flow-step fs-blue">原始明细表</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">插入 → 数据透视表</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">拖拽行列/值</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">即时汇总</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>行</strong>：分组维度（如品类、地区、日期）</li>
+          <li><strong>列</strong>：交叉维度（可选）</li>
+          <li><strong>值</strong>：聚合方式（求和、计数、平均）</li>
+          <li><strong>筛选器</strong>：全局过滤</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">透视表 vs 公式</div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>数据透视表</th><th>公式</th></tr></thead>
+          <tbody>
+            <tr><td>灵活性</td><td>拖拽变更维度</td><td>需改公式</td></tr>
+            <tr><td>性能</td><td>大数据量易卡顿</td><td>公式计算可控</td></tr>
+            <tr><td>适用场景</td><td>探索性分析</td><td>固定报表</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">透视表高级技巧</div>
+        <ul class="card-points">
+          <li><strong>计算字段</strong>：在透视表内新增字段（如利润率 = 利润/销售额）</li>
+          <li><strong>分组</strong>：日期按年/月/季度分组；数值按区间分组</li>
+          <li><strong>切片器</strong>：可视化筛选器，多透视表联动</li>
+          <li><strong>数据源</strong>：使用动态区域或 Power Query 保证数据源可扩展</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🎨</div>
+      三、条件格式
+      <span class="chapter-count">数据高亮与预警</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">条件格式类型</div>
+        <table class="compare-table">
+          <thead><tr><th>类型</th><th>用途</th></tr></thead>
+          <tbody>
+            <tr><td>数据条</td><td>条形图直观显示数值大小</td></tr>
+            <tr><td>色阶</td><td>颜色渐变表示高低</td></tr>
+            <tr><td>图标集</td><td>箭头/红绿灯表示趋势</td></tr>
+            <tr><td>突出显示</td><td>大于/小于/等于某值</td></tr>
+            <tr><td>自定义公式</td><td>复杂条件（如隔行着色）</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">条件格式应用场景</div>
+        <ul class="card-points">
+          <li><strong>KPI 预警</strong>：低于目标标红，高于目标标绿</li>
+          <li><strong>同比环比</strong>：正增长用绿色箭头，负增长用红色</li>
+          <li><strong>数据条</strong>：销售额/占比直观对比</li>
+          <li><strong>重复值</strong>：快速发现重复数据</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">示例：销售额大于阈值标绿</span>
+          条件格式 → 新建规则 → 使用公式<br>
+          =C2&gt;=10000  → 格式：绿色填充
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">📈</div>
+      四、图表类型（折线/柱状/饼/散点/漏斗）
+      <span class="chapter-count">选对图表类型</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">图表类型对比</div>
+        <table class="compare-table">
+          <thead><tr><th>图表</th><th>适用场景</th><th>注意</th></tr></thead>
+          <tbody>
+            <tr><td>折线图</td><td>时间趋势、连续变化</td><td>X 轴需有序</td></tr>
+            <tr><td>柱状图</td><td>分类对比、排名</td><td>类别不宜过多</td></tr>
+            <tr><td>饼图</td><td>占比、构成</td><td>类别≤5，避免过多</td></tr>
+            <tr><td>散点图</td><td>相关性、分布</td><td>两变量关系</td></tr>
+            <tr><td>漏斗图</td><td>转化漏斗、流失分析</td><td>层级递减</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">图表选择流程</div>
+        <div class="flow" style="flex-direction:column; align-items:flex-start; gap:6px">
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-blue">看趋势？</span><span class="flow-arrow">→</span> 折线图</div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-green">看对比？</span><span class="flow-arrow">→</span> 柱状图</div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-purple">看占比？</span><span class="flow-arrow">→</span> 饼图</div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-orange">看关系？</span><span class="flow-arrow">→</span> 散点图</div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-yellow">看转化？</span><span class="flow-arrow">→</span> 漏斗图</div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          电商常用：GMV 趋势→折线；品类对比→柱状；渠道占比→饼；用户漏斗→漏斗图
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">📐</div>
+      五、图表设计原则
+      <span class="chapter-count">让数据说话</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">图表设计原则 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>少即是多</strong>：去掉无关元素（网格线、3D 效果、装饰）</li>
+          <li><strong>数据墨水比</strong>：数据元素占比应高，非数据元素占比应低</li>
+          <li><strong>颜色语义</strong>：红=负/降，绿=正/升；保持一致性</li>
+          <li><strong>标题即结论</strong>：标题用结论描述，而非"销售额趋势"</li>
+          <li><strong>避免误导</strong>：Y 轴不截断、不随意缩放</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常见设计误区</div>
+        <table class="compare-table">
+          <thead><tr><th>误区</th><th>正确做法</th></tr></thead>
+          <tbody>
+            <tr><td>3D 饼图</td><td>用 2D 饼图或柱状图</td></tr>
+            <tr><td>Y 轴从非 0 开始</td><td>从 0 开始，避免夸大差异</td></tr>
+            <tr><td>过多颜色</td><td>主色+辅助色，不超过 5 种</td></tr>
+            <tr><td>无数据标签</td><td>关键数据加标签</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🖥️</div>
+      六、Dashboard 设计
+      <span class="chapter-count">一屏看全</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Dashboard 设计原则</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">核心指标</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">次要指标</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">明细/钻取</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>F 型布局</strong>：左上放核心 KPI，符合阅读习惯</li>
+          <li><strong>层次清晰</strong>：大数字→小图表→明细表</li>
+          <li><strong>联动筛选</strong>：筛选器影响所有图表</li>
+          <li><strong>刷新频率</strong>：标注数据更新时间</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Dashboard 典型结构</div>
+        <div class="card-formula">
+          <span class="label">电商运营 Dashboard 示例</span>
+          第1行：GMV  |  UV  |  订单数  |  转化率  |  客单价<br>
+          第2行：GMV 趋势折线图（7日/30日）<br>
+          第3行：品类柱状图 | 渠道饼图 | 地域热力图<br>
+          第4行：Top10 商品表 | 异常订单表
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🔧</div>
+      七、BI 工具（Tableau / PowerBI / Superset）
+      <span class="chapter-count">企业级可视化</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">BI 工具对比</div>
+        <table class="compare-table">
+          <thead><tr><th>工具</th><th>特点</th><th>适用场景</th></tr></thead>
+          <tbody>
+            <tr><td>Tableau</td><td>拖拽式、交互强、学习曲线陡</td><td>专业分析、跨境公司常用</td></tr>
+            <tr><td>Power BI</td><td>微软生态、DAX 公式、与 Office 集成</td><td>企业内部分析</td></tr>
+            <tr><td>Superset</td><td>开源、支持多种数据源、可自部署</td><td>技术团队、成本敏感</td></tr>
+            <tr><td>Metabase</td><td>SQL 友好、配置简单</td><td>非技术人员自助</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">BI 工具核心能力</div>
+        <ul class="card-points">
+          <li><strong>数据连接</strong>：多数据源、实时/定时刷新</li>
+          <li><strong>可视化</strong>：丰富图表类型、自定义主题</li>
+          <li><strong>交互</strong>：筛选、钻取、联动、下钻</li>
+          <li><strong>分享</strong>：权限控制、定时邮件、嵌入</li>
+        </ul>
+        <div class="card-formula">
+          Excel 适合小数据、一次性分析；BI 适合大数据、持续监控、自助分析
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">📅</div>
+      八、电商报表（日报/周报/月报）
+      <span class="chapter-count">业务实战</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">报表层级与粒度</div>
+        <table class="compare-table">
+          <thead><tr><th>报表</th><th>粒度</th><th>核心指标</th></tr></thead>
+          <tbody>
+            <tr><td>日报</td><td>按天</td><td>GMV、UV、订单数、转化率、异常</td></tr>
+            <tr><td>周报</td><td>按周</td><td>环比、同比、品类/渠道趋势</td></tr>
+            <tr><td>月报</td><td>按月</td><td>目标达成、复盘、下月规划</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">电商报表设计流程</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">明确受众</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">确定指标</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">数据口径</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">模板设计</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">自动化</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>日报</strong>：运营看异常、及时调整</li>
+          <li><strong>周报</strong>：管理层看趋势、做决策</li>
+          <li><strong>月报</strong>：复盘+规划，含同比环比</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">报表自动化思路</div>
+        <ul class="card-points">
+          <li><strong>数据源</strong>：从数仓/BI 定时同步，或 API 拉取</li>
+          <li><strong>模板</strong>：固定格式，只更新数据区域</li>
+          <li><strong>定时任务</strong>：Airflow / 调度系统每日跑数</li>
+          <li><strong>分发</strong>：邮件/钉钉/企业微信自动推送</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">⚠️</div>
+      九、可视化避坑
+      <span class="chapter-count">常见错误</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">可视化避坑清单 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>Y 轴截断</strong>：从非 0 开始会夸大差异，误导读者</li>
+          <li><strong>双 Y 轴</strong>：两轴尺度不同易混淆，慎用</li>
+          <li><strong>饼图过多</strong>：类别超过 5 个用柱状图</li>
+          <li><strong>颜色滥用</strong>：无语义的彩虹色，红绿混用</li>
+          <li><strong>3D 图表</strong>：遮挡数据、难以阅读</li>
+          <li><strong>数据口径不一致</strong>：同一指标不同定义</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据展示陷阱</div>
+        <table class="compare-table">
+          <thead><tr><th>陷阱</th><th>正确做法</th></tr></thead>
+          <tbody>
+            <tr><td>幸存者偏差</td><td>展示全量样本或说明筛选条件</td></tr>
+            <tr><td>辛普森悖论</td><td>拆分维度验证，避免整体掩盖分组</td></tr>
+            <tr><td>混淆相关与因果</td><td>只展示相关性，不轻易下因果结论</td></tr>
+            <tr><td>忽略基准</td><td>同比环比需有基准期</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🎯</div>
+      十、实战 Dashboard 设计
+      <span class="chapter-count">综合应用</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">实战 Dashboard 设计流程 <span class="card-badge badge-core">核心</span></div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">需求理解</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">指标选择</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">图表选型</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">布局设计</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">迭代优化</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>需求理解</strong>：谁看？解决什么问题？</li>
+          <li><strong>指标选择</strong>：核心 KPI + 辅助指标 + 明细</li>
+          <li><strong>图表选型</strong>：按第四章原则选</li>
+          <li><strong>布局设计</strong>：F 型、层次、联动</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">电商 GMV Dashboard 示例</div>
+        <div class="card-formula">
+          <span class="label">布局结构</span>
+          [筛选：日期] [筛选：品类] [筛选：渠道]<br><br>
+          [GMV] [UV] [订单数] [转化率] [客单价]<br><br>
+          [GMV 趋势折线图 - 7日/30日切换]<br><br>
+          [品类柱状图] | [渠道占比饼图] | [地域Top10]<br><br>
+          [Top10 商品表] | [异常订单表]
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Dashboard 检查清单</div>
+        <ul class="card-points">
+          <li>核心指标是否在首屏？</li>
+          <li>图表类型是否合适？</li>
+          <li>颜色是否统一、有语义？</li>
+          <li>是否有数据更新时间？</li>
+          <li>筛选器是否联动？</li>
+          <li>是否避免 Y 轴截断、3D 等陷阱？</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "excel-viz-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>
