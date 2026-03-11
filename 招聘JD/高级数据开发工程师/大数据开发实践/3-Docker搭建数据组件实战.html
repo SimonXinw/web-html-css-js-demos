@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docker 搭建大数据组件实战</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+    .grid-1 { grid-template-columns: 1fr; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+    .badge-win   { background: rgba(210,153,34,0.15); color: var(--yellow); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>Docker 搭建大数据组件实战</h1>
+    <p class="hero-sub">用 Docker 在 Windows 本地一键启动 MySQL、Kafka、ClickHouse、Airflow 等大数据组件</p>
+    <div class="tags">
+      <span class="tag tag-blue">Docker Desktop</span>
+      <span class="tag tag-green">docker-compose</span>
+      <span class="tag tag-purple">MySQL</span>
+      <span class="tag tag-orange">Kafka</span>
+      <span class="tag tag-pink">ClickHouse</span>
+      <span class="tag tag-blue">Airflow</span>
+      <span class="tag tag-green">数据管道</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章：Docker 基础概念速览 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🐳</div>
+      一、Docker 基础概念速览
+      <span class="chapter-count">Windows + Docker Desktop</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">镜像 / 容器 / 卷 <span class="card-badge badge-must">必知</span></div>
+        <ul class="card-points">
+          <li><strong>镜像（Image）</strong>：只读模板，包含运行环境和应用程序，类似"安装包"</li>
+          <li><strong>容器（Container）</strong>：镜像的运行实例，可启动/停止/删除，类似"正在运行的程序"</li>
+          <li><strong>卷（Volume）</strong>：持久化存储，容器删除后数据仍然保留</li>
+          <li><strong>Dockerfile</strong>：用代码描述镜像构建过程的文本文件</li>
+          <li><strong>Registry</strong>：镜像仓库，如 Docker Hub、阿里云镜像服务</li>
+        </ul>
+        <div class="card-formula"><span class="label">类比理解</span>镜像 = 类（Class）
+容器 = 实例（Instance）
+卷   = 外接硬盘（不随容器销毁）</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Docker vs 虚拟机</div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>Docker 容器</th><th>虚拟机</th></tr></thead>
+          <tbody>
+            <tr><td>启动速度</td><td>秒级</td><td>分钟级</td></tr>
+            <tr><td>资源占用</td><td>MB 级（共享宿主内核）</td><td>GB 级（完整 OS）</td></tr>
+            <tr><td>隔离级别</td><td>进程级隔离</td><td>硬件级隔离</td></tr>
+            <tr><td>镜像大小</td><td>几十 MB ～ 几百 MB</td><td>几 GB ～ 十几 GB</td></tr>
+            <tr><td>性能损耗</td><td>几乎无损耗</td><td>有虚拟化开销</td></tr>
+            <tr><td>适用场景</td><td>微服务、开发测试、CI/CD</td><td>需要完整 OS 的场景</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">docker-compose 多容器编排 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">用一个 <strong>YAML 文件</strong>定义多个服务（MySQL + Kafka + ClickHouse），一条命令全部启动。</div>
+        <div class="card-formula"><span class="label">docker-compose.yml 基本结构</span>version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+
+volumes:
+  mysql_data:</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常用命令速查 <span class="card-badge badge-win">Windows</span></div>
+        <div class="card-formula"><span class="label">容器操作</span>docker ps                    # 查看运行中的容器
+docker ps -a                 # 查看所有容器（含已停止）
+docker logs &lt;容器名&gt;          # 查看容器日志
+docker logs -f &lt;容器名&gt;       # 实时跟踪日志
+docker exec -it &lt;容器名&gt; bash # 进入容器内部
+docker stop &lt;容器名&gt;          # 停止容器
+docker rm &lt;容器名&gt;            # 删除容器</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">compose 操作</span>docker-compose up -d         # 后台启动所有服务
+docker-compose down          # 停止并删除所有服务
+docker-compose ps            # 查看服务状态
+docker-compose logs -f       # 查看所有服务日志
+docker-compose restart       # 重启所有服务</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">清理命令</span>docker images                # 查看本地镜像
+docker system prune -f       # 清理无用镜像/容器/网络
+docker volume prune -f       # 清理无用数据卷</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章：MySQL 环境搭建 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🗄️</div>
+      二、MySQL 环境搭建
+      <span class="chapter-count">端口 3306</span>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <div class="card-title">docker-compose.yml — MySQL 8.0 <span class="card-badge badge-core">完整可用</span></div>
+        <div class="card-formula"><span class="label">docker-compose.yml</span>version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: demo-mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: ecommerce
+      MYSQL_USER: demo
+      MYSQL_PASSWORD: demo123
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+volumes:
+  mysql_data:</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">初始化 SQL — 创建电商数据库和表 <span class="card-badge badge-core">完整可用</span></div>
+        <div class="card-formula"><span class="label">init.sql（放在 docker-compose.yml 同目录）</span>USE ecommerce;
+
+-- 用户表
+CREATE TABLE IF NOT EXISTS users (
+  user_id     INT PRIMARY KEY AUTO_INCREMENT,
+  username    VARCHAR(50) NOT NULL,
+  email       VARCHAR(100),
+  country     VARCHAR(50),
+  created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 商品表
+CREATE TABLE IF NOT EXISTS products (
+  product_id   INT PRIMARY KEY AUTO_INCREMENT,
+  product_name VARCHAR(100) NOT NULL,
+  category     VARCHAR(50),
+  price        DECIMAL(10,2),
+  stock        INT DEFAULT 0
+);
+
+-- 订单表
+CREATE TABLE IF NOT EXISTS orders (
+  order_id    INT PRIMARY KEY AUTO_INCREMENT,
+  user_id     INT,
+  product_id  INT,
+  quantity    INT DEFAULT 1,
+  amount      DECIMAL(10,2),
+  status      VARCHAR(20) DEFAULT 'pending',
+  order_time  DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(user_id),
+  FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+-- 插入模拟用户
+INSERT INTO users (username, email, country) VALUES
+('alice',   'alice@example.com',   'US'),
+('bob',     'bob@example.com',     'UK'),
+('charlie', 'charlie@example.com', 'DE'),
+('diana',   'diana@example.com',   'JP'),
+('eve',     'eve@example.com',     'CN');
+
+-- 插入模拟商品
+INSERT INTO products (product_name, category, price, stock) VALUES
+('无线蓝牙耳机',   '电子产品', 299.00,  500),
+('运动跑步鞋',     '鞋靴',     599.00,  300),
+('智能手表',       '电子产品', 1299.00, 200),
+('纯棉T恤',       '服装',     99.00,   1000),
+('便携充电宝',     '电子产品', 149.00,  800);
+
+-- 插入模拟订单
+INSERT INTO orders (user_id, product_id, quantity, amount, status, order_time) VALUES
+(1, 1, 1, 299.00,  'paid',    '2025-03-01 10:30:00'),
+(1, 3, 1, 1299.00, 'paid',    '2025-03-02 14:20:00'),
+(2, 2, 2, 1198.00, 'shipped', '2025-03-01 09:15:00'),
+(3, 4, 3, 297.00,  'paid',    '2025-03-03 16:45:00'),
+(4, 5, 1, 149.00,  'pending', '2025-03-04 11:00:00'),
+(5, 1, 2, 598.00,  'paid',    '2025-03-04 08:30:00'),
+(2, 3, 1, 1299.00, 'paid',    '2025-03-05 13:10:00'),
+(3, 2, 1, 599.00,  'shipped', '2025-03-05 17:20:00'),
+(1, 5, 3, 447.00,  'paid',    '2025-03-06 09:45:00'),
+(4, 4, 5, 495.00,  'paid',    '2025-03-06 20:00:00');</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">启动与连接</div>
+        <div class="card-formula"><span class="label">启动 MySQL</span># 在 docker-compose.yml 所在目录执行
+docker-compose up -d
+
+# 查看运行状态
+docker-compose ps
+
+# 查看启动日志（等待 "ready for connections"）
+docker logs -f demo-mysql</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">连接方式</span># 方式1：docker exec 进入容器内 CLI
+docker exec -it demo-mysql mysql -uroot -proot123
+
+# 方式2：宿主机安装 MySQL CLI
+mysql -h 127.0.0.1 -P 3306 -uroot -proot123
+
+# 方式3：GUI 工具（推荐）
+# DBeaver / DataGrip / Navicat
+# 连接地址：127.0.0.1:3306
+# 用户名：root  密码：root123</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">验证数据</span>USE ecommerce;
+SELECT * FROM orders LIMIT 5;
+SELECT u.username, SUM(o.amount) AS total
+FROM orders o JOIN users u ON o.user_id = u.user_id
+WHERE o.status = 'paid'
+GROUP BY u.username
+ORDER BY total DESC;</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章：Kafka 消息队列搭建 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">📨</div>
+      三、Kafka 消息队列搭建
+      <span class="chapter-count">端口 9092</span>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <div class="card-title">docker-compose.yml — Zookeeper + Kafka <span class="card-badge badge-core">完整可用</span></div>
+        <div class="card-formula"><span class="label">docker-compose.yml</span>version: '3.8'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: demo-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: demo-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">Kafka 操作步骤 <span class="card-badge badge-win">Windows 可执行</span></div>
+        <div class="card-formula"><span class="label">1. 启动 Kafka</span>docker-compose up -d
+docker-compose ps</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">2. 创建 Topic</span>docker exec demo-kafka kafka-topics --create ^
+  --bootstrap-server localhost:9092 ^
+  --replication-factor 1 ^
+  --partitions 3 ^
+  --topic order-events</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">3. 查看 Topic 列表</span>docker exec demo-kafka kafka-topics --list ^
+  --bootstrap-server localhost:9092</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">4. 查看 Topic 详情</span>docker exec demo-kafka kafka-topics --describe ^
+  --bootstrap-server localhost:9092 ^
+  --topic order-events</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">生产与消费消息</div>
+        <div class="card-formula"><span class="label">5. 生产消息（开一个终端窗口）</span>docker exec -it demo-kafka kafka-console-producer ^
+  --bootstrap-server localhost:9092 ^
+  --topic order-events
+
+# 输入以下 JSON 消息（每行一条，回车发送）：
+{"order_id":1001,"user_id":1,"amount":299.00,"ts":"2025-03-10T10:30:00"}
+{"order_id":1002,"user_id":2,"amount":1198.00,"ts":"2025-03-10T11:15:00"}
+{"order_id":1003,"user_id":3,"amount":599.00,"ts":"2025-03-10T14:20:00"}</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">6. 消费消息（开另一个终端窗口）</span>docker exec -it demo-kafka kafka-console-consumer ^
+  --bootstrap-server localhost:9092 ^
+  --topic order-events ^
+  --from-beginning</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">7. 查看消费组</span>docker exec demo-kafka kafka-consumer-groups --list ^
+  --bootstrap-server localhost:9092</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章：ClickHouse OLAP 引擎搭建 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">⚡</div>
+      四、ClickHouse OLAP 引擎搭建
+      <span class="chapter-count">端口 8123 / 9000</span>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <div class="card-title">docker-compose.yml — ClickHouse <span class="card-badge badge-core">完整可用</span></div>
+        <div class="card-formula"><span class="label">docker-compose.yml</span>version: '3.8'
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    container_name: demo-clickhouse
+    ports:
+      - "8123:8123"   # HTTP 接口（浏览器/DBeaver）
+      - "9000:9000"   # 原生 TCP 协议（clickhouse-client）
+    volumes:
+      - ch_data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ck123
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+volumes:
+  ch_data:</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">建表与插入数据 <span class="card-badge badge-core">MergeTree 引擎</span></div>
+        <div class="card-formula"><span class="label">连接 ClickHouse CLI</span>docker exec -it demo-clickhouse clickhouse-client --password ck123</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">创建数据库和表</span>CREATE DATABASE IF NOT EXISTS ecommerce;
+
+CREATE TABLE ecommerce.orders (
+  order_id    UInt32,
+  user_id     UInt32,
+  product_id  UInt32,
+  quantity    UInt16,
+  amount      Decimal(10,2),
+  status      String,
+  order_date  Date,
+  order_time  DateTime
+) ENGINE = MergeTree()
+PARTITION BY toYYYYMM(order_date)
+ORDER BY (order_date, order_id);</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">插入模拟数据</span>INSERT INTO ecommerce.orders VALUES
+(1001, 1, 1, 1, 299.00,  'paid',    '2025-03-01', '2025-03-01 10:30:00'),
+(1002, 1, 3, 1, 1299.00, 'paid',    '2025-03-02', '2025-03-02 14:20:00'),
+(1003, 2, 2, 2, 1198.00, 'shipped', '2025-03-01', '2025-03-01 09:15:00'),
+(1004, 3, 4, 3, 297.00,  'paid',    '2025-03-03', '2025-03-03 16:45:00'),
+(1005, 4, 5, 1, 149.00,  'pending', '2025-03-04', '2025-03-04 11:00:00'),
+(1006, 5, 1, 2, 598.00,  'paid',    '2025-03-04', '2025-03-04 08:30:00'),
+(1007, 2, 3, 1, 1299.00, 'paid',    '2025-03-05', '2025-03-05 13:10:00'),
+(1008, 3, 2, 1, 599.00,  'shipped', '2025-03-05', '2025-03-05 17:20:00'),
+(1009, 1, 5, 3, 447.00,  'paid',    '2025-03-06', '2025-03-06 09:45:00'),
+(1010, 4, 4, 5, 495.00,  'paid',    '2025-03-06', '2025-03-06 20:00:00');</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">分析查询示例 — 体验向量化引擎的速度</div>
+        <div class="card-formula"><span class="label">每日 GMV 统计</span>SELECT
+  order_date,
+  count()         AS order_count,
+  sum(amount)     AS daily_gmv,
+  avg(amount)     AS avg_amount
+FROM ecommerce.orders
+WHERE status IN ('paid', 'shipped')
+GROUP BY order_date
+ORDER BY order_date;</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">用户消费排行榜</span>SELECT
+  user_id,
+  count()         AS order_count,
+  sum(amount)     AS total_amount,
+  max(order_time) AS last_order
+FROM ecommerce.orders
+WHERE status = 'paid'
+GROUP BY user_id
+ORDER BY total_amount DESC;</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">查看表分区信息</span>SELECT
+  partition,
+  name,
+  rows,
+  formatReadableSize(bytes_on_disk) AS size
+FROM system.parts
+WHERE table = 'orders' AND active;</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">GUI 连接方式</span># DBeaver 连接 ClickHouse：
+# 驱动：ClickHouse (HTTP)
+# 主机：127.0.0.1  端口：8123
+# 用户名：default  密码：ck123</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章：完整数据管道 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">🔗</div>
+      五、完整数据管道：MySQL → Kafka → ClickHouse
+      <span class="chapter-count">端到端实战</span>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <div class="card-title">数据流全景</div>
+        <div class="flow" style="margin-top:12px; justify-content:center">
+          <span class="flow-step fs-green">MySQL<br><small>订单写入</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-blue">Python 脚本<br><small>读取 &amp; 发送</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">Kafka<br><small>消息队列</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-blue">Python 脚本<br><small>消费 &amp; 写入</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">ClickHouse<br><small>OLAP 分析</small></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-1" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">docker-compose.yml — 全套服务 <span class="card-badge badge-core">完整可用</span></div>
+        <div class="card-formula"><span class="label">docker-compose.yml（MySQL + Kafka + ClickHouse 三合一）</span>version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: pipeline-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: ecommerce
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: pipeline-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: pipeline-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    container_name: pipeline-clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ch_data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ck123
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+volumes:
+  mysql_data:
+  ch_data:</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">Step 1 — MySQL 读取 → Kafka 发送 <span class="card-badge badge-biz">Python</span></div>
+        <div class="card-formula"><span class="label">安装依赖</span>pip install pymysql kafka-python clickhouse-driver</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">mysql_to_kafka.py</span>import json
+import pymysql
+from kafka import KafkaProducer
+
+producer = KafkaProducer(
+    bootstrap_servers='localhost:9092',
+    value_serializer=lambda v: json.dumps(v, default=str).encode('utf-8')
+)
+
+conn = pymysql.connect(
+    host='127.0.0.1', port=3306,
+    user='root', password='root123',
+    database='ecommerce', cursorclass=pymysql.cursors.DictCursor
+)
+
+with conn.cursor() as cursor:
+    cursor.execute("SELECT * FROM orders")
+    rows = cursor.fetchall()
+
+for row in rows:
+    producer.send('order-events', value=row)
+    print(f"Sent: order_id={row['order_id']}, amount={row['amount']}")
+
+producer.flush()
+producer.close()
+conn.close()
+print(f"\nDone! Sent {len(rows)} orders to Kafka topic 'order-events'")</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Step 2 — Kafka 消费 → ClickHouse 写入 <span class="card-badge badge-biz">Python</span></div>
+        <div class="card-formula"><span class="label">kafka_to_clickhouse.py</span>import json
+from kafka import KafkaConsumer
+from clickhouse_driver import Client
+
+consumer = KafkaConsumer(
+    'order-events',
+    bootstrap_servers='localhost:9092',
+    auto_offset_reset='earliest',
+    group_id='ck-writer',
+    value_deserializer=lambda m: json.loads(m.decode('utf-8')),
+    consumer_timeout_ms=10000
+)
+
+ck = Client(host='127.0.0.1', port=9000,
+            user='default', password='ck123')
+
+ck.execute("CREATE DATABASE IF NOT EXISTS ecommerce")
+ck.execute("""
+CREATE TABLE IF NOT EXISTS ecommerce.orders (
+  order_id   UInt32,
+  user_id    UInt32,
+  product_id UInt32,
+  quantity   UInt16,
+  amount     Decimal(10,2),
+  status     String,
+  order_date Date,
+  order_time DateTime
+) ENGINE = MergeTree()
+PARTITION BY toYYYYMM(order_date)
+ORDER BY (order_date, order_id)
+""")
+
+count = 0
+for msg in consumer:
+    row = msg.value
+    ck.execute(
+        "INSERT INTO ecommerce.orders VALUES",
+        [(row['order_id'], row['user_id'], row['product_id'],
+          row.get('quantity', 1),
+          float(row['amount']), row.get('status', 'unknown'),
+          str(row['order_time'])[:10], str(row['order_time']))]
+    )
+    count += 1
+    print(f"Written: order_id={row['order_id']}")
+
+consumer.close()
+print(f"\nDone! Written {count} orders to ClickHouse")</div>
+      </div>
+    </div>
+
+    <div class="grid grid-1" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">Step 3 — ClickHouse 中查询分析</div>
+        <div class="card-formula"><span class="label">执行完整操作流程</span># 1. 启动所有服务
+docker-compose up -d
+
+# 2. 等待服务就绪（约 30 秒）
+docker-compose ps
+
+# 3. 创建 Kafka Topic
+docker exec pipeline-kafka kafka-topics --create ^
+  --bootstrap-server localhost:9092 ^
+  --replication-factor 1 --partitions 3 ^
+  --topic order-events
+
+# 4. 运行 MySQL → Kafka 脚本
+python mysql_to_kafka.py
+
+# 5. 运行 Kafka → ClickHouse 脚本
+python kafka_to_clickhouse.py
+
+# 6. 在 ClickHouse 中查询验证
+docker exec -it pipeline-clickhouse clickhouse-client --password ck123 ^
+  -q "SELECT order_date, count() AS cnt, sum(amount) AS gmv FROM ecommerce.orders GROUP BY order_date ORDER BY order_date"</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章：Airflow 任务调度搭建 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">📅</div>
+      六、Airflow 任务调度搭建
+      <span class="chapter-count">Web UI · localhost:8080</span>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <div class="card-title">docker-compose.yml — Airflow 简化版 <span class="card-badge badge-core">完整可用</span></div>
+        <div class="card-formula"><span class="label">docker-compose.yml</span>version: '3.8'
+
+x-airflow-common: &amp;airflow-common
+  image: apache/airflow:2.8.1
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./logs:/opt/airflow/logs
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: airflow-postgres
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+
+  airflow-init:
+    &lt;&lt;: *airflow-common
+    container_name: airflow-init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username admin \
+          --password admin \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com
+    restart: "no"
+
+  airflow-webserver:
+    &lt;&lt;: *airflow-common
+    container_name: airflow-webserver
+    command: airflow webserver
+    ports:
+      - "8080:8080"
+    restart: always
+
+  airflow-scheduler:
+    &lt;&lt;: *airflow-common
+    container_name: airflow-scheduler
+    command: airflow scheduler
+    restart: always
+
+volumes:
+  pg_data:</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">创建 DAG — 每日订单统计 <span class="card-badge badge-biz">Python</span></div>
+        <div class="card-formula"><span class="label">dags/daily_order_report.py（放在 dags 目录下）</span>from datetime import datetime, timedelta
+from airflow import DAG
+from airflow.operators.python import PythonOperator
+from airflow.operators.bash import BashOperator
+
+default_args = {
+    'owner': 'data-team',
+    'depends_on_past': False,
+    'email_on_failure': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+def extract_orders(**context):
+    """模拟从 MySQL 抽取订单数据"""
+    ds = context['ds']
+    print(f"Extracting orders for date: {ds}")
+    print("Found 156 new orders")
+    return 156
+
+def transform_data(**context):
+    """模拟数据清洗和转换"""
+    ti = context['ti']
+    order_count = ti.xcom_pull(task_ids='extract_orders')
+    print(f"Transforming {order_count} orders...")
+    print("Cleaned: removed 3 duplicates, fixed 2 null values")
+    return order_count - 3
+
+def load_to_warehouse(**context):
+    """模拟加载到数仓"""
+    ti = context['ti']
+    clean_count = ti.xcom_pull(task_ids='transform_data')
+    print(f"Loading {clean_count} clean orders to ClickHouse...")
+    print("Load complete!")
+
+with DAG(
+    dag_id='daily_order_report',
+    default_args=default_args,
+    description='每日订单数据 ETL 任务',
+    schedule_interval='0 2 * * *',
+    start_date=datetime(2025, 3, 1),
+    catchup=False,
+    tags=['etl', 'orders'],
+) as dag:
+
+    t1 = PythonOperator(
+        task_id='extract_orders',
+        python_callable=extract_orders,
+    )
+
+    t2 = PythonOperator(
+        task_id='transform_data',
+        python_callable=transform_data,
+    )
+
+    t3 = PythonOperator(
+        task_id='load_to_warehouse',
+        python_callable=load_to_warehouse,
+    )
+
+    t4 = BashOperator(
+        task_id='notify_completion',
+        bash_command='echo "Daily order report ETL completed at $(date)"',
+    )
+
+    t1 >> t2 >> t3 >> t4</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">启动与使用</div>
+        <div class="card-formula"><span class="label">操作步骤</span># 1. 创建必要目录（在 docker-compose.yml 同级）
+mkdir dags logs
+
+# 2. 将 DAG 文件放入 dags 目录
+# 3. 初始化数据库和创建用户
+docker-compose up airflow-init
+
+# 4. 启动 Airflow 服务
+docker-compose up -d
+
+# 5. 访问 Web UI
+# 浏览器打开 http://localhost:8080
+# 用户名：admin  密码：admin</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">Web UI 操作</span># 在 DAGs 列表页找到 daily_order_report
+# 点击开关启用 DAG
+# 点击 "Trigger DAG" 手动触发一次
+# 进入 Graph View 查看任务依赖关系
+# 点击任务节点 → Log 查看运行日志</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">查看日志</span># 查看 Scheduler 日志
+docker logs -f airflow-scheduler
+
+# 查看 Webserver 日志
+docker logs -f airflow-webserver</div>
+
+        <div class="card-desc" style="margin-top:12px"><strong>Windows 上 Airflow 的坑：</strong></div>
+        <ul class="card-points">
+          <li><strong>路径挂载</strong>：Windows 路径用正斜杠 <code>./dags</code>，不要用 <code>.\dags</code></li>
+          <li><strong>文件权限</strong>：Docker Desktop 默认共享 C 盘，如在其他盘需在 Settings → Resources → File Sharing 添加</li>
+          <li><strong>行尾符</strong>：DAG Python 文件确保使用 LF（不是 CRLF），否则可能报语法错误</li>
+          <li><strong>内存</strong>：Airflow 至少需要 4GB 内存，Docker Desktop 默认分配可能不足</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章：Redis 实时缓存搭建 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-red" style="background:rgba(248,81,73,0.15)">🔴</div>
+      七、Redis 实时缓存搭建
+      <span class="chapter-count">端口 6379</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">docker-compose.yml + 基本操作 <span class="card-badge badge-core">完整可用</span></div>
+        <div class="card-formula"><span class="label">docker-compose.yml</span>version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: demo-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+volumes:
+  redis_data:</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">启动并连接</span># 启动
+docker-compose up -d
+
+# 进入 redis-cli
+docker exec -it demo-redis redis-cli</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">基本操作</span># 字符串操作
+SET daily_gmv:2025-03-10 "158930.50"
+GET daily_gmv:2025-03-10
+
+# 自增计数（实时 PV 统计）
+INCR page_views:homepage
+INCR page_views:homepage
+GET page_views:homepage   # 返回 "2"
+
+# 哈希操作（存储用户消费汇总）
+HSET user:1001 total_amount "2045.00" order_count "3"
+HGET user:1001 total_amount
+HGETALL user:1001
+
+# 实时 GMV 累加
+SET realtime_gmv 0
+INCRBY realtime_gmv 29900     # +299.00 (用整数分表示)
+INCRBY realtime_gmv 119800    # +1198.00
+GET realtime_gmv              # 149700 → 即 1497.00 元
+
+# 设置过期时间（TTL）
+SET flash_sale:stock 100 EX 3600   # 1小时后过期
+TTL flash_sale:stock               # 查看剩余秒数</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Python 连接 Redis 示例 <span class="card-badge badge-biz">Python</span></div>
+        <div class="card-formula"><span class="label">安装依赖</span>pip install redis</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">redis_realtime_gmv.py</span>import redis
+import random
+from datetime import datetime
+
+r = redis.Redis(host='127.0.0.1', port=6379, decode_responses=True)
+
+today = datetime.now().strftime('%Y-%m-%d')
+gmv_key = f"realtime_gmv:{today}"
+count_key = f"order_count:{today}"
+
+r.set(gmv_key, 0)
+r.set(count_key, 0)
+
+print(f"Simulating real-time orders for {today}...\n")
+
+for i in range(20):
+    amount = round(random.uniform(50, 2000), 2)
+    amount_cents = int(amount * 100)
+
+    r.incrby(gmv_key, amount_cents)
+    r.incr(count_key)
+
+    r.hset(f"latest_order:{today}", mapping={
+        'order_id': f"ORD-{1000+i}",
+        'amount': str(amount),
+        'timestamp': datetime.now().isoformat()
+    })
+
+    current_gmv = int(r.get(gmv_key)) / 100
+    current_count = r.get(count_key)
+    print(f"  Order #{i+1}: ¥{amount:.2f}  |  "
+          f"GMV: ¥{current_gmv:,.2f}  |  "
+          f"Orders: {current_count}")
+
+print(f"\n--- Final Stats ---")
+print(f"Total GMV:    ¥{int(r.get(gmv_key))/100:,.2f}")
+print(f"Total Orders: {r.get(count_key)}")
+print(f"Latest Order: {r.hgetall(f'latest_order:{today}')}")</div>
+        <div class="card-desc" style="margin-top:12px"><strong>大数据场景中 Redis 的典型用途：</strong></div>
+        <ul class="card-points">
+          <li><strong>实时指标缓存</strong>：累计 GMV、在线人数、PV/UV 实时统计</li>
+          <li><strong>排行榜</strong>：Sorted Set 实现商品销量排行（ZADD / ZREVRANGE）</li>
+          <li><strong>去重计数</strong>：HyperLogLog 实现 UV 统计（误差 &lt; 1%，内存极小）</li>
+          <li><strong>分布式锁</strong>：防止重复消费、幂等处理</li>
+          <li><strong>维度缓存</strong>：Flink 实时 JOIN 维度表时，用 Redis 缓存维度数据加速</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章：一键启动全套环境 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🚀</div>
+      八、一键启动全套环境
+      <span class="chapter-count">建议 ≥ 8GB 内存分配给 Docker</span>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <div class="card-title">大型 docker-compose.yml — 全家桶 <span class="card-badge badge-must">完整可用</span></div>
+        <div class="card-formula"><span class="label">docker-compose.yml（MySQL + Kafka + ClickHouse + Redis）</span>version: '3.8'
+services:
+
+  # ===== MySQL =====
+  mysql:
+    image: mysql:8.0
+    container_name: bigdata-mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: ecommerce
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  # ===== Zookeeper =====
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: bigdata-zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  # ===== Kafka =====
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: bigdata-kafka
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+
+  # ===== ClickHouse =====
+  clickhouse:
+    image: clickhouse/clickhouse-server:23.8
+    container_name: bigdata-clickhouse
+    restart: always
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - ch_data:/var/lib/clickhouse
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ck123
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  # ===== Redis =====
+  redis:
+    image: redis:7-alpine
+    container_name: bigdata-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+
+volumes:
+  mysql_data:
+  ch_data:
+  redis_data:</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">资源需求说明</div>
+        <table class="compare-table">
+          <thead><tr><th>组件</th><th>端口</th><th>预估内存</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>MySQL</td><td>3306</td><td>~512MB</td><td>关系型数据库，数据源</td></tr>
+            <tr><td>Zookeeper</td><td>2181（内部）</td><td>~256MB</td><td>Kafka 依赖的协调服务</td></tr>
+            <tr><td>Kafka</td><td>9092</td><td>~1GB</td><td>消息队列，数据管道核心</td></tr>
+            <tr><td>ClickHouse</td><td>8123 / 9000</td><td>~1GB</td><td>OLAP 引擎，分析查询</td></tr>
+            <tr><td>Redis</td><td>6379</td><td>~128MB</td><td>内存缓存，实时指标</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">合计约 3GB 内存，建议 Docker Desktop 分配 ≥ 8GB
+Settings → Resources → Memory → 设为 8192 MB</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">启动 / 停止 / 管理命令</div>
+        <div class="card-formula"><span class="label">一键启动全套</span># 后台启动所有服务
+docker-compose up -d
+
+# 查看所有服务状态
+docker-compose ps
+
+# 查看各服务日志
+docker-compose logs -f mysql
+docker-compose logs -f kafka
+docker-compose logs -f clickhouse
+docker-compose logs -f redis</div>
+        <div class="card-formula" style="margin-top:8px"><span class="label">停止与重启</span># 停止所有服务（保留数据卷）
+docker-compose stop
+
+# 停止并删除容器（保留数据卷）
+docker-compose down
+
+# 停止并删除容器 + 数据卷（彻底清理）
+docker-compose down -v
+
+# 重启所有服务
+docker-compose restart
+
+# 只重启某个服务
+docker-compose restart clickhouse</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">验证所有服务</div>
+        <div class="card-formula"><span class="label">快速验证脚本</span># MySQL
+docker exec bigdata-mysql mysql -uroot -proot123 -e "SELECT 'MySQL OK' AS status;"
+
+# Kafka
+docker exec bigdata-kafka kafka-topics --list --bootstrap-server localhost:9092
+
+# ClickHouse
+docker exec bigdata-clickhouse clickhouse-client --password ck123 -q "SELECT 'ClickHouse OK' AS status"
+
+# Redis
+docker exec bigdata-redis redis-cli ping</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章：常见问题排查 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🔧</div>
+      九、常见问题排查
+      <span class="chapter-count">Windows 环境 FAQ</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">端口占用</div>
+        <div class="card-formula"><span class="label">检查端口占用</span># 查看 3306 端口被哪个进程占用
+netstat -ano | findstr :3306
+
+# 通过 PID 查看进程名称
+tasklist | findstr &lt;PID&gt;
+
+# 强制结束占用进程（谨慎使用）
+taskkill /PID &lt;PID&gt; /F
+
+# 或修改 docker-compose.yml 映射到其他端口
+ports:
+  - "3307:3306"  # 宿主机用 3307</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">容器无法启动</div>
+        <div class="card-formula"><span class="label">排查步骤</span># 1. 查看容器状态
+docker-compose ps
+
+# 2. 查看错误日志（关键！）
+docker logs &lt;容器名&gt;
+docker logs --tail 50 &lt;容器名&gt;
+
+# 3. 常见错误及解决
+# "port is already allocated" → 端口冲突，改端口
+# "no space left on device" → 磁盘满，清理空间
+# "OOM killed" → 内存不足，增大 Docker 内存分配</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">磁盘空间不足</div>
+        <div class="card-formula"><span class="label">清理 Docker 占用空间</span># 查看 Docker 磁盘占用
+docker system df
+
+# 清理已停止的容器 + 无用镜像 + 无用网络
+docker system prune -f
+
+# 清理所有未使用的镜像（包括中间层）
+docker image prune -a -f
+
+# 清理无用数据卷（谨慎！会删数据）
+docker volume prune -f
+
+# 查看各镜像大小
+docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Windows 特有问题</div>
+        <ul class="card-points">
+          <li><strong>以管理员运行</strong>：部分操作需要管理员权限的 PowerShell / CMD</li>
+          <li><strong>WSL2 后端</strong>：Docker Desktop 推荐使用 WSL2 后端，性能更好。Settings → General → Use the WSL 2 based engine</li>
+          <li><strong>防火墙</strong>：Windows Defender 防火墙可能阻止容器端口，需添加入站规则或临时关闭</li>
+          <li><strong>路径问题</strong>：Windows 路径在 docker-compose.yml 中使用 <code>./</code> 相对路径，或使用 <code>/c/Users/...</code> 格式</li>
+          <li><strong>换行符</strong>：配置文件和脚本使用 LF 而非 CRLF，可用 VS Code 右下角切换</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">网络拉取慢 — 配置镜像加速器</div>
+        <div class="card-formula"><span class="label">Docker Desktop 配置镜像加速</span># Docker Desktop → Settings → Docker Engine
+# 添加以下配置：
+
+{
+  "registry-mirrors": [
+    "https://docker.1ms.run",
+    "https://docker.xuanyuan.me"
+  ]
+}</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li>配置后点击 <strong>Apply &amp; Restart</strong> 重启 Docker Desktop</li>
+          <li>验证加速是否生效：<code>docker info | findstr "Registry Mirrors" </code></li>
+          <li>如果镜像加速也慢，可尝试使用代理或在网络条件好的时候预拉取镜像</li>
+        </ul>
+        <div class="card-formula" style="margin-top:8px"><span class="label">预拉取所有镜像</span>docker pull mysql:8.0
+docker pull confluentinc/cp-zookeeper:7.5.0
+docker pull confluentinc/cp-kafka:7.5.0
+docker pull clickhouse/clickhouse-server:23.8
+docker pull redis:7-alpine
+docker pull apache/airflow:2.8.1
+docker pull postgres:15</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Kafka 常见问题</div>
+        <ul class="card-points">
+          <li><strong>连接超时</strong>：确保 <code>KAFKA_ADVERTISED_LISTENERS</code> 设为 <code>PLAINTEXT://localhost:9092</code>，不是容器内部地址</li>
+          <li><strong>Topic 自动创建失败</strong>：检查 <code>KAFKA_AUTO_CREATE_TOPICS_ENABLE</code> 是否为 true</li>
+          <li><strong>消费不到消息</strong>：确认 <code>--from-beginning</code> 参数，或检查 consumer group offset</li>
+          <li><strong>Zookeeper 未就绪</strong>：Kafka 启动依赖 Zookeeper，确保 depends_on 配置正确</li>
+        </ul>
+        <div class="card-formula"><span class="label">排查 Kafka 连通性</span># 检查 Kafka broker 状态
+docker exec bigdata-kafka kafka-broker-api-versions ^
+  --bootstrap-server localhost:9092
+
+# 检查 Zookeeper 连接
+docker exec bigdata-zookeeper echo ruok | nc localhost 2181</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "docker-practice-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>
