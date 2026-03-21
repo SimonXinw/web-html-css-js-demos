@@ -1,207 +1,498 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高级_8_手势拖拽</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 40px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 40px;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>高级_8_手势拖拽</title>
+  <style>
+    :root {
+      --bg: #080c18;
+      --card-1: linear-gradient(135deg, #7c3aed, #4f46e5);
+      --card-2: linear-gradient(135deg, #0891b2, #2563eb);
+      --card-3: linear-gradient(135deg, #ec4899, #f43f5e);
+      --card-4: linear-gradient(135deg, #f59e0b, #ef4444);
+    }
 
-        h2 {
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        .draggable-container {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+      padding: 40px 20px;
+      overflow: hidden;
+      user-select: none;
+    }
 
-        .draggable-item {
-            width: 150px;
-            height: 150px;
-            background: white;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            cursor: grab;
-            user-select: none;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-            transition: box-shadow 0.2s;
-            position: relative;
-        }
+    /* 背景网格 */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
 
-        .draggable-item:active {
-            cursor: grabbing;
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
-        }
+    .page_title {
+      font-size: 13px;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.3);
+    }
 
-        .draggable-item.dragging {
-            opacity: 0.8;
-            transform: scale(1.1);
-            z-index: 1000;
-        }
+    /* =================== 卡片容器 =================== */
+    .cards_area {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
 
-        .drop-zone {
-            width: 200px;
-            height: 200px;
-            border: 3px dashed rgba(255, 255, 255, 0.5);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.2rem;
-            transition: all 0.3s;
-        }
+    .drag_card {
+      width: 120px;
+      height: 120px;
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 2.2rem;
+      cursor: grab;
+      position: relative;
+      will-change: transform;
+      /* CSS transition 仅在非拖拽状态下生效（归位动画） */
+      transition: box-shadow 0.3s, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
 
-        .drop-zone.drag-over {
-            border-color: white;
-            background: rgba(255, 255, 255, 0.2);
-        }
+    .drag_card .card_label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 600;
+    }
 
-        .interview-box {
-            width: 800px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 8px;
-            line-height: 1.6;
-            color: #333;
-        }
-    </style>
+    .drag_card.card_1 {
+      background: var(--card-1);
+      box-shadow: 0 8px 32px rgba(124, 58, 237, 0.4);
+    }
+
+    .drag_card.card_2 {
+      background: var(--card-2);
+      box-shadow: 0 8px 32px rgba(8, 145, 178, 0.4);
+    }
+
+    .drag_card.card_3 {
+      background: var(--card-3);
+      box-shadow: 0 8px 32px rgba(236, 72, 153, 0.4);
+    }
+
+    .drag_card.card_4 {
+      background: var(--card-4);
+      box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+    }
+
+    /* 拖拽中：关闭 CSS transition，由 JS 接管位置 */
+    .drag_card.is_dragging {
+      cursor: grabbing;
+      transition: box-shadow 0.3s;
+      z-index: 1000;
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    /* =================== 投放区 =================== */
+    .drop_zone {
+      width: 220px;
+      height: 140px;
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      transition: border-color 0.3s, background 0.3s, transform 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .drop_zone::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.05), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .drop_zone.is_over {
+      border-color: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.06);
+      transform: scale(1.04);
+    }
+
+    .drop_zone.is_over::before {
+      opacity: 1;
+    }
+
+    .drop_zone.drop_success {
+      border-color: #34d399;
+      background: rgba(52, 211, 153, 0.08);
+    }
+
+    .drop_zone_icon {
+      font-size: 1.8rem;
+      opacity: 0.4;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .drop_zone.is_over .drop_zone_icon {
+      opacity: 0.9;
+      transform: scale(1.2);
+    }
+
+    /* 成功爆炸粒子 */
+    .particle {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* =================== 知识点面板 =================== */
+    .qa_panel {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 16px;
+      padding: 28px 32px;
+      max-width: 680px;
+      width: 100%;
+    }
+
+    .qa_panel h3 {
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      color: rgba(255, 255, 255, 0.3);
+      margin-bottom: 20px;
+    }
+
+    .qa_item {
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.7;
+    }
+
+    .qa_item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .qa_item strong {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 13px;
+      font-weight: 500;
+    }
+  </style>
 </head>
+
 <body>
-    <h2>手势拖拽交互</h2>
 
-    <div class="draggable-container">
-        <div class="draggable-item" draggable="true" data-id="1">🎨</div>
-        <div class="draggable-item" draggable="true" data-id="2">💻</div>
-        <div class="draggable-item" draggable="true" data-id="3">🚀</div>
-        <div class="draggable-item" draggable="true" data-id="4">⭐</div>
+  <p class="page_title">Gesture Drag · 手势拖拽</p>
+
+  <!-- 可拖拽卡片 -->
+  <div class="cards_area" id="cards_area">
+    <div class="drag_card card_1" data-label="DESIGN">🎨<span class="card_label">DESIGN</span></div>
+    <div class="drag_card card_2" data-label="CODE">💻<span class="card_label">CODE</span></div>
+    <div class="drag_card card_3" data-label="LAUNCH">🚀<span class="card_label">LAUNCH</span></div>
+    <div class="drag_card card_4" data-label="STAR">⭐<span class="card_label">STAR</span></div>
+  </div>
+
+  <!-- 投放区 -->
+  <div class="drop_zone" id="drop_zone">
+    <span class="drop_zone_icon">＋</span>
+    <span>拖放到这里</span>
+  </div>
+
+  <!-- 知识点 -->
+  <div class="qa_panel">
+    <h3>// 面试考察点</h3>
+    <div class="qa_item">
+      <strong>1. 为什么用 Pointer Events 而不是 HTML5 Drag API？</strong>
+      <!-- 
+        答案：
+        HTML5 Drag API 的问题：
+        - 只支持鼠标，不支持触摸（需要额外处理 touch 事件）
+        - 拖拽时元素会有浏览器自带的"幽灵图像"，难以自定义样式
+        - dragover 事件触发频率低且不稳定，动画不流畅
+        - 无法直接用 transform 驱动位置（只有 dataTransfer 机制）
+
+        Pointer Events 的优势：
+        - pointerdown / pointermove / pointerup 统一处理鼠标和触摸
+        - setPointerCapture 确保 pointermove 在元素外也能捕获（不丢事件）
+        - 可以完全自定义位置计算和动画（transform + lerp）
+        - 配合 requestAnimationFrame 实现 60fps 流畅动画
+      -->
     </div>
+    <div class="qa_item">
+      <strong>2. 拖拽时的倾斜效果是怎么实现的？</strong>
+      <!-- 
+        答案：
+        通过计算每帧鼠标移动的速度（dx = 当前X - 上一帧X）作为倾斜输入：
+        - rotateY = dx * tiltFactor（左右速度 → 绕Y轴倾斜）
+        - rotateX = -dy * tiltFactor（上下速度 → 绕X轴倾斜）
 
-    <div class="drop-zone" id="drop-zone">拖放到这里</div>
-
-    <div class="interview-box">
-        <h3>面试考察点：</h3>
-        <p><strong>1. 拖拽事件的处理流程？</strong></p>
-        <!-- 
-            答案：
-            1. dragstart: 开始拖拽，设置 dataTransfer
-            2. drag: 拖拽过程中
-            3. dragover: 在目标元素上，需要 preventDefault
-            4. drop: 放下，获取数据并处理
-            5. dragend: 拖拽结束
-        -->
-
-        <p><strong>2. 如何实现平滑的拖拽跟随？</strong></p>
-        <!-- 
-            答案：
-            1. 使用 transform 而非 top/left
-            2. 使用 requestAnimationFrame 更新位置
-            3. 使用 lerp 实现平滑跟随
-            4. 考虑使用 pointer events 处理触摸
-        -->
-
-        <p><strong>3. 移动端拖拽的注意事项？</strong></p>
-        <!-- 
-            答案：
-            1. 使用 touchstart/touchmove/touchend
-            2. 阻止默认滚动行为
-            3. 处理多点触控
-            4. 考虑惯性滚动
-            5. 使用 passive 事件监听器优化性能
-        -->
+        速度值用 lerp 平滑，防止抖动：
+        tiltX = lerp(tiltX, targetTiltX, 0.15)
+        
+        最终 transform：
+        translate3d(x, y, 0) scale(1.1) rotateX(tiltX) rotateY(tiltY)
+      -->
     </div>
+    <div class="qa_item">
+      <strong>3. setPointerCapture 的作用是什么？</strong>
+      <!-- 
+        答案：
+        正常情况下，指针离开元素时 pointermove 事件就停止触发。
+        setPointerCapture(pointerId) 将该指针"绑定"到元素上，
+        即使鼠标/手指移动到元素外部，该元素仍然接收所有指针事件，
+        直到 pointerup 或 lostpointercapture。
+        
+        在拖拽场景中必须使用，否则快速移动时事件会中断，卡片卡住。
+      -->
+    </div>
+    <div class="qa_item">
+      <strong>4. 如何判断是否拖入了投放区（无原生 dragover）？</strong>
+      <!-- 
+        答案：
+        使用 elementFromPoint(x, y) 或 getBoundingClientRect() 判断：
 
-    <script>
-        const draggableItems = document.querySelectorAll(".draggable-item");
-        const dropZone = document.getElementById("drop-zone");
+        const rect = dropZone.getBoundingClientRect();
+        const isOver = x >= rect.left && x <= rect.right
+                    && y >= rect.top  && y <= rect.bottom;
 
-        draggableItems.forEach(item => {
-            item.addEventListener("dragstart", (e) => {
-                e.dataTransfer.setData("text/plain", item.dataset.id);
-                item.classList.add("dragging");
-                e.dataTransfer.effectAllowed = "move";
-            });
+        在每帧 pointermove 时执行此判断，更新投放区的高亮状态。
+        比原生 dragover 精度更高，响应更及时。
+      -->
+    </div>
+    <div class="qa_item">
+      <strong>5. 归位动画和弹性效果如何实现？</strong>
+      <!-- 
+        答案：
+        归位时重新开启 CSS transition，设置 transform 回到 '' 即可触发过渡：
+        card.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        card.style.transform = '';
 
-            item.addEventListener("dragend", (e) => {
-                item.classList.remove("dragging");
-            });
-        });
+        cubic-bezier(0.34, 1.56, 0.64, 1) 是"弹性"曲线：
+        - 第二个参数 > 1 会让动画超过终点再回弹
+        - 产生类似弹簧的 overshoot 效果
+        - 可以用 spring physics 库（如 react-spring）实现更真实的物理弹簧
+      -->
+    </div>
+  </div>
 
-        dropZone.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            dropZone.classList.add("drag-over");
-            e.dataTransfer.dropEffect = "move";
-        });
+  <script>
+    const cards = document.querySelectorAll(".drag_card");
+    const dropZone = document.getElementById("drop_zone");
 
-        dropZone.addEventListener("dragleave", () => {
-            dropZone.classList.remove("drag-over");
-        });
+    const TILT_FACTOR = 0.4;
+    const SCALE_DRAG = 1.08;
 
-        dropZone.addEventListener("drop", (e) => {
-            e.preventDefault();
-            const id = e.dataTransfer.getData("text/plain");
-            const item = document.querySelector(`[data-id="${id}"]`);
-            
-            dropZone.classList.remove("drag-over");
-            dropZone.textContent = `已接收: ${item.textContent}`;
-            
-            setTimeout(() => {
-                dropZone.textContent = "拖放到这里";
-            }, 2000);
-        });
+    cards.forEach((card) => {
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let originLeft = 0;
+      let originTop = 0;
+      let currentX = 0;
+      let currentY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let tiltX = 0;
+      let tiltY = 0;
+      let prevPointerX = 0;
+      let prevPointerY = 0;
+      let rafId = null;
 
-        // 触摸拖拽支持
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let currentElement = null;
+      const lerp = (a, b, t) => a + (b - a) * t;
 
-        draggableItems.forEach(item => {
-            item.addEventListener("touchstart", (e) => {
-                e.preventDefault();
-                currentElement = item;
-                const touch = e.touches[0];
-                touchStartX = touch.clientX - item.offsetLeft;
-                touchStartY = touch.clientY - item.offsetTop;
-                item.classList.add("dragging");
-            });
-        });
+      const getDropOverState = (px, py) => {
+        const rect = dropZone.getBoundingClientRect();
+        return px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom;
+      };
 
-        document.addEventListener("touchmove", (e) => {
-            if (currentElement) {
-                e.preventDefault();
-                const touch = e.touches[0];
-                currentElement.style.position = "fixed";
-                currentElement.style.left = touch.clientX - touchStartX + "px";
-                currentElement.style.top = touch.clientY - touchStartY + "px";
-            }
-        });
+      const tick = () => {
+        currentX = lerp(currentX, targetX, 0.18);
+        currentY = lerp(currentY, targetY, 0.18);
 
-        document.addEventListener("touchend", () => {
-            if (currentElement) {
-                currentElement.classList.remove("dragging");
-                currentElement.style.position = "";
-                currentElement.style.left = "";
-                currentElement.style.top = "";
-                currentElement = null;
-            }
-        });
-    </script>
+        card.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(${SCALE_DRAG}) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+
+        rafId = requestAnimationFrame(tick);
+      };
+
+      card.addEventListener("pointerdown", (e) => {
+        isDragging = true;
+        card.setPointerCapture(e.pointerId);
+        card.classList.add("is_dragging");
+
+        const rect = card.getBoundingClientRect();
+        originLeft = rect.left + rect.width / 2;
+        originTop = rect.top + rect.height / 2;
+
+        startX = e.clientX - currentX;
+        startY = e.clientY - currentY;
+        prevPointerX = e.clientX;
+        prevPointerY = e.clientY;
+
+        // 拖拽时关闭 CSS transition，由 RAF 接管
+        card.style.transition = "box-shadow 0.3s";
+
+        cancelAnimationFrame(rafId);
+        tick();
+      });
+
+      card.addEventListener("pointermove", (e) => {
+        if (!isDragging) return;
+
+        targetX = e.clientX - startX;
+        targetY = e.clientY - startY;
+
+        // 基于速度计算倾斜角
+        const dx = e.clientX - prevPointerX;
+        const dy = e.clientY - prevPointerY;
+
+        tiltY = lerp(tiltY, dx * TILT_FACTOR, 0.15);
+        tiltX = lerp(tiltX, -dy * TILT_FACTOR, 0.15);
+
+        prevPointerX = e.clientX;
+        prevPointerY = e.clientY;
+
+        // 检测是否悬停在投放区
+        const isOver = getDropOverState(e.clientX, e.clientY);
+
+        dropZone.classList.toggle("is_over", isOver);
+      });
+
+      card.addEventListener("pointerup", (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+
+        cancelAnimationFrame(rafId);
+        card.classList.remove("is_dragging");
+        dropZone.classList.remove("is_over");
+
+        const isOver = getDropOverState(e.clientX, e.clientY);
+
+        if (isOver) {
+          // 投放成功：粒子爆炸 + 提示
+          spawnParticles(e.clientX, e.clientY, getCardColor(card));
+          showDropSuccess(card.dataset.label || card.textContent.trim());
+        }
+
+        // 开启弹性 CSS transition，归位
+        card.style.transition = "box-shadow 0.3s, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)";
+        card.style.transform = "";
+        currentX = 0;
+        currentY = 0;
+        targetX = 0;
+        targetY = 0;
+        tiltX = 0;
+        tiltY = 0;
+      });
+    });
+
+    // =================== 粒子爆炸 ===================
+    const COLORS = ["#a78bfa", "#60a5fa", "#f472b6", "#fbbf24", "#34d399", "#f87171"];
+
+    const spawnParticles = (cx, cy, color) => {
+      const count = 18;
+
+      for (let i = 0; i < count; i++) {
+        const el = document.createElement("div");
+        el.className = "particle";
+
+        const angle = (i / count) * Math.PI * 2;
+        const speed = 80 + Math.random() * 120;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed;
+        const size = 5 + Math.random() * 8;
+
+        el.style.cssText = `
+          left: ${cx}px;
+          top: ${cy}px;
+          width: ${size}px;
+          height: ${size}px;
+          background: ${color || COLORS[i % COLORS.length]};
+          box-shadow: 0 0 6px ${color || COLORS[i % COLORS.length]};
+        `;
+
+        document.body.appendChild(el);
+
+        const start = performance.now();
+        const duration = 500 + Math.random() * 300;
+
+        const animateParticle = (now) => {
+          const t = (now - start) / duration;
+
+          if (t >= 1) {
+            el.remove();
+            return;
+          }
+
+          const ease = 1 - t * t;
+          const x = cx + vx * t;
+          const y = cy + vy * t + 100 * t * t;
+
+          el.style.transform = `translate(${x - cx}px, ${y - cy}px)`;
+          el.style.opacity = ease;
+
+          requestAnimationFrame(animateParticle);
+        };
+
+        requestAnimationFrame(animateParticle);
+      }
+    };
+
+    const showDropSuccess = (label) => {
+      dropZone.classList.add("drop_success");
+      dropZone.innerHTML = `<span style="font-size:1.8rem">✓</span><span style="font-size:12px;letter-spacing:0.2em;color:rgba(255,255,255,0.7)">已接收 ${label}</span>`;
+
+      setTimeout(() => {
+        dropZone.classList.remove("drop_success");
+        dropZone.innerHTML = `<span class="drop_zone_icon">＋</span><span>拖放到这里</span>`;
+      }, 2000);
+    };
+
+    const getCardColor = (card) => {
+      if (card.classList.contains("card_1")) return "#a78bfa";
+      if (card.classList.contains("card_2")) return "#60a5fa";
+      if (card.classList.contains("card_3")) return "#f472b6";
+      if (card.classList.contains("card_4")) return "#fbbf24";
+      return "#fff";
+    };
+  </script>
+
 </body>
+
 </html>

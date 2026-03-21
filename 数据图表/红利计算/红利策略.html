@@ -695,7 +695,7 @@
                 <div class="budget-item">
                     <label>今年总投资预算（可修改）</label>
                     <input type="number" id="totalBudget" value="50000" oninput="onBudgetChange()">
-                    <div class="budget-note">底仓30% · 定投50% · 波段20%</div>
+                    <div class="budget-note">底仓25% · 定投60% · 波段15%</div>
                 </div>
                 <div class="budget-item">
                     <label>已投底仓金额（可修改）</label>
@@ -706,15 +706,15 @@
 
             <div class="alloc-row">
                 <div class="alloc-pill p-base">
-                    <div class="p-label">永久底仓 (30%)</div>
+                    <div class="p-label">永久底仓 (25%)</div>
                     <div class="p-value" id="allocBase">¥15,000</div>
                 </div>
                 <div class="alloc-pill p-invest">
-                    <div class="p-label">定投资金池 (50%)</div>
+                    <div class="p-label">定投资金池 (60%)</div>
                     <div class="p-value" id="allocInvest">¥25,000</div>
                 </div>
                 <div class="alloc-pill p-swing">
-                    <div class="p-label">波段弹药库 (20%)</div>
+                    <div class="p-label">波段弹药库 (15%)</div>
                     <div class="p-value" id="allocSwing">¥10,000</div>
                 </div>
                 <div class="alloc-pill p-remain">
@@ -742,15 +742,15 @@
                         <td><span class="tag tag-dgreen">极端低估</span></td>
                         <td>≤ −8%</td>
                         <td><b>× 3</b> 三倍</td>
-                        <td>单笔加仓10倍基准；每再跌1%加一次，最多2次</td>
-                        <td>−5%卖30%，0%卖50%，+8%清仓</td>
+                        <td>单笔加仓10倍基准；每再跌2%加一次，最多2次</td>
+                        <td>−5%卖30%，0%卖50%，+5%清仓</td>
                     </tr>
                     <tr>
                         <td><span class="tag tag-green">低估加仓</span></td>
                         <td>−8% ~ −5%</td>
                         <td><b>× 2</b> 翻倍</td>
-                        <td>单笔加仓5倍基准；每再跌0.5%加一次，最多3次</td>
-                        <td>0%卖50%，+5%清仓</td>
+                        <td>单笔加仓5倍基准；每再跌1%加一次，最多3次</td>
+                        <td>0%卖50%，+3%清仓</td>
                     </tr>
                     <tr>
                         <td><span class="tag tag-yellow">中枢均衡</span></td>
@@ -842,9 +842,9 @@
             const budget = parseFloat(document.getElementById("totalBudget").value) || 50000;
             const invested = parseFloat(document.getElementById("investedAmount").value) || 0;
 
-            const basePos = budget * 0.3;
-            const investPol = budget * 0.5;
-            const swingPol = budget * 0.2;
+            const basePos = budget * 0.25;
+            const investPol = budget * 0.6;
+            const swingPol = budget * 0.15;
             const remain = budget - invested;
 
             // 建议每周基准 = 定投池 / 50 周，取整百
@@ -879,14 +879,14 @@
             if (zone === "extreme-low") {
                 actions = [
                     { icon: "🎯", label: "定投操作", text: `本周定投 <span class="a-amount">${fmtMoney(fixedAmt)}</span>（基准 × 3）` },
-                    { icon: "🚀", label: "波段加仓", text: `增量资金单笔加仓 <span class="a-amount">${fmtMoney(weeklyBase * 10)}</span>（10 倍基准）；每再跌 1% 加一次，最多 2 次` },
-                    { icon: "✅", label: "止盈规则", text: "反弹至 <b>−5%</b> 卖出波段筹码 30%；回到 <b>0%</b> 卖 50%；达 <b>+8%</b> 全部清仓" },
+                    { icon: "🚀", label: "波段加仓", text: `增量资金单笔加仓 <span class="a-amount">${fmtMoney(weeklyBase * 10)}</span>（10 倍基准）；每再跌 2% 加一次，最多 2 次` },
+                    { icon: "✅", label: "止盈规则", text: "反弹至 <b>−5%</b> 卖出波段筹码 30%；回到 <b>0%</b> 卖 50%；达 <b>+5%</b> 全部清仓" },
                 ];
             } else if (zone === "low") {
                 actions = [
                     { icon: "🎯", label: "定投操作", text: `本周定投 <span class="a-amount">${fmtMoney(fixedAmt)}</span>（基准 × 2）` },
-                    { icon: "📥", label: "波段加仓", text: `有增量资金可单笔加仓 <span class="a-amount">${fmtMoney(weeklyBase * 5)}</span>（5 倍基准）；每再跌 0.5% 加一次，最多 3 次` },
-                    { icon: "✅", label: "止盈规则", text: "加仓筹码反弹至年线 <b>0%</b> 卖出 50%；反弹至 <b>+5%</b> 全部卖出落袋" },
+                    { icon: "📥", label: "波段加仓", text: `有增量资金可单笔加仓 <span class="a-amount">${fmtMoney(weeklyBase * 5)}</span>（5 倍基准）；每再跌 1% 加一次，最多 3 次` },
+                    { icon: "✅", label: "止盈规则", text: "加仓筹码反弹至年线 <b>0%</b> 卖出 50%；反弹至 <b>+3%</b> 全部卖出落袋" },
                 ];
             } else if (zone === "neutral") {
                 actions = [

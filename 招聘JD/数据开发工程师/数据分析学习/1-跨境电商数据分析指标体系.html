@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>跨境电商数据分析指标体系</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+    .icon-red    { background: rgba(248,81,73,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    .funnel { margin-top: 12px; }
+    .funnel-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .funnel-bar {
+      height: 28px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #fff;
+      transition: width 0.6s ease;
+      min-width: 40px;
+    }
+    .funnel-label {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      white-space: nowrap;
+      min-width: 80px;
+    }
+    .funnel-rate {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>跨境电商数据分析指标体系</h1>
+    <p class="hero-sub">从流量到营收，系统掌握跨境电商全链路数据指标</p>
+    <div class="tags">
+      <span class="tag tag-blue">GMV / Revenue</span>
+      <span class="tag tag-green">流量转化漏斗</span>
+      <span class="tag tag-purple">用户 LTV / CAC</span>
+      <span class="tag tag-orange">广告 ROAS / ACOS</span>
+      <span class="tag tag-pink">物流履约</span>
+      <span class="tag tag-blue">商品运营</span>
+      <span class="tag tag-orange">财务利润链路</span>
+      <span class="tag tag-green">多平台对比</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章：核心营收指标 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">💰</div>
+      一、核心营收指标
+      <span class="chapter-count">衡量业务规模与盈利能力</span>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-abbr">GMV</div>
+        <div class="metric-name">商品交易总额 (Gross Merchandise Volume)</div>
+        <div class="metric-formula">GMV = 订单数 × 客单价</div>
+        <div class="metric-desc">含取消/退款的总交易额，衡量平台规模的首要指标</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">Revenue</div>
+        <div class="metric-name">实际收入 (Net Revenue)</div>
+        <div class="metric-formula">Revenue = GMV - 退款 - 折扣 - 平台佣金</div>
+        <div class="metric-desc">真正到手的钱，比 GMV 更能反映实际经营状况</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">净利润</div>
+        <div class="metric-name">Net Profit</div>
+        <div class="metric-formula">净利润 = Revenue - COGS - 运营成本 - 税费</div>
+        <div class="metric-desc">扣除所有成本后的最终盈利，企业存活的生命线</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">毛利率</div>
+        <div class="metric-name">Gross Margin</div>
+        <div class="metric-formula">毛利率 = (Revenue - COGS) / Revenue × 100%</div>
+        <div class="metric-desc">跨境电商通常 40%~70%，低于 30% 需警惕</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">AOV</div>
+        <div class="metric-name">平均客单价 (Average Order Value)</div>
+        <div class="metric-formula">AOV = 总销售额 / 总订单数</div>
+        <div class="metric-desc">提升 AOV 是提升 GMV 最高效的杠杆之一</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ARPU</div>
+        <div class="metric-name">用户平均收入 (Avg Revenue Per User)</div>
+        <div class="metric-formula">ARPU = 总收入 / 活跃用户数</div>
+        <div class="metric-desc">衡量单个用户的变现效率，SaaS/订阅制尤为重要</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">GMV vs Revenue 的关系 <span class="card-badge badge-must">必背</span></div>
+        <div class="flow">
+          <span class="flow-step fs-blue">GMV（总交易额）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">- 退款/取消</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">- 折扣/优惠</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">- 平台佣金</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">Revenue（净收入）</span>
+        </div>
+        <div class="card-formula" style="margin-top:12px">
+          <span class="label">面试常问</span>
+          GMV 高不等于赚钱 → 如果退货率 30%，GMV 100 万实际只有 70 万有效<br>
+          务必区分 GMV 口径：含税/不含税、含运费/不含运费
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">营收指标行业基准参考</div>
+        <table class="compare-table">
+          <thead><tr><th>指标</th><th>独立站 (DTC)</th><th>Amazon 店铺</th><th>东南亚平台</th></tr></thead>
+          <tbody>
+            <tr><td>AOV</td><td>$45~$120</td><td>$20~$60</td><td>$8~$25</td></tr>
+            <tr><td>毛利率</td><td>50%~70%</td><td>30%~50%</td><td>20%~40%</td></tr>
+            <tr><td>退货率</td><td>5%~15%</td><td>8%~20%</td><td>10%~30%</td></tr>
+            <tr><td>净利率</td><td>10%~25%</td><td>8%~18%</td><td>5%~12%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章：流量指标 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">📊</div>
+      二、流量指标
+      <span class="chapter-count">用户从哪来、看了什么</span>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-abbr">UV</div>
+        <div class="metric-name">独立访客数 (Unique Visitors)</div>
+        <div class="metric-formula">按设备ID / Cookie 去重</div>
+        <div class="metric-desc">同一用户多次访问只计 1 次，衡量真实触达规模</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">PV</div>
+        <div class="metric-name">页面浏览量 (Page Views)</div>
+        <div class="metric-formula">每次页面加载计 1 次</div>
+        <div class="metric-desc">PV/UV = 人均浏览页数，反映用户浏览深度</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">Bounce</div>
+        <div class="metric-name">跳出率 (Bounce Rate)</div>
+        <div class="metric-formula">跳出率 = 只看1页就离开的会话 / 总会话</div>
+        <div class="metric-desc">电商首页 &lt; 40% 为健康，&gt; 60% 需优化落地页</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">Duration</div>
+        <div class="metric-name">平均停留时长 (Avg Session Duration)</div>
+        <div class="metric-formula">总停留时间 / 会话数</div>
+        <div class="metric-desc">电商 2~4 分钟为正常，内容页应更长</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">Session</div>
+        <div class="metric-name">会话数 (Sessions)</div>
+        <div class="metric-formula">30分钟无操作则新开 Session</div>
+        <div class="metric-desc">一个 UV 可能贡献多个 Session</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">Pages</div>
+        <div class="metric-name">每次访问页数 (Pages/Session)</div>
+        <div class="metric-formula">PV / Sessions</div>
+        <div class="metric-desc">越高说明商品浏览兴趣越强</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">流量来源分类 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>来源</th><th>说明</th><th>典型 CPC</th></tr></thead>
+          <tbody>
+            <tr><td>Organic Search</td><td>Google/Bing 自然排名（依靠 SEO）</td><td>$0（免费）</td></tr>
+            <tr><td>Paid Search</td><td>Google Ads 关键词竞价（SEM）</td><td>$0.5~$3</td></tr>
+            <tr><td>Social Organic</td><td>Facebook/TikTok/Instagram 自然流量</td><td>$0（免费）</td></tr>
+            <tr><td>Social Paid</td><td>Facebook/TikTok 付费广告</td><td>$0.3~$1.5</td></tr>
+            <tr><td>Email</td><td>邮件营销（EDM），复购利器</td><td>$0.01~$0.05</td></tr>
+            <tr><td>Direct</td><td>直接输入网址/书签，多为老用户</td><td>$0</td></tr>
+            <tr><td>Referral</td><td>联盟营销/外链跳转</td><td>按 CPS 结算</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">UTM 参数追踪体系</div>
+        <div class="card-desc">URL 后附加 UTM 参数，让 GA4 等工具识别每一次访问的流量来源。</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">UTM 示例</span>
+          https://store.com/shoes<br>
+          ?utm_source=facebook<br>
+          &amp;utm_medium=paid_social<br>
+          &amp;utm_campaign=summer_sale_2025<br>
+          &amp;utm_content=video_ad_v3
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>utm_source</strong>：来源平台（facebook / google / tiktok）</li>
+          <li><strong>utm_medium</strong>：媒介类型（cpc / email / organic）</li>
+          <li><strong>utm_campaign</strong>：活动名称，用于 A/B 对比</li>
+          <li><strong>utm_content</strong>：素材变体标识，区分同一活动不同创意</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章：转化指标 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🔄</div>
+      三、转化指标
+      <span class="chapter-count">漏斗每一层都是钱</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">完整转化漏斗 <span class="card-badge badge-must">必背</span></div>
+        <div class="funnel">
+          <div class="funnel-row">
+            <span class="funnel-label">曝光/展示</span>
+            <div class="funnel-bar" style="width:100%;background:var(--accent)">100,000</div>
+            <span class="funnel-rate"></span>
+          </div>
+          <div class="funnel-row">
+            <span class="funnel-label">点击/访问</span>
+            <div class="funnel-bar" style="width:50%;background:var(--green)">3,000</div>
+            <span class="funnel-rate">CTR 3%</span>
+          </div>
+          <div class="funnel-row">
+            <span class="funnel-label">商详页浏览</span>
+            <div class="funnel-bar" style="width:36%;background:var(--yellow)">1,800</div>
+            <span class="funnel-rate">浏览率 60%</span>
+          </div>
+          <div class="funnel-row">
+            <span class="funnel-label">加入购物车</span>
+            <div class="funnel-bar" style="width:20%;background:var(--orange)">450</div>
+            <span class="funnel-rate">加购率 25%</span>
+          </div>
+          <div class="funnel-row">
+            <span class="funnel-label">发起结账</span>
+            <div class="funnel-bar" style="width:13%;background:var(--purple)">270</div>
+            <span class="funnel-rate">结账率 60%</span>
+          </div>
+          <div class="funnel-row">
+            <span class="funnel-label">完成支付</span>
+            <div class="funnel-bar" style="width:8%;background:var(--red)">180</div>
+            <span class="funnel-rate">支付率 67%</span>
+          </div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">整体转化率</span>
+          Overall CVR = 180 / 3,000 = 6%<br>
+          优化重点：找到漏斗中流失最大的环节（最大断层），优先攻克
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">各环节转化率详解</div>
+        <table class="compare-table">
+          <thead><tr><th>转化环节</th><th>公式</th><th>行业基准</th></tr></thead>
+          <tbody>
+            <tr><td>CTR（点击率）</td><td>点击数 / 曝光数</td><td>搜索广告 2%~5%，展示广告 0.5%~1.5%</td></tr>
+            <tr><td>加购率</td><td>加购人数 / 商详页 UV</td><td>独立站 8%~15%，Amazon 10%~20%</td></tr>
+            <tr><td>结账率</td><td>发起结账数 / 加购人数</td><td>50%~70%</td></tr>
+            <tr><td>支付转化率</td><td>完成支付 / 发起结账</td><td>60%~80%</td></tr>
+            <tr><td>Overall CVR</td><td>支付订单数 / 访客数</td><td>独立站 1%~3%，Amazon 5%~15%</td></tr>
+            <tr><td>弃购率</td><td>1 - (支付订单 / 加购数)</td><td>全球平均 70%</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          弃购挽回策略：弃购邮件 → 1h / 24h / 72h 三波触发，可挽回 5%~15% 的弃购订单
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章：用户价值 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">👤</div>
+      四、用户价值指标
+      <span class="chapter-count">一个用户值多少钱</span>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-abbr">LTV</div>
+        <div class="metric-name">用户生命周期价值 (Lifetime Value)</div>
+        <div class="metric-formula">LTV = AOV × 购买频次 × 留存时长</div>
+        <div class="metric-desc">一个用户在整个生命周期内贡献的总利润</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CAC</div>
+        <div class="metric-name">获客成本 (Customer Acquisition Cost)</div>
+        <div class="metric-formula">CAC = 总营销费用 / 新增付费用户数</div>
+        <div class="metric-desc">LTV/CAC > 3 为健康，< 1 则亏损获客</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">复购率</div>
+        <div class="metric-name">Repurchase Rate</div>
+        <div class="metric-formula">复购率 = 有2次+购买的用户 / 总购买用户</div>
+        <div class="metric-desc">品牌站 20%~40% 为优秀，铺货站通常 &lt; 10%</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">留存率</div>
+        <div class="metric-name">Retention Rate</div>
+        <div class="metric-formula">N日留存 = 第N日活跃用户 / 新增用户</div>
+        <div class="metric-desc">次日/7日/30日留存，衡量用户粘性</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">NPS</div>
+        <div class="metric-name">净推荐值 (Net Promoter Score)</div>
+        <div class="metric-formula">NPS = 推荐者% - 贬损者%</div>
+        <div class="metric-desc">范围 -100~100，> 50 为优秀品牌体验</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">RFM</div>
+        <div class="metric-name">用户价值分层模型</div>
+        <div class="metric-formula">R=最近购买 F=购买频次 M=消费金额</div>
+        <div class="metric-desc">经典分层：高价值/潜力/流失预警/沉睡用户</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">LTV/CAC 黄金比率 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>LTV/CAC 比值</th><th>状态</th><th>策略建议</th></tr></thead>
+          <tbody>
+            <tr><td>&lt; 1</td><td>严重亏损获客</td><td>立即止血，优化广告/提升客单价</td></tr>
+            <tr><td>1~3</td><td>刚好打平或微利</td><td>提升复购率、减少营销浪费</td></tr>
+            <tr><td>3~5</td><td>健康可持续</td><td>可适当加大投放力度</td></tr>
+            <tr><td>&gt; 5</td><td>投放不足</td><td>增加获客预算，扩大规模</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">LTV 精细计算</span>
+          LTV = Σ(每月 ARPU × 留存率<sub>n</sub>) / (1 + 折现率)<sup>n</sup><br>
+          简化版：LTV ≈ AOV × 月购买频次 × 平均留存月数 × 毛利率
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">用户留存曲线解读</div>
+        <div class="card-desc">将同一批次注册用户按时间追踪其回访/购买行为（Cohort Analysis）。</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">某品牌站月留存示例</span>
+          第1月：100%（购买）<br>
+          第2月：35% → 第3月：22% → 第6月：15% → 第12月：10%<br><br>
+          曲线趋于平缓 → 有忠实用户基础 ✓<br>
+          曲线持续下滑 → 产品/体验无法留住用户 ✗
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>Day 1 留存</strong>：产品首次体验是否吸引人</li>
+          <li><strong>Day 7 留存</strong>：用户是否形成了使用习惯</li>
+          <li><strong>Day 30 留存</strong>：是否有长期价值，可否投入复购营销</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章：广告投放 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">📣</div>
+      五、广告投放指标
+      <span class="chapter-count">钱花在哪、回报多少</span>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-abbr">CTR</div>
+        <div class="metric-name">点击率 (Click-Through Rate)</div>
+        <div class="metric-formula">CTR = 点击数 / 曝光数 × 100%</div>
+        <div class="metric-desc">衡量广告素材吸引力，越高越好</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CPC</div>
+        <div class="metric-name">单次点击成本 (Cost Per Click)</div>
+        <div class="metric-formula">CPC = 广告花费 / 点击次数</div>
+        <div class="metric-desc">Facebook 平均 $0.5~$1.5，Google 搜索 $1~$5</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CPM</div>
+        <div class="metric-name">千次曝光成本 (Cost Per Mille)</div>
+        <div class="metric-formula">CPM = 广告花费 / 曝光数 × 1000</div>
+        <div class="metric-desc">衡量品牌曝光效率，视频广告 $5~$15</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">CPA</div>
+        <div class="metric-name">单次转化成本 (Cost Per Action)</div>
+        <div class="metric-formula">CPA = 广告花费 / 转化次数</div>
+        <div class="metric-desc">Action 可以是购买、注册、加购等任意目标</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ROAS</div>
+        <div class="metric-name">广告花费回报 (Return on Ad Spend)</div>
+        <div class="metric-formula">ROAS = 广告收入 / 广告花费</div>
+        <div class="metric-desc">ROAS 3x 意味着花 $1 赚 $3，盈利门槛通常 2x~3x</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ROI</div>
+        <div class="metric-name">投资回报率 (Return on Investment)</div>
+        <div class="metric-formula">ROI = (收入-成本) / 成本 × 100%</div>
+        <div class="metric-desc">比 ROAS 多考虑产品成本，更接近真实盈亏</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ACOS</div>
+        <div class="metric-name">广告销售成本比 (Ad Cost of Sales)</div>
+        <div class="metric-formula">ACOS = 广告花费 / 广告收入 × 100%</div>
+        <div class="metric-desc">Amazon 特有指标，ACOS = 1/ROAS，越低越好</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">TACOS</div>
+        <div class="metric-name">总广告销售成本比</div>
+        <div class="metric-formula">TACOS = 广告花费 / 总销售额 × 100%</div>
+        <div class="metric-desc">含自然订单的综合广告效率，Amazon 卖家必看</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">ROAS vs ROI vs ACOS 对比 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>指标</th><th>公式</th><th>是否含成本</th><th>使用场景</th></tr></thead>
+          <tbody>
+            <tr><td>ROAS</td><td>广告收入 / 广告花费</td><td>仅广告费</td><td>Facebook / Google Ads 通用</td></tr>
+            <tr><td>ROI</td><td>(利润-投入) / 投入</td><td>含全部成本</td><td>整体投资回报分析</td></tr>
+            <tr><td>ACOS</td><td>广告花费 / 广告收入</td><td>仅广告费</td><td>Amazon PPC 专用</td></tr>
+            <tr><td>TACOS</td><td>广告花费 / 总销售额</td><td>仅广告费</td><td>Amazon 综合广告效率</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">换算关系</span>
+          ACOS = 1 / ROAS × 100%<br>
+          例：ROAS = 4x → ACOS = 25%<br>
+          ROAS 看"赚了多少"，ACOS 看"花了多少"，本质等价
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">广告投放优化链路</div>
+        <div class="flow">
+          <span class="flow-step fs-blue">提升 CTR</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">降低 CPC</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">提升 CVR</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">降低 CPA</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">提升 ROAS</span>
+        </div>
+        <ul class="card-points" style="margin-top:12px">
+          <li><strong>CTR 低</strong> → 素材/文案不吸引人，优化创意和定向</li>
+          <li><strong>CPC 高</strong> → 竞争激烈或受众过窄，拓展受众或换渠道</li>
+          <li><strong>CVR 低</strong> → 落地页体验差或价格无竞争力，优化商详页</li>
+          <li><strong>CPA 高</strong> → 整体投放效率低，需同时优化上下游</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章：商品运营 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">📦</div>
+      六、商品运营指标
+      <span class="chapter-count">管好货、卖好货</span>
+    </div>
+
+    <div class="metric-grid">
+      <div class="metric-card">
+        <div class="metric-abbr">动销率</div>
+        <div class="metric-name">Sell-through Rate</div>
+        <div class="metric-formula">动销率 = 有销量SKU数 / 总上架SKU数</div>
+        <div class="metric-desc">&gt; 70% 为健康，低则说明大量滞销商品</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">ITO</div>
+        <div class="metric-name">库存周转天数 (Inventory Turnover Days)</div>
+        <div class="metric-formula">ITO = 平均库存 / 日均销量</div>
+        <div class="metric-desc">越小越好，快消品 30~60 天，慢消品 90~180 天</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">退货率</div>
+        <div class="metric-name">Return Rate</div>
+        <div class="metric-formula">退货率 = 退货订单数 / 总订单数 × 100%</div>
+        <div class="metric-desc">服装 15%~30%，电子产品 5%~10%</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">BSR</div>
+        <div class="metric-name">畅销排名 (Best Sellers Rank)</div>
+        <div class="metric-formula">Amazon 按品类实时更新</div>
+        <div class="metric-desc">BSR 越小越畅销，是选品和竞对分析的核心参考</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">缺货率</div>
+        <div class="metric-name">Out-of-Stock Rate</div>
+        <div class="metric-formula">缺货天数 / 总天数 × 100%</div>
+        <div class="metric-desc">缺货直接损失销售额，Amazon 还会降低排名权重</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-abbr">滞销率</div>
+        <div class="metric-name">Dead Stock Rate</div>
+        <div class="metric-formula">90天+无销量SKU / 总SKU</div>
+        <div class="metric-desc">滞销库存占用仓储费，FBA 长期仓储费高昂</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">库存健康度评估 <span class="card-badge badge-biz">业务核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>库存状态</th><th>判定标准</th><th>应对措施</th></tr></thead>
+          <tbody>
+            <tr><td>健康</td><td>可售天数 30~60 天</td><td>正常补货节奏</td></tr>
+            <tr><td>偏多</td><td>可售天数 60~120 天</td><td>促销清仓 / 减少补货</td></tr>
+            <tr><td>滞销</td><td>可售天数 &gt; 120 天</td><td>大促清仓 / 移除 / 捆绑销售</td></tr>
+            <tr><td>缺货预警</td><td>可售天数 &lt; 14 天</td><td>紧急补货 / 空运补仓</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">选品数据分析维度</div>
+        <ul class="card-points">
+          <li><strong>市场容量</strong>：品类月搜索量、BSR 排名区间、头部卖家数量</li>
+          <li><strong>竞争度</strong>：Review 数量分布、价格区间、新品上架频率</li>
+          <li><strong>利润空间</strong>：售价 - 采购成本 - 头程物流 - FBA费 - 平台佣金 - 广告费</li>
+          <li><strong>季节性</strong>：Google Trends 趋势、历史 BSR 波动</li>
+          <li><strong>差异化空间</strong>：现有产品差评痛点、功能改进机会</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章：物流履约 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-red">🚚</div>
+      七、物流履约指标
+      <span class="chapter-count">跨境物流是核心竞争力</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">物流时效指标</div>
+        <div class="metric-grid" style="margin-top:8px">
+          <div class="metric-card">
+            <div class="metric-abbr">头程</div>
+            <div class="metric-name">国内到海外仓/FBA 仓</div>
+            <div class="metric-desc">海运 30~45 天，空运 7~15 天，铁路 20~30 天</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">尾程</div>
+            <div class="metric-name">海外仓到消费者手中</div>
+            <div class="metric-desc">FBA 1~3 天，海外仓 3~7 天，直邮 7~20 天</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">全程</div>
+            <div class="metric-name">下单到签收的总时效</div>
+            <div class="metric-desc">直邮 10~30 天，海外仓 3~7 天，FBA 1~3 天</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">妥投率</div>
+            <div class="metric-name">Delivery Success Rate</div>
+            <div class="metric-formula">成功签收 / 总发货 × 100%</div>
+            <div class="metric-desc">目标 &gt; 95%，COD 市场可能低至 70%~85%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">FBA vs FBM vs 海外仓对比 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>FBA（亚马逊物流）</th><th>FBM（卖家自发货）</th><th>第三方海外仓</th></tr></thead>
+          <tbody>
+            <tr><td>配送速度</td><td>1~3 天（Prime）</td><td>7~20 天</td><td>3~7 天</td></tr>
+            <tr><td>费用</td><td>较高（配送+仓储+长期费）</td><td>最低（自行寄送）</td><td>中等</td></tr>
+            <tr><td>Buy Box</td><td>权重高，易获得</td><td>权重低</td><td>中等</td></tr>
+            <tr><td>退货处理</td><td>亚马逊代处理</td><td>卖家自行处理</td><td>海外仓代处理</td></tr>
+            <tr><td>适用场景</td><td>主力 SKU / 高转化商品</td><td>大件/低频/测品阶段</td><td>多平台发货/独立站</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">物流成本结构</div>
+        <div class="flow">
+          <span class="flow-step fs-blue">采购成本</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">国内仓储/打包</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">头程运费</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">关税/清关</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">海外仓储费</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">尾程配送费</span>
+        </div>
+        <div class="card-formula" style="margin-top:12px">
+          <span class="label">FBA 费用结构</span>
+          FBA 费 = 配送费（按尺寸重量）+ 月仓储费（$0.75~$2.40/立方英尺）<br>
+          + 长期仓储费（库龄 &gt; 181天 额外收取）<br>
+          物流成本通常占销售额 15%~30%，是利润最大的侵蚀点
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章：财务利润 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">💵</div>
+      八、财务利润指标
+      <span class="chapter-count">赚不赚钱看这里</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">跨境电商利润链路 <span class="card-badge badge-must">必背</span></div>
+        <div class="flow" style="flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-blue" style="min-width:140px;text-align:center">售价 $49.99</span><small style="color:var(--text-muted)">消费者支付金额</small></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-red" style="min-width:140px;text-align:center">- 平台佣金 $7.50</span><small style="color:var(--text-muted)">Amazon 约 15%</small></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-orange" style="min-width:140px;text-align:center">- FBA 费 $5.80</span><small style="color:var(--text-muted)">配送 + 仓储</small></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-yellow" style="min-width:140px;text-align:center">- 采购成本 $12.00</span><small style="color:var(--text-muted)">产品 + 包装</small></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-purple" style="min-width:140px;text-align:center">- 头程物流 $3.50</span><small style="color:var(--text-muted)">海运分摊</small></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-pink" style="min-width:140px;text-align:center">- 广告费 $8.00</span><small style="color:var(--text-muted)">PPC 投放</small></div>
+          <div style="display:flex;align-items:center;gap:8px"><span class="flow-step fs-green" style="min-width:140px;text-align:center">= 净利润 $13.19</span><small style="color:var(--text-muted)">净利率 26.4%</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">盈亏平衡分析 (Break-Even)</div>
+        <div class="card-formula">
+          <span class="label">盈亏平衡公式</span>
+          盈亏平衡销量 = 固定成本 / (单价 - 单位变动成本)<br><br>
+          例：月固定成本 $5,000，售价 $50，变动成本 $30<br>
+          → 盈亏平衡 = $5,000 / ($50 - $30) = 250 单/月
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>固定成本</strong>：SaaS 工具费、人工、仓租、月度推广预算</li>
+          <li><strong>变动成本</strong>：采购、物流、平台佣金、包装、广告（按单分摊）</li>
+          <li><strong>贡献利润</strong>：单价 - 变动成本，用于覆盖固定成本</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">关键决策线</span>
+          ROAS 盈利线 = 1 / 毛利率<br>
+          例：毛利率 40% → ROAS &gt; 2.5x 才盈利<br>
+          ACOS 盈利线 = 毛利率 × 100%<br>
+          例：毛利率 40% → ACOS &lt; 40% 才盈利
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章：不同平台指标差异 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🌐</div>
+      九、不同平台指标差异
+      <span class="chapter-count">Amazon / Shopify / TikTok / Shopee</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">四大平台核心指标对比 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>Amazon</th><th>Shopify (独立站)</th><th>TikTok Shop</th><th>Shopee</th></tr></thead>
+          <tbody>
+            <tr><td>流量来源</td><td>站内搜索为主</td><td>站外引流为主</td><td>短视频/直播</td><td>站内活动/搜索</td></tr>
+            <tr><td>核心转化指标</td><td>Session CVR</td><td>Overall CVR</td><td>GPM（千次曝光成交额）</td><td>订单转化率</td></tr>
+            <tr><td>广告指标</td><td>ACOS / TACOS</td><td>ROAS / CPA</td><td>GPM / CPM</td><td>ROAS / CIR</td></tr>
+            <tr><td>典型 CVR</td><td>5%~15%</td><td>1%~3%</td><td>1%~5%</td><td>3%~8%</td></tr>
+            <tr><td>AOV 范围</td><td>$20~$60</td><td>$45~$120</td><td>$15~$40</td><td>$8~$25</td></tr>
+            <tr><td>佣金比例</td><td>8%~15%</td><td>0%（仅支付手续费）</td><td>2%~5%</td><td>2%~6%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">各平台特有指标</div>
+        <ul class="card-points">
+          <li><strong>Amazon</strong>：BSR（畅销排名）、ACOS/TACOS、Session（非 UV）、Buy Box 占有率、IPI（库存绩效指标）</li>
+          <li><strong>Shopify</strong>：Returning Customer Rate（回头客比率）、Cart Abandonment Rate、AOV、Online Store CVR</li>
+          <li><strong>TikTok Shop</strong>：GPM（千次曝光成交额）、视频完播率、直播间停留时长、粉丝转化率</li>
+          <li><strong>Shopee</strong>：Chat Response Rate（聊天响应率）、Ship-on-Time Rate（准时发货率）、Penalty Points（惩罚积分）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Amazon 特有指标详解</div>
+        <table class="compare-table">
+          <thead><tr><th>指标</th><th>公式/说明</th><th>健康值</th></tr></thead>
+          <tbody>
+            <tr><td>ACOS</td><td>广告花费 / 广告销售额</td><td>&lt; 毛利率</td></tr>
+            <tr><td>TACOS</td><td>广告花费 / 总销售额</td><td>&lt; 10%~15%</td></tr>
+            <tr><td>Session CVR</td><td>订单数 / Session 数</td><td>5%~15%</td></tr>
+            <tr><td>Buy Box %</td><td>拥有 Buy Box 的时间占比</td><td>&gt; 90%</td></tr>
+            <tr><td>IPI</td><td>库存绩效指标（综合评分）</td><td>&gt; 400</td></tr>
+            <tr><td>ODR</td><td>订单缺陷率</td><td>&lt; 1%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">TikTok Shop 内容电商指标</div>
+        <table class="compare-table">
+          <thead><tr><th>指标</th><th>说明</th><th>参考值</th></tr></thead>
+          <tbody>
+            <tr><td>GPM</td><td>每千次曝光成交金额</td><td>&gt; $50 为优秀</td></tr>
+            <tr><td>完播率</td><td>完整看完视频的用户占比</td><td>&gt; 30% 有流量推荐</td></tr>
+            <tr><td>互动率</td><td>(点赞+评论+分享) / 曝光</td><td>&gt; 5%</td></tr>
+            <tr><td>直播停留</td><td>平均用户在直播间停留时长</td><td>&gt; 1 分钟为良好</td></tr>
+            <tr><td>点击转化</td><td>点击商品 / 观看人数</td><td>2%~8%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章：指标关联拆解 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🧮</div>
+      十、指标关联与拆解
+      <span class="chapter-count">GMV = UV × CVR × AOV</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">GMV 核心拆解公式 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-formula">
+          <span class="label">一级拆解</span>
+          GMV = UV × CVR × AOV
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">二级拆解 — UV</span>
+          UV = 自然流量 UV + 付费流量 UV + 直接流量 UV<br>
+          付费 UV = 广告曝光 × CTR
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">二级拆解 — CVR</span>
+          CVR = 商详浏览率 × 加购率 × 结账率 × 支付成功率
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">二级拆解 — AOV</span>
+          AOV = 件单价 × 每单件数<br>
+          受品类结构、促销策略、捆绑销售影响
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">指标拆解树 — 诊断 GMV 下降</div>
+        <div class="card-desc">当 GMV 环比下降 15% 时，按拆解树逐层排查：</div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>Step 1</strong>：GMV = UV × CVR × AOV → 哪个因子下降？</li>
+          <li><strong>Step 2（UV 降）</strong>：拆分渠道 → 自然流量降？广告 CTR 降？预算削减？</li>
+          <li><strong>Step 3（CVR 降）</strong>：拆分漏斗 → 加购率降？支付率降？页面加载慢？</li>
+          <li><strong>Step 4（AOV 降）</strong>：拆分商品 → 低价品占比上升？优惠券力度过大？</li>
+          <li><strong>Step 5</strong>：交叉验证 → 是否全品类/全渠道下降？还是某一品类/某一渠道？</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">实战提示</span>
+          永远先看拆解，再看归因。不要上来就猜"可能是竞争对手降价了"<br>
+          数据说话：UV 没变 + CVR 降了 → 问题出在站内体验，不是流量
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">利润拆解公式</div>
+        <div class="card-formula">
+          <span class="label">利润完整链路</span>
+          净利润 = GMV × (1 - 退货率) × 毛利率 - 广告费 - 固定成本<br><br>
+          = UV × CVR × AOV × (1 - 退货率) × 毛利率 - 广告费 - 固定成本
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>提升利润的 5 个杠杆</strong>：提升 UV、提升 CVR、提升 AOV、降低退货率、降低广告费</li>
+          <li>每个杠杆提升 10% → 利润可能提升 50%+（乘数效应）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">指标关联全景图</div>
+        <div class="flow">
+          <span class="flow-step fs-blue">广告曝光</span>
+          <span class="flow-arrow">×CTR→</span>
+          <span class="flow-step fs-green">UV</span>
+          <span class="flow-arrow">×CVR→</span>
+          <span class="flow-step fs-yellow">订单数</span>
+          <span class="flow-arrow">×AOV→</span>
+          <span class="flow-step fs-orange">GMV</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">Revenue</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">净利润</span>
+        </div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-pink">广告花费</span>
+          <span class="flow-arrow">÷ Revenue →</span>
+          <span class="flow-step fs-red">ACOS</span>
+          <span class="flow-arrow">&nbsp;&nbsp;</span>
+          <span class="flow-step fs-pink">Revenue</span>
+          <span class="flow-arrow">÷ 广告花费 →</span>
+          <span class="flow-step fs-green">ROAS</span>
+        </div>
+        <div class="card-formula" style="margin-top:12px">
+          <span class="label">核心公式速记</span>
+          GMV = UV × CVR × AOV<br>
+          Revenue = GMV × (1 - 退货率) - 折扣 - 佣金<br>
+          净利润 = Revenue - COGS - 物流 - 广告 - 运营成本<br>
+          ROAS = Revenue(广告) / Ad Spend &nbsp; | &nbsp; ACOS = 1/ROAS<br>
+          LTV = AOV × 复购频次 × 留存周期 × 毛利率<br>
+          健康标准：LTV/CAC &gt; 3 &amp; ACOS &lt; 毛利率
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "ecom-metrics-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

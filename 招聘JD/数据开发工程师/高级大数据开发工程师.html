@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高级大数据开发工程师面试评估表</title>
+  <style>
+    :root {
+      --bg: #0f111a;
+      --card-bg: #1a1e2e;
+      --text-main: #e2e8f0;
+      --text-sub: #94a3b8;
+      --accent: #f97316;
+      --border: #2d3748;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --pre-bg: #090c15;
+      --pre-border: rgba(255,255,255,0.07);
+      --code-bg: rgba(249,115,22,0.12);
+      --code-color: #fdba74;
+      --answer-bg: rgba(0,0,0,0.28);
+      --answer-strong: #fff;
+      --score-row-bg: rgba(255,255,255,0.02);
+      --section-bg: rgba(249,115,22,0.05);
+      --score-bar-bg: rgba(255,255,255,0.03);
+      --table-th-bg: rgba(249,115,22,0.12);
+      --table-th-color: #fdba74;
+      --table-td-border: rgba(255,255,255,0.05);
+      --h1-from: #fff;
+      --summary-hover: #fff;
+    }
+
+    html.light {
+      --bg: #f5f0eb;
+      --card-bg: #ffffff;
+      --text-main: #1c1917;
+      --text-sub: #78716c;
+      --accent: #ea580c;
+      --border: #e7e0d8;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --pre-bg: #1c1917;
+      --pre-border: rgba(0,0,0,0.12);
+      --code-bg: rgba(234,88,12,0.1);
+      --code-color: #c2410c;
+      --answer-bg: rgba(234,88,12,0.04);
+      --answer-strong: #1c1917;
+      --score-row-bg: rgba(0,0,0,0.025);
+      --section-bg: rgba(234,88,12,0.06);
+      --score-bar-bg: rgba(0,0,0,0.025);
+      --table-th-bg: rgba(234,88,12,0.08);
+      --table-th-color: #c2410c;
+      --table-td-border: rgba(0,0,0,0.05);
+      --h1-from: #1c1917;
+      --summary-hover: #1c1917;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.65;
+      padding: 40px 20px;
+      transition: background-color 0.35s, color 0.35s;
+    }
+
+    .container { max-width: 1060px; margin: 0 auto; }
+
+    header {
+      text-align: center;
+      padding-bottom: 40px;
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      background: linear-gradient(135deg, var(--h1-from) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 14px;
+    }
+
+    .subtitle { color: var(--text-sub); font-size: 1.05rem; }
+
+    .chips {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .chip {
+      font-size: 0.82rem;
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(249,115,22,0.3);
+      background: rgba(249,115,22,0.08);
+      color: var(--text-sub);
+    }
+
+    .section-title {
+      font-size: 1.35rem;
+      margin: 52px 0 24px;
+      padding: 12px 18px;
+      border-left: 4px solid var(--accent);
+      background: var(--section-bg);
+      border-radius: 0 8px 8px 0;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.35s, color 0.35s;
+    }
+
+    .section-tag {
+      font-size: 0.82rem;
+      font-family: monospace;
+      color: var(--text-sub);
+      font-weight: normal;
+    }
+
+    .question-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 26px;
+      margin-bottom: 24px;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.35s;
+    }
+
+    .question-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+      border-color: rgba(249,115,22,0.3);
+    }
+
+    .question-card.accent { border-color: rgba(249,115,22,0.55); }
+
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+
+    .q-title {
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: var(--text-main);
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .q-tag {
+      font-size: 0.73rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      border: 1px solid;
+    }
+
+    .tag-orange { background: rgba(249,115,22,0.15); color:#fdba74; border-color:rgba(249,115,22,0.25); }
+    .tag-blue   { background: rgba(59,130,246,0.15); color:#93c5fd; border-color:rgba(59,130,246,0.25); }
+    .tag-green  { background: rgba(16,185,129,0.15); color:#6ee7b7; border-color:rgba(16,185,129,0.25); }
+    .tag-yellow { background: rgba(245,158,11,0.15); color:#fde68a; border-color:rgba(245,158,11,0.25); }
+    .tag-red    { background: rgba(239,68,68,0.15);  color:#fca5a5; border-color:rgba(239,68,68,0.25); }
+    .tag-purple { background: rgba(139,92,246,0.15); color:#c4b5fd; border-color:rgba(139,92,246,0.25); }
+
+    .assessment-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 24px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .point-list h4, .score-guide h4 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+    }
+
+    .point-list ul { list-style: none; }
+
+    .point-list li {
+      margin-bottom: 7px;
+      padding-left: 18px;
+      position: relative;
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+
+    .point-list li::before {
+      content: "▸";
+      color: var(--accent);
+      position: absolute;
+      left: 0;
+    }
+
+    .score-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 9px;
+      padding: 9px 11px;
+      border-radius: 6px;
+      background: var(--score-row-bg);
+      border-left: 2px solid transparent;
+      font-size: 0.86rem;
+      transition: background 0.35s;
+    }
+
+    .score-row.high { border-left-color: var(--success); }
+    .score-row.mid  { border-left-color: var(--warning); }
+    .score-row.low  { border-left-color: var(--text-sub); }
+
+    .score-label { font-weight: 700; margin-bottom: 3px; display: inline-block; font-size: 0.83rem; }
+    .level-high { color: var(--success); }
+    .level-mid  { color: var(--warning); }
+    .level-low  { color: var(--text-sub); }
+    .score-desc { color: var(--text-sub); font-size: 0.82rem; line-height: 1.5; }
+
+    details { margin-top: 16px; }
+
+    summary {
+      cursor: pointer;
+      color: var(--accent);
+      font-size: 0.87rem;
+      font-weight: 600;
+      user-select: none;
+      transition: color 0.2s;
+    }
+
+    summary:hover { color: var(--summary-hover); }
+
+    .answer-key {
+      margin-top: 12px;
+      background: var(--answer-bg);
+      padding: 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      border-left: 3px solid var(--accent);
+      color: var(--text-main);
+      line-height: 1.75;
+      transition: background 0.35s;
+    }
+
+    .answer-key strong { color: var(--answer-strong); }
+    .answer-key p { margin-bottom: 8px; }
+    .answer-key ul, .answer-key ol { padding-left: 20px; margin: 6px 0 8px; }
+    .answer-key li { margin-bottom: 4px; }
+
+    pre {
+      background: var(--pre-bg);
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 10px 0;
+      border: 1px solid var(--pre-border);
+      transition: background 0.35s, border-color 0.35s;
+    }
+
+    pre code {
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.83rem;
+      color: #a5d6a7;
+      background: none;
+      padding: 0;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.86em;
+      color: var(--code-color);
+      transition: background 0.35s, color 0.35s;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.84rem;
+    }
+
+    .compare-table th {
+      background: var(--table-th-bg);
+      color: var(--table-th-color);
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.35s, color 0.35s;
+    }
+
+    .compare-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--table-td-border);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    .score-bar {
+      background: var(--score-bar-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 24px;
+      margin-bottom: 40px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      text-align: center;
+      transition: background 0.35s;
+    }
+
+    .score-bar-item { font-size: 0.85rem; }
+    .score-bar-item .num { font-size: 1.5rem; font-weight: 700; color: var(--accent); display: block; }
+    .score-bar-item .label { color: var(--text-sub); font-size: 0.78rem; }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      transition: background 0.35s, border-color 0.35s, box-shadow 0.2s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: "Segoe UI", -apple-system, sans-serif;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(249,115,22,0.22);
+    }
+
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track {
+      width: 36px;
+      height: 20px;
+      border-radius: 20px;
+      background: var(--border);
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.35s;
+    }
+
+    html.light .toggle-track { background: var(--accent); }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      line-height: 1;
+      transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .assessment-grid { grid-template-columns: 1fr; }
+      .score-bar { grid-template-columns: repeat(2, 1fr); }
+      .theme-toggle { top: 12px; right: 12px; padding: 6px 10px 6px 8px; font-size: 0.78rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+    <div class="toggle-track">
+      <div class="toggle-thumb" id="toggleThumb">☀️</div>
+    </div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <h1>高级大数据开发工程师面试评估表</h1>
+      <p class="subtitle">分布式架构深度 · 数据湖 · 复杂调优 · 实时流处理 · 系统设计能力</p>
+      <div class="chips">
+        <span class="chip">满分 140 分</span>
+        <span class="chip">四大考察模块 · 共 14 题</span>
+        <span class="chip">含参考答案与代码</span>
+        <span class="chip">Spark / Flink / Kafka / Iceberg / ClickHouse</span>
+      </div>
+    </header>
+
+    <div class="score-bar">
+      <div class="score-bar-item">
+        <span class="num">40</span>
+        <span class="label">一、分布式计算引擎</span>
+      </div>
+      <div class="score-bar-item">
+        <span class="num">30</span>
+        <span class="label">二、数据仓库与建模</span>
+      </div>
+      <div class="score-bar-item">
+        <span class="num">40</span>
+        <span class="label">三、存储 · 消息 · OLAP</span>
+      </div>
+      <div class="score-bar-item">
+        <span class="num">30</span>
+        <span class="label">四、性能优化与工程化</span>
+      </div>
+    </div>
+
+    <!-- ==================== 模块 1 ==================== -->
+    <div class="section-title">
+      一、分布式计算引擎：Spark & Flink
+      <span class="section-tag">40 分 · 核心引擎</span>
+    </div>
+
+    <!-- Q1 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q1: 详述 Spark 的 DAG 执行原理 — RDD、Stage、Task 是什么关系？宽依赖 vs 窄依赖对 Shuffle 有何影响？</div>
+        <span class="q-tag tag-orange">Spark 核心</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>DAG 划分逻辑</strong>：遇到宽依赖（如 groupByKey、join）时 DAG 切分 Stage；窄依赖（map、filter）在同 Stage 内流水线执行，无需 Shuffle。</li>
+            <li><strong>宽/窄依赖本质</strong>：窄依赖 = 父 RDD 的一个分区只被子 RDD 的一个分区使用；宽依赖 = 一个父分区被多个子分区依赖，必须等父 Stage 全部完成才能启动子 Stage。</li>
+            <li><strong>Shuffle 写放大</strong>：Shuffle Write 将数据写磁盘再通过网络传输，是 Spark 最大的性能开销；宽依赖越多，Shuffle 越重。</li>
+            <li><strong>Task 粒度</strong>：一个 Stage 中，每个 RDD 分区对应一个 Task；分区数决定并行度。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能画出 DAG Stage 划分图；清楚宽/窄依赖的分区映射关系；解释 Shuffle Write/Read 的磁盘 IO 开销；提到用 reduceByKey 替代 groupByKey 减少 Shuffle 数据量。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 RDD/Stage/Task 的层级关系，知道 Shuffle 有开销，但宽/窄依赖的定义模糊。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">分不清 Stage 和 Task；不知道 Shuffle 是什么。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案</summary>
+        <div class="answer-key">
+          <p><strong>DAG 执行流程：</strong></p>
+          <ol>
+            <li>Driver 将程序转换为 DAG（有向无环图），节点是 RDD，边是依赖关系</li>
+            <li>遇到<strong>宽依赖</strong>（Shuffle 边界）切分 Stage；Stage 内全是窄依赖，可流水线执行</li>
+            <li>每个 Stage 分解为多个 Task（= 分区数）提交给 Executor 并行执行</li>
+          </ol>
+          <p><strong>关键优化：reduceByKey vs groupByKey</strong></p>
+<pre><code>// groupByKey：先 Shuffle 全量数据，再聚合 → 网络传输量大
+rdd.groupByKey().mapValues(_.sum)
+
+// reduceByKey：先在 Map 端局部聚合（Combiner），再 Shuffle → 数据量减少 90%+
+rdd.reduceByKey(_ + _)  // 推荐</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q2: Spark 的内存模型是什么？Executor 内存如何分配？OOM 时如何排查和调优？</div>
+        <span class="q-tag tag-orange">Spark 内存</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>统一内存模型（Spark 1.6+）</strong>：Heap 分为 Reserved（300MB 系统保留）、User Memory（用户代码 UDF 等）、Spark Memory（执行内存 + 存储内存，共享可互相借用）。</li>
+            <li><strong>执行内存 vs 存储内存</strong>：执行内存用于 Shuffle、Join、Sort；存储内存用于 RDD Cache、广播变量；两者共享，执行内存可驱逐存储内存（反之不行）。</li>
+            <li><strong>常见 OOM 原因</strong>：大量 collect() 把数据拉到 Driver；Shuffle 分区数太少导致单 Task 处理数据量过大；UDF 内存泄漏；广播大表未及时销毁。</li>
+            <li><strong>调优手段</strong>：增大 <code>spark.executor.memory</code>；调整 <code>spark.memory.fraction</code>；增加 shuffle 分区数；用 kryo 序列化减少内存占用。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能描述统一内存模型的区域划分；区分 Driver OOM 和 Executor OOM 的不同原因；给出具体参数调优方案；提到 Kryo 序列化。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道可以调 executor.memory，知道 collect 危险，但内存模型细节不清楚。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">OOM 就加内存，不分析根本原因。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案</summary>
+        <div class="answer-key">
+          <p><strong>内存分区（默认比例）：</strong></p>
+          <table class="compare-table">
+            <thead><tr><th>区域</th><th>默认比例</th><th>用途</th></tr></thead>
+            <tbody>
+              <tr><td>Reserved Memory</td><td>300MB 固定</td><td>系统保留，防止 OOM Kill</td></tr>
+              <tr><td>User Memory</td><td>~40%</td><td>UDF / 用户数据结构</td></tr>
+              <tr><td>Spark Memory（执行）</td><td>~30%（可借用存储部分）</td><td>Shuffle Sort Join</td></tr>
+              <tr><td>Spark Memory（存储）</td><td>~30%（可被执行借用）</td><td>Cache persist广播变量</td></tr>
+            </tbody>
+          </table>
+<pre><code># OOM 调优常用参数
+spark.executor.memory=8g
+spark.executor.memoryOverhead=2g      # 堆外内存（Python UDF / Native 库）
+spark.memory.fraction=0.8             # Spark Memory 占比（默认 0.6）
+spark.sql.shuffle.partitions=400      # Shuffle 分区数，避免单 Task 数据过大
+spark.serializer=org.apache.spark.serializer.KryoSerializer  # 减少序列化内存</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q3: Flink 如何保证 Exactly-Once 语义？Checkpoint 机制和 Watermark 的作用分别是什么？</div>
+        <span class="q-tag tag-blue">Flink 流处理</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>Checkpoint 原理</strong>：Flink 周期性地向数据流插入 Barrier（屏障），Barrier 到达算子时触发快照（State Snapshot）存入 State Backend；出故障时从最近 Checkpoint 恢复，保证 At-Least-Once；配合外部系统的两阶段提交（2PC）实现 Exactly-Once。</li>
+            <li><strong>两阶段提交</strong>：Flink 算子 + Sink（如 Kafka）配合实现：预提交阶段数据写入临时事务；Checkpoint 完成后正式 Commit；故障时 Rollback。</li>
+            <li><strong>Watermark 作用</strong>：处理乱序事件流；Watermark = 当前已观察到的最大事件时间 - 允许的最大乱序时间；当 Watermark 超过窗口结束时间时触发窗口计算。</li>
+            <li><strong>State Backend 选型</strong>：HashMapStateBackend（内存，小状态场景）vs RocksDBStateBackend（磁盘，大状态/超大状态场景）。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能解释 Barrier 对齐机制；知道 2PC 如何与 Kafka/JDBC Sink 结合；正确描述 Watermark 的计算公式；区分 At-Least-Once 和 Exactly-Once 的代价差异（Barrier 对齐 vs 非对齐）。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 Checkpoint 是快照恢复，知道 Watermark 处理乱序，但 2PC 细节不清楚。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">混淆 Exactly-Once 和幂等，认为重试就能保证 Exactly-Once。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案</summary>
+        <div class="answer-key">
+          <p><strong>Watermark 公式：</strong></p>
+<pre><code>// 允许 5 秒乱序的 Watermark 生成
+WatermarkStrategy
+  .forBoundedOutOfOrderness(Duration.ofSeconds(5))
+  .withTimestampAssigner((event, ts) -> event.getEventTime())
+
+// Watermark = max(已观察事件时间) - 5s
+// 当 Watermark >= window_end_time 时，触发窗口计算并关闭窗口</code></pre>
+          <p><strong>Exactly-Once 与 At-Least-Once 的代价：</strong></p>
+          <ul>
+            <li>At-Least-Once：Barrier 不需要等待对齐，延迟低；但故障恢复后可能重复数据</li>
+            <li>Exactly-Once：Barrier 需要对齐（慢速上游 Barrier 到达前，快速上游需缓冲数据），延迟较高但数据精确</li>
+            <li>Unaligned Checkpoint（Flink 1.11+）：改善了对齐的反压问题，Barrier 可先通过，状态保存数据缓冲</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q4: 数据湖架构选型 — Apache Iceberg、Delta Lake、Apache Hudi 三者的核心差异是什么？高级工程师如何根据业务场景做架构决策？</div>
+        <span class="q-tag tag-yellow">数据湖架构</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>共同能力</strong>：三者均支持 ACID 事务、Schema Evolution（模式演化）、Time Travel（历史版本查询）、流批一体读写，解决了 Hive 不支持事务的核心痛点。</li>
+            <li><strong>核心差异</strong>：Iceberg — 生态最广，Apache 顶级项目，Spark/Flink/Trino 均支持，元数据管理精确到文件级别；Delta Lake — Databricks 主推，与 Spark 结合最深，Liquid Clustering 替代分区；Hudi — 流式增量写入最强（CDC 场景），内置 Upsert 能力，适合高频更新场景。</li>
+            <li><strong>选型决策维度</strong>：是否需要高频 Upsert（选 Hudi）；是否已有 Databricks 平台（选 Delta）；是否需要多引擎互通（选 Iceberg）；跨境电商 CDC 数据入湖首选 Hudi 或 Iceberg。</li>
+            <li><strong>高级工程师视角</strong>：需考虑存储格式（均基于 Parquet/ORC）、元数据服务依赖（HMS/Nessie/自管）、写放大/读放大的权衡、Compaction 策略对查询性能的影响。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能准确区分三者的核心差异和最佳场景；提到 Compaction 策略（COW vs MOR）；讨论迁移现有 Hive 数仓到数据湖的渐进方案；提到 Nessie（Git-for-data）多分支管理。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道三者都是数据湖格式，能说出部分差异，但无法给出场景化选型依据。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不了解数据湖格式，认为 Hive 就足够用。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案：三种格式核心对比</summary>
+        <div class="answer-key">
+          <table class="compare-table">
+            <thead><tr><th>维度</th><th>Apache Iceberg</th><th>Delta Lake</th><th>Apache Hudi</th></tr></thead>
+            <tbody>
+              <tr><td>主导方</td><td>Apache（Netflix 开源）</td><td>Databricks</td><td>Apache（Uber 开源）</td></tr>
+              <tr><td>Upsert 能力</td><td>支持（MoR 模式）</td><td>支持</td><td>原生最强（专为 CDC 设计）</td></tr>
+              <tr><td>多引擎支持</td><td>最广（Spark/Flink/Trino/Hive）</td><td>Spark 为主，Flink 支持</td><td>Spark/Flink 支持</td></tr>
+              <tr><td>分区管理</td><td>隐藏分区（用户无感知）</td><td>Liquid Clustering（动态）</td><td>显式分区</td></tr>
+              <tr><td>最佳场景</td><td>多引擎互通、云原生数仓</td><td>已有 Databricks 环境</td><td>高频 CDC、流式 Upsert</td></tr>
+            </tbody>
+          </table>
+          <p><strong>COW vs MOR（Hudi/Iceberg 通用概念）：</strong></p>
+          <ul>
+            <li><strong>Copy-on-Write（COW）</strong>：写时合并，每次写入都重写文件，读性能好，写放大大</li>
+            <li><strong>Merge-on-Read（MOR）</strong>：写时追加 delta log，读时合并，写性能好，读需要实时合并</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 2 ==================== -->
+    <div class="section-title">
+      二、数据仓库设计与建模
+      <span class="section-tag">30 分 · 分层 · 模型</span>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q5: 为什么数据仓库要分层（ODS/DWD/DWS/ADS）？每层的职责是什么？不分层有什么问题？</div>
+        <span class="q-tag tag-green">数仓分层</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>各层职责</strong>：ODS（贴源层，保持原始数据格式，做轻量清洗）→ DWD（明细层，数据清洗/标准化/关联维表，宽表）→ DWS（汇总层，按主题聚合，轻度汇总）→ ADS（应用层，面向具体指标/报表）。</li>
+            <li><strong>分层的价值</strong>：数据复用（DWS 层被多个 ADS 共享，避免重复计算）；问题隔离（数据质量问题定位到具体层）；血缘清晰；灵活应对需求变化。</li>
+            <li><strong>不分层的问题</strong>：业务逻辑直接堆在 SQL 里，牵一发动全身；大量重复计算导致资源浪费；数据问题难以溯源。</li>
+            <li><strong>维度建模</strong>：星型模式（事实表 + 维度表）vs 雪花模式（维度表进一步规范化）；电商场景通常用星型，查询性能更好。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能给出具体数据流举例（订单数据从 ODS 到 ADS 的流转）；指出不分层的具体痛点；提到缓慢变化维（SCD）的处理方式。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">能说出各层名称和基本作用，但对分层价值的理解停留在"规范"层面，缺乏实际问题意识。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不清楚各层区别，ODS 和 DWD 混淆。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案：电商订单数据流转示例</summary>
+        <div class="answer-key">
+          <p><strong>电商订单数据在各层的形态：</strong></p>
+          <table class="compare-table">
+            <thead><tr><th>层次</th><th>表名示例</th><th>数据形态</th><th>粒度</th></tr></thead>
+            <tbody>
+              <tr><td>ODS</td><td>ods_order_info_d</td><td>原始订单 JSON 解析后落表，含脏数据</td><td>一行 = 一条原始记录</td></tr>
+              <tr><td>DWD</td><td>dwd_order_detail_d</td><td>清洗后关联商品/用户维表，生成宽表</td><td>一行 = 一个订单明细行</td></tr>
+              <tr><td>DWS</td><td>dws_user_order_td</td><td>按用户聚合：累计订单数/金额/品类偏好</td><td>一行 = 一个用户的汇总</td></tr>
+              <tr><td>ADS</td><td>ads_gmv_region_d</td><td>各地区 GMV 日报，直接对接 BI 工具</td><td>一行 = 一个地区一天的指标</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q6: 什么是缓慢变化维（SCD）？电商场景中商品价格变更历史，应该用哪种 SCD 方式处理？</div>
+        <span class="q-tag tag-green">维度建模</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>SCD Type 1</strong>：直接覆盖旧值，无历史记录；适合错误数据的修正，不适合需要追溯历史的场景。</li>
+            <li><strong>SCD Type 2</strong>：新增一行记录新值，旧行标记 end_date 或 is_current=false；保留完整历史；订单分析"下单时的商品价格"必须用 Type 2。</li>
+            <li><strong>SCD Type 3</strong>：在同一行增加 prev_value 字段记录上一个值；只保留一次历史变化，代价小但灵活性差。</li>
+            <li><strong>拉链表</strong>：SCD Type 2 的工程实现；用 start_dt / end_dt 记录有效期，<code>end_dt = '9999-12-31'</code> 表示当前有效；查询某时刻数据用时间范围过滤。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能区分三种 SCD 的适用场景；清楚拉链表的实现方式和查询方式；提到拉链表会导致数据膨胀，需要按时间分区裁剪。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 SCD 概念，能说出 Type 1/2/3，但不清楚拉链表的具体 SQL 实现。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不知道 SCD，直接覆盖历史数据。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案：拉链表实现</summary>
+        <div class="answer-key">
+<pre><code>-- 商品价格拉链表结构（SCD Type 2）
+CREATE TABLE dim_product_price_zip (
+  product_id  STRING,
+  price       DECIMAL(10,2),
+  start_dt    STRING,  -- 价格生效日期
+  end_dt      STRING   -- 价格失效日期，'9999-12-31' 表示当前有效
+);
+
+-- 查询某订单下单时（2024-11-11）的商品价格
+SELECT p.price
+FROM dwd_order_detail o
+JOIN dim_product_price_zip p
+  ON o.product_id = p.product_id
+  AND o.order_date BETWEEN p.start_dt AND p.end_dt;</code></pre>
+          <p><strong>注意</strong>：拉链表数据量会随时间增大，建议按 start_dt 分区 + 定期压缩历史。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q7: 电商大宽表（事实表）设计时，如何权衡冗余字段存储成本 vs 查询性能？什么情况下"反范式化"是合理的？</div>
+        <span class="q-tag tag-green">宽表设计</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>范式化 vs 反范式化</strong>：关系型 OLTP 追求范式化（减少冗余）；OLAP 数仓追求反范式化（减少 Join），用存储换查询速度。</li>
+            <li><strong>冗余合理性判断</strong>：频繁被查询的维度字段（如用户城市、商品类目）值得冗余到事实表，避免高频 Join 扫描大维表。</li>
+            <li><strong>冗余代价</strong>：维度值变更时需要同步更新宽表（或接受历史冗余值），维护成本高；列式存储（如 Parquet/ORC）对重复值有高压缩率，存储代价可控。</li>
+            <li><strong>Bitmap/字典压缩</strong>：ClickHouse 等 OLAP 引擎对低基数（low cardinality）字符串列自动字典编码，冗余对存储影响有限。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能量化说明宽表对 Join 次数的减少；提到列存压缩降低冗余代价；讨论冗余字段的更新维护策略（快照 vs 拉链）。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道数仓用宽表提高查询性能，但对权衡的量化分析不够深入。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">数仓设计仍然按 OLTP 范式，大量 Join 导致查询极慢。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 模块 3 ==================== -->
+    <div class="section-title">
+      三、存储系统 · 消息队列 · OLAP 引擎
+      <span class="section-tag">40 分 · 技术选型</span>
+    </div>
+
+    <!-- Q8 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q8: Kafka 如何保证消息不丢失、不重复？分区（Partition）、消费组（Consumer Group）的设计原则是什么？</div>
+        <span class="q-tag tag-purple">Kafka 核心</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>不丢失（Producer 端）</strong>：<code>acks=all</code> 要求 Leader + 所有 ISR 副本确认后才返回成功；<code>retries > 0</code> 自动重试；结合幂等性（<code>enable.idempotence=true</code>）避免重试导致重复。</li>
+            <li><strong>不丢失（Consumer 端）</strong>：关闭自动提交 offset（<code>enable.auto.commit=false</code>），业务逻辑处理完后手动提交；若先提交再处理，崩溃会丢消息。</li>
+            <li><strong>幂等性 vs 事务</strong>：幂等性保证单 Producer 单 Session 内不重复；事务（<code>transactional.id</code>）保证跨 Topic/跨 Partition 的原子写。</li>
+            <li><strong>分区设计原则</strong>：分区数 = 消费者并发数（一个 Partition 同时只能被一个消费组内的一个消费者消费）；分区过多增加元数据开销；有序性要求用同一分区键（如 userId）路由同一分区。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能区分 acks=0/1/all 三种级别的语义；解释幂等性的 PID+序列号机制；知道消费者数量超过分区数时多余消费者空闲；提到 Kafka 事务的使用场景。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 acks=all 最安全，手动提交 offset，但幂等性和事务细节不清楚。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">认为 Kafka 默认就是 Exactly-Once，不知道 acks 参数的作用。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案</summary>
+        <div class="answer-key">
+<pre><code># Producer 不丢失配置
+props.put("acks", "all");
+props.put("retries", 3);
+props.put("enable.idempotence", "true");   // 幂等：Producer 重启不重复
+props.put("transactional.id", "tx-001");   // 事务：跨 Topic 原子写
+
+# Consumer 不丢失配置
+props.put("enable.auto.commit", "false");  // 关闭自动提交
+
+// 消费逻辑：先处理，后提交（处理完才算消费成功）
+ConsumerRecords records = consumer.poll(Duration.ofMillis(100));
+processRecords(records);   // 1. 先处理
+consumer.commitSync();     // 2. 再提交 offset</code></pre>
+          <p><strong>分区数设置建议</strong>：分区数 = max(期望吞吐 / 单分区吞吐上限, 消费者最大并发数)；后期可增加分区，但会破坏基于 key 的顺序性，需评估影响。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q9 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q9: ClickHouse、Apache Doris、Presto 三种 OLAP 引擎如何选型？各自适合什么场景？</div>
+        <span class="q-tag tag-purple">OLAP 选型</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>ClickHouse</strong>：列存 + 向量化执行，单表超大数据量（万亿行）点查和聚合极快；但 Join 性能弱（需要用字典表/物化视图优化）；适合日志/埋点等宽表分析。</li>
+            <li><strong>Doris（StarRocks）</strong>：MPP 架构，Join 性能强，支持高并发点查；同时支持明细查询和聚合查询；适合多表关联分析、实时数仓场景。</li>
+            <li><strong>Presto（Trino）</strong>：联邦查询引擎，可跨 Hive/MySQL/ES/Kafka 联合查询；无自己的存储；适合临时分析、数据探索，不适合超高 QPS。</li>
+            <li><strong>选型核心维度</strong>：数据量级、查询并发、Join 复杂度、实时性要求、运维成本。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能给出具体业务场景的选型判断（如"用户行为漏斗分析选 ClickHouse，订单多维度关联选 Doris"）；了解各引擎的核心局限；提到 StarRocks 相比 Doris 的改进。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道三者的基本特点，但无法给出场景化的选型依据。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">只知道其中一种，或认为 ClickHouse 万能。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看选型对比表</summary>
+        <div class="answer-key">
+          <table class="compare-table">
+            <thead><tr><th>引擎</th><th>强项</th><th>弱项</th><th>典型场景</th></tr></thead>
+            <tbody>
+              <tr><td>ClickHouse</td><td>单表超大聚合极速（向量化）</td><td>多表 Join 性能差</td><td>用户行为分析、日志统计、漏斗分析</td></tr>
+              <tr><td>Doris/StarRocks</td><td>Join 强、高并发、实时写入</td><td>单表极端大数据量略逊 ClickHouse</td><td>多维度交叉分析、实时数仓、订单分析</td></tr>
+              <tr><td>Presto/Trino</td><td>跨数据源联邦查询</td><td>无存储、高并发 QPS 差</td><td>数据探索、跨库临时分析</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q10 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q10: SparkSQL 执行计划深度分析 — 如何用 EXPLAIN 诊断慢查询？谓词下推、列裁剪、Join 重排序各自解决什么问题？</div>
+        <span class="q-tag tag-blue">查询优化</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>执行计划层级</strong>：Parsed LP（解析）→ Analyzed LP（语义校验）→ Optimized LP（逻辑优化）→ Physical Plan（物理计划）→ Executed Plan（执行）。</li>
+            <li><strong>谓词下推（Predicate Pushdown）</strong>：将 WHERE 条件尽量提前到数据源层执行，减少读取的数据量；Parquet/ORC 支持列级统计，可跳过不满足条件的 Row Group（Data Skipping）。</li>
+            <li><strong>列裁剪（Column Pruning）</strong>：只读取 SELECT 和 WHERE 中涉及的列，列存格式配合列裁剪大幅减少 IO。</li>
+            <li><strong>Join 重排序（Join Reordering）</strong>：CBO（基于代价的优化器）根据表的统计信息（行数、列基数）自动决定 Join 顺序，小表先 Join 减少中间数据量；需要 ANALYZE TABLE 收集统计信息才能生效。</li>
+            <li><strong>AQE 动态优化</strong>：Spark 3.x 自适应查询执行，在运行时根据 Shuffle 后实际数据量调整执行计划（合并分区、切换 Join 策略）。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能解读 EXPLAIN EXTENDED 的输出，找出未下推的谓词；理解 Parquet Row Group 级别的 Data Skipping；知道何时需要手动 ANALYZE TABLE 更新统计信息；能用 EXPLAIN COST 分析 CBO 代价估算。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 EXPLAIN 可以看执行计划，了解谓词下推的概念，但无法从执行计划中识别性能瓶颈。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">从不看执行计划，靠经验猜测慢查询原因。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案：执行计划分析方法</summary>
+        <div class="answer-key">
+<pre><code>-- 查看完整执行计划（含逻辑优化 + 物理计划）
+EXPLAIN EXTENDED
+SELECT u.region, SUM(o.amount)
+FROM fact_orders o
+JOIN dim_user u ON o.user_id = u.user_id
+WHERE o.dt = '2024-11-11'
+  AND o.status = 'paid'
+GROUP BY u.region;
+
+-- 关键观察点：
+-- 1. Filter 是否在 Scan 下方（谓词下推成功）
+-- 2. Project 是否只包含需要的列（列裁剪成功）
+-- 3. Join 类型是 BroadcastHashJoin（广播）还是 SortMergeJoin（Shuffle）
+
+-- 更新统计信息（CBO 优化的前提）
+ANALYZE TABLE fact_orders COMPUTE STATISTICS;
+ANALYZE TABLE fact_orders COMPUTE STATISTICS FOR COLUMNS amount, user_id;
+
+-- AQE：运行时动态调整，无需手动干预（Spark 3.0+ 默认开启）
+SET spark.sql.adaptive.enabled=true;</code></pre>
+          <p><strong>常见慢查询 Pattern 诊断：</strong></p>
+          <ul>
+            <li>Filter 在 Join 之后 → 谓词未下推，需检查数据类型是否一致（隐式转换阻断下推）</li>
+            <li>SortMergeJoin 替换为 BroadcastHashJoin → 小表统计信息缺失，手动加 <code>/*+ BROADCAST(小表) */</code> hint</li>
+            <li>Exchange（Shuffle）节点过多 → 考虑 Bucket Join 或减少 groupBy 层数</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 4 ==================== -->
+    <div class="section-title">
+      四、性能优化与工程化实践
+      <span class="section-tag">30 分 · 调优 · 质量</span>
+    </div>
+
+    <!-- Q11 -->
+    <div class="question-card accent">
+      <div class="q-header">
+        <div class="q-title">Q11: 数据倾斜（Data Skew）是什么？诊断和解决数据倾斜的完整方案有哪些？</div>
+        <span class="q-tag tag-red">数据倾斜 · 必考</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>倾斜表现</strong>：Spark/Hive 任务大部分 Task 完成，仅 1–2 个 Task 卡住很久（99% 完成后长时间不结束）；这些 Task 处理的数据量远超其他 Task。</li>
+            <li><strong>倾斜原因</strong>：JOIN Key 分布不均（如大量 NULL 或热点 Key）；GROUP BY 某个热点值（如全国 TOP1 商品）；Kafka 分区数据不均。</li>
+            <li><strong>解决方案一：加盐（Salting）</strong>：对倾斜 Key 加随机前缀（0~N），把热点 Key 拆分到多个分区；另一侧表也扩展 N 倍对应；完成后去掉前缀聚合结果。</li>
+            <li><strong>解决方案二：AQE（Spark 3.x 自适应查询执行）</strong>：自动检测 Shuffle 后的分区倾斜并合并/拆分；开启 <code>spark.sql.adaptive.enabled=true</code> 即可，无需手动处理。</li>
+            <li><strong>解决方案三：广播 Join</strong>：将小维表广播，避免 Shuffle Join 产生的倾斜问题。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能用加盐技巧的完整流程（含对侧表扩展）；知道 AQE 自适应解决倾斜；提到 NULL Key 单独处理（过滤 NULL 或给 NULL 赋随机 Key）。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道数据倾斜表现，知道加盐或广播可以解决，但流程不完整。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">只会加资源（增加 Executor），不处理根本原因。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案：加盐完整代码</summary>
+        <div class="answer-key">
+          <p><strong>加盐（Salting）解决 GROUP BY 倾斜：</strong></p>
+<pre><code>-- 场景：user_type='vip' 的用户占 80%，GROUP BY user_type 倾斜
+
+-- Step 1：给倾斜 Key 加随机盐（0~9）
+SELECT
+  CONCAT(user_type, '_', CAST(FLOOR(RAND() * 10) AS INT)) AS salted_key,
+  amount
+FROM fact_orders;
+
+-- Step 2：按加盐 Key 聚合（分散到 10 个分区）
+SELECT salted_key, SUM(amount) AS sub_total
+FROM salted_orders
+GROUP BY salted_key;
+
+-- Step 3：去掉盐后二次聚合
+SELECT SPLIT(salted_key, '_')[0] AS user_type, SUM(sub_total)
+FROM step2_result
+GROUP BY SPLIT(salted_key, '_')[0];</code></pre>
+
+          <p><strong>AQE 自适应（推荐，Spark 3.x）：</strong></p>
+<pre><code>-- 开启三个 AQE 子功能
+SET spark.sql.adaptive.enabled=true;
+SET spark.sql.adaptive.skewJoin.enabled=true;       -- 自动处理 Join 倾斜
+SET spark.sql.adaptive.coalescePartitions.enabled=true;  -- 合并小分区</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q12 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q12: 如何设计大数据任务的数据质量监控体系？数据异常时如何告警和阻断下游任务？</div>
+        <span class="q-tag tag-yellow">数据质量</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>质量维度</strong>：完整性（行数/关键字段非空率）、准确性（数值范围合理性）、一致性（跨表/跨系统数据对齐）、时效性（数据是否按时到达）。</li>
+            <li><strong>检查时机</strong>：ODS 入库后检查（源数据质量）；DWD 处理后检查（ETL 逻辑正确性）；ADS 输出前检查（指标合理性，如 GMV 环比变化超 50% 告警）。</li>
+            <li><strong>阻断机制</strong>：任务调度（Airflow/DolphinScheduler）中配置前置传感器（Sensor）；数据质量任务通过则下游任务继续，失败则阻断 + 告警 + 等人工处理。</li>
+            <li><strong>工具</strong>：Apache Griffin、Great Expectations、Soda Core 等开源数据质量框架；或自建规则引擎。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能设计完整的质量检查规则体系；知道如何在调度系统中插入质量阻断节点；提到业务指标异常的统计阈值设置方法（如 3-Sigma 原则）。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道要做数据质量检查，有行数/非空率的概念，但系统性设计不足。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">没有数据质量概念，出了问题才事后排查。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Q13 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q13: 小文件问题（Small File Problem）是什么？在 HDFS 和 Hive 中如何产生、有何危害、如何治理？</div>
+        <span class="q-tag tag-orange">工程化实践</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>产生原因</strong>：Spark/Hive 写入时每个 Task 生成一个文件；动态分区 + 大量分区 = 大量小文件；Kafka 小批量消费实时写入；频繁追加写入。</li>
+            <li><strong>危害</strong>：HDFS NameNode 内存占用（每个文件约 150 字节元数据）；Map Task 数量膨胀（一个小文件一个 Mapper）；查询 IO 次数多，吞吐量低。</li>
+            <li><strong>治理方案</strong>：写入时合并（<code>coalesce(N)</code> 减少输出分区）；定时 Compact（SparkSQL INSERT OVERWRITE 重写合并）；Hive 开启 <code>hive.merge.smallfiles.avgsize</code> 自动合并；Delta Lake / Iceberg 的 OPTIMIZE 命令。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能定量说明 NameNode 内存影响；给出写入时预防和事后治理两种思路；提到 Iceberg/Delta Lake 的 OPTIMIZE 命令自动合并。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道小文件有害，会用 coalesce 控制输出文件数，但不了解 NameNode 元数据影响。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不知道小文件问题，或认为文件多少无所谓。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案</summary>
+        <div class="answer-key">
+<pre><code>-- Spark 写入时控制文件数（避免产生小文件）
+df.coalesce(20)           // 减少到 20 个文件（不触发 Shuffle）
+  .write
+  .partitionBy("dt")
+  .parquet("/warehouse/fact_orders/")
+
+-- Hive 自动合并小文件（写入后触发）
+SET hive.merge.mapfiles=true;
+SET hive.merge.mapredfiles=true;
+SET hive.merge.smallfiles.avgsize=256000000;  -- 目标合并到 256MB
+
+-- Iceberg / Delta Lake 定时治理
+OPTIMIZE fact_orders WHERE dt >= '2024-11-01';  -- 合并历史小文件
+VACUUM fact_orders RETAIN 7 DAYS;               -- 清理旧版本文件</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q14 -->
+    <div class="question-card accent">
+      <div class="q-header">
+        <div class="q-title">Q14: 压轴场景题 — 设计一套电商大促（如双十一）实时数据大屏的技术方案，要求每秒更新 GMV、订单量、转化率等核心指标。</div>
+        <span class="q-tag tag-red">综合架构设计</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>数据链路</strong>：业务库 Binlog → Kafka（CDC，如 Debezium/Canal）→ Flink 实时计算 → Redis/ClickHouse → 大屏前端推送（WebSocket/SSE）。</li>
+            <li><strong>Flink 指标计算</strong>：滚动窗口（Tumbling Window）计算分钟级 GMV；会话窗口（Session Window）计算用户转化路径；State 存储累计 GMV。</li>
+            <li><strong>高并发写入</strong>：Flink 输出到 Redis（高频更新的实时指标）+ ClickHouse（历史明细供深度查询）；不直接写 MySQL（写入压力大）。</li>
+            <li><strong>容错与准确性</strong>：Flink Checkpoint 保证 Exactly-Once；大促前进行压测（数据量放大 10x）；设置背压报警防止 Flink 处理延迟。</li>
+            <li><strong>大屏数据推送</strong>：后端 Server-Sent Events / WebSocket 每秒推送最新指标到前端；前端动画展示数值变化（数字滚动效果）。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">给出完整的技术链路（CDC → Kafka → Flink → Redis → 前端）；解释窗口类型选择理由；考虑到大促流量洪峰的背压处理；提到数据对账机制（实时 vs T+1 离线对比验证）。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">能设计出基本链路，会用 Flink 窗口计算，但高并发、容错、对账等细节不完整。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">用定时查询 MySQL 实现实时大屏（1分钟轮询），无法支撑双十一流量。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考架构方案</summary>
+        <div class="answer-key">
+          <p><strong>完整技术链路：</strong></p>
+<pre><code>// 数据流向
+MySQL Binlog
+  → Canal/Debezium (CDC) 捕获增量
+  → Kafka Topic: order_events (分区按 user_id 路由)
+  → Flink Stream Job
+      ├── 滚动窗口 1min → GMV / 订单量（写 Redis Hash）
+      ├── 滑动窗口 5min/1min → 转化率趋势
+      └── 全局累计 State → 累计 GMV（写 Redis String）
+  → Redis（实时大屏，毫秒级读取）
+  → ClickHouse（历史明细，支持深度分析查询）
+  → WebSocket Server（推送给大屏前端，1s/次）</code></pre>
+
+          <p><strong>Flink 关键配置（大促场景）：</strong></p>
+<pre><code>// 背压监控：防止处理延迟累积
+env.setBufferTimeout(100);  // 降低 Buffer 延迟
+
+// Checkpoint：每30秒一次，支持故障快速恢复
+env.enableCheckpointing(30000);
+env.getCheckpointConfig().setCheckpointingMode(
+  CheckpointingMode.EXACTLY_ONCE
+);
+
+// 大促前压测：生产者模拟 10x 流量
+KafkaProducer.send(generateHighLoadEvents(10));</code></pre>
+          <p><strong>数据对账</strong>：每小时将 Flink 实时指标与 T+0 离线 Spark 任务结果对比，误差 &gt;0.1% 则触发告警，保障大促数据准确性。</p>
+        </div>
+      </details>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const STORAGE_KEY = "bigdata-interview-theme";
+
+    const applyTheme = (isLight) => {
+      if (isLight) {
+        html.classList.add("light");
+        thumb.textContent = "🌙";
+        label.textContent = "浅色";
+      } else {
+        html.classList.remove("light");
+        thumb.textContent = "☀️";
+        label.textContent = "深色";
+      }
+    };
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const preferLight = saved
+      ? saved === "light"
+      : window.matchMedia("(prefers-color-scheme: light)").matches;
+
+    applyTheme(preferLight);
+
+    btn.addEventListener("click", () => {
+      const isNowLight = html.classList.contains("light");
+      applyTheme(!isNowLight);
+      localStorage.setItem(STORAGE_KEY, !isNowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

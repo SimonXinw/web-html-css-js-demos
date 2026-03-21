@@ -1,168 +1,461 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo 7: Batch Animation & Stagger (批量动画性能优化)</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            background: #111;
-            color: white;
-            padding: 20px;
-        }
-        
-        .controls {
-            margin-bottom: 20px;
-            position: sticky;
-            top: 10px;
-            z-index: 100;
-            background: #111;
-            padding: 10px;
-            border-bottom: 1px solid #333;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Batch Animation & Stagger</title>
+  <style>
+    :root { --cols: 32; }
 
-        button {
-            padding: 8px 16px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-            gap: 5px;
-        }
+    body {
+      font-family: "Segoe UI", monospace, sans-serif;
+      background: #07090f;
+      color: #e2e8f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-        .item {
-            width: 100%;
-            padding-bottom: 100%; /* 1:1 Aspect Ratio */
-            background-color: #333;
-            border-radius: 4px;
-            /* 初始状态：缩小且透明 */
-            opacity: 0;
-            transform: scale(0.5); 
-            
-            /* 
-             * 优化点 1: 
-             * 仅对 transform 和 opacity 进行 GPU 加速
-             * 避免使用 top/left 或 width/height
-             */
-            will-change: transform, opacity;
-        }
-    </style>
+    /* ===== 顶部工具栏 ===== */
+    .toolbar {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.02);
+      flex-wrap: wrap;
+    }
+
+    .toolbar_label {
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      color: rgba(255,255,255,0.25);
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.65);
+      font-size: 11px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      transition: background 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .btn:hover  { background: rgba(255,255,255,0.09); }
+    .btn:active { transform: scale(0.94); }
+
+    .btn.b_sync   { border-color: rgba(248,113,113,0.45); color: #fca5a5; }
+    .btn.b_linear { border-color: rgba(96,165,250,0.45);  color: #93c5fd; }
+    .btn.b_diag   { border-color: rgba(52,211,153,0.45);  color: #6ee7b7; }
+    .btn.b_ripple { border-color: rgba(251,191,36,0.45);  color: #fde68a; }
+    .btn.b_random { border-color: rgba(167,139,250,0.45); color: #c4b5fd; }
+
+    .sep { width: 1px; height: 18px; background: rgba(255,255,255,0.07); }
+
+    .stats {
+      margin-left: auto;
+      display: flex;
+      gap: 18px;
+      font-size: 11px;
+      font-family: monospace;
+      color: rgba(255,255,255,0.28);
+      white-space: nowrap;
+    }
+    .stats span { color: rgba(255,255,255,0.65); }
+    #s_fps  { color: #6ee7b7; }
+
+    /* ===== 主体：格子 + 侧栏 ===== */
+    .main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ===== 格子区 ===== */
+    .grid_wrap {
+      flex: 1;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(var(--cols), 1fr);
+      gap: 2px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .cell {
+      border-radius: 2px;
+      opacity: 0;
+      transform: scale(0.2);
+      will-change: transform, opacity;
+    }
+
+    /* ===== 侧边 Q&A ===== */
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      border-left: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.015);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sidebar_head {
+      padding: 14px 16px 10px;
+      font-size: 10px;
+      letter-spacing: 0.35em;
+      color: rgba(255,255,255,0.2);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .qa_item {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .qa_item .q {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      font-weight: 500;
+    }
+
+    .qa_item .q_num {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.2);
+      display: block;
+      margin-bottom: 4px;
+    }
+  </style>
 </head>
+
 <body>
 
-    <div class="controls">
-        <h2>Batch Animation (2000 Elements)</h2>
-        <p>比较“一次性渲染”与“Stagger 错峰渲染”的性能差异。</p>
-        <button id="btn-sync">Sync Play (卡顿)</button>
-        <button id="btn-stagger">Stagger Play (流畅)</button>
-        <button id="btn-reset">Reset</button>
-        <span id="status">Ready</span>
+  <!-- 工具栏 -->
+  <div class="toolbar">
+    <span class="toolbar_label">STAGGER</span>
+
+    <button class="btn b_sync"   id="b_sync">⚡ Sync</button>
+    <button class="btn b_linear" id="b_linear">→ Linear</button>
+    <button class="btn b_diag"   id="b_diag">⟋ Diagonal</button>
+    <button class="btn b_ripple" id="b_ripple">◎ Ripple</button>
+    <button class="btn b_random" id="b_random">✦ Random</button>
+
+    <div class="sep"></div>
+    <button class="btn" id="b_reset">↺ Reset</button>
+
+    <div class="stats">
+      <span>FPS <span id="s_fps">—</span></span>
+      <span>N <span id="s_count">—</span></span>
+      <span>Mode <span id="s_mode">—</span></span>
+      <span>Time <span id="s_time">—</span></span>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- 格子 -->
+    <div class="grid_wrap">
+      <div class="grid" id="grid"></div>
     </div>
 
-    <div class="grid" id="grid"></div>
+    <!-- 面试 Q&A（答案在注释里，页面不显示） -->
+    <div class="sidebar">
+      <div class="sidebar_head">// 面试考察点</div>
 
-    <script>
-        /**
-         * 演示：批量动画性能优化
-         * 难度：中等 (Medium)
-         * 对应面试题：第八题：滚动监听的性能瓶颈 / 批量初始化
-         * 
-         * 考察点：
-         * 1. 批量 DOM 操作：使用 DocumentFragment 减少 Reflow。
-         * 2. Stagger (交错) 原理：避免 2000 个元素在同一帧进行 Paint/Composite。
-         * 3. requestAnimationFrame 分片：将繁重任务拆分到多个帧。
-         */
+      <div class="qa_item">
+        <span class="q_num">Q 01</span>
+        <p class="q">Sync 与 Stagger 性能差异的根本原因是什么？</p>
+        <!--
+          答案：
+          Sync：所有元素在同一帧触发 CSS transition，浏览器在单帧（16.6ms）内
+          需要完成全部元素的 Style 计算 + Composite 提升，
+          帧时间超出预算导致掉帧、卡顿。
 
-        const grid = document.getElementById('grid');
-        const count = 2000; // 元素数量
-        const items = [];
+          Stagger：每帧只激活 batchSize 个元素（requestAnimationFrame 分片），
+          或用 setTimeout 精确控制各元素的触发时间，
+          将 Composite 压力均匀分摊到多个帧，每帧保持在 16.6ms 以内。
 
-        // 1. 初始化 DOM (使用 Fragment 优化)
-        function init() {
-            const fragment = document.createDocumentFragment();
-            for (let i = 0; i < count; i++) {
-                const div = document.createElement('div');
-                div.className = 'item';
-                // 随机颜色
-                div.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
-                fragment.appendChild(div);
-                items.push(div);
-            }
-            grid.appendChild(fragment);
+          核心：GPU 合成层数量有上限，同帧内超量提升合成层会导致显存压力骤增。
+        -->
+      </div>
+
+      <div class="qa_item">
+        <span class="q_num">Q 02</span>
+        <p class="q">为什么用 DocumentFragment 批量插入 DOM？</p>
+        <!--
+          答案：
+          每次直接向真实 DOM 插入节点，浏览器可能触发 Reflow（重新计算布局）。
+          DocumentFragment 是"离线 DOM 容器"，在内存中组装完整子树，
+          最后一次性 appendChild，只触发 1 次 Reflow。
+
+          N 个元素逐个插入 → 最多 N 次 Reflow（极慢）
+          Fragment 一次插入 → 1 次 Reflow（极快）
+
+          类似手段：虚拟 DOM（React/Vue）也是先在内存中 diff，再一次性 patch 到真实 DOM。
+        -->
+      </div>
+
+      <div class="qa_item">
+        <span class="q_num">Q 03</span>
+        <p class="q">Ripple（涟漪）stagger 的 delay 如何计算？</p>
+        <!--
+          答案：
+          以格子中心为原点，计算每个格子到中心的欧氏距离：
+            dist = Math.sqrt((col - cx)² + (row - cy)²)
+            delay = dist × STEP_MS
+
+          距中心越远的格子 delay 越大，形成"水波向外扩散"的视觉效果。
+
+          其他常见 stagger 公式：
+          - Linear：delay = index × step
+          - Diagonal：delay = (col + row) × step
+          - Wave：delay = col × step + Math.sin(row × freq) × amplitude
+          - Random：delay = Math.random() × maxDelay
+        -->
+      </div>
+
+      <div class="qa_item">
+        <span class="q_num">Q 04</span>
+        <p class="q">setTimeout 和 requestAnimationFrame 在 stagger 调度中各有什么优劣？</p>
+        <!--
+          答案：
+          setTimeout(fn, delay)：
+          - 优点：可精确指定每个元素的触发毫秒数，适合 Ripple/Wave（每个元素 delay 不同）
+          - 缺点：受主线程阻塞影响，实际触发时间可能有偏差；
+            delay=0 时仍有 ~4ms 最小延迟
+
+          requestAnimationFrame 分片（每帧处理 N 个）：
+          - 优点：与屏幕刷新率同步，适合 Linear（均匀每帧激活一批）；
+            主线程友好，不会因为大量 setTimeout 堆积而内存压力大
+          - 缺点：无法精确控制各元素的相对延迟，不适合 Ripple/Wave 这类非线性 delay
+
+          实际项目常结合使用：Framer Motion staggerChildren 用的是 delay 属性（类 setTimeout）。
+        -->
+      </div>
+
+      <div class="qa_item">
+        <span class="q_num">Q 05</span>
+        <p class="q">will-change: transform 写在每个格子上，会有什么副作用？</p>
+        <!--
+          答案：
+          will-change: transform 告知浏览器提前将元素提升为独立合成层（Composite Layer），
+          每个合成层都会在 GPU 中分配独立的显存纹理。
+
+          副作用：
+          - 本例有 1000+ 格子，全部 will-change 会导致大量合成层同时存在，
+            GPU 显存占用极高，在低端设备上反而导致性能下降、内存警告
+          - 正确做法：动画开始前动态添加 will-change，动画结束后移除：
+              el.style.willChange = 'transform';
+              // 动画结束后：
+              el.addEventListener('transitionend', () => { el.style.willChange = 'auto'; });
+
+          本 Demo 为演示目的保留，生产环境应按需动态管理。
+        -->
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const COLS = 32;
+    const grid = document.getElementById("grid");
+
+    let cells = [];
+    let rows = 0;
+    let total = 0;
+
+    // ===== 构建格子 =====
+    // 每个格子颜色基于坐标 hue，形成彩虹色板，视觉上更有层次感
+    const buildGrid = () => {
+      grid.innerHTML = "";
+      cells = [];
+
+      const wrapW = grid.parentElement.offsetWidth - 20;
+      const wrapH = grid.parentElement.offsetHeight - 20;
+      const cellW = (wrapW - (COLS - 1) * 2) / COLS;
+
+      rows = Math.max(Math.floor((wrapH + 2) / (cellW + 2)), 8);
+      total = COLS * rows;
+
+      document.getElementById("s_count").textContent = total;
+
+      const frag = document.createDocumentFragment();
+
+      for (let i = 0; i < total; i++) {
+        const col = i % COLS;
+        const row = Math.floor(i / COLS);
+
+        const hue = (col / COLS * 300 + row * 4) % 360;
+        const el = document.createElement("div");
+        el.className = "cell";
+        el.style.background = `hsl(${hue}, 75%, 52%)`;
+        el.style.boxShadow = `0 0 0 0 hsl(${hue}, 90%, 65%)`;
+
+        frag.appendChild(el);
+        cells.push(el);
+      }
+
+      grid.appendChild(frag);
+      grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    };
+
+    buildGrid();
+
+    // ===== Reset =====
+    const reset = () => {
+      cells.forEach((el) => {
+        el.style.transition = "none";
+        el.style.opacity = "0";
+        el.style.transform = "scale(0.2)";
+      });
+      document.body.offsetHeight; // 强制回流，确保 transition 清除立即生效
+      document.getElementById("s_mode").textContent = "—";
+      document.getElementById("s_time").textContent = "—";
+    };
+
+    // ===== 激活单个格子 =====
+    const ANIM = "opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)";
+
+    const show = (el) => {
+      el.style.transition = ANIM;
+      el.style.opacity = "1";
+      el.style.transform = "scale(1)";
+    };
+
+    // ===== FPS =====
+    let fpsBuf = [];
+    let lastT = performance.now();
+    const fpsEl = document.getElementById("s_fps");
+
+    (function fpsTick(now) {
+      fpsBuf.push(1000 / (now - lastT));
+      lastT = now;
+      if (fpsBuf.length > 40) fpsBuf.shift();
+      const avg = fpsBuf.reduce((a, b) => a + b, 0) / fpsBuf.length;
+      fpsEl.textContent = avg.toFixed(0);
+      fpsEl.style.color = avg >= 55 ? "#6ee7b7" : avg >= 30 ? "#fde68a" : "#fca5a5";
+      requestAnimationFrame(fpsTick);
+    })(performance.now());
+
+    // ===== 模式 A：Sync — 所有元素同帧触发 =====
+    // 单帧内激活全部元素，GPU 合成压力集中爆发，FPS 会明显下跌
+    document.getElementById("b_sync").addEventListener("click", () => {
+      reset();
+      document.getElementById("s_mode").textContent = "SYNC";
+
+      requestAnimationFrame(() => {
+        const t0 = performance.now();
+        cells.forEach(show);
+        document.getElementById("s_time").textContent = `${(performance.now() - t0).toFixed(1)}ms`;
+      });
+    });
+
+    // ===== 模式 B：Linear — 每帧激活一批，从左到右扫入 =====
+    // requestAnimationFrame 分片：每帧激活 BATCH 个，均匀分摊 Composite 压力
+    document.getElementById("b_linear").addEventListener("click", () => {
+      reset();
+      document.getElementById("s_mode").textContent = "LINEAR";
+
+      const BATCH = 16;
+      let idx = 0;
+      const t0 = performance.now();
+
+      (function step() {
+        const end = Math.min(idx + BATCH, total);
+        for (let i = idx; i < end; i++) show(cells[i]);
+        idx = end;
+        if (idx < total) {
+          requestAnimationFrame(step);
+        } else {
+          document.getElementById("s_time").textContent = `${(performance.now() - t0).toFixed(0)}ms`;
         }
-        init();
+      })();
+    });
 
-        function reset() {
-            items.forEach(item => {
-                // 直接操作 Style，去除 Transition 以便瞬间复位
-                item.style.transition = 'none';
-                item.style.opacity = '0';
-                item.style.transform = 'scale(0.5)';
-            });
-            // 强制回流，确保 transition removed 生效
-            document.body.offsetHeight; 
-        }
+    // ===== 模式 C：Diagonal — 对角线级联（row + col 等值线同时出现）=====
+    // delay = (col + row) × STEP，等延迟的格子在一条 45° 斜线上
+    document.getElementById("b_diag").addEventListener("click", () => {
+      reset();
+      document.getElementById("s_mode").textContent = "DIAGONAL";
 
-        // 方案 A: 同步播放 (压力测试)
-        // 所有 2000 个元素在同一时刻启动 transition，会导致主线程瞬间拥堵
-        document.getElementById('btn-sync').addEventListener('click', () => {
-            reset();
-            
-            requestAnimationFrame(() => {
-                const start = performance.now();
-                
-                items.forEach(item => {
-                    item.style.transition = 'all 0.5s ease';
-                    item.style.opacity = '1';
-                    item.style.transform = 'scale(1)';
-                });
+      const STEP = 20;
+      const t0 = performance.now();
+      let maxD = 0;
 
-                console.log(`Sync Trigger Time: ${performance.now() - start}ms`);
-            });
-        });
+      cells.forEach((el, i) => {
+        const col = i % COLS;
+        const row = Math.floor(i / COLS);
+        const d = (col + row) * STEP;
+        maxD = Math.max(maxD, d);
+        setTimeout(() => show(el), d);
+      });
 
-        // 方案 B: Stagger (错峰) 播放 —— 推荐做法
-        // 利用 JS 循环添加 delay，或者分批次执行
-        document.getElementById('btn-stagger').addEventListener('click', () => {
-            reset();
+      setTimeout(() => {
+        document.getElementById("s_time").textContent = `${(performance.now() - t0).toFixed(0)}ms`;
+      }, maxD + 400);
+    });
 
-            // 简单的 Stagger 逻辑：
-            // 我们不一次性设置所有 Style，而是每帧处理一部分
-            // 或者给每个元素设置不同的 transition-delay
-            
-            // 方法 1: 使用 transition-delay (最简单，但 CSS 样式表会很大)
-            // 方法 2: JS 驱动的分时任务 (Time Slicing) —— 这里演示这个，因为它更通用
+    // ===== 模式 D：Ripple — 从中心向外扩散（欧氏距离 × STEP）=====
+    // delay = √(dx² + dy²) × STEP，距中心越远触发越晚，形成水波涟漪
+    document.getElementById("b_ripple").addEventListener("click", () => {
+      reset();
+      document.getElementById("s_mode").textContent = "RIPPLE";
 
-            let index = 0;
-            const batchSize = 50; // 每帧处理 50 个
+      const cx = (COLS - 1) / 2;
+      const cy = (rows - 1) / 2;
+      const STEP = 24;
+      const t0 = performance.now();
+      let maxD = 0;
 
-            function animateBatch() {
-                // 在这一帧处理 batchSize 个元素
-                const limit = Math.min(index + batchSize, count);
-                
-                for (let i = index; i < limit; i++) {
-                    const item = items[i];
-                    item.style.transition = 'all 0.5s ease'; // 恢复过渡
-                    item.style.opacity = '1';
-                    item.style.transform = 'scale(1)';
-                }
-                
-                index = limit;
+      cells.forEach((el, i) => {
+        const col = i % COLS;
+        const row = Math.floor(i / COLS);
+        const dist = Math.sqrt((col - cx) ** 2 + (row - cy) ** 2);
+        const d = dist * STEP;
+        maxD = Math.max(maxD, d);
+        setTimeout(() => show(el), d);
+      });
 
-                if (index < count) {
-                    requestAnimationFrame(animateBatch);
-                }
-            }
+      setTimeout(() => {
+        document.getElementById("s_time").textContent = `${(performance.now() - t0).toFixed(0)}ms`;
+      }, maxD + 400);
+    });
 
-            requestAnimationFrame(animateBatch);
-        });
+    // ===== 模式 E：Random — 随机延迟，有机散落感 =====
+    // 适合卡片流、Feed 场景，让用户感知到"内容在陆续加载"
+    document.getElementById("b_random").addEventListener("click", () => {
+      reset();
+      document.getElementById("s_mode").textContent = "RANDOM";
 
-        document.getElementById('btn-reset').addEventListener('click', reset);
+      const MAX = 900;
+      const t0 = performance.now();
 
-    </script>
+      cells.forEach((el) => setTimeout(() => show(el), Math.random() * MAX));
+
+      setTimeout(() => {
+        document.getElementById("s_time").textContent = `${(performance.now() - t0).toFixed(0)}ms`;
+      }, MAX + 400);
+    });
+
+    document.getElementById("b_reset").addEventListener("click", reset);
+  </script>
+
 </body>
 </html>

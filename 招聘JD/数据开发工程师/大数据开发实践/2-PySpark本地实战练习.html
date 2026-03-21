@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PySpark 本地模式实战练习</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+    .grid-1 { grid-template-columns: 1fr; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow-x: auto;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>PySpark 本地模式实战练习</h1>
+    <p class="hero-sub">不需要集群，pip install pyspark 即可在 Windows 本地学习 Spark 核心 API</p>
+    <div class="tags">
+      <span class="tag tag-blue">SparkSession</span>
+      <span class="tag tag-green">DataFrame</span>
+      <span class="tag tag-purple">SparkSQL</span>
+      <span class="tag tag-orange">RDD</span>
+      <span class="tag tag-pink">窗口函数</span>
+      <span class="tag tag-blue">数据清洗</span>
+      <span class="tag tag-green">ETL</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🚀</div>
+      一、PySpark 环境初始化
+      <span class="chapter-count">万事开头难</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">SparkSession 创建方式 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">SparkSession 是 PySpark 2.0+ 的统一入口，替代了早期的 SparkContext + SQLContext。所有 DataFrame/SQL 操作都通过它发起。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>local[*]</strong>：使用本机所有 CPU 核心运行，适合本地开发调试</li>
+          <li><strong>local[4]</strong>：指定 4 个核心，可控制并行度</li>
+          <li><strong>local[1]</strong>：单线程运行，方便调试序列化问题</li>
+          <li><strong>getOrCreate()</strong>：如果已有 Session 则复用，避免重复创建</li>
+        </ul>
+        <div class="card-formula">
+<span class="label">完整初始化模板</span>
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .master("local[*]") \
+    .appName("PySpark-Local-Practice") \
+    .config("spark.driver.memory", "2g") \
+    .config("spark.sql.shuffle.partitions", "4") \
+    .config("spark.ui.port", "4050") \
+    .getOrCreate()
+
+spark.sparkContext.setLogLevel("WARN")
+
+print(f"Spark Version: {spark.version}")
+print(f"App Name: {spark.sparkContext.appName}")
+print("SparkSession 初始化成功！")</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常用配置项说明</div>
+        <table class="compare-table">
+          <thead><tr><th>配置项</th><th>说明</th><th>推荐值</th></tr></thead>
+          <tbody>
+            <tr><td>spark.driver.memory</td><td>Driver 进程内存</td><td>本地 2g 即可</td></tr>
+            <tr><td>spark.sql.shuffle.partitions</td><td>Shuffle 后的分区数</td><td>本地设 4~8，生产 200</td></tr>
+            <tr><td>spark.ui.port</td><td>Spark Web UI 端口</td><td>默认 4040，冲突可改</td></tr>
+            <tr><td>spark.sql.adaptive.enabled</td><td>开启 AQE 自适应查询</td><td>true（Spark 3.x）</td></tr>
+            <tr><td>spark.serializer</td><td>序列化器</td><td>KryoSerializer 更快</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:12px">
+<span class="label">关闭 Session</span>
+spark.stop()</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">📊</div>
+      二、创建模拟电商数据集
+      <span class="chapter-count">不依赖外部文件</span>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <div class="card-title">用 Python 代码生成订单表、用户表、商品表 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">以下代码生成完整的模拟电商数据（订单、用户、商品三张表），使用 <strong>createDataFrame</strong> 创建 Spark DataFrame 并注册为临时视图，后续所有练习都基于这些数据。</div>
+        <div class="card-formula" style="margin-top:12px">
+<span class="label">完整数据生成代码（直接复制运行）</span>
+from pyspark.sql import SparkSession
+from pyspark.sql.types import *
+from datetime import date
+
+spark = SparkSession.builder \
+    .master("local[*]") \
+    .appName("PySpark-Ecommerce-Practice") \
+    .config("spark.driver.memory", "2g") \
+    .config("spark.sql.shuffle.partitions", "4") \
+    .getOrCreate()
+spark.sparkContext.setLogLevel("WARN")
+
+# ========== 用户表 ==========
+users_data = [
+    (1, "alice",   "北京", date(2023, 1, 15), 28),
+    (2, "bob",     "上海", date(2023, 3, 20), 35),
+    (3, "charlie", "广州", date(2023, 5, 10), 22),
+    (4, "diana",   "深圳", date(2023, 2, 8),  30),
+    (5, "eve",     "杭州", date(2023, 7, 1),  26),
+    (6, "frank",   "北京", date(2023, 4, 18), 42),
+    (7, "grace",   "上海", date(2023, 6, 25), 31),
+    (8, "henry",   "成都", date(2023, 8, 12), 29),
+    (9, "ivy",     "广州", date(2023, 9, 5),  24),
+    (10, "jack",   "深圳", date(2023, 10, 20), 38),
+]
+users_schema = StructType([
+    StructField("user_id", IntegerType()),
+    StructField("username", StringType()),
+    StructField("city", StringType()),
+    StructField("register_date", DateType()),
+    StructField("age", IntegerType()),
+])
+df_users = spark.createDataFrame(users_data, users_schema)
+
+# ========== 商品表 ==========
+products_data = [
+    (101, "iPhone 15",       "手机",   5999.0, "Apple"),
+    (102, "MacBook Pro",     "电脑",  12999.0, "Apple"),
+    (103, "AirPods Pro",     "耳机",   1799.0, "Apple"),
+    (104, "Redmi Note 13",   "手机",   1299.0, "小米"),
+    (105, "ThinkPad X1",     "电脑",   8999.0, "联想"),
+    (106, "Sony WH-1000XM5", "耳机",   2499.0, "Sony"),
+    (107, "Galaxy S24",      "手机",   4999.0, "三星"),
+    (108, "iPad Air",        "平板",   4799.0, "Apple"),
+    (109, "华为 MatePad",     "平板",   2599.0, "华为"),
+    (110, "小米手环 8",       "配件",    249.0, "小米"),
+]
+products_schema = StructType([
+    StructField("product_id", IntegerType()),
+    StructField("product_name", StringType()),
+    StructField("category", StringType()),
+    StructField("price", DoubleType()),
+    StructField("brand", StringType()),
+])
+df_products = spark.createDataFrame(products_data, products_schema)
+
+# ========== 订单表 ==========
+orders_data = [
+    (1001, 1, 101, "手机",  5999.0,  date(2024, 1, 5),  "paid"),
+    (1002, 2, 103, "耳机",  1799.0,  date(2024, 1, 8),  "paid"),
+    (1003, 3, 104, "手机",  1299.0,  date(2024, 1, 10), "paid"),
+    (1004, 1, 110, "配件",   249.0,  date(2024, 1, 12), "paid"),
+    (1005, 4, 102, "电脑", 12999.0,  date(2024, 1, 15), "paid"),
+    (1006, 5, 107, "手机",  4999.0,  date(2024, 1, 18), "cancelled"),
+    (1007, 2, 108, "平板",  4799.0,  date(2024, 1, 20), "paid"),
+    (1008, 6, 105, "电脑",  8999.0,  date(2024, 1, 22), "paid"),
+    (1009, 3, 106, "耳机",  2499.0,  date(2024, 1, 25), "refunded"),
+    (1010, 7, 101, "手机",  5999.0,  date(2024, 2, 1),  "paid"),
+    (1011, 1, 103, "耳机",  1799.0,  date(2024, 2, 5),  "paid"),
+    (1012, 8, 109, "平板",  2599.0,  date(2024, 2, 8),  "paid"),
+    (1013, 4, 110, "配件",   249.0,  date(2024, 2, 10), "paid"),
+    (1014, 9, 104, "手机",  1299.0,  date(2024, 2, 14), "paid"),
+    (1015, 5, 103, "耳机",  1799.0,  date(2024, 2, 18), "paid"),
+    (1016, 10, 102, "电脑", 12999.0, date(2024, 2, 20), "paid"),
+    (1017, 2, 101, "手机",  5999.0,  date(2024, 2, 22), "paid"),
+    (1018, 6, 110, "配件",   249.0,  date(2024, 2, 25), "cancelled"),
+    (1019, 3, 108, "平板",  4799.0,  date(2024, 3, 1),  "paid"),
+    (1020, 7, 106, "耳机",  2499.0,  date(2024, 3, 5),  "paid"),
+    (1021, 1, 107, "手机",  4999.0,  date(2024, 3, 8),  "paid"),
+    (1022, 8, 101, "手机",  5999.0,  date(2024, 3, 10), "refunded"),
+    (1023, 4, 103, "耳机",  1799.0,  date(2024, 3, 15), "paid"),
+    (1024, 9, 105, "电脑",  8999.0,  date(2024, 3, 18), "paid"),
+    (1025, 5, 109, "平板",  2599.0,  date(2024, 3, 20), "paid"),
+    (1026, 10, 104, "手机",  1299.0, date(2024, 3, 22), "paid"),
+    (1027, 2, 106, "耳机",  2499.0,  date(2024, 3, 25), "paid"),
+    (1028, 6, 101, "手机",  5999.0,  date(2024, 3, 28), "paid"),
+    (1029, 1, 102, "电脑", 12999.0,  date(2024, 3, 30), "paid"),
+    (1030, 3, 110, "配件",   249.0,  date(2024, 3, 30), "paid"),
+]
+orders_schema = StructType([
+    StructField("order_id", IntegerType()),
+    StructField("user_id", IntegerType()),
+    StructField("product_id", IntegerType()),
+    StructField("category", StringType()),
+    StructField("amount", DoubleType()),
+    StructField("order_date", DateType()),
+    StructField("status", StringType()),
+])
+df_orders = spark.createDataFrame(orders_data, orders_schema)
+
+# ========== 注册临时视图 ==========
+df_users.createOrReplaceTempView("users")
+df_products.createOrReplaceTempView("products")
+df_orders.createOrReplaceTempView("orders")
+
+print("=== 用户表 ===")
+df_users.show(5)
+print("=== 商品表 ===")
+df_products.show(5)
+print("=== 订单表 ===")
+df_orders.show(10)
+print(f"订单总数: {df_orders.count()}")
+print(f"用户总数: {df_users.count()}")
+print(f"商品总数: {df_products.count()}")</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🔧</div>
+      三、DataFrame API 基础操作
+      <span class="chapter-count">日常开发最常用</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">select / filter / where <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">选择列和过滤行是最基础的操作。<strong>filter</strong> 和 <strong>where</strong> 功能完全相同，只是别名关系。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">select - 选择列</span>
+from pyspark.sql.functions import col
+
+df_orders.select("order_id", "user_id", "amount").show(5)
+
+df_orders.select(
+    col("order_id"),
+    col("amount").alias("order_amount")
+).show(5)</div>
+        <div class="card-formula">
+<span class="label">filter / where - 过滤行</span>
+df_orders.filter(col("status") == "paid").show(5)
+
+df_orders.where(col("amount") > 5000).show(5)
+
+df_orders.filter(
+    (col("status") == "paid") &amp; (col("amount") > 2000)
+).show(5)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">withColumn - 新增/修改列</div>
+        <div class="card-desc">withColumn 用于添加新列或修改已有列，不会修改原 DataFrame（Spark DataFrame 是不可变的）。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">新增列 / 修改列</span>
+from pyspark.sql.functions import col, lit, when, year, month
+
+df_with_tax = df_orders.withColumn(
+    "tax", col("amount") * 0.13
+)
+df_with_tax.show(5)
+
+df_with_level = df_orders.withColumn(
+    "amount_level",
+    when(col("amount") >= 10000, "高客单")
+    .when(col("amount") >= 3000, "中客单")
+    .otherwise("低客单")
+)
+df_with_level.show(5)
+
+df_with_month = df_orders.withColumn(
+    "order_month", month(col("order_date"))
+).withColumn(
+    "order_year", year(col("order_date"))
+)
+df_with_month.show(5)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">groupBy + agg 聚合 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">分组聚合是数据分析的核心操作，常用聚合函数：count、sum、avg、max、min。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">分组聚合示例</span>
+from pyspark.sql.functions import count, sum, avg, max, min
+from pyspark.sql.functions import col, round
+
+df_paid = df_orders.filter(col("status") == "paid")
+
+category_stats = df_paid.groupBy("category").agg(
+    count("order_id").alias("order_count"),
+    round(sum("amount"), 2).alias("total_amount"),
+    round(avg("amount"), 2).alias("avg_amount"),
+    max("amount").alias("max_amount"),
+    min("amount").alias("min_amount")
+)
+category_stats.show()
+# 预期输出：每个品类的订单数、总金额、均价、最高/最低价
+
+user_stats = df_paid.groupBy("user_id").agg(
+    count("order_id").alias("order_count"),
+    round(sum("amount"), 2).alias("total_spend")
+).orderBy(col("total_spend").desc())
+user_stats.show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">orderBy / distinct / dropDuplicates</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">排序</span>
+from pyspark.sql.functions import col, desc
+
+df_orders.orderBy("amount").show(5)
+
+df_orders.orderBy(col("amount").desc()).show(5)
+
+df_orders.sort(col("user_id").asc(), col("amount").desc()).show(10)</div>
+        <div class="card-formula">
+<span class="label">去重</span>
+df_orders.select("category").distinct().show()
+
+df_orders.select("user_id", "category") \
+    .dropDuplicates(["user_id", "category"]).show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">join 关联操作 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">DataFrame 的 join 支持 inner / left / right / outer / cross / semi / anti 等方式。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">inner join - 订单关联用户</span>
+df_order_user = df_orders.join(
+    df_users,
+    on="user_id",
+    how="inner"
+)
+df_order_user.select(
+    "order_id", "username", "city", "amount", "status"
+).show(10)</div>
+        <div class="card-formula">
+<span class="label">left join - 订单关联商品详情</span>
+df_order_product = df_orders.alias("o").join(
+    df_products.alias("p"),
+    on=col("o.product_id") == col("p.product_id"),
+    how="left"
+).select(
+    col("o.order_id"),
+    col("p.product_name"),
+    col("p.brand"),
+    col("o.amount"),
+    col("o.status")
+)
+df_order_product.show(10)</div>
+        <div class="card-formula">
+<span class="label">三表关联 - 完整订单视图</span>
+df_full = df_orders.alias("o") \
+    .join(df_users.alias("u"), col("o.user_id") == col("u.user_id"), "left") \
+    .join(df_products.alias("p"), col("o.product_id") == col("p.product_id"), "left") \
+    .select(
+        col("o.order_id"), col("u.username"), col("u.city"),
+        col("p.product_name"), col("p.brand"),
+        col("o.amount"), col("o.order_date"), col("o.status")
+    )
+df_full.show(10)</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🗄️</div>
+      四、SparkSQL 实战
+      <span class="chapter-count">SQL 是数据开发的第一语言</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">基础查询：SELECT / WHERE / GROUP BY <span class="card-badge badge-core">核心</span></div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">基础 SELECT + WHERE</span>
+spark.sql("""
+    SELECT order_id, user_id, amount, status
+    FROM orders
+    WHERE status = 'paid' AND amount > 3000
+    ORDER BY amount DESC
+""").show()</div>
+        <div class="card-formula">
+<span class="label">GROUP BY 聚合</span>
+spark.sql("""
+    SELECT
+        category,
+        COUNT(*)        AS order_count,
+        ROUND(SUM(amount), 2)  AS total_amount,
+        ROUND(AVG(amount), 2)  AS avg_amount
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY category
+    ORDER BY total_amount DESC
+""").show()</div>
+        <div class="card-formula">
+<span class="label">HAVING 过滤聚合结果</span>
+spark.sql("""
+    SELECT
+        user_id,
+        COUNT(*)       AS order_count,
+        SUM(amount)    AS total_spend
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY user_id
+    HAVING SUM(amount) > 10000
+    ORDER BY total_spend DESC
+""").show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">JOIN 查询 — 订单关联用户和商品</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">三表 JOIN - 完整订单视图</span>
+spark.sql("""
+    SELECT
+        o.order_id,
+        u.username,
+        u.city,
+        p.product_name,
+        p.brand,
+        o.amount,
+        o.order_date,
+        o.status
+    FROM orders o
+    LEFT JOIN users u ON o.user_id = u.user_id
+    LEFT JOIN products p ON o.product_id = p.product_id
+    WHERE o.status = 'paid'
+    ORDER BY o.order_date DESC
+""").show(15)</div>
+        <div class="card-formula">
+<span class="label">每个城市的 GMV（已支付总额）</span>
+spark.sql("""
+    SELECT
+        u.city,
+        COUNT(DISTINCT o.order_id)  AS order_count,
+        COUNT(DISTINCT o.user_id)   AS user_count,
+        ROUND(SUM(o.amount), 2)     AS city_gmv
+    FROM orders o
+    JOIN users u ON o.user_id = u.user_id
+    WHERE o.status = 'paid'
+    GROUP BY u.city
+    ORDER BY city_gmv DESC
+""").show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">子查询和 CTE（WITH 语句）</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">子查询 - 消费高于平均值的用户</span>
+spark.sql("""
+    SELECT user_id, total_spend
+    FROM (
+        SELECT user_id, SUM(amount) AS total_spend
+        FROM orders
+        WHERE status = 'paid'
+        GROUP BY user_id
+    ) t
+    WHERE total_spend > (
+        SELECT AVG(amount) * 3 FROM orders WHERE status = 'paid'
+    )
+    ORDER BY total_spend DESC
+""").show()</div>
+        <div class="card-formula">
+<span class="label">CTE - 每个品类的订单数和排名</span>
+spark.sql("""
+    WITH paid_orders AS (
+        SELECT * FROM orders WHERE status = 'paid'
+    ),
+    category_stats AS (
+        SELECT
+            category,
+            COUNT(*)              AS order_count,
+            ROUND(SUM(amount), 2) AS total_amount
+        FROM paid_orders
+        GROUP BY category
+    )
+    SELECT
+        category,
+        order_count,
+        total_amount,
+        RANK() OVER (ORDER BY total_amount DESC) AS amount_rank
+    FROM category_stats
+""").show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">聚合分析 — 多维度统计</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">按月统计 GMV 趋势</span>
+spark.sql("""
+    SELECT
+        DATE_FORMAT(order_date, 'yyyy-MM') AS order_month,
+        COUNT(*)                           AS order_count,
+        ROUND(SUM(amount), 2)              AS monthly_gmv,
+        COUNT(DISTINCT user_id)            AS active_users
+    FROM orders
+    WHERE status = 'paid'
+    GROUP BY DATE_FORMAT(order_date, 'yyyy-MM')
+    ORDER BY order_month
+""").show()</div>
+        <div class="card-formula">
+<span class="label">品牌 × 品类交叉分析</span>
+spark.sql("""
+    SELECT
+        p.brand,
+        p.category,
+        COUNT(o.order_id)          AS order_count,
+        ROUND(SUM(o.amount), 2)    AS brand_gmv
+    FROM orders o
+    JOIN products p ON o.product_id = p.product_id
+    WHERE o.status = 'paid'
+    GROUP BY p.brand, p.category
+    ORDER BY brand_gmv DESC
+""").show()</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">🪟</div>
+      五、窗口函数实战
+      <span class="chapter-count">面试必考 + 工作常用</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">ROW_NUMBER — 每个用户的最近订单 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">SparkSQL 写法</span>
+spark.sql("""
+    SELECT * FROM (
+        SELECT
+            order_id, user_id, amount, order_date, status,
+            ROW_NUMBER() OVER (
+                PARTITION BY user_id
+                ORDER BY order_date DESC
+            ) AS rn
+        FROM orders
+        WHERE status = 'paid'
+    ) t
+    WHERE rn = 1
+""").show()</div>
+        <div class="card-formula">
+<span class="label">PySpark API 写法</span>
+from pyspark.sql.window import Window
+from pyspark.sql.functions import row_number, col
+
+w = Window.partitionBy("user_id").orderBy(col("order_date").desc())
+
+df_orders.filter(col("status") == "paid") \
+    .withColumn("rn", row_number().over(w)) \
+    .filter(col("rn") == 1) \
+    .drop("rn") \
+    .show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">RANK / DENSE_RANK — 品类内销量排名</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">SparkSQL 写法 — 对比三种排名</span>
+spark.sql("""
+    SELECT
+        order_id, category, amount,
+        ROW_NUMBER() OVER (PARTITION BY category ORDER BY amount DESC) AS row_num,
+        RANK()       OVER (PARTITION BY category ORDER BY amount DESC) AS rank_val,
+        DENSE_RANK() OVER (PARTITION BY category ORDER BY amount DESC) AS dense_rank_val
+    FROM orders
+    WHERE status = 'paid'
+""").show(20)</div>
+        <div class="card-formula">
+<span class="label">PySpark API 写法</span>
+from pyspark.sql.window import Window
+from pyspark.sql.functions import rank, dense_rank, row_number, col
+
+w = Window.partitionBy("category").orderBy(col("amount").desc())
+
+df_orders.filter(col("status") == "paid") \
+    .withColumn("row_num", row_number().over(w)) \
+    .withColumn("rank_val", rank().over(w)) \
+    .withColumn("dense_rank_val", dense_rank().over(w)) \
+    .select("order_id", "category", "amount",
+            "row_num", "rank_val", "dense_rank_val") \
+    .show(20)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">LAG / LEAD — 计算环比增长</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">SparkSQL 写法 — 月 GMV 环比</span>
+spark.sql("""
+    WITH monthly AS (
+        SELECT
+            DATE_FORMAT(order_date, 'yyyy-MM') AS mon,
+            ROUND(SUM(amount), 2)              AS gmv
+        FROM orders
+        WHERE status = 'paid'
+        GROUP BY DATE_FORMAT(order_date, 'yyyy-MM')
+    )
+    SELECT
+        mon,
+        gmv,
+        LAG(gmv, 1)  OVER (ORDER BY mon) AS prev_gmv,
+        LEAD(gmv, 1) OVER (ORDER BY mon) AS next_gmv,
+        ROUND(
+            (gmv - LAG(gmv, 1) OVER (ORDER BY mon))
+            / LAG(gmv, 1) OVER (ORDER BY mon) * 100, 2
+        ) AS mom_growth_pct
+    FROM monthly
+""").show()</div>
+        <div class="card-formula">
+<span class="label">PySpark API 写法</span>
+from pyspark.sql.functions import lag, lead, date_format, sum, round, col
+from pyspark.sql.window import Window
+
+w = Window.orderBy("mon")
+
+df_orders.filter(col("status") == "paid") \
+    .withColumn("mon", date_format("order_date", "yyyy-MM")) \
+    .groupBy("mon").agg(round(sum("amount"), 2).alias("gmv")) \
+    .withColumn("prev_gmv", lag("gmv", 1).over(w)) \
+    .withColumn("mom_growth_pct",
+        round((col("gmv") - col("prev_gmv")) / col("prev_gmv") * 100, 2)
+    ) \
+    .orderBy("mon") \
+    .show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SUM OVER — 累计消费金额</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">SparkSQL 写法 — 用户累计消费</span>
+spark.sql("""
+    SELECT
+        user_id,
+        order_date,
+        amount,
+        SUM(amount) OVER (
+            PARTITION BY user_id
+            ORDER BY order_date
+            ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+        ) AS cumulative_spend
+    FROM orders
+    WHERE status = 'paid'
+    ORDER BY user_id, order_date
+""").show(20)</div>
+        <div class="card-formula">
+<span class="label">PySpark API 写法</span>
+from pyspark.sql.window import Window
+from pyspark.sql.functions import sum, col
+
+w = Window.partitionBy("user_id") \
+    .orderBy("order_date") \
+    .rowsBetween(Window.unboundedPreceding, Window.currentRow)
+
+df_orders.filter(col("status") == "paid") \
+    .withColumn("cumulative_spend", sum("amount").over(w)) \
+    .select("user_id", "order_date", "amount", "cumulative_spend") \
+    .orderBy("user_id", "order_date") \
+    .show(20)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">NTILE — 用户消费分层</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">SparkSQL 写法 — 分 4 层</span>
+spark.sql("""
+    WITH user_spend AS (
+        SELECT user_id, ROUND(SUM(amount), 2) AS total_spend
+        FROM orders
+        WHERE status = 'paid'
+        GROUP BY user_id
+    )
+    SELECT
+        user_id,
+        total_spend,
+        NTILE(4) OVER (ORDER BY total_spend DESC) AS spend_tier,
+        CASE NTILE(4) OVER (ORDER BY total_spend DESC)
+            WHEN 1 THEN '高价值'
+            WHEN 2 THEN '中高价值'
+            WHEN 3 THEN '中低价值'
+            WHEN 4 THEN '低价值'
+        END AS tier_label
+    FROM user_spend
+""").show()</div>
+        <div class="card-formula">
+<span class="label">PySpark API 写法</span>
+from pyspark.sql.window import Window
+from pyspark.sql.functions import ntile, sum, round, col, when
+
+w = Window.orderBy(col("total_spend").desc())
+
+df_orders.filter(col("status") == "paid") \
+    .groupBy("user_id") \
+    .agg(round(sum("amount"), 2).alias("total_spend")) \
+    .withColumn("spend_tier", ntile(4).over(w)) \
+    .withColumn("tier_label",
+        when(col("spend_tier") == 1, "高价值")
+        .when(col("spend_tier") == 2, "中高价值")
+        .when(col("spend_tier") == 3, "中低价值")
+        .otherwise("低价值")
+    ) \
+    .orderBy("spend_tier") \
+    .show()</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">🧹</div>
+      六、数据清洗实战
+      <span class="chapter-count">脏数据是常态</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">处理 NULL 值 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">构造包含 NULL 的脏数据</span>
+from pyspark.sql.types import *
+from datetime import date
+
+dirty_data = [
+    (2001, 1, 101, "手机",  5999.0,  date(2024, 1, 5),  "paid"),
+    (2002, 2, None, "耳机",  None,    date(2024, 1, 8),  "paid"),
+    (2003, None, 104, None,  1299.0,  None,              "paid"),
+    (2004, 4, 102, "电脑",  -500.0,   date(2024, 1, 15), "paid"),
+    (2005, 5, 107, "手机",  4999.0,   date(1970, 1, 1),  None),
+    (2006, 5, 107, "手机",  4999.0,   date(2024, 1, 18), "paid"),
+    (2006, 5, 107, "手机",  4999.0,   date(2024, 1, 18), "paid"),
+]
+dirty_schema = StructType([
+    StructField("order_id", IntegerType()),
+    StructField("user_id", IntegerType()),
+    StructField("product_id", IntegerType()),
+    StructField("category", StringType()),
+    StructField("amount", DoubleType()),
+    StructField("order_date", DateType()),
+    StructField("status", StringType()),
+])
+df_dirty = spark.createDataFrame(dirty_data, dirty_schema)
+df_dirty.show()</div>
+        <div class="card-formula">
+<span class="label">NULL 检测与处理</span>
+from pyspark.sql.functions import col, isnan, isnull
+
+df_dirty.filter(col("user_id").isNull()).show()
+
+df_dirty.filter(col("amount").isNotNull()).show()
+
+df_filled = df_dirty.fillna({
+    "user_id": -1,
+    "category": "未知",
+    "amount": 0.0,
+    "status": "unknown"
+})
+df_filled.show()
+
+df_dropped = df_dirty.dropna(subset=["user_id", "order_date"])
+df_dropped.show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">去重 / 类型转换 / 字符串处理</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">去重</span>
+print(f"去重前: {df_dirty.count()}")
+df_dedup = df_dirty.dropDuplicates(["order_id"])
+print(f"去重后: {df_dedup.count()}")
+df_dedup.show()</div>
+        <div class="card-formula">
+<span class="label">数据类型转换 - cast</span>
+from pyspark.sql.functions import col
+
+df_cast = df_orders.withColumn(
+    "amount_int", col("amount").cast("int")
+).withColumn(
+    "amount_str", col("amount").cast("string")
+).withColumn(
+    "order_date_str", col("order_date").cast("string")
+)
+df_cast.printSchema()
+df_cast.show(5)</div>
+        <div class="card-formula">
+<span class="label">字符串处理</span>
+from pyspark.sql.functions import upper, lower, trim, regexp_replace, lit, concat
+
+df_str = df_users.withColumn(
+    "username_upper", upper(col("username"))
+).withColumn(
+    "username_trimmed", trim(col("username"))
+).withColumn(
+    "city_masked", regexp_replace(col("city"), "^(.{1}).*$", "$1**")
+)
+df_str.select("username", "username_upper", "city", "city_masked").show()</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">日期处理</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">日期函数大全</span>
+from pyspark.sql.functions import (
+    to_date, date_format, datediff, date_add, date_sub,
+    current_date, months_between, col, round
+)
+
+df_date = df_orders.withColumn(
+    "date_str", date_format(col("order_date"), "yyyy/MM/dd")
+).withColumn(
+    "days_ago", datediff(current_date(), col("order_date"))
+).withColumn(
+    "next_week", date_add(col("order_date"), 7)
+).withColumn(
+    "months_since_register",
+    round(months_between(
+        col("order_date"),
+        to_date(lit("2023-01-01"))
+    ), 1)
+)
+df_date.select(
+    "order_id", "order_date", "date_str",
+    "days_ago", "next_week", "months_since_register"
+).show(10)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">异常值检测 + 完整清洗 Pipeline</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">完整清洗流程</span>
+from pyspark.sql.functions import col, when
+from datetime import date as dt
+
+def clean_orders(df):
+    """订单数据清洗 Pipeline"""
+    df_cleaned = df \
+        .dropDuplicates(["order_id"]) \
+        .filter(col("user_id").isNotNull()) \
+        .filter(col("order_date").isNotNull()) \
+        .filter(col("amount") > 0) \
+        .filter(col("order_date") > lit("2020-01-01")) \
+        .fillna({"status": "unknown", "category": "未知"}) \
+        .withColumn("amount", round(col("amount"), 2))
+    return df_cleaned
+
+df_result = clean_orders(df_dirty)
+print(f"清洗前: {df_dirty.count()} 行")
+print(f"清洗后: {df_result.count()} 行")
+df_result.show()</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>dropDuplicates</strong>：按 order_id 去重</li>
+          <li><strong>filter isNotNull</strong>：过滤关键字段为空的行</li>
+          <li><strong>filter amount > 0</strong>：剔除金额异常（负值）</li>
+          <li><strong>filter order_date</strong>：剔除日期不合理（1970 年等）</li>
+          <li><strong>fillna</strong>：非关键字段填充默认值</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🔄</div>
+      七、模拟 ETL 流程
+      <span class="chapter-count">ODS → DWD → DWS → ADS</span>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <div class="card-title">数据流架构 <span class="card-badge badge-core">核心</span></div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">ODS 层<br><small>原始数据</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">DWD 层<br><small>清洗 + 关联维表</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">DWS 层<br><small>多维聚合</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">ADS 层<br><small>业务指标</small></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-1" style="margin-top:16px">
+      <div class="card">
+        <div class="card-title">完整 ETL 代码（直接复制运行） <span class="card-badge badge-must">必背</span></div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">Step 1: ODS 层 — 加载原始数据</span>
+# （假设数据已通过第二章代码创建并注册为 orders / users / products 视图）
+
+df_ods_orders = spark.sql("SELECT * FROM orders")
+df_ods_users = spark.sql("SELECT * FROM users")
+df_ods_products = spark.sql("SELECT * FROM products")
+
+print("=== ODS 层：原始订单数据 ===")
+print(f"订单数: {df_ods_orders.count()}")
+df_ods_orders.show(5)</div>
+        <div class="card-formula">
+<span class="label">Step 2: DWD 层 — 数据清洗 + 关联维表</span>
+from pyspark.sql.functions import col, round, when, year, month
+
+df_dwd = df_ods_orders.alias("o") \
+    .filter(col("o.status") == "paid") \
+    .dropDuplicates(["order_id"]) \
+    .filter(col("o.amount") > 0) \
+    .join(
+        df_ods_users.alias("u"),
+        col("o.user_id") == col("u.user_id"),
+        "left"
+    ) \
+    .join(
+        df_ods_products.alias("p"),
+        col("o.product_id") == col("p.product_id"),
+        "left"
+    ) \
+    .select(
+        col("o.order_id"),
+        col("o.user_id"),
+        col("u.username"),
+        col("u.city"),
+        col("u.age"),
+        col("o.product_id"),
+        col("p.product_name"),
+        col("p.brand"),
+        col("o.category"),
+        col("o.amount"),
+        col("o.order_date"),
+        col("o.status"),
+        year(col("o.order_date")).alias("order_year"),
+        month(col("o.order_date")).alias("order_month"),
+    ) \
+    .withColumn("amount", round(col("amount"), 2))
+
+df_dwd.createOrReplaceTempView("dwd_orders")
+print("=== DWD 层：清洗后的订单宽表 ===")
+print(f"有效订单数: {df_dwd.count()}")
+df_dwd.show(10)</div>
+        <div class="card-formula">
+<span class="label">Step 3: DWS 层 — 多维度聚合</span>
+from pyspark.sql.functions import count, sum, avg, countDistinct, round, col
+
+# 用户维度汇总
+df_dws_user = spark.sql("""
+    SELECT
+        user_id, username, city,
+        COUNT(order_id)              AS order_count,
+        ROUND(SUM(amount), 2)        AS total_spend,
+        ROUND(AVG(amount), 2)        AS avg_order_amount,
+        MIN(order_date)              AS first_order_date,
+        MAX(order_date)              AS last_order_date,
+        COUNT(DISTINCT category)     AS category_count
+    FROM dwd_orders
+    GROUP BY user_id, username, city
+""")
+df_dws_user.createOrReplaceTempView("dws_user_stats")
+print("=== DWS 层：用户维度汇总 ===")
+df_dws_user.show()
+
+# 品类 × 月 维度汇总
+df_dws_category = spark.sql("""
+    SELECT
+        category,
+        order_month,
+        COUNT(order_id)             AS order_count,
+        ROUND(SUM(amount), 2)       AS category_gmv,
+        COUNT(DISTINCT user_id)     AS buyer_count
+    FROM dwd_orders
+    GROUP BY category, order_month
+    ORDER BY category, order_month
+""")
+df_dws_category.createOrReplaceTempView("dws_category_monthly")
+print("=== DWS 层：品类月度汇总 ===")
+df_dws_category.show(20)</div>
+        <div class="card-formula">
+<span class="label">Step 4: ADS 层 — 业务指标输出</span>
+# GMV 日报
+df_ads_daily = spark.sql("""
+    SELECT
+        order_date                   AS dt,
+        COUNT(order_id)              AS order_count,
+        COUNT(DISTINCT user_id)      AS active_users,
+        ROUND(SUM(amount), 2)        AS daily_gmv,
+        ROUND(AVG(amount), 2)        AS avg_order_value
+    FROM dwd_orders
+    GROUP BY order_date
+    ORDER BY dt
+""")
+df_ads_daily.createOrReplaceTempView("ads_daily_gmv")
+print("=== ADS 层：GMV 日报 ===")
+df_ads_daily.show(20)
+
+# 用户活跃统计
+df_ads_user_active = spark.sql("""
+    SELECT
+        CASE
+            WHEN order_count >= 4 THEN '高频用户'
+            WHEN order_count >= 2 THEN '中频用户'
+            ELSE '低频用户'
+        END AS user_type,
+        COUNT(*)              AS user_count,
+        ROUND(AVG(total_spend), 2) AS avg_spend
+    FROM dws_user_stats
+    GROUP BY
+        CASE
+            WHEN order_count >= 4 THEN '高频用户'
+            WHEN order_count >= 2 THEN '中频用户'
+            ELSE '低频用户'
+        END
+    ORDER BY avg_spend DESC
+""")
+print("=== ADS 层：用户活跃分层 ===")
+df_ads_user_active.show()
+
+# 城市 GMV 排行
+df_ads_city = spark.sql("""
+    SELECT
+        city,
+        SUM(total_spend)             AS city_gmv,
+        SUM(order_count)             AS city_orders,
+        COUNT(user_id)               AS city_users,
+        ROUND(SUM(total_spend) / SUM(order_count), 2) AS city_aov
+    FROM dws_user_stats
+    GROUP BY city
+    ORDER BY city_gmv DESC
+""")
+print("=== ADS 层：城市 GMV 排行 ===")
+df_ads_city.show()</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">💾</div>
+      八、数据读写操作
+      <span class="chapter-count">落盘与持久化</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">写入 CSV / Parquet <span class="card-badge badge-core">核心</span></div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">写入 CSV</span>
+output_csv = "./output/orders_csv"
+
+df_orders.filter(col("status") == "paid") \
+    .write \
+    .mode("overwrite") \
+    .option("header", "true") \
+    .option("encoding", "utf-8") \
+    .csv(output_csv)
+
+print(f"CSV 已写入: {output_csv}")</div>
+        <div class="card-formula">
+<span class="label">写入 Parquet（推荐）</span>
+output_parquet = "./output/orders_parquet"
+
+df_orders.filter(col("status") == "paid") \
+    .write \
+    .mode("overwrite") \
+    .parquet(output_parquet)
+
+print(f"Parquet 已写入: {output_parquet}")</div>
+        <div class="card-formula">
+<span class="label">分区写入</span>
+output_partitioned = "./output/orders_partitioned"
+
+df_orders.withColumn("order_month", date_format("order_date", "yyyy-MM")) \
+    .write \
+    .mode("overwrite") \
+    .partitionBy("order_month") \
+    .parquet(output_partitioned)
+
+print(f"分区 Parquet 已写入: {output_partitioned}")
+# 会生成 order_month=2024-01/ order_month=2024-02/ 等子目录</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">读取 CSV / Parquet</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">读取 CSV</span>
+df_read_csv = spark.read \
+    .option("header", "true") \
+    .option("inferSchema", "true") \
+    .csv(output_csv)
+
+df_read_csv.printSchema()
+df_read_csv.show(5)</div>
+        <div class="card-formula">
+<span class="label">读取 Parquet</span>
+df_read_parquet = spark.read.parquet(output_parquet)
+
+df_read_parquet.printSchema()
+df_read_parquet.show(5)</div>
+        <div class="card-formula">
+<span class="label">读取分区数据（指定分区）</span>
+df_jan = spark.read.parquet(output_partitioned) \
+    .filter(col("order_month") == "2024-01")
+
+print("2024年1月数据:")
+df_jan.show()</div>
+        <div class="card-desc" style="margin-top:10px">
+          <strong>写入模式说明：</strong>
+        </div>
+        <table class="compare-table">
+          <thead><tr><th>模式</th><th>行为</th><th>使用场景</th></tr></thead>
+          <tbody>
+            <tr><td>overwrite</td><td>删除已有数据，全量覆盖</td><td>全量重刷、开发调试</td></tr>
+            <tr><td>append</td><td>在已有数据后追加</td><td>增量加载、日志追加</td></tr>
+            <tr><td>ignore</td><td>目标已存在则跳过</td><td>防止误覆盖</td></tr>
+            <tr><td>errorifexists</td><td>目标已存在则报错（默认）</td><td>严格保护数据</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Windows 本地查看写入的文件</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">Python 代码查看输出目录</span>
+import os
+
+output_dir = "./output/orders_csv"
+if os.path.exists(output_dir):
+    for f in os.listdir(output_dir):
+        size = os.path.getsize(os.path.join(output_dir, f))
+        print(f"  {f}  ({size} bytes)")
+else:
+    print("目录不存在，请先运行写入代码")</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li>Spark 写入的目录中包含 <strong>part-00000-*.csv</strong> 数据文件</li>
+          <li><strong>_SUCCESS</strong> 标记文件表示写入成功</li>
+          <li><strong>.crc</strong> 文件是校验文件，可忽略</li>
+          <li>分区写入会生成 <strong>key=value/</strong> 形式的子目录</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">合并为单文件输出</div>
+        <div class="card-desc">Spark 默认按分区数生成多个文件，需要单文件输出时用 <strong>coalesce(1)</strong> 或 <strong>repartition(1)</strong>。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">coalesce(1) 合并为单文件</span>
+output_single = "./output/orders_single_csv"
+
+df_orders.filter(col("status") == "paid") \
+    .coalesce(1) \
+    .write \
+    .mode("overwrite") \
+    .option("header", "true") \
+    .csv(output_single)
+
+print("单文件 CSV 已写入")
+# 注意：coalesce(1) 只适合小数据量，大数据会 OOM</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">⚡</div>
+      九、RDD 基础操作（了解即可）
+      <span class="chapter-count">日常以 DataFrame 为主</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">RDD 创建与基础算子</div>
+        <div class="card-desc">RDD（Resilient Distributed Dataset）是 Spark 最底层的数据抽象。日常开发以 DataFrame/SparkSQL 为主，RDD 了解即可，面试可能会问。</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">创建 RDD</span>
+sc = spark.sparkContext
+
+rdd = sc.parallelize([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+print(f"元素数量: {rdd.count()}")
+print(f"前5个: {rdd.take(5)}")
+print(f"全部: {rdd.collect()}")</div>
+        <div class="card-formula">
+<span class="label">map / filter</span>
+rdd_squared = rdd.map(lambda x: x ** 2)
+print(f"平方: {rdd_squared.collect()}")
+
+rdd_even = rdd.filter(lambda x: x % 2 == 0)
+print(f"偶数: {rdd_even.collect()}")</div>
+        <div class="card-formula">
+<span class="label">flatMap</span>
+sentences = sc.parallelize(["hello world", "hello spark", "spark is great"])
+words = sentences.flatMap(lambda s: s.split(" "))
+print(f"单词列表: {words.collect()}")</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">reduceByKey / groupByKey / 词频统计</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">经典 WordCount</span>
+sc = spark.sparkContext
+
+text = sc.parallelize([
+    "spark pyspark spark",
+    "hadoop spark pyspark",
+    "flink spark hadoop spark"
+])
+
+word_counts = text \
+    .flatMap(lambda line: line.split(" ")) \
+    .map(lambda word: (word, 1)) \
+    .reduceByKey(lambda a, b: a + b) \
+    .sortBy(lambda x: -x[1])
+
+print("=== 词频统计 ===")
+for word, cnt in word_counts.collect():
+    print(f"  {word}: {cnt}")</div>
+        <div class="card-formula">
+<span class="label">groupByKey（不推荐，性能差于 reduceByKey）</span>
+rdd_pairs = sc.parallelize([
+    ("北京", 100), ("上海", 200),
+    ("北京", 150), ("上海", 180),
+    ("广州", 120)
+])
+
+grouped = rdd_pairs.groupByKey().mapValues(list)
+print(f"分组: {grouped.collect()}")
+
+summed = rdd_pairs.reduceByKey(lambda a, b: a + b)
+print(f"求和: {summed.collect()}")</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">RDD ↔ DataFrame 互转</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">RDD → DataFrame</span>
+from pyspark.sql import Row
+
+rdd_rows = sc.parallelize([
+    Row(name="alice", age=28, city="北京"),
+    Row(name="bob", age=35, city="上海"),
+    Row(name="charlie", age=22, city="广州"),
+])
+df_from_rdd = spark.createDataFrame(rdd_rows)
+df_from_rdd.show()</div>
+        <div class="card-formula">
+<span class="label">DataFrame → RDD</span>
+rdd_from_df = df_users.rdd
+print(f"类型: {type(rdd_from_df)}")
+print(f"第一行: {rdd_from_df.first()}")
+
+names = rdd_from_df.map(lambda row: row.username)
+print(f"所有用户名: {names.collect()}")</div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>reduceByKey</strong> 优于 groupByKey：前者在 Shuffle 前先做本地聚合，减少网络传输</li>
+          <li>DataFrame 内部其实也是基于 RDD 实现的，但有 Catalyst 优化器加持，性能更好</li>
+          <li>需要细粒度控制（如自定义分区器）时才考虑用 RDD</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">RDD vs DataFrame 对比</div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>RDD</th><th>DataFrame</th></tr></thead>
+          <tbody>
+            <tr><td>抽象层级</td><td>底层，类似 Java 集合</td><td>高层，类似数据库表</td></tr>
+            <tr><td>Schema</td><td>无 Schema，自由度高</td><td>有 Schema，类型安全</td></tr>
+            <tr><td>优化</td><td>无自动优化</td><td>Catalyst + Tungsten 优化</td></tr>
+            <tr><td>API 风格</td><td>函数式（map/reduce）</td><td>声明式（select/groupBy）</td></tr>
+            <tr><td>性能</td><td>较差（无优化）</td><td>更好（自动优化执行计划）</td></tr>
+            <tr><td>推荐度</td><td>了解即可</td><td>日常首选</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🐛</div>
+      十、常见问题排查
+      <span class="chapter-count">Windows 上的坑</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">JAVA_HOME 未设置 <span class="card-badge badge-must">常见</span></div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">错误信息</span>
+ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>原因</strong>：PySpark 底层依赖 JVM，需要 Java 8 或 11</li>
+          <li><strong>解决</strong>：安装 JDK 8/11，设置环境变量 JAVA_HOME</li>
+        </ul>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">解决步骤</span>
+# 1. 下载安装 JDK 8 或 JDK 11（推荐 Adoptium/Temurin）
+# 2. 设置环境变量（PowerShell 临时设置）：
+#    $env:JAVA_HOME = "C:\Program Files\Java\jdk-11"
+#    $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+# 3. 永久设置：系统属性 → 环境变量 → 新建 JAVA_HOME
+# 4. 验证：
+#    java -version</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">winutils.exe 缺失 <span class="card-badge badge-must">常见</span></div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">错误信息</span>
+java.io.IOException: Could not locate executable null\bin\winutils.exe
+# 或
+ERROR Shell: Failed to locate the winutils binary in the hadoop binary path</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>原因</strong>：Spark 在 Windows 上需要 Hadoop 的 winutils.exe</li>
+          <li><strong>解决</strong>：下载 winutils.exe 并配置 HADOOP_HOME</li>
+        </ul>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">解决步骤</span>
+# 1. 从 GitHub 下载 winutils.exe：
+#    https://github.com/cdarlint/winutils
+#    选择与 Spark 对应的 Hadoop 版本（一般 hadoop-3.3.x）
+# 2. 创建目录：C:\hadoop\bin\
+# 3. 将 winutils.exe 和 hadoop.dll 放入 C:\hadoop\bin\
+# 4. 设置环境变量：
+#    $env:HADOOP_HOME = "C:\hadoop"
+# 5. 或在代码中设置：
+import os
+os.environ["HADOOP_HOME"] = r"C:\hadoop"</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">端口冲突（4040）</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">错误信息</span>
+WARN Utils: Service 'SparkUI' could not bind on port 4040.
+Attempting port 4041.</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>原因</strong>：端口 4040 已被占用（通常是之前的 Spark Session 未关闭）</li>
+          <li><strong>解决方案 1</strong>：Spark 会自动递增端口（4041, 4042...），通常不影响使用</li>
+          <li><strong>解决方案 2</strong>：确保上一个 Session 已关闭</li>
+        </ul>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">手动指定端口 / 关闭旧 Session</span>
+# 方法 1：指定不同端口
+spark = SparkSession.builder \
+    .config("spark.ui.port", "4050") \
+    .getOrCreate()
+
+# 方法 2：先关闭再创建
+try:
+    spark.stop()
+except:
+    pass
+spark = SparkSession.builder.master("local[*]").getOrCreate()
+
+# 方法 3：Windows 查找并关闭占用端口的进程
+# PowerShell: netstat -ano | findstr 4040
+# PowerShell: taskkill /PID &lt;pid&gt; /F</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">内存不足 OOM</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">错误信息</span>
+java.lang.OutOfMemoryError: Java heap space
+# 或
+java.lang.OutOfMemoryError: GC overhead limit exceeded</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>原因</strong>：默认 Driver 内存仅 1g，处理大数据时不够</li>
+          <li><strong>解决</strong>：增大 Driver 内存，减少 collect() 使用</li>
+        </ul>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">解决方法</span>
+# 方法 1：在代码中配置（必须在 getOrCreate 之前）
+spark = SparkSession.builder \
+    .master("local[*]") \
+    .config("spark.driver.memory", "4g") \
+    .getOrCreate()
+
+# 方法 2：避免 collect() 全量数据到 Driver
+# 错误写法：
+# all_data = df_huge.collect()  # 全部加载到内存，容易 OOM
+# 正确写法：
+df_huge.show(20)       # 只显示前 20 行
+df_huge.take(100)      # 只取前 100 条
+df_huge.limit(1000).toPandas()  # 限制条数后转 Pandas</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Py4JJavaError 排查思路</div>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">错误信息示例</span>
+py4j.protocol.Py4JJavaError: An error occurred while calling o42.showString.
+: org.apache.spark.SparkException: Job aborted due to stage failure...</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>本质</strong>：Python 端调用 JVM 端执行失败，错误来自 Java/Scala 侧</li>
+          <li><strong>排查步骤 1</strong>：看 Caused by 行，找到真实的 Java 异常信息</li>
+          <li><strong>排查步骤 2</strong>：检查是否存在数据类型不匹配（如 String 列做数学运算）</li>
+          <li><strong>排查步骤 3</strong>：检查文件路径是否正确（Windows 路径用 r"..." 或 "/"）</li>
+          <li><strong>排查步骤 4</strong>：检查是否存在序列化问题（UDF 中引用了不可序列化的对象）</li>
+        </ul>
+        <div class="card-formula" style="margin-top:8px">
+<span class="label">常见调试技巧</span>
+# 1. 设置日志级别为 INFO 获取更多信息
+spark.sparkContext.setLogLevel("INFO")
+
+# 2. 检查 DataFrame 的 Schema 是否正确
+df.printSchema()
+
+# 3. 小数据量 show() 验证逻辑正确性
+df.limit(5).show()
+
+# 4. 查看执行计划，排查优化问题
+df.explain(True)
+
+# 5. Windows 路径注意事项
+# 正确: spark.read.csv("C:/data/file.csv")
+# 正确: spark.read.csv(r"C:\data\file.csv")
+# 错误: spark.read.csv("C:\data\file.csv")  # \d 被转义</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">完整环境检查脚本</div>
+        <div class="card-desc">一键检查 PySpark 环境是否正常的脚本，遇到问题先运行这个：</div>
+        <div class="card-formula" style="margin-top:10px">
+<span class="label">环境检查脚本（保存为 check_env.py 运行）</span>
+import sys
+import os
+
+print("=" * 50)
+print("PySpark 环境检查")
+print("=" * 50)
+
+# 检查 Python 版本
+print(f"\n[1] Python 版本: {sys.version}")
+
+# 检查 JAVA_HOME
+java_home = os.environ.get("JAVA_HOME", "未设置")
+print(f"[2] JAVA_HOME: {java_home}")
+
+# 检查 HADOOP_HOME
+hadoop_home = os.environ.get("HADOOP_HOME", "未设置")
+print(f"[3] HADOOP_HOME: {hadoop_home}")
+
+# 检查 PySpark
+try:
+    import pyspark
+    print(f"[4] PySpark 版本: {pyspark.__version__}")
+except ImportError:
+    print("[4] PySpark: 未安装！请执行 pip install pyspark")
+
+# 尝试创建 SparkSession
+try:
+    from pyspark.sql import SparkSession
+    spark = SparkSession.builder \
+        .master("local[1]") \
+        .appName("EnvCheck") \
+        .config("spark.driver.memory", "1g") \
+        .getOrCreate()
+    spark.sparkContext.setLogLevel("ERROR")
+    df = spark.range(10)
+    assert df.count() == 10
+    print("[5] SparkSession 创建: 成功 ✓")
+    print(f"    Spark 版本: {spark.version}")
+    spark.stop()
+except Exception as e:
+    print(f"[5] SparkSession 创建: 失败 ✗")
+    print(f"    错误: {e}")
+
+print("\n" + "=" * 50)
+print("检查完毕")
+print("=" * 50)</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "pyspark-practice-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>
