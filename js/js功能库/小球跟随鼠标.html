@@ -1,79 +1,173 @@
 <!DOCTYPE html>
-<html lang="e1n">
+<html lang="zh">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <style>
-        body {
-            position: relative;
-            background: black;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小球跟随鼠标</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-        }
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: #060a12;
+      overflow: hidden;
+      cursor: none;
+      font-family: Arial, sans-serif;
+    }
 
-        div {
-            width: 30px;
-            height: 30px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            text-align: center;
-            line-height: 30px;
-            color: white;
-        }
-    </style>
+    .ball {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      /* 用 translate 使定位基准点在球心 */
+      transform: translate(-50%, -50%);
+      will-change: left, top;
+    }
+
+    .qa_panel {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      max-width: 360px;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 13px;
+      line-height: 1.8;
+      pointer-events: none;
+    }
+
+    .qa_panel h3 {
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: #00d4ff;
+      opacity: 0.7;
+      margin-bottom: 12px;
+    }
+
+    .qa_panel p {
+      margin-bottom: 8px;
+    }
+
+    .qa_panel strong {
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: normal;
+    }
+  </style>
 </head>
 
 <body>
+
+  <!-- 知识点说明区（仅展示问题，答案在注释中） -->
+  <div class="qa_panel">
+    <h3>// 面试问题</h3>
+
+    <p>
+      <strong>Q1. 为什么用 requestAnimationFrame 而不是 setInterval？</strong>
+      <!-- 答案：
+        requestAnimationFrame 与屏幕刷新率同步（通常 60fps），由浏览器决定调用时机，
+        页面不可见时自动暂停，不浪费 CPU。
+        setInterval 是固定间隔，无法感知屏幕刷新率，页面后台也持续执行，性能差。
+      -->
+    </p>
+
+    <p>
+      <strong>Q2. lerp（线性插值）的公式和作用是什么？</strong>
+      <!-- 答案：
+        公式：current += (target - current) * factor
+        每帧缩短与目标的距离一定比例，距离越大移动越快，越近越慢，
+        产生"跟随但有惯性延迟"的弹性追踪效果。
+      -->
+    </p>
+
+    <p>
+      <strong>Q3. will-change: left, top 的作用？</strong>
+      <!-- 答案：
+        提示浏览器该元素的 left/top 将频繁变化，
+        浏览器提前将其提升到独立合成层（GPU 加速），
+        避免每帧触发重绘（repaint），减少主线程压力。
+        注意：不要对过多元素设置，否则显存占用过大反而降低性能。
+      -->
+    </p>
+
+    <p>
+      <strong>Q4. transform: translate(-50%, -50%) 为什么要加？</strong>
+      <!-- 答案：
+        left/top 默认以元素左上角为基准定位。
+        加上 translate(-50%, -50%) 将基准点移到元素中心，
+        这样将鼠标坐标直接赋给 left/top，球心才会精准对齐鼠标。
+      -->
+    </p>
+
+    <p>
+      <strong>Q5. pointer-events: none 的作用？</strong>
+      <!-- 答案：
+        让小球元素不响应任何鼠标事件（hover、click 等），
+        鼠标事件穿透小球，传递到下方的页面，
+        避免小球遮挡导致 mousemove 事件中断。
+      -->
+    </p>
+  </div>
+
+  <script>
+    const BALL_COUNT = 30;
+    const BASE_SIZE = 22;
+    const LERP_FACTOR = 0.18;
+    const BALL_COLOR = "#00d4ff";
+
+    const balls = [];
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+
+    for (let i = 0; i < BALL_COUNT; i++) {
+      const ballEl = document.createElement("div");
+      ballEl.className = "ball";
+
+      const ratio = 1 - i / BALL_COUNT;
+      const size = Math.max(4, Math.round(BASE_SIZE * ratio));
+
+      ballEl.style.width = `${size}px`;
+      ballEl.style.height = `${size}px`;
+      ballEl.style.background = BALL_COLOR;
+      ballEl.style.opacity = ratio * 0.85 + 0.1;
+      ballEl.style.boxShadow = `0 0 ${Math.round(size * 0.6)}px ${BALL_COLOR}`;
+
+      document.body.appendChild(ballEl);
+
+      balls.push({ el: ballEl, x: mouseX, y: mouseY });
+    }
+
+    document.addEventListener("mousemove", (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+    const tick = () => {
+      // 第一个球追鼠标，后续每个球追前一个球（形成蛇形拖尾）
+      balls[0].x += (mouseX - balls[0].x) * LERP_FACTOR;
+      balls[0].y += (mouseY - balls[0].y) * LERP_FACTOR;
+
+      for (let i = 1; i < BALL_COUNT; i++) {
+        balls[i].x += (balls[i - 1].x - balls[i].x) * LERP_FACTOR;
+        balls[i].y += (balls[i - 1].y - balls[i].y) * LERP_FACTOR;
+      }
+
+      for (let i = 0; i < BALL_COUNT; i++) {
+        balls[i].el.style.left = `${balls[i].x}px`;
+        balls[i].el.style.top = `${balls[i].y}px`;
+      }
+
+      requestAnimationFrame(tick);
+    };
+
+    tick();
+  </script>
+
 </body>
-
-
-<script>
-    var num = 50;
-
-
-    for (var i = 0; i < num; i++) {
-        oDiv = document.createElement('div');
-        oDiv.innerHTML = i + 1;
-        document.body.appendChild(oDiv);
-    }
-    var oDivs = document.querySelectorAll('div');
-
-    document.onmousedown = function (e) {
-        document.onmousemove = function (e) {
-            var ev = event || e;
-            var clientX = ev.clientX;
-            var clientY = ev.clientY;
-
-            oDivs[0].style.left = clientX - oDiv.offsetWidth / 2 + 'px';
-            oDivs[0].style.top = clientY - oDiv.offsetHeight / 2 + 'px';
-
-            for (var i = oDivs.length - 1; i > 0; i--) {
-                oDivs[i].style.left = oDivs[i - 1].style.left;
-                oDivs[i].style.top = oDivs[i - 1].style.top;
-            }
-
-        }
-    }
-
-
-    setInterval(function () {
-
-        // 给所有小球颜色
-        for (var i = 0; i < 50; i++) {
-            // 每一个小球一个随机颜色
-            var arr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']
-            var col = '#';
-            for (var j = 0; j < 6; j++) {
-                var num = Math.round(Math.random() * 15);
-                col += arr[num];
-            }
-            oDivs[i].style.background = col;
-        }
-    }, 10)
-
-</script>
 
 </html>

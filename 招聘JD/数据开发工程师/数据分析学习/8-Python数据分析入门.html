@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python 数据分析入门 · 电商实战</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>Python 数据分析入门</h1>
+    <p class="hero-sub">从环境搭建到电商实战，系统掌握 pandas、可视化与自动化报表</p>
+    <div class="tags">
+      <span class="tag tag-blue">pandas</span>
+      <span class="tag tag-green">numpy</span>
+      <span class="tag tag-purple">matplotlib</span>
+      <span class="tag tag-orange">seaborn</span>
+      <span class="tag tag-pink">Jupyter</span>
+      <span class="tag tag-blue">电商数据分析</span>
+      <span class="tag tag-green">GMV / RFM</span>
+      <span class="tag tag-orange">自动化报表</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🐍</div>
+      一、Python 环境搭建
+      <span class="chapter-count">数据分析第一步</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">安装 Python 与 pip <span class="card-badge badge-must">必做</span></div>
+        <div class="card-desc">推荐 Python 3.9+，从 python.org 下载或使用 Anaconda/Miniconda。</div>
+        <div class="card-formula">
+          <span class="label">核心依赖安装</span>
+          pip install pandas numpy matplotlib jupyter
+        </div>
+        <ul class="card-points">
+          <li><strong>pandas</strong>：数据处理核心库，类似 Excel + SQL</li>
+          <li><strong>numpy</strong>：数值计算基础，pandas 底层依赖</li>
+          <li><strong>matplotlib</strong>：基础绘图库</li>
+          <li><strong>jupyter</strong>：交互式笔记本，适合探索分析</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">可选扩展库</div>
+        <table class="compare-table">
+          <thead><tr><th>库</th><th>用途</th></tr></thead>
+          <tbody>
+            <tr><td>seaborn</td><td>统计图表，基于 matplotlib 更美观</td></tr>
+            <tr><td>openpyxl</td><td>读写 Excel（.xlsx）</td></tr>
+            <tr><td>scikit-learn</td><td>机器学习、预测模型</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          pip install seaborn openpyxl scikit-learn
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Jupyter 启动流程</div>
+        <div class="flow">
+          <span class="flow-step fs-blue">安装 jupyter</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">jupyter notebook</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">浏览器打开</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">新建 .ipynb</span>
+        </div>
+        <div class="card-formula">
+          <span class="label">命令行</span>
+          jupyter notebook
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">📊</div>
+      二、pandas 基础
+      <span class="chapter-count">Series / DataFrame / 读写 / 选择 / 排序</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Series 与 DataFrame <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc"><strong>Series</strong>：一维带标签数组；<strong>DataFrame</strong>：二维表格，类似 Excel 或 SQL 表。</div>
+        <div class="card-formula">
+          <span class="label">创建 DataFrame（电商订单示例）</span>
+          import pandas as pd<br>
+          df = pd.DataFrame({<br>
+          &nbsp;&nbsp;"order_id": [1001, 1002, 1003],<br>
+          &nbsp;&nbsp;"user_id": ["u1", "u2", "u1"],<br>
+          &nbsp;&nbsp;"amount": [99.9, 199.0, 49.9],<br>
+          &nbsp;&nbsp;"status": ["paid", "paid", "cancelled"]<br>
+          })
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">读写 CSV</div>
+        <div class="card-formula">
+          <span class="label">读取</span>
+          df = pd.read_csv("orders.csv", encoding="utf-8")
+        </div>
+        <div class="card-formula">
+          <span class="label">写入</span>
+          df.to_csv("output.csv", index=False)
+        </div>
+        <ul class="card-points">
+          <li><strong>encoding</strong>：中文常用 utf-8</li>
+          <li><strong>index=False</strong>：不导出行索引</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">选择与过滤</div>
+        <div class="card-formula">
+          <span class="label">列选择</span>
+          df["amount"] &nbsp;&nbsp;# 单列<br>
+          df[["order_id", "amount"]] &nbsp;&nbsp;# 多列
+        </div>
+        <div class="card-formula">
+          <span class="label">行过滤（已支付订单）</span>
+          df[df["status"] == "paid"]<br>
+          df[df["amount"] &gt; 100]
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">排序</div>
+        <div class="card-formula">
+          <span class="label">按金额降序</span>
+          df.sort_values("amount", ascending=False)
+        </div>
+        <div class="card-formula">
+          <span class="label">多列排序（先按用户，再按金额）</span>
+          df.sort_values(["user_id", "amount"], ascending=[True, False])
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🧹</div>
+      三、数据清洗
+      <span class="chapter-count">缺失值 / 重复值 / 异常值 / 类型转换 / 字符串</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">缺失值处理</div>
+        <div class="card-formula">
+          <span class="label">检测</span>
+          df.isna().sum() &nbsp;&nbsp;# 每列缺失数量
+        </div>
+        <div class="card-formula">
+          <span class="label">填充 / 删除</span>
+          df.fillna(0) &nbsp;&nbsp;# 填充为 0<br>
+          df.dropna() &nbsp;&nbsp;# 删除含缺失的行<br>
+          df["amount"].fillna(df["amount"].mean()) &nbsp;&nbsp;# 用均值填充
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">重复值处理</div>
+        <div class="card-formula">
+          <span class="label">去重</span>
+          df.drop_duplicates() &nbsp;&nbsp;# 全行重复<br>
+          df.drop_duplicates(subset=["order_id"]) &nbsp;&nbsp;# 按 order_id 去重
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">异常值处理</div>
+        <ul class="card-points">
+          <li><strong>箱线图</strong>：识别离群点</li>
+          <li><strong>3σ 原则</strong>：超出均值±3倍标准差视为异常</li>
+          <li><strong>业务规则</strong>：金额&lt;0、日期不合理等直接过滤</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">过滤异常金额（0~10000）</span>
+          df = df[(df["amount"] &gt;= 0) &amp; (df["amount"] &lt;= 10000)]
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">类型转换与字符串处理</div>
+        <div class="card-formula">
+          <span class="label">类型转换</span>
+          df["amount"] = df["amount"].astype(float)<br>
+          df["order_date"] = pd.to_datetime(df["order_date"])
+        </div>
+        <div class="card-formula">
+          <span class="label">字符串（商品名转小写、去空格）</span>
+          df["product"] = df["product"].str.lower().str.strip()
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">📈</div>
+      四、数据聚合
+      <span class="chapter-count">groupby / agg / pivot_table / 交叉表</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">groupby 基础 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-formula">
+          <span class="label">按用户统计订单数、总金额</span>
+          df.groupby("user_id").agg(<br>
+          &nbsp;&nbsp;order_count=("order_id", "count"),<br>
+          &nbsp;&nbsp;total_amount=("amount", "sum")<br>
+          )
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">多列聚合</div>
+        <div class="card-formula">
+          <span class="label">多聚合函数</span>
+          df.groupby("category").agg(<br>
+          &nbsp;&nbsp;{"amount": ["sum", "mean", "count"]}<br>
+          )
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">pivot_table 透视表</div>
+        <div class="card-desc">类似 Excel 透视表，按行/列维度汇总。</div>
+        <div class="card-formula">
+          <span class="label">按品类×月份汇总 GMV</span>
+          df.pivot_table(<br>
+          &nbsp;&nbsp;values="amount", index="category",<br>
+          &nbsp;&nbsp;columns=df["order_date"].dt.month, aggfunc="sum"<br>
+          )
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">crosstab 交叉表</div>
+        <div class="card-formula">
+          <span class="label">用户×状态交叉计数</span>
+          pd.crosstab(df["user_id"], df["status"])
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">📅</div>
+      五、时间序列
+      <span class="chapter-count">日期解析 / resample / rolling / 同比环比</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">日期解析与提取</div>
+        <div class="card-formula">
+          <span class="label">解析日期</span>
+          df["order_date"] = pd.to_datetime(df["order_date"])
+        </div>
+        <div class="card-formula">
+          <span class="label">提取年/月/日</span>
+          df["year"] = df["order_date"].dt.year<br>
+          df["month"] = df["order_date"].dt.month<br>
+          df["weekday"] = df["order_date"].dt.dayofweek
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">resample 重采样</div>
+        <div class="card-formula">
+          <span class="label">按日汇总 GMV</span>
+          df.set_index("order_date").resample("D")["amount"].sum()
+        </div>
+        <div class="card-formula">
+          <span class="label">按月汇总</span>
+          df.set_index("order_date").resample("M")["amount"].sum()
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">rolling 滚动窗口</div>
+        <div class="card-formula">
+          <span class="label">7 日移动平均</span>
+          df.set_index("order_date")["amount"].rolling(7).mean()
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">同比与环比</div>
+        <table class="compare-table">
+          <thead><tr><th>指标</th><th>含义</th></tr></thead>
+          <tbody>
+            <tr><td>环比</td><td>与上一期（如上周、上月）对比</td></tr>
+            <tr><td>同比</td><td>与去年同期对比</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          <span class="label">环比（shift 取上一期）</span>
+          df["amount_pct_change"] = df["amount"].pct_change()
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">🔗</div>
+      六、数据合并
+      <span class="chapter-count">merge / concat / join，类比 SQL JOIN</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">merge 与 SQL JOIN 对应</div>
+        <table class="compare-table">
+          <thead><tr><th>merge how</th><th>SQL 对应</th></tr></thead>
+          <tbody>
+            <tr><td>inner</td><td>INNER JOIN</td></tr>
+            <tr><td>left</td><td>LEFT JOIN</td></tr>
+            <tr><td>right</td><td>RIGHT JOIN</td></tr>
+            <tr><td>outer</td><td>FULL OUTER JOIN</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          <span class="label">订单表关联用户表</span>
+          pd.merge(orders, users, on="user_id", how="left")
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">concat 纵向/横向拼接</div>
+        <div class="card-formula">
+          <span class="label">纵向（多个月份订单堆叠）</span>
+          pd.concat([df_jan, df_feb, df_mar], ignore_index=True)
+        </div>
+        <div class="card-formula">
+          <span class="label">横向</span>
+          pd.concat([df1, df2], axis=1)
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">join（索引对齐）</div>
+        <div class="card-formula">
+          <span class="label">按索引关联</span>
+          df1.join(df2, how="left")
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">📉</div>
+      七、可视化
+      <span class="chapter-count">matplotlib / seaborn / 折线 / 柱状 / 散点 / 热力图</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">matplotlib 基础</div>
+        <div class="card-formula">
+          <span class="label">折线图（日 GMV 趋势）</span>
+          import matplotlib.pyplot as plt<br>
+          plt.figure(figsize=(10, 5))<br>
+          plt.plot(daily["date"], daily["gmv"])<br>
+          plt.xlabel("日期"); plt.ylabel("GMV"); plt.title("日 GMV 趋势")<br>
+          plt.show()
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">seaborn 常见图表</div>
+        <table class="compare-table">
+          <thead><tr><th>图表</th><th>用途</th></tr></thead>
+          <tbody>
+            <tr><td>折线图</td><td>趋势、时间序列</td></tr>
+            <tr><td>柱状图</td><td>分类对比、排名</td></tr>
+            <tr><td>散点图</td><td>相关性、分布</td></tr>
+            <tr><td>热力图</td><td>矩阵、相关性矩阵</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          import seaborn as sns<br>
+          sns.barplot(x="category", y="amount", data=df)<br>
+          sns.heatmap(df.corr(), annot=True)
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">电商常用可视化</div>
+        <ul class="card-points">
+          <li><strong>日/周 GMV 折线</strong>：看趋势</li>
+          <li><strong>品类占比柱状/饼图</strong>：结构分析</li>
+          <li><strong>转化漏斗</strong>：各环节转化率</li>
+          <li><strong>RFM 热力图</strong>：用户分层</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🛒</div>
+      八、电商数据分析实战
+      <span class="chapter-count">GMV / 转化率 / RFM</span>
+    </div>
+
+    <div class="grid">
+      <div class="metric-grid" style="grid-column: 1 / -1;">
+        <div class="metric-card">
+          <div class="metric-abbr">GMV</div>
+          <div class="metric-name">商品交易总额</div>
+          <div class="metric-formula">df[df["status"]=="paid"]["amount"].sum()</div>
+          <div class="metric-desc">已支付订单金额总和</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-abbr">转化率</div>
+          <div class="metric-name">CVR</div>
+          <div class="metric-formula">下单用户数 / 访客数</div>
+          <div class="metric-desc">需结合访问日志计算</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-abbr">AOV</div>
+          <div class="metric-name">平均客单价</div>
+          <div class="metric-formula">gmv / 订单数</div>
+          <div class="metric-desc">总金额 / 已支付订单数</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-abbr">RFM</div>
+          <div class="metric-name">用户价值分层</div>
+          <div class="metric-formula">R=最近购买 F=频次 M=金额</div>
+          <div class="metric-desc">Recency, Frequency, Monetary</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">GMV 与 AOV 计算</div>
+        <div class="card-formula">
+          <span class="label">核心代码</span>
+          paid = df[df["status"] == "paid"]<br>
+          gmv = paid["amount"].sum()<br>
+          order_count = len(paid)<br>
+          aov = gmv / order_count
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">RFM 模型实现</div>
+        <div class="card-formula">
+          <span class="label">计算 R / F / M</span>
+          rfm = df.groupby("user_id").agg(<br>
+          &nbsp;&nbsp;R=("order_date", lambda x: (today - x.max()).days),<br>
+          &nbsp;&nbsp;F=("order_id", "count"),<br>
+          &nbsp;&nbsp;M=("amount", "sum")<br>
+          )
+        </div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">R/F/M 分箱</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">打标签</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">用户分层</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">品类销售分析</div>
+        <div class="card-formula">
+          <span class="label">各品类 GMV 排名</span>
+          df[df["status"]=="paid"].groupby("category")["amount"].sum()<br>
+          &nbsp;&nbsp;.sort_values(ascending=False)
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">📧</div>
+      九、自动化报表
+      <span class="chapter-count">Python 生成 Excel 报表，定时发送邮件</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">生成 Excel 报表</div>
+        <div class="card-formula">
+          <span class="label">写入多 Sheet</span>
+          with pd.ExcelWriter("report.xlsx", engine="openpyxl") as w:<br>
+          &nbsp;&nbsp;daily_gmv.to_excel(w, sheet_name="日GMV")<br>
+          &nbsp;&nbsp;category_summary.to_excel(w, sheet_name="品类汇总")<br>
+          &nbsp;&nbsp;rfm_summary.to_excel(w, sheet_name="RFM")
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">邮件发送</div>
+        <div class="card-formula">
+          <span class="label">smtplib 发送带附件邮件</span>
+          import smtplib<br>
+          from email.mime.multipart import MIMEMultipart<br>
+          from email.mime.base import MIMEBase<br>
+          # 配置 SMTP，添加 Excel 附件，发送
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">定时任务</div>
+        <div class="flow">
+          <span class="flow-step fs-blue">Windows 任务计划</span>
+          <span class="flow-arrow">/</span>
+          <span class="flow-step fs-green">cron (Linux)</span>
+          <span class="flow-arrow">/</span>
+          <span class="flow-step fs-purple">Airflow</span>
+        </div>
+        <div class="card-formula">
+          <span class="label">每日 8 点执行</span>
+          # crontab: 0 8 * * * python /path/to/report.py
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🚀</div>
+      十、进阶方向
+      <span class="chapter-count">scikit-learn / 机器学习 / 预测模型</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">scikit-learn 入门</div>
+        <div class="card-formula">
+          <span class="label">安装</span>
+          pip install scikit-learn
+        </div>
+        <ul class="card-points">
+          <li><strong>分类</strong>：用户是否会复购、是否流失</li>
+          <li><strong>回归</strong>：预测 GMV、销量</li>
+          <li><strong>聚类</strong>：用户分群（K-Means）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">机器学习流程</div>
+        <div class="flow">
+          <span class="flow-step fs-blue">数据准备</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">特征工程</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">模型训练</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">评估与预测</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">电商预测场景</div>
+        <table class="compare-table">
+          <thead><tr><th>场景</th><th>模型</th></tr></thead>
+          <tbody>
+            <tr><td>销量预测</td><td>时间序列、回归</td></tr>
+            <tr><td>用户流失预测</td><td>分类（逻辑回归、XGBoost）</td></tr>
+            <tr><td>用户分群</td><td>K-Means 聚类</td></tr>
+            <tr><td>推荐</td><td>协同过滤、矩阵分解</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">学习路径建议</div>
+        <ul class="card-points">
+          <li>先扎实掌握 pandas + 可视化</li>
+          <li>再学 scikit-learn 基础 API</li>
+          <li>结合业务做小项目（如 RFM + 聚类）</li>
+          <li>进阶：XGBoost、深度学习（PyTorch/TensorFlow）</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "python-da-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

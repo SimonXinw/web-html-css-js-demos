@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据分析方法论与思维框架 · 高级数据开发</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>数据分析方法论与思维框架</h1>
+    <p class="hero-sub">系统掌握数据分析核心方法论，建立结构化思维，提升分析效率与结论可信度</p>
+    <div class="tags">
+      <span class="tag tag-blue">分析流程</span>
+      <span class="tag tag-green">MECE</span>
+      <span class="tag tag-purple">假设驱动</span>
+      <span class="tag tag-orange">同比环比</span>
+      <span class="tag tag-pink">拆解法</span>
+      <span class="tag tag-blue">因果推断</span>
+      <span class="tag tag-orange">异常检测</span>
+      <span class="tag tag-green">金字塔报告</span>
+      <span class="tag tag-purple">电商分析</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章：分析流程 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">📊</div>
+      一、分析流程 (Flow)
+      <span class="chapter-count">标准化流程</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">数据分析标准流程 <span class="card-badge badge-must">必背</span></div>
+        <div class="flow" style="flex-direction:column; align-items:flex-start; gap:6px; margin-top:8px">
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-blue">明确问题</span><small style="color:var(--text-muted)">→ 业务背景、分析目标、关键问题</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-green">数据获取</span><small style="color:var(--text-muted)">→ 确定数据源、口径、时间范围</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-purple">数据清洗</span><small style="color:var(--text-muted)">→ 去重、缺失值、异常值处理</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-orange">探索分析</span><small style="color:var(--text-muted)">→ 描述统计、分布、相关性</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-yellow">建模/拆解</span><small style="color:var(--text-muted)">→ 假设验证、指标拆解、归因</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-red">结论输出</span><small style="color:var(--text-muted)">→ 报告、建议、落地跟进</small></div>
+        </div>
+        <div class="card-formula" style="margin-top:12px">
+          闭环思维：结论要能指导行动，行动结果再反馈到下一轮分析
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">问题定义四要素</div>
+        <ul class="card-points">
+          <li><strong>Who</strong>：分析对象（用户群、商品类目、渠道）</li>
+          <li><strong>What</strong>：分析指标（GMV、CVR、留存率）</li>
+          <li><strong>When</strong>：时间范围（同比、环比、趋势）</li>
+          <li><strong>Why</strong>：分析目的（归因、预测、优化建议）</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章：MECE原则 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🧩</div>
+      二、MECE 原则
+      <span class="chapter-count">相互独立、完全穷尽</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">MECE 核心定义 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">
+          <strong>Mutually Exclusive, Collectively Exhaustive</strong> — 相互独立、完全穷尽。拆解问题时，各部分不重叠、不遗漏。
+        </div>
+        <table class="compare-table" style="margin-top:12px">
+          <thead><tr><th>维度</th><th>含义</th><th>反例</th></tr></thead>
+          <tbody>
+            <tr><td>相互独立</td><td>各子项之间无交叉重叠</td><td>用户按「新老」和「活跃」分，有重叠</td></tr>
+            <tr><td>完全穷尽</td><td>子项之和等于整体，无遗漏</td><td>渠道只分「付费」「自然」，漏掉「直接访问」</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">MECE 常见拆解维度</div>
+        <ul class="card-points">
+          <li><strong>时间</strong>：日/周/月/季，或同比/环比</li>
+          <li><strong>空间</strong>：地区、国家、城市层级</li>
+          <li><strong>用户</strong>：新老、RFM 分层、生命周期</li>
+          <li><strong>渠道</strong>：付费/自然/直接/引荐</li>
+          <li><strong>商品</strong>：类目、价格带、品牌</li>
+        </ul>
+        <div class="card-formula">
+          例：GMV 下降 → 按 MECE 拆分为 UV、CVR、AOV 三个独立因子，三者乘积 = GMV
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章：假设驱动 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">💡</div>
+      三、假设驱动
+      <span class="chapter-count">先假设，再验证</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">假设驱动分析流程</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">发现问题</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">提出假设</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">设计验证</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">数据验证</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">结论/迭代</span>
+        </div>
+        <ul class="card-points" style="margin-top:12px">
+          <li><strong>假设要可验证</strong>：能用数据证明或证伪</li>
+          <li><strong>假设要具体</strong>：「CVR 下降」不如「结账页流失率上升」</li>
+          <li><strong>优先级排序</strong>：按影响大小和验证成本排序</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">假设示例：GMV 下降</div>
+        <table class="compare-table">
+          <thead><tr><th>假设</th><th>验证方式</th></tr></thead>
+          <tbody>
+            <tr><td>UV 下降</td><td>看各渠道流量趋势</td></tr>
+            <tr><td>CVR 下降</td><td>看漏斗各环节转化率</td></tr>
+            <tr><td>AOV 下降</td><td>看商品结构、促销力度</td></tr>
+            <tr><td>大促后自然回落</td><td>对比历史同期</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章：对比分析 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">📈</div>
+      四、对比分析（同比环比）
+      <span class="chapter-count">同比 vs 环比</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">同比 vs 环比 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>类型</th><th>定义</th><th>适用场景</th></tr></thead>
+          <tbody>
+            <tr><td>同比 YoY</td><td>与去年同期对比</td><td>消除季节性，看真实增长</td></tr>
+            <tr><td>环比 MoM</td><td>与上一周期对比</td><td>看短期变化、趋势拐点</td></tr>
+            <tr><td>周同比 WoW</td><td>与上周同日对比</td><td>周频业务、排除周末效应</td></tr>
+            <tr><td>定基比</td><td>与固定基期对比</td><td>看长期累计变化</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">同比环比公式</div>
+        <div class="card-formula">
+          <span class="label">同比 (Year-over-Year)</span>
+          同比增速 = (本期 - 去年同期) / 去年同期 × 100%
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">环比 (Month-over-Month)</span>
+          环比增速 = (本期 - 上期) / 上期 × 100%
+        </div>
+        <div class="card-desc" style="margin-top:10px">
+          <strong>注意</strong>：电商大促后环比常为负，需结合同比判断真实表现。
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章：拆解法 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">🔬</div>
+      五、拆解法 (GMV=UV×CVR×AOV)
+      <span class="chapter-count">指标拆解核心公式</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">GMV 拆解公式 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-formula">
+          <span class="label">核心公式</span>
+          GMV = UV × CVR × AOV
+        </div>
+        <div class="card-desc" style="margin-top:10px">
+          <strong>UV</strong>：独立访客数（流量规模）<br>
+          <strong>CVR</strong>：转化率（流量质量）<br>
+          <strong>AOV</strong>：客单价（单客价值）
+        </div>
+        <div class="flow" style="margin-top:12px">
+          <span class="flow-step fs-blue">UV</span>
+          <span class="flow-arrow">×</span>
+          <span class="flow-step fs-green">CVR</span>
+          <span class="flow-arrow">×</span>
+          <span class="flow-step fs-orange">AOV</span>
+          <span class="flow-arrow">=</span>
+          <span class="flow-step fs-purple">GMV</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">拆解分析应用</div>
+        <ul class="card-points">
+          <li><strong>GMV 下降</strong>：分别看 UV、CVR、AOV 变化，定位主因</li>
+          <li><strong>UV 拆解</strong>：按渠道（付费/自然/直接）拆分</li>
+          <li><strong>CVR 拆解</strong>：按漏斗环节（曝光→点击→加购→支付）</li>
+          <li><strong>AOV 拆解</strong>：按商品结构、促销力度、客群变化</li>
+        </ul>
+        <div class="card-formula">
+          贡献度分析：ΔGMV ≈ ΔUV×CVR×AOV + UV×ΔCVR×AOV + UV×CVR×ΔAOV（近似）
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章：相关 vs 因果 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🔗</div>
+      六、相关 vs 因果
+      <span class="chapter-count">避免误判</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">相关 ≠ 因果 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>概念</th><th>含义</th><th>示例</th></tr></thead>
+          <tbody>
+            <tr><td>相关</td><td>两变量同时变化</td><td>冰淇淋销量与溺水人数正相关</td></tr>
+            <tr><td>因果</td><td>A 导致 B 发生</td><td>促销活动导致 GMV 提升</td></tr>
+            <tr><td>混淆变量</td><td>第三因素同时影响 A、B</td><td>夏天（气温）同时推高冰淇淋与游泳</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">因果推断方法</div>
+        <ul class="card-points">
+          <li><strong>A/B 实验</strong>：随机分流，黄金标准</li>
+          <li><strong>双重差分 DID</strong>：政策/活动前后对比</li>
+          <li><strong>工具变量 IV</strong>：用外生变量识别因果</li>
+          <li><strong>断点回归 RDD</strong>：利用规则断点</li>
+        </ul>
+        <div class="card-formula">
+          分析结论要区分：观察到的是「相关」还是「因果」，避免「看到相关就下因果结论」
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章：异常检测 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">⚠️</div>
+      七、异常检测 (3-Sigma)
+      <span class="chapter-count">3σ 原则</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">3-Sigma 原则 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">
+          在正态分布下，约 99.73% 的数据落在 μ±3σ 范围内。超出此范围可视为异常。
+        </div>
+        <div class="card-formula">
+          <span class="label">公式</span>
+          异常判定：|x - μ| > 3σ<br>
+          μ = 均值，σ = 标准差
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>2σ</strong>：约 95% 置信，更敏感，误报多</li>
+          <li><strong>3σ</strong>：约 99.7% 置信，常用</li>
+          <li><strong>适用前提</strong>：数据近似正态分布</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">异常检测方法对比</div>
+        <table class="compare-table">
+          <thead><tr><th>方法</th><th>原理</th><th>适用</th></tr></thead>
+          <tbody>
+            <tr><td>3-Sigma</td><td>均值±3倍标准差</td><td>正态分布指标</td></tr>
+            <tr><td>IQR</td><td>四分位距，超出 Q1-1.5IQR 或 Q3+1.5IQR</td><td>偏态分布</td></tr>
+            <tr><td>同比/环比阈值</td><td>与历史对比，波动超 N%</td><td>业务指标</td></tr>
+            <tr><td>孤立森林</td><td>机器学习，无监督</td><td>高维、复杂模式</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章：报告写法 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">📝</div>
+      八、报告写法（金字塔）
+      <span class="chapter-count">结论先行</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">金字塔原理 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">
+          <strong>结论先行</strong>：先给结论，再给论据。自上而下，层层展开。
+        </div>
+        <div class="flow" style="flex-direction:column; align-items:flex-start; gap:6px; margin-top:12px">
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-blue">核心结论</span><small style="color:var(--text-muted)">→ 一句话概括</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-green">关键发现 1、2、3</span><small style="color:var(--text-muted)">→ 支撑结论的要点</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-purple">数据与细节</span><small style="color:var(--text-muted)">→ 图表、拆解、归因</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-orange">建议与行动</span><small style="color:var(--text-muted)">→ 可落地的下一步</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">报告结构模板</div>
+        <ul class="card-points">
+          <li><strong>背景与目标</strong>：为什么做这次分析</li>
+          <li><strong>核心结论</strong>：3 条以内，可执行</li>
+          <li><strong>关键发现</strong>：数据支撑，MECE 展开</li>
+          <li><strong>归因分析</strong>：原因解释，避免罗列现象</li>
+          <li><strong>建议与风险</strong>：下一步行动、注意事项</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章：分析陷阱 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🕳️</div>
+      九、分析陷阱
+      <span class="chapter-count">常见误区</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">常见分析陷阱 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>陷阱</th><th>说明</th><th>应对</th></tr></thead>
+          <tbody>
+            <tr><td>幸存者偏差</td><td>只分析存活样本，忽略流失</td><td>包含全量用户/商品</td></tr>
+            <tr><td>辛普森悖论</td><td>整体与分组趋势相反</td><td>多维度拆分验证</td></tr>
+            <tr><td>混淆变量</td><td>相关误判为因果</td><td>控制变量、A/B 实验</td></tr>
+            <tr><td>均值陷阱</td><td>均值被极值拉偏</td><td>看中位数、分位数</td></tr>
+            <tr><td>选择性偏差</td><td>样本非随机，结论不可推广</td><td>确保样本代表性</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">辛普森悖论示例</div>
+        <div class="card-desc">
+          整体上 A 渠道 CVR 高于 B，但按国家拆分后，每个国家 B 都高于 A。原因：A 在高 CVR 国家流量占比大，拉高整体。
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          应对：分析时多维度拆分（地区、用户群、时间），避免被整体掩盖真实结构
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章：电商分析场景 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🛒</div>
+      十、电商分析场景
+      <span class="chapter-count">实战应用</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">GMV 异常归因流程</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">GMV 异常</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">UV/CVR/AOV 拆解</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">渠道/漏斗/商品细分</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">定位根因</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">建议与跟进</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">电商核心分析场景</div>
+        <ul class="card-points">
+          <li><strong>大促复盘</strong>：同比/环比、各渠道贡献、品类表现</li>
+          <li><strong>转化漏斗</strong>：曝光→点击→加购→支付，找流失环节</li>
+          <li><strong>用户分层</strong>：RFM、新老、价值分层运营</li>
+          <li><strong>商品分析</strong>：动销率、滞销、价格带结构</li>
+          <li><strong>流量质量</strong>：各渠道 CVR、LTV、ROAS 对比</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">电商指标拆解树</div>
+        <div class="card-formula">
+          <span class="label">GMV 拆解</span>
+          GMV = UV × CVR × AOV
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">CVR 拆解（漏斗）</span>
+          CVR = 曝光→点击率 × 点击→加购率 × 加购→支付率
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">AOV 拆解</span>
+          AOV = 件单价 × 客件数（每单购买件数）
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">分析报告 checklist</div>
+        <ul class="card-points">
+          <li>结论是否先行、可执行？</li>
+          <li>拆解是否 MECE？</li>
+          <li>对比是否有同比/环比/基准？</li>
+          <li>相关与因果是否区分？</li>
+          <li>是否避免常见陷阱？</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "analysis-methods-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

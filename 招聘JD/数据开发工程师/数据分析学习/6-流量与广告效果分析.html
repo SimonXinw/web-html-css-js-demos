@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>流量与广告效果分析 · 数据分析学习</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>流量与广告效果分析</h1>
+    <p class="hero-sub">系统掌握流量获取、广告投放与效果归因的核心方法论，用数据驱动增长决策</p>
+    <div class="tags">
+      <span class="tag tag-blue">流量分析</span>
+      <span class="tag tag-green">UTM 追踪</span>
+      <span class="tag tag-purple">SEO 优化</span>
+      <span class="tag tag-orange">Google Ads</span>
+      <span class="tag tag-pink">Facebook Ads</span>
+      <span class="tag tag-blue">TikTok Ads</span>
+      <span class="tag tag-orange">归因模型</span>
+      <span class="tag tag-green">ROI / ROAS</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章：流量来源 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🌐</div>
+      一、流量来源分类与分析
+      <span class="chapter-count">理解用户从哪里来</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">六大流量来源渠道 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>Organic Search（自然搜索）</strong>：Google / Bing 搜索结果中非广告位的点击，依赖 SEO 排名</li>
+          <li><strong>Paid Search（付费搜索）</strong>：Google Ads 搜索广告点击，按 CPC 计费</li>
+          <li><strong>Social（社交媒体）</strong>：Facebook / Instagram / TikTok / X 自然帖文与付费广告</li>
+          <li><strong>Email（邮件营销）</strong>：Newsletter、促销邮件、弃购挽回邮件，ROI 通常最高</li>
+          <li><strong>Direct（直接访问）</strong>：用户直接输入网址或从书签进入，代表品牌认知</li>
+          <li><strong>Referral（引荐流量）</strong>：从其他网站链接跳转，包括联盟营销（Affiliate）、博客引用</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">流量质量评估维度</div>
+        <table class="compare-table">
+          <thead><tr><th>渠道</th><th>典型 CVR</th><th>成本</th><th>用户质量</th></tr></thead>
+          <tbody>
+            <tr><td>Organic Search</td><td>2%~5%</td><td>低（长期投入）</td><td>高意图，主动搜索</td></tr>
+            <tr><td>Paid Search</td><td>2%~4%</td><td>中高（CPC 竞价）</td><td>高意图，精准关键词</td></tr>
+            <tr><td>Social Paid</td><td>1%~3%</td><td>中（CPM/CPC）</td><td>中，兴趣驱动</td></tr>
+            <tr><td>Email</td><td>3%~8%</td><td>极低</td><td>高，已有用户基础</td></tr>
+            <tr><td>Direct</td><td>3%~6%</td><td>品牌积累</td><td>最高，忠实用户</td></tr>
+            <tr><td>Referral</td><td>1%~4%</td><td>佣金/免费</td><td>取决于来源站质量</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">流量漏斗全链路 <span class="card-badge badge-core">核心</span></div>
+        <div class="flow" style="flex-direction:column; gap:6px; margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-blue" style="width:140px;text-align:center">广告曝光<br><small>Impression</small></span>
+            <small style="color:var(--text-muted)">→ CTR 1%~3%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-green" style="width:140px;text-align:center">点击访问<br><small>Click / UV</small></span>
+            <small style="color:var(--text-muted)">→ 跳出率 40%~60%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-yellow" style="width:140px;text-align:center">浏览商品<br><small>Product View</small></span>
+            <small style="color:var(--text-muted)">→ 加购率 8%~15%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-orange" style="width:140px;text-align:center">加入购物车<br><small>Add to Cart</small></span>
+            <small style="color:var(--text-muted)">→ 结账率 50%~70%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-purple" style="width:140px;text-align:center">完成支付<br><small>Purchase</small></span>
+            <small style="color:var(--text-muted)">→ 端到端 CVR 1%~3%</small>
+          </div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          分析要点：找到漏斗中跌幅最大的环节，集中优化。跳出率高 → 改落地页；加购后流失 → 检查结账流程
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">付费流量 vs 自然流量策略</div>
+        <div class="card-desc">健康的流量结构应该是<strong>付费流量拉新 + 自然流量承接</strong>的组合。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>早期阶段</strong>：付费占比高（70%+），快速测试产品市场匹配度</li>
+          <li><strong>增长阶段</strong>：逐步提升 SEO / Email / Social 自然流量，降低对付费的依赖</li>
+          <li><strong>成熟阶段</strong>：自然 + 回访流量占比 50%+ 为健康标志</li>
+          <li><strong>风险信号</strong>：付费流量占比 > 80% → 一旦停投广告，收入断崖式下降</li>
+        </ul>
+        <div class="card-formula">
+          理想流量组合 = 30% Paid + 25% Organic + 20% Direct + 15% Email + 10% Social/Referral
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章：UTM 追踪 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🔗</div>
+      二、UTM 参数追踪体系
+      <span class="chapter-count">精确追踪每一分钱的来源</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">UTM 五大参数详解 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>参数</th><th>含义</th><th>示例值</th><th>是否必填</th></tr></thead>
+          <tbody>
+            <tr><td>utm_source</td><td>流量来源平台</td><td>google / facebook / newsletter</td><td>必填</td></tr>
+            <tr><td>utm_medium</td><td>营销媒介类型</td><td>cpc / email / organic_social</td><td>必填</td></tr>
+            <tr><td>utm_campaign</td><td>活动/计划名称</td><td>bfcm_2025 / spring_sale</td><td>必填</td></tr>
+            <tr><td>utm_content</td><td>区分素材/广告变体</td><td>video_v2 / banner_red</td><td>可选</td></tr>
+            <tr><td>utm_term</td><td>付费搜索关键词</td><td>running+shoes / cheap+bags</td><td>可选</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">UTM 命名规范 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">团队统一的命名规范是 UTM 有效的前提，否则数据一片混乱。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>全部小写</strong>：GA 区分大小写，facebook ≠ Facebook ≠ FACEBOOK</li>
+          <li><strong>下划线分隔</strong>：用 _ 代替空格和特殊字符，如 spring_sale_2025</li>
+          <li><strong>固定枚举值</strong>：source / medium 用固定字典（google、facebook、email…）</li>
+          <li><strong>有意义的 campaign 名</strong>：包含活动 + 日期，如 bfcm_nov_2025</li>
+          <li><strong>content 区分素材</strong>：video_15s_v2 / image_carousel_blue</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">完整 UTM URL 示例</span>
+          https://shop.com/products/shoes<br>
+          ?utm_source=facebook<br>
+          &amp;utm_medium=paid_social<br>
+          &amp;utm_campaign=bfcm_nov_2025<br>
+          &amp;utm_content=video_15s_sneaker<br>
+          &amp;utm_term=running_shoes
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">UTM 数据在 GA4 中的呈现</div>
+        <div class="flow" style="margin-top:8px">
+          <span class="flow-step fs-blue">用户点击带 UTM 的链接</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">GA4 自动解析参数</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">写入 Session Source/Medium</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">报表按渠道聚合</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>流量获取报告</strong>：Source / Medium 维度展示各渠道的会话数、转化率</li>
+          <li><strong>用户获取报告</strong>：展示首次访问来源，追踪新用户的获取渠道</li>
+          <li><strong>事件报告</strong>：关联 UTM 参数与 purchase / add_to_cart 等关键事件</li>
+        </ul>
+        <div class="card-formula">
+          GA4 维度映射：utm_source → Session source，utm_medium → Session medium，utm_campaign → Session campaign
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">常见 UTM 错误与排查</div>
+        <ul class="card-points">
+          <li><strong>参数拼写错误</strong>：utm_souce（少了 r）→ GA 无法识别，归入 (direct)</li>
+          <li><strong>大小写不统一</strong>：Facebook 和 facebook 被视为两个来源，数据分散</li>
+          <li><strong>重复参数</strong>：URL 中出现两次 utm_source，GA 取最后一个</li>
+          <li><strong>落地页重定向丢参数</strong>：301 跳转未携带 query string → UTM 丢失</li>
+          <li><strong>内部链接加 UTM</strong>：站内链接不应带 UTM，否则会覆盖真实外部来源</li>
+        </ul>
+        <div class="card-formula">
+          排查工具：GA4 DebugView 实时检查事件参数 / Chrome 扩展 UTM.io 自动生成标准 URL
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章：SEO 基础 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🔍</div>
+      三、SEO 搜索引擎优化基础
+      <span class="chapter-count">免费流量的长期投资</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">SEO 三大核心要素 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>技术 SEO (Technical)</strong>：网站能否被搜索引擎正确抓取与索引（爬虫可达、站点地图、HTTPS、速度）</li>
+          <li><strong>内容 SEO (On-Page)</strong>：页面内容是否匹配用户搜索意图（关键词、标题、Meta Description、内链）</li>
+          <li><strong>权威 SEO (Off-Page)</strong>：外部网站对你的信任度（外链数量与质量、品牌提及、社交信号）</li>
+        </ul>
+        <div class="card-formula">
+          Google 排名 ≈ 内容相关性 × 页面权威度 × 用户体验信号（Core Web Vitals）
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">关键词研究流程</div>
+        <div class="flow" style="margin-top:8px">
+          <span class="flow-step fs-blue">确定种子词</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">工具拓展长尾词</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">分析搜索量/难度</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">判断搜索意图</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">匹配落地页</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>搜索意图分类</strong>：信息型（how to…）/ 导航型（brand name）/ 交易型（buy…）/ 商业调查型（best…）</li>
+          <li><strong>常用工具</strong>：Ahrefs / SEMrush / Google Keyword Planner / Ubersuggest</li>
+          <li><strong>长尾关键词</strong>：搜索量小但精准，竞争低，适合新站快速获取排名</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Core Web Vitals 核心指标</div>
+        <table class="compare-table">
+          <thead><tr><th>指标</th><th>含义</th><th>良好阈值</th><th>优化方向</th></tr></thead>
+          <tbody>
+            <tr><td>LCP</td><td>最大内容绘制时间</td><td>&le; 2.5s</td><td>优化图片、CDN、服务端响应</td></tr>
+            <tr><td>INP</td><td>交互到下一次绘制延迟</td><td>&le; 200ms</td><td>减少 JS 阻塞、代码拆分</td></tr>
+            <tr><td>CLS</td><td>累积布局偏移</td><td>&le; 0.1</td><td>图片预留尺寸、字体预加载</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          Core Web Vitals 直接影响 Google 搜索排名，是技术 SEO 的硬指标。PageSpeed Insights 可检测
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SEO 效果数据指标</div>
+        <ul class="card-points">
+          <li><strong>Organic Traffic</strong>：自然搜索带来的会话数，核心增长指标</li>
+          <li><strong>Keyword Rankings</strong>：目标关键词在搜索结果中的位置（Top 3 / Top 10）</li>
+          <li><strong>Click-Through Rate</strong>：搜索展示后的点击率，与标题和描述质量相关</li>
+          <li><strong>Indexed Pages</strong>：被 Google 收录的页面数量</li>
+          <li><strong>Backlinks</strong>：外链数量与域名权重（Domain Rating / Authority）</li>
+          <li><strong>Organic Conversions</strong>：自然搜索流量带来的转化数及金额</li>
+        </ul>
+        <div class="card-formula">
+          数据来源：Google Search Console（免费）+ Ahrefs/SEMrush（付费）+ GA4（转化追踪）
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章：Google Ads ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">📢</div>
+      四、Google Ads 广告投放
+      <span class="chapter-count">搜索广告 + 购物广告</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">Google Ads 广告类型 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>类型</th><th>展示位置</th><th>适用场景</th><th>计费方式</th></tr></thead>
+          <tbody>
+            <tr><td>搜索广告 Search</td><td>Google 搜索结果页顶部</td><td>高购买意图关键词</td><td>CPC</td></tr>
+            <tr><td>购物广告 Shopping</td><td>搜索结果的商品卡片</td><td>电商核心，展示图片+价格</td><td>CPC</td></tr>
+            <tr><td>展示广告 Display</td><td>合作网站的广告位</td><td>品牌曝光、再营销</td><td>CPM / CPC</td></tr>
+            <tr><td>视频广告 Video</td><td>YouTube 片前/片中</td><td>品牌故事、产品演示</td><td>CPV / CPM</td></tr>
+            <tr><td>效果最大化 PMax</td><td>跨所有 Google 渠道</td><td>自动化全渠道投放</td><td>CPA 目标</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Google Ads 核心指标 <span class="card-badge badge-core">核心</span></div>
+        <div class="metric-grid" style="margin-top:8px">
+          <div class="metric-card">
+            <div class="metric-abbr">CPC</div>
+            <div class="metric-name">单次点击成本</div>
+            <div class="metric-formula">CPC = 花费 / 点击数</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CTR</div>
+            <div class="metric-name">点击率</div>
+            <div class="metric-formula">CTR = 点击 / 展示 × 100%</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CPA</div>
+            <div class="metric-name">单次转化成本</div>
+            <div class="metric-formula">CPA = 花费 / 转化数</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">QS</div>
+            <div class="metric-name">质量得分 (1-10)</div>
+            <div class="metric-formula">QS = 相关性 + CTR + 落地页体验</div>
+          </div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">Google Ads 竞价公式</span>
+          Ad Rank = 出价 (Bid) × 质量得分 (QS)<br>
+          实际 CPC = 下一名 Ad Rank / 你的 QS + $0.01<br>
+          → QS 越高，用更低价格获得更高排名
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">搜索广告账户结构</div>
+        <div class="flow" style="margin-top:8px">
+          <span class="flow-step fs-blue">Account（账户）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">Campaign（广告系列）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">Ad Group（广告组）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">Keywords + Ads（关键词+广告）</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>Campaign 层</strong>：设置预算、地理位置、投放时间、出价策略</li>
+          <li><strong>Ad Group 层</strong>：按主题/产品类别分组关键词，每组 10~20 个相关词</li>
+          <li><strong>关键词匹配类型</strong>：广泛匹配 / 词组匹配 / 精确匹配 / 否定关键词</li>
+          <li><strong>RSA 响应式广告</strong>：提供多条标题和描述，Google 自动组合最优版本</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Google Shopping 广告优化</div>
+        <ul class="card-points">
+          <li><strong>Merchant Center</strong>：产品数据源（Feed）管理中心，商品信息必须准确、及时更新</li>
+          <li><strong>Feed 关键字段</strong>：title / description / price / image_link / availability / gtin</li>
+          <li><strong>标题优化</strong>：品牌 + 产品类型 + 核心属性（颜色/材质/尺寸），搜索匹配更精准</li>
+          <li><strong>定价竞争力</strong>：Google 会对比竞品价格，价格有优势的产品展示频率更高</li>
+        </ul>
+        <div class="card-formula">
+          Shopping 广告不设关键词，Google 根据 Feed 中的商品标题和描述自动匹配搜索词<br>
+          → Feed 质量 = Shopping 广告效果的基础
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章：Facebook Ads ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">📱</div>
+      五、Facebook / Meta Ads 广告投放
+      <span class="chapter-count">社交媒体广告核心平台</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">Facebook Ads 账户架构 <span class="card-badge badge-core">核心</span></div>
+        <div class="flow" style="margin-top:8px">
+          <span class="flow-step fs-blue">Business Manager</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">Ad Account（广告账户）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">Campaign（广告系列）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">Ad Set（广告组）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-pink">Ad（广告）</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>Campaign 层</strong>：选择营销目标 — 知名度 / 流量 / 互动 / 线索 / 销量</li>
+          <li><strong>Ad Set 层</strong>：定义受众、版位、预算、排期</li>
+          <li><strong>Ad 层</strong>：创建素材（图片/视频 + 文案 + CTA 按钮）</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">受众定向策略</div>
+        <table class="compare-table">
+          <thead><tr><th>受众类型</th><th>定义</th><th>典型用法</th></tr></thead>
+          <tbody>
+            <tr><td>核心受众 Core</td><td>按兴趣/行为/人口统计定向</td><td>拓新：锁定对竞品或品类有兴趣的用户</td></tr>
+            <tr><td>自定义受众 Custom</td><td>基于已有用户数据（网站/APP/CRM）</td><td>再营销：30天内加购未购买的用户</td></tr>
+            <tr><td>类似受众 Lookalike</td><td>系统找到与种子用户相似的新人群</td><td>拓新：基于高价值购买用户的 1%~5% LAL</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          Facebook Pixel 是数据回传的核心：安装在网站上，追踪 PageView / AddToCart / Purchase 等事件<br>
+          → Pixel 数据越多，广告算法优化越精准
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Facebook Ads 关键指标</div>
+        <div class="metric-grid" style="margin-top:8px">
+          <div class="metric-card">
+            <div class="metric-abbr">CPM</div>
+            <div class="metric-name">千次展示成本</div>
+            <div class="metric-formula">CPM = 花费 / 展示 × 1000</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CPC</div>
+            <div class="metric-name">单次链接点击成本</div>
+            <div class="metric-formula">CPC = 花费 / 链接点击</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CTR</div>
+            <div class="metric-name">链接点击率</div>
+            <div class="metric-formula">CTR = 点击 / 展示 × 100%</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">ROAS</div>
+            <div class="metric-name">广告花费回报</div>
+            <div class="metric-formula">ROAS = 购买金额 / 花费</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">Freq</div>
+            <div class="metric-name">频次（平均触达次数）</div>
+            <div class="metric-formula">Freq = 展示 / 触达人数</div>
+            <div class="metric-desc">Freq > 3~4 时需更换素材防疲劳</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CPA</div>
+            <div class="metric-name">单次购买成本</div>
+            <div class="metric-formula">CPA = 花费 / 购买次数</div>
+            <div class="metric-desc">电商核心效率指标</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">广告素材测试方法论</div>
+        <ul class="card-points">
+          <li><strong>素材为王</strong>：Facebook 广告效果 70% 取决于素材质量，30% 取决于受众和出价</li>
+          <li><strong>A/B Test</strong>：同一受众下测试不同素材（图片 vs 视频 / 短文案 vs 长文案）</li>
+          <li><strong>Hook 3秒法则</strong>：视频前 3 秒决定用户是否继续观看，需要强 Hook</li>
+          <li><strong>UGC 素材</strong>：用户生成内容风格的素材，CTR 通常比品牌精修素材高 30%+</li>
+          <li><strong>素材疲劳监控</strong>：CTR 持续下降 + 频次上升 → 该更换新素材</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章：TikTok Ads ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">🎵</div>
+      六、TikTok Ads 广告投放
+      <span class="chapter-count">短视频时代的增长引擎</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">TikTok Ads 广告产品 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>广告类型</th><th>展示位置</th><th>特点</th><th>适用场景</th></tr></thead>
+          <tbody>
+            <tr><td>In-Feed Ads</td><td>For You 信息流</td><td>原生视频形式，支持 CTA</td><td>电商转化、APP下载</td></tr>
+            <tr><td>TopView</td><td>打开APP的第一条视频</td><td>最大曝光位，日均触达百万</td><td>品牌大曝光</td></tr>
+            <tr><td>Spark Ads</td><td>信息流（使用真实帖文）</td><td>推广达人/品牌已有内容</td><td>KOL 合作放大</td></tr>
+            <tr><td>Shopping Ads</td><td>信息流 + 商品卡片</td><td>直链小店/独立站商品</td><td>电商直接转化</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">TikTok vs Facebook 投放差异</div>
+        <table class="compare-table">
+          <thead><tr><th>维度</th><th>TikTok Ads</th><th>Facebook Ads</th></tr></thead>
+          <tbody>
+            <tr><td>素材形式</td><td>竖屏短视频为主（9:16）</td><td>图片+视频均可，版位多样</td></tr>
+            <tr><td>内容风格</td><td>原生、真实感、娱乐化</td><td>可精修，专业品牌感</td></tr>
+            <tr><td>用户行为</td><td>沉浸式滑动，决策更冲动</td><td>社交+信息流，决策链更长</td></tr>
+            <tr><td>算法逻辑</td><td>内容兴趣推荐为主</td><td>社交关系 + 兴趣混合</td></tr>
+            <tr><td>数据回传</td><td>TikTok Pixel + Events API</td><td>Meta Pixel + CAPI</td></tr>
+            <tr><td>受众成熟度</td><td>较新，CPC 通常更低</td><td>成熟，数据积累更丰富</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">TikTok 素材创作原则</div>
+        <ul class="card-points">
+          <li><strong>"不像广告的广告"</strong>：最佳素材看起来像用户自发创作的内容，而非品牌硬广</li>
+          <li><strong>前 1 秒 Hook</strong>：比 Facebook 更短的注意力窗口，第 1 秒就要抓住用户</li>
+          <li><strong>趋势结合</strong>：利用热门音乐、挑战赛、滤镜等元素提升原生感</li>
+          <li><strong>真人出镜</strong>：真人讲解/开箱/测评类素材完播率和互动率最高</li>
+          <li><strong>高频迭代</strong>：素材生命周期短（7~14天），需持续产出新素材</li>
+        </ul>
+        <div class="card-formula">
+          TikTok 素材公式 = Hook（1s）+ 痛点/场景（3s）+ 产品展示（5s）+ CTA（2s）<br>
+          总时长控制在 15~30s 效果最佳
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">TikTok 数据追踪体系</div>
+        <div class="flow" style="margin-top:8px">
+          <span class="flow-step fs-blue">TikTok Pixel（浏览器端）</span>
+          <span class="flow-arrow">+</span>
+          <span class="flow-step fs-green">Events API（服务器端）</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">事件去重匹配</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">广告归因</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>必须事件</strong>：ViewContent / AddToCart / InitiateCheckout / CompletePayment</li>
+          <li><strong>双端上报</strong>：Pixel + Events API 配合，避免 iOS 隐私政策导致的数据丢失</li>
+          <li><strong>归因窗口</strong>：默认 7天点击 + 1天浏览，可在广告管理后台调整</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章：归因模型 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🎯</div>
+      七、广告归因模型
+      <span class="chapter-count">功劳归谁？最核心的难题</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">归因模型全景对比 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>归因模型</th><th>功劳分配方式</th><th>优点</th><th>缺点</th></tr></thead>
+          <tbody>
+            <tr><td>Last Click</td><td>100% 给最后一次点击</td><td>简单直接，易于执行</td><td>忽略上游渠道贡献</td></tr>
+            <tr><td>First Click</td><td>100% 给首次接触</td><td>重视用户发现渠道</td><td>忽略转化促成渠道</td></tr>
+            <tr><td>Linear</td><td>均分给所有触点</td><td>公平看待每个渠道</td><td>无法区分重要性差异</td></tr>
+            <tr><td>Time Decay</td><td>越接近转化的触点分配越多</td><td>平衡上下游</td><td>可能低估品牌触点</td></tr>
+            <tr><td>Position Based</td><td>首末各 40%，中间均分 20%</td><td>重视首尾触点</td><td>中间环节被低估</td></tr>
+            <tr><td>Data-Driven</td><td>ML 模型按实际贡献分配</td><td>最准确，基于真实数据</td><td>需要大量数据</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">用户转化路径示例</div>
+        <div class="card-desc">一个典型的跨境电商用户购买路径：</div>
+        <div class="flow" style="flex-direction:column; gap:6px; margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-blue" style="min-width:180px">Day 1: TikTok 视频广告</span>
+            <small style="color:var(--text-muted)">→ 首次认知品牌</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-green" style="min-width:180px">Day 3: Google 搜索品牌词</span>
+            <small style="color:var(--text-muted)">→ 主动搜索了解</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-yellow" style="min-width:180px">Day 5: Facebook 再营销广告</span>
+            <small style="color:var(--text-muted)">→ 加入购物车</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-orange" style="min-width:180px">Day 7: Email 弃购挽回</span>
+            <small style="color:var(--text-muted)">→ 完成购买 $120</small>
+          </div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">不同归因下的功劳分配</span>
+          Last Click：Email = $120（其他渠道 = $0）<br>
+          First Click：TikTok = $120<br>
+          Linear：各 $30<br>
+          Position Based：TikTok $48 + Google $12 + Facebook $12 + Email $48
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">归因窗口（Attribution Window）</div>
+        <ul class="card-points">
+          <li><strong>点击归因窗口</strong>：用户点击广告后 N 天内的转化归因给该广告（通常 7~28 天）</li>
+          <li><strong>浏览归因窗口</strong>：用户看到广告但未点击，N 天内转化也计入（通常 1 天）</li>
+          <li><strong>Facebook 默认</strong>：7天点击 + 1天浏览</li>
+          <li><strong>Google Ads 默认</strong>：30天点击</li>
+          <li><strong>窗口越长，归因转化越多</strong>：但也越不精确，容易将自然转化计入广告</li>
+        </ul>
+        <div class="card-formula">
+          iOS 14.5+ 限制了浏览归因数据，导致 Facebook 报告的转化数偏低<br>
+          → 需要结合服务端追踪（CAPI / Events API）补全数据
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Multi-Touch Attribution (MTA) 实践</div>
+        <div class="card-desc">多触点归因是企业级的归因方案，需要打通各渠道数据。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>数据打通</strong>：将 GA4 + Facebook + TikTok + Email 数据汇聚到数据仓库</li>
+          <li><strong>用户拼接</strong>：通过 email / phone / user_id 打通跨平台的用户身份</li>
+          <li><strong>路径分析</strong>：还原每个转化用户的完整触点路径</li>
+          <li><strong>模型训练</strong>：用 Shapley Value / Markov Chain 等算法计算各渠道贡献</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">数据团队的核心产出</span>
+          输入：各平台广告日志 + 网站行为日志 + 订单数据<br>
+          输出：每个渠道的真实增量贡献 + 预算分配建议
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章：ROI / ROAS ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">💰</div>
+      八、ROI / ROAS 投资回报分析
+      <span class="chapter-count">广告效率的终极衡量标准</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">ROI vs ROAS 区别 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>指标</th><th>公式</th><th>含义</th><th>示例</th></tr></thead>
+          <tbody>
+            <tr><td>ROI</td><td>(收入 - 成本) / 成本 × 100%</td><td>净利润率，考虑所有成本</td><td>花 $1000，赚 $3000 → ROI = 200%</td></tr>
+            <tr><td>ROAS</td><td>广告收入 / 广告花费</td><td>广告花费回报倍数</td><td>花 $1000 广告费，收入 $4000 → ROAS = 4</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">关键区别</span>
+          ROI 考虑全部成本（产品成本 + 物流 + 广告 + 运营）→ 衡量真实盈利能力<br>
+          ROAS 只看广告花费与收入的比值 → 衡量广告投放效率<br>
+          ROAS 高 ≠ 一定赚钱（如果产品成本高、退货率高）
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">电商盈利公式拆解 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-formula">
+          <span class="label">单订单利润计算</span>
+          Revenue（收入）= 商品售价<br>
+          - COGS（产品成本）<br>
+          - Shipping（物流费）<br>
+          - Platform Fee（平台费/支付手续费）<br>
+          - Ad Cost（分摊广告费 = CPA）<br>
+          = Net Profit（净利润）
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">盈亏平衡 ROAS 计算</span>
+          假设毛利率 = 60%（产品+物流+平台费占收入 40%）<br>
+          Break-even ROAS = 1 / 毛利率 = 1 / 0.6 = 1.67<br>
+          → ROAS > 1.67 才开始盈利，ROAS > 3 为健康水平
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">各渠道 ROAS 基准参考</div>
+        <table class="compare-table">
+          <thead><tr><th>渠道</th><th>典型 ROAS</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>Google Search（品牌词）</td><td>8~15x</td><td>用户已认知品牌，转化率最高</td></tr>
+            <tr><td>Google Shopping</td><td>4~8x</td><td>高购买意图，电商核心</td></tr>
+            <tr><td>Facebook（再营销）</td><td>5~10x</td><td>已有兴趣用户，容易转化</td></tr>
+            <tr><td>Facebook（拓新）</td><td>2~4x</td><td>冷流量，成本较高</td></tr>
+            <tr><td>TikTok Ads</td><td>2~5x</td><td>冲动消费属性强，品类差异大</td></tr>
+            <tr><td>Email Marketing</td><td>30~50x</td><td>成本极低，ROI 最高的渠道</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">LTV : CAC 长期价值分析</div>
+        <div class="card-desc">单次 ROAS 不能完全评判渠道价值，还需考虑用户长期价值。</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">核心公式</span>
+          LTV = AOV × 购买频次 × 客户生命周期<br>
+          CAC = 总营销花费 / 新用户数<br>
+          LTV : CAC 比值 > 3 → 业务健康可持续<br>
+          LTV : CAC 比值 < 1 → 获客越多亏越多
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>短期亏损可接受</strong>：首单 CPA > 首单利润，但 LTV 远超 CAC → 可加大投入</li>
+          <li><strong>Cohort LTV 分析</strong>：按获取月份分组，追踪 3/6/12 个月的累计消费</li>
+          <li><strong>渠道质量差异</strong>：Google 搜索获取的用户 LTV 通常 > 社交广告获取的用户</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章：多渠道协同 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🔄</div>
+      九、多渠道协同策略
+      <span class="chapter-count">渠道不是孤立的，是协同的</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">全渠道营销漏斗 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>漏斗阶段</th><th>目标</th><th>推荐渠道</th><th>核心指标</th></tr></thead>
+          <tbody>
+            <tr><td>认知 Awareness</td><td>让目标人群知道你</td><td>TikTok / YouTube / Display</td><td>Reach / CPM / 品牌搜索量</td></tr>
+            <tr><td>兴趣 Consideration</td><td>激发兴趣和信任</td><td>Facebook / Instagram / SEO</td><td>CTR / 停留时长 / 加购率</td></tr>
+            <tr><td>转化 Conversion</td><td>促成购买</td><td>Google Search / Shopping / Email</td><td>CVR / CPA / ROAS</td></tr>
+            <tr><td>留存 Retention</td><td>促进复购和推荐</td><td>Email / SMS / 会员体系</td><td>复购率 / LTV / NPS</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          上层漏斗（品牌）投入越多 → 下层漏斗（转化）效率越高 → 长期看整体 CAC 下降
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">渠道间协同效应</div>
+        <div class="card-desc">各渠道不是独立运作的，而是相互影响、相互促进的：</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>TikTok → Google</strong>：TikTok 曝光后用户主动搜索品牌词，拉动 Google 品牌搜索量</li>
+          <li><strong>Facebook → Email</strong>：广告引流到站注册后，Email 进行长期培育和转化</li>
+          <li><strong>SEO → Paid</strong>：自然排名和广告同时出现在搜索结果，信任度叠加提高 CTR</li>
+          <li><strong>Retargeting 链条</strong>：TikTok 首次触达 → Facebook 再营销 → Email 弃购挽回 → 完成转化</li>
+        </ul>
+        <div class="card-formula">
+          停掉品牌广告后品牌搜索量下降 → 说明付费渠道在为自然流量输血<br>
+          → 不能只看单渠道 ROAS，需要看整体预算对全局 Revenue 的影响
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">预算分配框架</div>
+        <div class="card-desc">基于漏斗阶段和渠道 ROI 的预算分配方法：</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">70-20-10 预算分配法则</span>
+          70% → 已验证有效的渠道（如 Google Shopping、Facebook 再营销）<br>
+          20% → 有潜力待优化的渠道（如 TikTok 拓新、SEO 内容投入）<br>
+          10% → 新兴/实验渠道（如 Pinterest Ads、Influencer、播客广告）
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>MER（Marketing Efficiency Ratio）</strong>：总收入 / 总营销花费，衡量整体效率</li>
+          <li><strong>增量测试</strong>：停掉某渠道 2 周，观察总收入变化，量化渠道真实贡献</li>
+          <li><strong>季节性调整</strong>：BFCM / Prime Day 等大促期间加大付费预算，日常回归自然增长</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">再营销（Retargeting）策略分层</div>
+        <table class="compare-table">
+          <thead><tr><th>受众分层</th><th>定义</th><th>策略</th><th>预期 ROAS</th></tr></thead>
+          <tbody>
+            <tr><td>加购未购买</td><td>7天内加购但未下单</td><td>展示加购商品 + 限时折扣</td><td>8~15x</td></tr>
+            <tr><td>浏览未加购</td><td>14天内浏览商品页</td><td>推送热销/新品素材</td><td>4~8x</td></tr>
+            <tr><td>老客户复购</td><td>30~90天前购买过</td><td>推荐关联商品/新品</td><td>6~12x</td></tr>
+            <tr><td>流失用户</td><td>90天+ 未访问</td><td>大额优惠券激活</td><td>2~4x</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula">
+          再营销是 ROAS 最高的广告类型，但受众池有限<br>
+          → 必须持续通过拓新广告为再营销"蓄水"
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章：数据看板 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">📊</div>
+      十、流量与广告数据看板
+      <span class="chapter-count">用数据驱动日常决策</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">日常监控 Dashboard 核心指标 <span class="card-badge badge-must">必背</span></div>
+        <div class="metric-grid" style="margin-top:8px">
+          <div class="metric-card">
+            <div class="metric-abbr">Revenue</div>
+            <div class="metric-name">日/周/月销售收入</div>
+            <div class="metric-formula">Revenue = 订单数 × AOV</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">Ad Spend</div>
+            <div class="metric-name">广告总花费</div>
+            <div class="metric-formula">各平台花费之和</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">Blended ROAS</div>
+            <div class="metric-name">混合 ROAS</div>
+            <div class="metric-formula">总收入 / 总广告花费</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">MER</div>
+            <div class="metric-name">营销效率比</div>
+            <div class="metric-formula">总收入 / 总营销成本</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CAC</div>
+            <div class="metric-name">获客成本</div>
+            <div class="metric-formula">总花费 / 新客户数</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CVR</div>
+            <div class="metric-name">全站转化率</div>
+            <div class="metric-formula">订单数 / Sessions × 100%</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">AOV</div>
+            <div class="metric-name">平均客单价</div>
+            <div class="metric-formula">总收入 / 订单数</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">New : Return</div>
+            <div class="metric-name">新客 vs 回头客比例</div>
+            <div class="metric-formula">新客订单 / 总订单</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">渠道级别 Dashboard 设计</div>
+        <div class="card-desc">每个渠道需要独立看板，关注渠道特有指标：</div>
+        <table class="compare-table" style="margin-top:8px">
+          <thead><tr><th>渠道</th><th>核心指标</th><th>次要指标</th><th>数据源</th></tr></thead>
+          <tbody>
+            <tr><td>Google Ads</td><td>ROAS / CPA / CVR</td><td>QS / Impression Share</td><td>Google Ads API</td></tr>
+            <tr><td>Facebook Ads</td><td>ROAS / CPA / CPM</td><td>Frequency / CTR / ThruPlay</td><td>Marketing API</td></tr>
+            <tr><td>TikTok Ads</td><td>ROAS / CPA / VCR</td><td>完播率 / 互动率</td><td>TikTok Marketing API</td></tr>
+            <tr><td>SEO</td><td>Organic Traffic / Rankings</td><td>CTR / Indexed Pages</td><td>Search Console API</td></tr>
+            <tr><td>Email</td><td>Revenue / 打开率 / CVR</td><td>退订率 / 送达率</td><td>Klaviyo / Mailchimp API</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据看板搭建流程</div>
+        <div class="flow" style="margin-top:8px">
+          <span class="flow-step fs-blue">各平台 API 拉取</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">ETL 清洗入仓</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">DWD 明细宽表</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">DWS 汇总指标表</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">BI 可视化看板</span>
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>数据接入</strong>：用 Fivetran / Airbyte / 自研脚本拉取各平台广告数据</li>
+          <li><strong>数据仓库</strong>：BigQuery / Snowflake / ClickHouse 作为统一分析基座</li>
+          <li><strong>指标层建设</strong>：DWS 层预计算日/周/月粒度的渠道指标表</li>
+          <li><strong>BI 工具</strong>：Looker / Tableau / Superset / Metabase 搭建可视化面板</li>
+          <li><strong>告警机制</strong>：CPA 突增 50% / ROAS 低于阈值 → 自动推送 Slack/飞书告警</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">异常诊断分析框架</div>
+        <div class="card-desc">当 Dashboard 指标异常时，按照以下流程排查：</div>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">ROAS 下降排查树</span>
+          ROAS = Revenue / Ad Spend = (Clicks × CVR × AOV) / (Clicks × CPC)<br>
+          = CVR × AOV / CPC<br><br>
+          CPC 上升？→ 竞争加剧 / 素材疲劳 / 季节性波动<br>
+          CVR 下降？→ 落地页问题 / 受众质量下降 / 网站故障<br>
+          AOV 下降？→ 促销折扣力度大 / 低价品占比上升
+        </div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>先排除数据问题</strong>：Pixel 是否丢事件？归因窗口是否变更？数据延迟？</li>
+          <li><strong>再排除外部因素</strong>：竞品大促？平台政策变更？季节性因素？</li>
+          <li><strong>最后定位内部原因</strong>：素材衰退？受众重叠？预算分配不合理？</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "traffic-ads-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

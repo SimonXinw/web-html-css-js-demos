@@ -113,7 +113,9 @@
             followerX: window.innerWidth / 2,
             followerY: window.innerWidth / 2,
             // 阻尼系数 (0.1 = 慢, 0.9 = 快)
-            ease: 0.1
+            ease: 0.1,
+            // RAF 循环是否正在运行（防止重复启动多个循环）
+            running: false
         };
 
         // DOM 元素缓存
@@ -134,14 +136,17 @@
         window.addEventListener('mousemove', (e) => {
             state.mouseX = e.clientX;
             state.mouseY = e.clientY;
-            // 启动循环
-            requestAnimationFrame(render);
 
+            // 鼠标移动时，如果循环已停止则重新启动
+            if (!state.running) {
+                state.running = true;
+                requestAnimationFrame(render);
+            }
         });
 
         // 渲染循环 (Render Loop)
         function render() {
-            // 1. 实时点逻辑：直接赋值，无延迟 (或者极小延迟)
+            // 1. 实时点逻辑：直接赋值，无延迟
             state.dotX = state.mouseX;
             state.dotY = state.mouseY;
 
@@ -152,15 +157,22 @@
 
             // 3. 渲染 DOM
             // 使用 translate3d 开启硬件加速，避免 Sub-pixel 渲染问题
-            // 减去宽高的一半以居中
             const dotTransform = `translate3d(${state.dotX - 4}px, ${state.dotY - 4}px, 0)`;
             const followerTransform = `translate3d(${state.followerX - 20}px, ${state.followerY - 20}px, 0)`;
 
             cursorDot.style.transform = dotTransform;
             cursorFollower.style.transform = followerTransform;
 
-            // 4. 循环调用
-            // requestAnimationFrame(render);
+            // 4. 判断圆圈是否已足够靠近目标（误差 < 0.1px）
+            // 若未到达则继续调度下一帧；到达后停止循环，避免空转浪费 CPU
+            const distX = Math.abs(state.mouseX - state.followerX);
+            const distY = Math.abs(state.mouseY - state.followerY);
+
+            if (distX > 0.1 || distY > 0.1) {
+                requestAnimationFrame(render);
+            } else {
+                state.running = false;
+            }
         }
 
 

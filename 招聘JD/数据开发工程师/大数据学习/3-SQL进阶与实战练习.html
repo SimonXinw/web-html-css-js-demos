@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQL 进阶与实战练习</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+    .icon-red    { background: rgba(248,81,73,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+    .grid-1 { grid-template-columns: 1fr; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 折叠答案 ===== */
+    details {
+      margin-top: 10px;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--accent);
+      padding: 6px 0;
+      user-select: none;
+      list-style: none;
+    }
+
+    details summary::before {
+      content: "▸ ";
+      display: inline;
+      transition: transform 0.2s;
+    }
+
+    details[open] summary::before {
+      content: "▾ ";
+    }
+
+    details summary::-webkit-details-marker { display: none; }
+
+    /* ===== 表结构说明 ===== */
+    .table-schema {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: rgba(163,113,247,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--purple);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.8rem;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+
+    .table-schema .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>SQL 进阶与实战练习</h1>
+    <p class="hero-sub">大数据开发日常 80% 的工作都是写 SQL，这份练习集帮你从入门到熟练</p>
+    <div class="tags">
+      <span class="tag tag-blue">窗口函数</span>
+      <span class="tag tag-green">多表 JOIN</span>
+      <span class="tag tag-purple">子查询</span>
+      <span class="tag tag-orange">CTE</span>
+      <span class="tag tag-pink">聚合分析</span>
+      <span class="tag tag-blue">HiveSQL</span>
+      <span class="tag tag-green">电商场景</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章：SQL 执行顺序 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🧠</div>
+      一、SQL 执行顺序（必须透彻理解）
+      <span class="chapter-count">面试必考</span>
+    </div>
+
+    <div class="grid grid-1">
+      <div class="card">
+        <div class="card-title">SQL 语句的真实执行顺序 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">我们书写 SQL 的顺序是 SELECT → FROM → WHERE → ...，但数据库引擎内部的<strong>执行顺序完全不同</strong>。理解执行顺序是写出正确 SQL、理解别名作用域的基础。</div>
+
+        <div class="flow" style="margin-top: 14px">
+          <span class="flow-step fs-blue">① FROM</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">② WHERE</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">③ GROUP BY</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">④ HAVING</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">⑤ SELECT</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">⑥ ORDER BY</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-pink">⑦ LIMIT</span>
+        </div>
+
+        <ul class="card-points" style="margin-top: 14px">
+          <li><strong>FROM</strong>：确定数据来源，执行 JOIN、笛卡尔积，生成虚拟表</li>
+          <li><strong>WHERE</strong>：对虚拟表逐行过滤，不满足条件的行被丢弃</li>
+          <li><strong>GROUP BY</strong>：将剩余行按指定列分组，每组生成一行</li>
+          <li><strong>HAVING</strong>：对分组后的结果过滤（可使用聚合函数）</li>
+          <li><strong>SELECT</strong>：计算需要输出的列、表达式、别名</li>
+          <li><strong>ORDER BY</strong>：对最终结果排序（可使用 SELECT 中的别名）</li>
+          <li><strong>LIMIT</strong>：截取指定行数返回</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top: 16px">
+      <div class="card">
+        <div class="card-title">为什么 WHERE 中不能用别名？</div>
+        <div class="card-desc">WHERE 在 SELECT 之前执行，此时别名尚未定义，引擎不认识该名称。</div>
+        <div class="card-formula">
+<span class="label">错误写法</span>
+SELECT amount * 0.9 AS discounted
+FROM orders
+WHERE discounted > 100   -- 报错！discounted 尚未定义</div>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">正确写法</span>
+SELECT amount * 0.9 AS discounted
+FROM orders
+WHERE amount * 0.9 > 100  -- 直接使用原始表达式</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">为什么 HAVING 可以用聚合函数？</div>
+        <div class="card-desc">HAVING 在 GROUP BY 之后执行，此时分组已完成，聚合函数有了计算上下文。</div>
+        <div class="card-formula">
+<span class="label">示例：找出月订单数超过 10 的用户</span>
+SELECT user_id, COUNT(*) AS order_cnt
+FROM orders
+WHERE dt >= "2024-01-01"
+GROUP BY user_id
+HAVING COUNT(*) > 10      -- HAVING 可以用聚合函数
+ORDER BY order_cnt DESC   -- ORDER BY 可以用 SELECT 别名</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章：窗口函数进阶 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">📊</div>
+      二、窗口函数进阶
+      <span class="chapter-count">数据分析核心武器</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">NTILE(n)：等分桶 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">将有序数据<strong>等分为 n 组</strong>，返回每行所在的组号（1 ~ n）。常用于分位数计算、用户分层。</div>
+        <div class="card-formula">
+<span class="label">示例：将用户按消费金额分为 4 个等级</span>
+SELECT
+  user_id,
+  total_amount,
+  NTILE(4) OVER (ORDER BY total_amount DESC) AS tier
+FROM user_stats
+-- tier=1 是 Top 25% 高消费用户
+-- tier=4 是 Bottom 25% 低消费用户</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">FIRST_VALUE / LAST_VALUE</div>
+        <div class="card-desc">取窗口内<strong>第一个或最后一个</strong>值。LAST_VALUE 需注意默认窗口范围只到当前行。</div>
+        <div class="card-formula">
+<span class="label">示例：每个类目中价格最高和最低的商品名</span>
+SELECT
+  category,
+  product_name,
+  price,
+  FIRST_VALUE(product_name) OVER (
+    PARTITION BY category ORDER BY price DESC
+  ) AS most_expensive,
+  FIRST_VALUE(product_name) OVER (
+    PARTITION BY category ORDER BY price ASC
+  ) AS cheapest
+FROM products</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">ROWS BETWEEN 窗口范围详解 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">窗口范围决定了聚合函数计算时包含哪些行，是滑动窗口计算的核心。</div>
+        <ul class="card-points" style="margin-top: 8px">
+          <li><strong>UNBOUNDED PRECEDING</strong>：窗口起点 = 分区第一行</li>
+          <li><strong>CURRENT ROW</strong>：当前行</li>
+          <li><strong>n PRECEDING</strong>：当前行往前 n 行</li>
+          <li><strong>n FOLLOWING</strong>：当前行往后 n 行</li>
+          <li><strong>UNBOUNDED FOLLOWING</strong>：窗口终点 = 分区最后一行</li>
+        </ul>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">常见窗口范围组合</span>
+-- 从分区起始到当前行（累计求和默认范围）
+ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+
+-- 前 6 行 + 当前行 = 最近 7 天（需按日期排序）
+ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+
+-- 整个分区（求全局占比时使用）
+ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">滑动平均实战：最近 7 天平均 GMV</div>
+        <div class="card-desc">电商日报中常见需求：计算每天的 GMV 以及最近 7 天滑动平均 GMV，消除日波动。</div>
+        <div class="card-formula">
+<span class="label">完整 SQL</span>
+SELECT
+  dt,
+  daily_gmv,
+  AVG(daily_gmv) OVER (
+    ORDER BY dt
+    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+  ) AS gmv_7d_avg,
+  SUM(daily_gmv) OVER (
+    ORDER BY dt
+    ROWS BETWEEN 6 PRECEDING AND CURRENT ROW
+  ) AS gmv_7d_sum
+FROM (
+  SELECT
+    dt,
+    SUM(pay_amount) AS daily_gmv
+  FROM dwd_order
+  WHERE status = "paid"
+  GROUP BY dt
+) t
+ORDER BY dt</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">累计百分比：帕累托分析（二八法则）</div>
+        <div class="card-desc">计算每个商品的销售额及其占总销售额的<strong>累计百分比</strong>，用于判断哪些商品贡献了 80% 的销售额。</div>
+        <div class="card-formula">
+<span class="label">帕累托分析 SQL</span>
+SELECT
+  product_id,
+  product_name,
+  sales_amount,
+  SUM(sales_amount) OVER (ORDER BY sales_amount DESC) AS cumulative_sales,
+  ROUND(
+    SUM(sales_amount) OVER (ORDER BY sales_amount DESC)
+    / SUM(sales_amount) OVER () * 100, 2
+  ) AS cumulative_pct
+FROM (
+  SELECT
+    product_id,
+    product_name,
+    SUM(pay_amount) AS sales_amount
+  FROM dwd_order_detail
+  GROUP BY product_id, product_name
+) t
+ORDER BY sales_amount DESC
+-- cumulative_pct 达到 80% 时对应的商品就是核心商品</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">窗口函数速查表</div>
+        <table class="compare-table">
+          <thead><tr><th>函数</th><th>作用</th><th>典型场景</th></tr></thead>
+          <tbody>
+            <tr><td>ROW_NUMBER()</td><td>不重复序号 1,2,3</td><td>分组取 TopN</td></tr>
+            <tr><td>RANK()</td><td>并列跳号 1,1,3</td><td>排名有并列需求</td></tr>
+            <tr><td>DENSE_RANK()</td><td>并列不跳号 1,1,2</td><td>密集排名</td></tr>
+            <tr><td>NTILE(n)</td><td>等分 n 桶</td><td>分位数 / 分层</td></tr>
+            <tr><td>LAG(col, n)</td><td>往前取 n 行</td><td>环比计算</td></tr>
+            <tr><td>LEAD(col, n)</td><td>往后取 n 行</td><td>下一次行为间隔</td></tr>
+            <tr><td>FIRST_VALUE</td><td>窗口第一个值</td><td>分组最值</td></tr>
+            <tr><td>SUM() OVER</td><td>窗口累计求和</td><td>累计 GMV / 累计百分比</td></tr>
+            <tr><td>AVG() OVER</td><td>窗口滑动平均</td><td>7 日 / 30 日滑动平均</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章：复杂 JOIN 实战 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">🔗</div>
+      三、复杂 JOIN 实战
+      <span class="chapter-count">真实场景中的多表关联</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">自关联（Self Join） <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">找出<strong>同一天下过两笔以上订单</strong>的用户。自关联即一张表 JOIN 自己。</div>
+        <div class="table-schema">
+<span class="label">表结构：dwd_order</span>
+order_id    STRING   -- 订单ID
+user_id     STRING   -- 用户ID
+pay_amount  DECIMAL  -- 支付金额
+dt          STRING   -- 支付日期 yyyy-MM-dd</div>
+        <div class="card-formula">
+<span class="label">参考 SQL</span>
+SELECT DISTINCT a.user_id, a.dt
+FROM dwd_order a
+JOIN dwd_order b
+  ON a.user_id = b.user_id
+  AND a.dt = b.dt
+  AND a.order_id &lt; b.order_id   -- 避免自身配对和重复配对
+-- 或更简洁的写法：
+SELECT user_id, dt
+FROM dwd_order
+GROUP BY user_id, dt
+HAVING COUNT(*) >= 2</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">不等值 JOIN：价格区间匹配</div>
+        <div class="card-desc">找出价格在某个区间范围内的匹配商品。不等值 JOIN 使用 BETWEEN 或 &gt;/&lt; 代替 = 做关联。</div>
+        <div class="table-schema">
+<span class="label">表结构</span>
+products: product_id, product_name, price
+price_tiers: tier_name, min_price, max_price</div>
+        <div class="card-formula">
+<span class="label">参考 SQL</span>
+SELECT
+  p.product_id,
+  p.product_name,
+  p.price,
+  t.tier_name
+FROM products p
+JOIN price_tiers t
+  ON p.price >= t.min_price
+  AND p.price &lt; t.max_price</div>
+        <div class="card-desc" style="margin-top: 8px"><strong>注意：</strong>不等值 JOIN 无法走 Hash Join 优化，大表关联性能较差，建议先过滤缩小数据量。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">LATERAL VIEW EXPLODE：Hive 行转列 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">一个订单包含多个商品 ID（以数组存储），需要将每个商品 ID 拆成独立行进行分析。</div>
+        <div class="table-schema">
+<span class="label">表结构：ods_order</span>
+order_id      STRING        -- 订单ID
+product_ids   ARRAY&lt;STRING&gt;  -- 商品ID数组 ["P001","P002","P003"]
+pay_amount    DECIMAL        -- 总支付金额</div>
+        <div class="card-formula">
+<span class="label">参考 SQL（HiveSQL）</span>
+SELECT
+  order_id,
+  pid,
+  pay_amount
+FROM ods_order
+LATERAL VIEW EXPLODE(product_ids) tmp AS pid
+-- 一个含 3 个商品的订单会被拆成 3 行
+-- 每行的 pid 分别对应数组中的一个元素</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">EXISTS vs IN：性能差异与适用场景</div>
+        <table class="compare-table">
+          <thead><tr><th>对比维度</th><th>IN</th><th>EXISTS</th></tr></thead>
+          <tbody>
+            <tr><td>工作原理</td><td>先执行子查询生成结果集，再逐行匹配</td><td>对外层每行执行子查询，找到即返回</td></tr>
+            <tr><td>子查询结果集大</td><td>慢（需加载整个结果集）</td><td>快（找到一条即停止）</td></tr>
+            <tr><td>外层表大</td><td>快（子查询只执行一次）</td><td>慢（每行都触发子查询）</td></tr>
+            <tr><td>NULL 处理</td><td>IN 遇到 NULL 会有问题</td><td>EXISTS 不受 NULL 影响</td></tr>
+            <tr><td>经验法则</td><td>子查询结果集小时用 IN</td><td>子查询结果集大时用 EXISTS</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top: 10px">
+<span class="label">等价改写示例</span>
+-- IN 写法
+SELECT * FROM users WHERE user_id IN (SELECT user_id FROM orders)
+
+-- EXISTS 写法（大表场景更快）
+SELECT * FROM users u WHERE EXISTS (
+  SELECT 1 FROM orders o WHERE o.user_id = u.user_id
+)</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章：日期函数实战 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">📅</div>
+      四、日期函数实战（HiveSQL / SparkSQL）
+      <span class="chapter-count">电商数据处理高频使用</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">常用日期函数速查 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>函数</th><th>说明</th><th>示例</th></tr></thead>
+          <tbody>
+            <tr><td>date_format</td><td>日期格式化</td><td>date_format("2024-03-15", "yyyyMM") → "202403"</td></tr>
+            <tr><td>date_add</td><td>日期加 N 天</td><td>date_add("2024-03-15", 7) → "2024-03-22"</td></tr>
+            <tr><td>date_sub</td><td>日期减 N 天</td><td>date_sub("2024-03-15", 1) → "2024-03-14"</td></tr>
+            <tr><td>datediff</td><td>两日期相差天数</td><td>datediff("2024-03-15", "2024-03-01") → 14</td></tr>
+            <tr><td>months_between</td><td>两日期相差月数</td><td>months_between("2024-06-15", "2024-03-15") → 3.0</td></tr>
+            <tr><td>year / month / day</td><td>提取年/月/日</td><td>year("2024-03-15") → 2024</td></tr>
+            <tr><td>last_day</td><td>当月最后一天</td><td>last_day("2024-02-10") → "2024-02-29"</td></tr>
+            <tr><td>next_day</td><td>下一个周几</td><td>next_day("2024-03-13", "MO") → "2024-03-18"</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">实用日期计算技巧</div>
+        <div class="card-formula">
+<span class="label">取本周一</span>
+date_sub(
+  next_day(current_date(), "MO"),
+  7
+)</div>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">取上月最后一天</span>
+date_sub(
+  trunc(current_date(), "MM"),  -- 本月第一天
+  1                              -- 减一天 = 上月最后一天
+)</div>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">取本季度第一天</span>
+trunc(current_date(), "quarter")
+-- 或手动计算：
+concat(
+  year(current_date()), "-",
+  lpad((floor((month(current_date())-1)/3)*3+1), 2, "0"),
+  "-01"
+)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">时区处理：UTC 转北京时间</div>
+        <div class="card-desc">跨境电商数据通常以 UTC 时间戳存储，分析时需转换为本地时区。</div>
+        <div class="card-formula">
+<span class="label">HiveSQL 时区转换</span>
+-- 方式一：from_utc_timestamp
+SELECT from_utc_timestamp(event_time, "Asia/Shanghai") AS beijing_time
+FROM events
+
+-- 方式二：手动加 8 小时（简单但不处理夏令时）
+SELECT date_add(event_time, 8.0/24) AS beijing_time</div>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">SparkSQL 时区转换</span>
+SELECT
+  from_utc_timestamp(timestamp_col, "Asia/Shanghai") AS cn_time,
+  from_utc_timestamp(timestamp_col, "America/Los_Angeles") AS us_time,
+  from_utc_timestamp(timestamp_col, "Europe/London") AS uk_time
+FROM events</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">跨境电商场景：统计各时区的 GMV</div>
+        <div class="card-desc">不同站点的用户处于不同时区，需要按各自本地日期统计 GMV。</div>
+        <div class="card-formula">
+<span class="label">完整 SQL</span>
+SELECT
+  r.timezone,
+  date_format(
+    from_utc_timestamp(o.pay_time, r.timezone),
+    "yyyy-MM-dd"
+  ) AS local_date,
+  SUM(o.pay_amount) AS gmv
+FROM dwd_order o
+JOIN dim_region r ON o.region_id = r.region_id
+GROUP BY
+  r.timezone,
+  date_format(
+    from_utc_timestamp(o.pay_time, r.timezone),
+    "yyyy-MM-dd"
+  )
+ORDER BY r.timezone, local_date</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章：行列转换 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">🔄</div>
+      五、行列转换
+      <span class="chapter-count">报表开发必备技能</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">行转列：一行拆多行</div>
+        <div class="card-desc">将数组、Map 等复杂类型字段拆展为多行，是 Hive 数据处理的常见操作。</div>
+        <div class="card-formula">
+<span class="label">Hive：LATERAL VIEW EXPLODE</span>
+-- 拆数组
+SELECT order_id, pid
+FROM orders
+LATERAL VIEW EXPLODE(product_ids) tmp AS pid
+
+-- 拆 Map
+SELECT order_id, attr_key, attr_value
+FROM orders
+LATERAL VIEW EXPLODE(attributes) tmp AS attr_key, attr_value</div>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">Presto / Trino：UNNEST</span>
+SELECT order_id, pid
+FROM orders
+CROSS JOIN UNNEST(product_ids) AS t(pid)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">列转行：多行合一行</div>
+        <div class="card-desc">将分散在多行的数据，聚合为一行多列的报表格式。核心技巧是 <strong>CASE WHEN + GROUP BY</strong>。</div>
+        <div class="card-formula">
+<span class="label">示例：将月度指标从多行转为一行多列</span>
+-- 原始数据：每月一行
+-- | month | metric | value |
+-- | 01    | gmv    | 10000 |
+-- | 01    | uv     | 5000  |
+-- | 01    | orders | 200   |
+
+SELECT
+  month,
+  MAX(CASE WHEN metric = "gmv"    THEN value END) AS gmv,
+  MAX(CASE WHEN metric = "uv"     THEN value END) AS uv,
+  MAX(CASE WHEN metric = "orders" THEN value END) AS orders
+FROM monthly_metrics
+GROUP BY month
+
+-- 结果：
+-- | month | gmv   | uv   | orders |
+-- | 01    | 10000 | 5000 | 200    |</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">实战：多行变一行多列的月度报表</div>
+        <div class="card-desc">电商场景中，需要将每个类目每月的 GMV 展示为<strong>类目为行、月份为列</strong>的报表。</div>
+        <div class="card-formula">
+<span class="label">完整 SQL</span>
+SELECT
+  category,
+  SUM(CASE WHEN mon = "01" THEN gmv ELSE 0 END) AS jan_gmv,
+  SUM(CASE WHEN mon = "02" THEN gmv ELSE 0 END) AS feb_gmv,
+  SUM(CASE WHEN mon = "03" THEN gmv ELSE 0 END) AS mar_gmv,
+  SUM(CASE WHEN mon = "04" THEN gmv ELSE 0 END) AS apr_gmv,
+  SUM(CASE WHEN mon = "05" THEN gmv ELSE 0 END) AS may_gmv,
+  SUM(CASE WHEN mon = "06" THEN gmv ELSE 0 END) AS jun_gmv
+FROM (
+  SELECT
+    category,
+    date_format(dt, "MM") AS mon,
+    SUM(pay_amount) AS gmv
+  FROM dwd_order_detail
+  WHERE dt >= "2024-01-01" AND dt &lt; "2024-07-01"
+  GROUP BY category, date_format(dt, "MM")
+) t
+GROUP BY category
+ORDER BY category</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Hive collect_list / collect_set 聚合</div>
+        <div class="card-desc">将多行值聚合为一个数组，是另一种形式的"列转行"。</div>
+        <div class="card-formula">
+<span class="label">示例：聚合每个用户购买的所有商品</span>
+SELECT
+  user_id,
+  collect_list(product_name) AS all_products,
+  collect_set(category) AS unique_categories,
+  concat_ws(",", collect_set(category)) AS categories_str
+FROM dwd_order_detail
+GROUP BY user_id</div>
+        <ul class="card-points" style="margin-top: 8px">
+          <li><strong>collect_list</strong>：保留重复值、保留顺序</li>
+          <li><strong>collect_set</strong>：去重，类似 DISTINCT</li>
+          <li><strong>concat_ws</strong>：将数组用分隔符拼接为字符串</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章：实战练习题集 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-red">🏋️</div>
+      六、实战练习题集（电商场景）
+      <span class="chapter-count">8 道经典面试真题</span>
+    </div>
+
+    <div class="grid grid-1">
+
+      <!-- 练习题 1 -->
+      <div class="card">
+        <div class="card-title">练习 1：统计每月 GMV、订单数、UV，计算同比环比 <span class="card-badge badge-must">必练</span></div>
+        <div class="card-desc">电商数据分析最基础的需求：按月汇总核心指标，并计算<strong>环比（MoM）</strong>和<strong>同比（YoY）</strong>增长率。</div>
+        <div class="table-schema" style="margin-top: 10px">
+<span class="label">表结构：dwd_order</span>
+order_id    STRING    -- 订单ID
+user_id     STRING    -- 用户ID
+pay_amount  DECIMAL   -- 支付金额
+status      STRING    -- 订单状态（paid/cancelled/refunded）
+dt          STRING    -- 支付日期 yyyy-MM-dd</div>
+        <details>
+          <summary>查看参考答案</summary>
+          <div class="card-formula">
+WITH monthly AS (
+  SELECT
+    date_format(dt, "yyyy-MM") AS mon,
+    SUM(pay_amount) AS gmv,
+    COUNT(DISTINCT order_id) AS order_cnt,
+    COUNT(DISTINCT user_id) AS uv
+  FROM dwd_order
+  WHERE status = "paid"
+  GROUP BY date_format(dt, "yyyy-MM")
+)
+SELECT
+  mon,
+  gmv,
+  order_cnt,
+  uv,
+  -- 环比（与上月对比）
+  LAG(gmv, 1) OVER (ORDER BY mon) AS last_month_gmv,
+  ROUND((gmv - LAG(gmv, 1) OVER (ORDER BY mon))
+    / LAG(gmv, 1) OVER (ORDER BY mon) * 100, 2) AS gmv_mom_pct,
+  -- 同比（与去年同月对比）
+  LAG(gmv, 12) OVER (ORDER BY mon) AS last_year_gmv,
+  ROUND((gmv - LAG(gmv, 12) OVER (ORDER BY mon))
+    / LAG(gmv, 12) OVER (ORDER BY mon) * 100, 2) AS gmv_yoy_pct
+FROM monthly
+ORDER BY mon</div>
+        </details>
+      </div>
+
+      <!-- 练习题 2 -->
+      <div class="card">
+        <div class="card-title">练习 2：找出连续 3 天都有购买的用户 <span class="card-badge badge-must">必练</span></div>
+        <div class="card-desc">经典的<strong>"连续登录 / 连续签到"问题变体</strong>。核心思路：日期减去行号得到分组标记，同组内连续天数 >= 3 的即为目标用户。</div>
+        <div class="table-schema" style="margin-top: 10px">
+<span class="label">表结构：dwd_order（同上）</span>
+user_id, dt（取去重后的购买日期）</div>
+        <details>
+          <summary>查看参考答案</summary>
+          <div class="card-formula">
+WITH user_dates AS (
+  -- 每个用户每天只保留一条
+  SELECT DISTINCT user_id, dt
+  FROM dwd_order
+  WHERE status = "paid"
+),
+numbered AS (
+  SELECT
+    user_id,
+    dt,
+    -- 日期减去行号 = 如果连续则差值相同
+    date_sub(dt, ROW_NUMBER() OVER (
+      PARTITION BY user_id ORDER BY dt
+    )) AS grp
+  FROM user_dates
+),
+consecutive AS (
+  SELECT
+    user_id,
+    grp,
+    COUNT(*) AS consecutive_days,
+    MIN(dt) AS start_date,
+    MAX(dt) AS end_date
+  FROM numbered
+  GROUP BY user_id, grp
+  HAVING COUNT(*) >= 3
+)
+SELECT DISTINCT user_id
+FROM consecutive
+-- 如果需要看具体连续区间：
+-- SELECT user_id, start_date, end_date, consecutive_days
+-- FROM consecutive</div>
+          <div class="card-desc" style="margin-top: 8px"><strong>核心思路：</strong>连续日期减去递增行号 = 相同常量。例如：03-01 减 1 = 02-28，03-02 减 2 = 02-28，03-03 减 3 = 02-28。三天的 grp 值相同，说明连续。</div>
+        </details>
+      </div>
+
+      <!-- 练习题 3 -->
+      <div class="card">
+        <div class="card-title">练习 3：每个商品类目的 Top 3 热销商品 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">分组取 TopN 是面试最高频的窗口函数题。核心用 ROW_NUMBER + PARTITION BY。</div>
+        <div class="table-schema" style="margin-top: 10px">
+<span class="label">表结构：dwd_order_detail</span>
+order_id      STRING   -- 订单ID
+product_id    STRING   -- 商品ID
+product_name  STRING   -- 商品名称
+category      STRING   -- 商品类目
+pay_amount    DECIMAL  -- 支付金额
+dt            STRING   -- 日期</div>
+        <details>
+          <summary>查看参考答案</summary>
+          <div class="card-formula">
+WITH product_sales AS (
+  SELECT
+    category,
+    product_id,
+    product_name,
+    SUM(pay_amount) AS total_sales,
+    COUNT(*) AS order_cnt
+  FROM dwd_order_detail
+  WHERE dt >= "2024-01-01"
+  GROUP BY category, product_id, product_name
+),
+ranked AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (
+      PARTITION BY category
+      ORDER BY total_sales DESC
+    ) AS rn
+  FROM product_sales
+)
+SELECT
+  category,
+  rn AS rank,
+  product_id,
+  product_name,
+  total_sales,
+  order_cnt
+FROM ranked
+WHERE rn &lt;= 3
+ORDER BY category, rn</div>
+        </details>
+      </div>
+
+      <!-- 练习题 4 -->
+      <div class="card">
+        <div class="card-title">练习 4：RFM 用户分层 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">按<strong>最近购买时间（R）、购买频次（F）、消费金额（M）</strong>三个维度给用户打标签，划分为 8 个群体。</div>
+        <div class="table-schema" style="margin-top: 10px">
+<span class="label">表结构：dwd_order</span>
+user_id, pay_amount, status, dt</div>
+        <details>
+          <summary>查看参考答案</summary>
+          <div class="card-formula">
+WITH rfm_base AS (
+  SELECT
+    user_id,
+    datediff("2024-06-30", MAX(dt)) AS recency,     -- R: 距最近一次购买的天数
+    COUNT(DISTINCT order_id) AS frequency,            -- F: 购买次数
+    SUM(pay_amount) AS monetary                       -- M: 累计消费金额
+  FROM dwd_order
+  WHERE status = "paid"
+  GROUP BY user_id
+),
+rfm_score AS (
+  SELECT
+    *,
+    -- 用 NTILE 将每个维度分为高/低两档
+    CASE WHEN NTILE(2) OVER (ORDER BY recency ASC) = 1
+         THEN "高" ELSE "低" END AS r_level,     -- recency 越小越好
+    CASE WHEN NTILE(2) OVER (ORDER BY frequency DESC) = 1
+         THEN "高" ELSE "低" END AS f_level,
+    CASE WHEN NTILE(2) OVER (ORDER BY monetary DESC) = 1
+         THEN "高" ELSE "低" END AS m_level
+  FROM rfm_base
+)
+SELECT
+  user_id, recency, frequency, monetary,
+  r_level, f_level, m_level,
+  CASE
+    WHEN r_level="高" AND f_level="高" AND m_level="高" THEN "重要价值用户"
+    WHEN r_level="高" AND f_level="低" AND m_level="高" THEN "重要发展用户"
+    WHEN r_level="低" AND f_level="高" AND m_level="高" THEN "重要保持用户"
+    WHEN r_level="低" AND f_level="低" AND m_level="高" THEN "重要挽留用户"
+    WHEN r_level="高" AND f_level="高" AND m_level="低" THEN "一般价值用户"
+    WHEN r_level="高" AND f_level="低" AND m_level="低" THEN "一般发展用户"
+    WHEN r_level="低" AND f_level="高" AND m_level="低" THEN "一般保持用户"
+    WHEN r_level="低" AND f_level="低" AND m_level="低" THEN "流失用户"
+  END AS user_tag
+FROM rfm_score</div>
+        </details>
+      </div>
+
+      <!-- 练习题 5 -->
+      <div class="card">
+        <div class="card-title">练习 5：留存率计算（7日 / 30日） <span class="card-badge badge-must">必练</span></div>
+        <div class="card-desc">统计每天新注册用户在第 1 天、第 7 天、第 30 天是否回访，计算留存率。</div>
+        <div class="table-schema" style="margin-top: 10px">
+<span class="label">表结构</span>
+dim_user: user_id, register_date
+dwd_user_active: user_id, active_date</div>
+        <details>
+          <summary>查看参考答案</summary>
+          <div class="card-formula">
+WITH new_users AS (
+  SELECT user_id, register_date
+  FROM dim_user
+  WHERE register_date >= "2024-01-01"
+),
+retention AS (
+  SELECT
+    n.register_date,
+    COUNT(DISTINCT n.user_id) AS new_user_cnt,
+    COUNT(DISTINCT CASE
+      WHEN datediff(a.active_date, n.register_date) = 1
+      THEN n.user_id END) AS day1_retained,
+    COUNT(DISTINCT CASE
+      WHEN datediff(a.active_date, n.register_date) = 7
+      THEN n.user_id END) AS day7_retained,
+    COUNT(DISTINCT CASE
+      WHEN datediff(a.active_date, n.register_date) = 30
+      THEN n.user_id END) AS day30_retained
+  FROM new_users n
+  LEFT JOIN dwd_user_active a
+    ON n.user_id = a.user_id
+  GROUP BY n.register_date
+)
+SELECT
+  register_date,
+  new_user_cnt,
+  ROUND(day1_retained  / new_user_cnt * 100, 2) AS day1_retention_rate,
+  ROUND(day7_retained  / new_user_cnt * 100, 2) AS day7_retention_rate,
+  ROUND(day30_retained / new_user_cnt * 100, 2) AS day30_retention_rate
+FROM retention
+ORDER BY register_date</div>
+        </details>
+      </div>
+
+      <!-- 练习题 6 -->
+      <div class="card">
+        <div class="card-title">练习 6：漏斗分析（浏览→加购→下单→支付） <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">计算从浏览到支付各环节的<strong>转化率</strong>和<strong>流失率</strong>，找出最大断层环节。</div>
+        <div class="table-schema" style="margin-top: 10px">
+<span class="label">表结构：dwd_user_event</span>
+user_id     STRING   -- 用户ID
+event_type  STRING   -- 事件类型：view / add_cart / create_order / pay
+dt          STRING   -- 事件日期</div>
+        <details>
+          <summary>查看参考答案</summary>
+          <div class="card-formula">
+WITH funnel AS (
+  SELECT
+    COUNT(DISTINCT CASE WHEN event_type = "view"
+      THEN user_id END) AS view_uv,
+    COUNT(DISTINCT CASE WHEN event_type = "add_cart"
+      THEN user_id END) AS cart_uv,
+    COUNT(DISTINCT CASE WHEN event_type = "create_order"
+      THEN user_id END) AS order_uv,
+    COUNT(DISTINCT CASE WHEN event_type = "pay"
+      THEN user_id END) AS pay_uv
+  FROM dwd_user_event
+  WHERE dt = "2024-03-15"
+)
+SELECT
+  view_uv,
+  cart_uv,
+  order_uv,
+  pay_uv,
+  -- 各环节转化率（相对上一步）
+  ROUND(cart_uv  / view_uv  * 100, 2) AS view_to_cart_pct,
+  ROUND(order_uv / cart_uv  * 100, 2) AS cart_to_order_pct,
+  ROUND(pay_uv   / order_uv * 100, 2) AS order_to_pay_pct,
+  -- 整体转化率（相对第一步）
+  ROUND(pay_uv   / view_uv  * 100, 2) AS overall_cvr
+FROM funnel</div>
+        </details>
+      </div>
+
+      <!-- 练习题 7 -->
+      <div class="card">
+        <div class="card-title">练习 7：每周 GMV 的周环比增长率</div>
+        <div class="card-desc">按自然周统计 GMV，计算<strong>周环比</strong>（WoW = Week over Week）增长率。</div>
+        <div class="table-schema" style="margin-top: 10px">
+<span class="label">表结构：dwd_order（同上）</span>
+order_id, pay_amount, status, dt</div>
+        <details>
+          <summary>查看参考答案</summary>
+          <div class="card-formula">
+WITH weekly AS (
+  SELECT
+    -- Hive: weekofyear(); SparkSQL: weekofyear()
+    year(dt) AS yr,
+    weekofyear(dt) AS wk,
+    MIN(dt) AS week_start,
+    SUM(pay_amount) AS weekly_gmv
+  FROM dwd_order
+  WHERE status = "paid"
+  GROUP BY year(dt), weekofyear(dt)
+)
+SELECT
+  yr,
+  wk,
+  week_start,
+  weekly_gmv,
+  LAG(weekly_gmv, 1) OVER (ORDER BY yr, wk) AS last_week_gmv,
+  ROUND(
+    (weekly_gmv - LAG(weekly_gmv, 1) OVER (ORDER BY yr, wk))
+    / LAG(weekly_gmv, 1) OVER (ORDER BY yr, wk) * 100, 2
+  ) AS wow_growth_pct
+FROM weekly
+ORDER BY yr, wk</div>
+        </details>
+      </div>
+
+      <!-- 练习题 8 -->
+      <div class="card">
+        <div class="card-title">练习 8：商品关联分析（购物篮分析） <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">找出<strong>经常一起购买的商品对</strong>，用于推荐系统的"猜你喜欢"和交叉销售。</div>
+        <div class="table-schema" style="margin-top: 10px">
+<span class="label">表结构：dwd_order_detail</span>
+order_id, product_id, product_name, category</div>
+        <details>
+          <summary>查看参考答案</summary>
+          <div class="card-formula">
+WITH order_products AS (
+  SELECT DISTINCT order_id, product_id, product_name
+  FROM dwd_order_detail
+)
+SELECT
+  a.product_name AS product_a,
+  b.product_name AS product_b,
+  COUNT(DISTINCT a.order_id) AS co_buy_orders,
+  -- 支持度 = 同时购买的订单数 / 总订单数
+  ROUND(
+    COUNT(DISTINCT a.order_id)
+    / (SELECT COUNT(DISTINCT order_id) FROM dwd_order_detail) * 100,
+    4
+  ) AS support_pct
+FROM order_products a
+JOIN order_products b
+  ON a.order_id = b.order_id
+  AND a.product_id &lt; b.product_id   -- 避免重复配对和自配对
+GROUP BY a.product_name, b.product_name
+HAVING COUNT(DISTINCT a.order_id) >= 10   -- 过滤低频组合
+ORDER BY co_buy_orders DESC
+LIMIT 50</div>
+          <div class="card-desc" style="margin-top: 8px"><strong>结果说明：</strong>co_buy_orders 越高说明两个商品越常被一起购买。support_pct 是关联规则中的"支持度"指标。可进一步计算"置信度"和"提升度"做更精细的分析。</div>
+        </details>
+      </div>
+
+    </div>
+
+    <!-- ==================== 第七章：HiveSQL vs 标准 SQL ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">⚡</div>
+      七、HiveSQL vs 标准 SQL 差异速查
+      <span class="chapter-count">避免踩坑</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">Hive 特有语法 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>特性</th><th>HiveSQL</th><th>标准 SQL</th></tr></thead>
+          <tbody>
+            <tr><td>行转列</td><td>LATERAL VIEW EXPLODE()</td><td>UNNEST()（Presto/PG）</td></tr>
+            <tr><td>局部排序</td><td>SORT BY（Reducer 内排序）</td><td>不支持</td></tr>
+            <tr><td>分区排序</td><td>DISTRIBUTE BY（控制分发）</td><td>不支持</td></tr>
+            <tr><td>全局排序</td><td>ORDER BY（单 Reducer，慎用）</td><td>ORDER BY</td></tr>
+            <tr><td>采样</td><td>TABLESAMPLE(BUCKET x OUT OF y)</td><td>无标准语法</td></tr>
+            <tr><td>正则列</td><td>SELECT `col_.*` FROM t</td><td>不支持</td></tr>
+            <tr><td>虚拟列</td><td>INPUT__FILE__NAME, BLOCK__OFFSET__INSIDE__FILE</td><td>不支持</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据类型差异</div>
+        <table class="compare-table">
+          <thead><tr><th>Hive 类型</th><th>说明</th><th>标准 SQL 对应</th></tr></thead>
+          <tbody>
+            <tr><td>STRING</td><td>不限长度字符串</td><td>VARCHAR(n)</td></tr>
+            <tr><td>ARRAY&lt;T&gt;</td><td>数组类型</td><td>部分引擎支持</td></tr>
+            <tr><td>MAP&lt;K,V&gt;</td><td>键值对类型</td><td>JSON / JSONB</td></tr>
+            <tr><td>STRUCT&lt;...&gt;</td><td>结构体（嵌套字段）</td><td>ROW 类型（部分支持）</td></tr>
+            <tr><td>BINARY</td><td>二进制</td><td>BLOB / BYTEA</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Hive 不支持的功能</div>
+        <ul class="card-points">
+          <li><strong>UPDATE / DELETE</strong>：非 ACID 表不支持行级更新删除，只能用 INSERT OVERWRITE 全量覆盖</li>
+          <li><strong>子查询限制</strong>：早期 Hive 不支持 WHERE 中的非相关子查询（新版已改善）</li>
+          <li><strong>事务支持弱</strong>：需开启 ACID（ORC + 事务表）才能支持 UPDATE/DELETE/MERGE</li>
+          <li><strong>索引基本弃用</strong>：Hive 3.0 后移除索引，依赖分区 + 分桶 + 列式存储优化查询</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SparkSQL 扩展特性</div>
+        <ul class="card-points">
+          <li><strong>TRANSFORM</strong>：调用外部脚本处理数据（Python / Shell）</li>
+          <li><strong>内置高阶函数</strong>：transform(), filter(), aggregate() 操作数组</li>
+          <li><strong>Hint 语法更丰富</strong>：/*+ BROADCAST(t) */, /*+ SHUFFLE_HASH(t) */</li>
+          <li><strong>AQE 自适应执行</strong>：自动优化 Shuffle 分区数、处理数据倾斜</li>
+          <li><strong>Delta Lake 集成</strong>：MERGE INTO, TIME TRAVEL, VACUUM 等</li>
+        </ul>
+        <div class="card-formula">
+<span class="label">SparkSQL 高阶函数示例</span>
+-- 对数组每个元素 +1
+SELECT transform(array(1,2,3), x -> x + 1)
+-- 结果：[2, 3, 4]
+
+-- 过滤数组中的偶数
+SELECT filter(array(1,2,3,4,5), x -> x % 2 = 0)
+-- 结果：[2, 4]</div>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章：SQL 性能优化 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">🚀</div>
+      八、SQL 性能优化原则
+      <span class="chapter-count">写出高效的大数据 SQL</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">分区裁剪 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc">Hive / SparkSQL 表通常按日期分区存储。WHERE 中包含分区字段可以<strong>跳过无关分区的数据扫描</strong>，减少 IO 数量级。</div>
+        <div class="card-formula">
+<span class="label">正确做法：WHERE 包含分区字段</span>
+SELECT * FROM dwd_order
+WHERE dt >= "2024-01-01" AND dt &lt; "2024-02-01"
+-- 只读取 1 月分区的数据文件</div>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">错误做法：对分区字段做函数计算</span>
+SELECT * FROM dwd_order
+WHERE date_format(dt, "yyyy-MM") = "2024-01"
+-- 分区裁剪失效！引擎无法推断需要哪些分区
+-- 会扫描全部分区数据</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">谓词下推：过滤条件尽量提前</div>
+        <div class="card-desc">将 WHERE 过滤条件尽量下推到数据读取阶段，减少参与 JOIN / 聚合的数据量。</div>
+        <div class="card-formula">
+<span class="label">优化前（先 JOIN 再过滤，浪费资源）</span>
+SELECT *
+FROM orders o
+JOIN users u ON o.user_id = u.user_id
+WHERE o.dt = "2024-03-15"</div>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">优化后（先过滤再 JOIN，数据量大幅减少）</span>
+SELECT *
+FROM (SELECT * FROM orders WHERE dt = "2024-03-15") o
+JOIN users u ON o.user_id = u.user_id
+-- 现代引擎通常会自动做谓词下推
+-- 但复杂 SQL 中引擎可能优化失败，手动改写更保险</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">避免 SELECT * & 小表广播 JOIN</div>
+        <ul class="card-points">
+          <li><strong>避免 SELECT *</strong>：列式存储（Parquet/ORC）只读取需要的列。SELECT * 会读取全部列，浪费大量 IO</li>
+          <li><strong>只查需要的列</strong>：SELECT user_id, pay_amount 比 SELECT * 快数倍</li>
+          <li><strong>小表广播 JOIN</strong>：当一侧表很小（< 几十 MB），广播到每个 Executor 避免 Shuffle</li>
+        </ul>
+        <div class="card-formula">
+<span class="label">Hive 广播 JOIN（MapJoin）</span>
+SET hive.auto.convert.join = true;
+SET hive.mapjoin.smalltable.filesize = 25000000;  -- 25MB
+
+SELECT /*+ MAPJOIN(dim) */ *
+FROM fact_orders fact
+JOIN dim_region dim ON fact.region_id = dim.region_id</div>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">SparkSQL 广播 JOIN</span>
+SELECT /*+ BROADCAST(dim) */ *
+FROM fact_orders fact
+JOIN dim_region dim ON fact.region_id = dim.region_id</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">数据倾斜处理 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="card-desc">当某些 Key 的数据量远超其他 Key 时，会导致个别 Task 耗时极长。</div>
+        <ul class="card-points" style="margin-top: 8px">
+          <li><strong>NULL 值处理</strong>：将 NULL Key 替换为随机值分散处理</li>
+          <li><strong>热点 Key 加盐</strong>：给倾斜 Key 加随机前缀，分散到多个 Reducer</li>
+          <li><strong>两阶段聚合</strong>：先局部聚合（加盐 + GROUP BY），再全局聚合（去盐 + GROUP BY）</li>
+          <li><strong>AQE 自动处理</strong>：Spark 3.x 开启 spark.sql.adaptive.enabled = true</li>
+        </ul>
+        <div class="card-formula">
+<span class="label">NULL Key 分散处理</span>
+SELECT
+  COALESCE(user_id, CONCAT("null_", CAST(RAND() * 100 AS INT))) AS join_key,
+  *
+FROM orders</div>
+        <div class="card-formula" style="margin-top: 8px">
+<span class="label">两阶段聚合（先加盐聚合，再去盐聚合）</span>
+-- 第一阶段：加盐打散
+WITH salted AS (
+  SELECT
+    CONCAT(category, "_", CAST(FLOOR(RAND()*10) AS INT)) AS salted_key,
+    category,
+    pay_amount
+  FROM orders
+)
+, partial AS (
+  SELECT salted_key, category, SUM(pay_amount) AS partial_sum
+  FROM salted
+  GROUP BY salted_key, category
+)
+-- 第二阶段：去盐汇总
+SELECT category, SUM(partial_sum) AS total
+FROM partial
+GROUP BY category</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">SQL 优化 Checklist</div>
+        <table class="compare-table">
+          <thead><tr><th>优化项</th><th>做法</th><th>效果</th></tr></thead>
+          <tbody>
+            <tr><td>分区裁剪</td><td>WHERE 直接使用分区字段</td><td>IO 减少 90%+</td></tr>
+            <tr><td>列裁剪</td><td>避免 SELECT *，只查需要的列</td><td>IO 减少 50%~80%</td></tr>
+            <tr><td>谓词下推</td><td>过滤条件写在子查询/JOIN 前</td><td>减少 Shuffle 数据量</td></tr>
+            <tr><td>广播 JOIN</td><td>小表加 BROADCAST Hint</td><td>消除 Shuffle</td></tr>
+            <tr><td>数据倾斜</td><td>NULL 分散 / 加盐 / AQE</td><td>消除长尾 Task</td></tr>
+            <tr><td>合理并行度</td><td>调整 Shuffle 分区数</td><td>充分利用集群资源</td></tr>
+            <tr><td>避免笛卡尔积</td><td>确保 JOIN 条件完整</td><td>避免数据爆炸</td></tr>
+            <tr><td>CTE 替代重复子查询</td><td>用 WITH 提取公共逻辑</td><td>减少重复计算</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">EXPLAIN 查看执行计划</div>
+        <div class="card-desc">优化 SQL 前，先用 EXPLAIN 查看执行计划，了解引擎如何执行你的查询。</div>
+        <div class="card-formula">
+<span class="label">查看执行计划</span>
+EXPLAIN
+SELECT user_id, SUM(pay_amount)
+FROM dwd_order
+WHERE dt = "2024-03-15"
+GROUP BY user_id
+
+-- 重点关注：
+-- 1. 是否命中分区裁剪（Partition pruning）
+-- 2. JOIN 类型（BroadcastHashJoin / SortMergeJoin / ShuffleHashJoin）
+-- 3. 是否有全表扫描（TableScan without filter）
+-- 4. Shuffle 数据量大小</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "sql-practice-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

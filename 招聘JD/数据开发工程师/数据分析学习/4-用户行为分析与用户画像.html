@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户行为分析与用户画像 · 跨境电商数据分析</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --card-bg: #1c2128;
+      --text-main: #e6edf3;
+      --text-sub: #8b949e;
+      --text-muted: #6e7681;
+      --accent: #0ea5e9;
+      --accent2: #22d3ee;
+      --green: #3fb950;
+      --yellow: #d29922;
+      --orange: #f0883e;
+      --red: #f85149;
+      --purple: #a371f7;
+      --pink: #e879f9;
+      --border: #30363d;
+      --border-light: #21262d;
+      --code-bg: rgba(14,165,233,0.1);
+      --code-color: #7dd3fc;
+    }
+
+    html.light {
+      --bg: #f0f6ff;
+      --surface: #ffffff;
+      --card-bg: #ffffff;
+      --text-main: #1c2128;
+      --text-sub: #57606a;
+      --text-muted: #8c959f;
+      --accent: #0369a1;
+      --accent2: #0891b2;
+      --green: #1a7f37;
+      --yellow: #9a6700;
+      --orange: #bc4c00;
+      --red: #cf222e;
+      --purple: #6639ba;
+      --pink: #a40177;
+      --border: #d0d7de;
+      --border-light: #eaeef2;
+      --code-bg: rgba(3,105,161,0.1);
+      --code-color: #0369a1;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      padding: 0 20px 60px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ===== Hero ===== */
+    .hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-sub {
+      color: var(--text-sub);
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .tags {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      font-size: 0.78rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid;
+      font-weight: 600;
+    }
+
+    .tag-blue   { border-color: rgba(14,165,233,0.4); color: var(--accent); background: rgba(14,165,233,0.08); }
+    .tag-green  { border-color: rgba(63,185,80,0.4);  color: var(--green);  background: rgba(63,185,80,0.08); }
+    .tag-purple { border-color: rgba(163,113,247,0.4);color: var(--purple); background: rgba(163,113,247,0.08); }
+    .tag-orange { border-color: rgba(240,136,62,0.4); color: var(--orange); background: rgba(240,136,62,0.08); }
+    .tag-pink   { border-color: rgba(232,121,249,0.4);color: var(--pink);   background: rgba(232,121,249,0.08); }
+
+    /* ===== Layout ===== */
+    .page { max-width: 1200px; margin: 0 auto; }
+
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 48px 0 20px;
+      padding: 0 0 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .chapter-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue   { background: rgba(14,165,233,0.15); }
+    .icon-green  { background: rgba(63,185,80,0.15); }
+    .icon-purple { background: rgba(163,113,247,0.15); }
+    .icon-orange { background: rgba(240,136,62,0.15); }
+    .icon-pink   { background: rgba(232,121,249,0.15); }
+    .icon-yellow { background: rgba(210,153,34,0.15); }
+
+    .chapter-count { font-size: 0.8rem; color: var(--text-muted); font-weight: normal; margin-left: auto; }
+
+    /* ===== 卡片网格 ===== */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .grid-3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(auto-fill, minmax(440px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s, background 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(14,165,233,0.12);
+      transform: translateY(-1px);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-badge {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-must  { background: rgba(248,81,73,0.15);  color: var(--red); }
+    .badge-core  { background: rgba(14,165,233,0.15); color: var(--accent); }
+    .badge-biz   { background: rgba(63,185,80,0.15);  color: var(--green); }
+    .badge-adv   { background: rgba(163,113,247,0.15);color: var(--purple); }
+
+    .card-desc {
+      font-size: 0.86rem;
+      color: var(--text-sub);
+      line-height: 1.65;
+    }
+
+    .card-desc strong { color: var(--text-main); }
+
+    .card-formula {
+      margin-top: 10px;
+      padding: 8px 12px;
+      background: rgba(14,165,233,0.06);
+      border-radius: 6px;
+      border-left: 3px solid var(--accent);
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.82rem;
+      color: var(--code-color);
+      line-height: 1.6;
+    }
+
+    .card-formula .label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: "Segoe UI", sans-serif;
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-points {
+      margin-top: 8px;
+      list-style: none;
+    }
+
+    .card-points li {
+      font-size: 0.84rem;
+      color: var(--text-sub);
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 4px;
+    }
+
+    .card-points li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 0.7rem;
+    }
+
+    .card-points li strong { color: var(--text-main); }
+
+    /* ===== 对比表 ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+      margin-top: 8px;
+    }
+
+    .compare-table th {
+      background: var(--border-light);
+      color: var(--text-sub);
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .compare-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border-light);
+      color: var(--text-sub);
+      vertical-align: top;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== 指标卡 ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      transition: border-color 0.2s, background 0.3s;
+    }
+
+    .metric-card:hover { border-color: var(--accent); }
+
+    .metric-abbr {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: monospace;
+      letter-spacing: 0.04em;
+    }
+
+    .metric-name {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      margin-bottom: 6px;
+    }
+
+    .metric-formula {
+      font-size: 0.78rem;
+      color: var(--code-color);
+      font-family: monospace;
+      background: var(--code-bg);
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .metric-desc {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-top: 6px;
+    }
+
+    /* ===== 流程图 ===== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .fs-blue   { border-color: rgba(14,165,233,0.4);  color: var(--accent);  background: rgba(14,165,233,0.08); }
+    .fs-green  { border-color: rgba(63,185,80,0.4);   color: var(--green);   background: rgba(63,185,80,0.08); }
+    .fs-purple { border-color: rgba(163,113,247,0.4); color: var(--purple);  background: rgba(163,113,247,0.08); }
+    .fs-orange { border-color: rgba(240,136,62,0.4);  color: var(--orange);  background: rgba(240,136,62,0.08); }
+    .fs-yellow { border-color: rgba(210,153,34,0.4);  color: var(--yellow);  background: rgba(210,153,34,0.08); }
+    .fs-red    { border-color: rgba(248,81,73,0.4);   color: var(--red);     background: rgba(248,81,73,0.08); }
+    .fs-pink   { border-color: rgba(232,121,249,0.4); color: var(--pink);    background: rgba(232,121,249,0.08); }
+
+    /* ===== 主题切换 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      transition: background 0.3s, border-color 0.3s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: inherit;
+    }
+
+    .theme-toggle:hover { border-color: var(--accent); color: var(--text-main); transform: translateY(-1px); }
+    .theme-toggle:active { transform: scale(0.96); }
+
+    .toggle-track { width: 36px; height: 20px; border-radius: 20px; background: var(--border); position: relative; transition: background 0.3s; flex-shrink: 0; }
+    html.light .toggle-track { background: var(--accent); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: repeat(2, 1fr); }
+      h1 { font-size: 1.6rem; }
+      .theme-toggle { top: 12px; right: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <button class="theme-toggle" id="themeToggle">
+    <div class="toggle-track"><div class="toggle-thumb" id="toggleThumb">☀️</div></div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="hero">
+    <h1>用户行为分析与用户画像</h1>
+    <p class="hero-sub">跨境电商场景下的用户全生命周期分析体系 — 从行为洞察到精准运营</p>
+    <div class="tags">
+      <span class="tag tag-blue">用户生命周期</span>
+      <span class="tag tag-green">漏斗分析</span>
+      <span class="tag tag-purple">RFM 模型</span>
+      <span class="tag tag-orange">用户画像</span>
+      <span class="tag tag-pink">流失预测</span>
+      <span class="tag tag-blue">路径分析</span>
+      <span class="tag tag-green">A/B 测试</span>
+      <span class="tag tag-orange">留存分析</span>
+    </div>
+  </div>
+
+  <div class="page">
+
+    <!-- ==================== 第一章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🔄</div>
+      一、用户生命周期管理
+      <span class="chapter-count">理解用户从哪里来、到哪里去</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">用户生命周期五阶段 <span class="card-badge badge-must">必背</span></div>
+        <div class="flow" style="flex-direction:column; align-items:flex-start; gap:4px; margin-top:8px">
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-blue">获取期 Acquisition</span><small style="color:var(--text-muted)">→ 广告投放/SEO 引流，用户首次访问站点</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-green">激活期 Activation</span><small style="color:var(--text-muted)">→ 注册/首单转化，完成关键行为</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-yellow">成长期 Growth</span><small style="color:var(--text-muted)">→ 复购增加、客单价提升、浏览频次上升</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-orange">成熟期 Maturity</span><small style="color:var(--text-muted)">→ 高频购买、品牌忠诚、主动传播推荐</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-red">衰退期 Decline</span><small style="color:var(--text-muted)">→ 访问/购买频率下降，趋向流失</small></div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          运营目标：缩短获取→激活的时间、延长成熟期、延缓衰退期进入流失
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">各阶段核心指标与运营策略</div>
+        <table class="compare-table">
+          <thead><tr><th>阶段</th><th>核心指标</th><th>运营策略</th></tr></thead>
+          <tbody>
+            <tr><td>获取期</td><td>CAC、CTR、UV</td><td>优化广告素材、拓展流量渠道</td></tr>
+            <tr><td>激活期</td><td>注册率、首单转化率</td><td>新人券、引导流程优化</td></tr>
+            <tr><td>成长期</td><td>复购率、购买频次</td><td>个性化推荐、会员积分</td></tr>
+            <tr><td>成熟期</td><td>LTV、NPS、ARPU</td><td>VIP 权益、裂变激励</td></tr>
+            <tr><td>衰退期</td><td>回访率、召回转化率</td><td>流失预警、EDM 召回</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">用户生命周期价值（LTV）计算 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-formula">
+          <span class="label">简化公式</span>
+          LTV = AOV × 购买频次 × 平均生命周期（月）
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">SQL 示例：计算用户 LTV</span>
+          SELECT<br>
+          &nbsp;&nbsp;user_id,<br>
+          &nbsp;&nbsp;COUNT(DISTINCT order_id) AS order_cnt,<br>
+          &nbsp;&nbsp;SUM(pay_amount) AS total_revenue,<br>
+          &nbsp;&nbsp;DATEDIFF(MAX(pay_time), MIN(pay_time)) AS lifecycle_days,<br>
+          &nbsp;&nbsp;SUM(pay_amount) AS ltv<br>
+          FROM dwd_order_detail<br>
+          WHERE order_status = 'paid'<br>
+          GROUP BY user_id;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">跨境电商用户特殊性</div>
+        <ul class="card-points">
+          <li><strong>多站点身份</strong>：同一用户在亚马逊、独立站、TikTok Shop 可能是不同 ID，需 ID-Mapping</li>
+          <li><strong>时区差异</strong>：美区用户活跃时间与国内运营时间错开 12h，影响数据统计截止点</li>
+          <li><strong>多币种</strong>：计算 LTV 时需统一换算基准货币（通常 USD），汇率波动影响准确性</li>
+          <li><strong>物流周期长</strong>：从下单到签收可能 7~30 天，生命周期判断需考虑物流延迟</li>
+          <li><strong>退货率差异</strong>：欧美市场退货率 20~30%，实际 LTV 需扣除退款金额</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第二章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">📊</div>
+      二、漏斗分析
+      <span class="chapter-count">找到流失最大的环节</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">跨境电商核心转化漏斗 <span class="card-badge badge-must">必背</span></div>
+        <div class="flow" style="flex-direction:column; gap:6px; margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-blue" style="width:160px;text-align:center">广告曝光<br><small>1,000,000 次</small></span>
+            <small style="color:var(--text-muted)">→ CTR 1.5%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-green" style="width:160px;text-align:center">落地页访问<br><small>15,000 UV</small></span>
+            <small style="color:var(--text-muted)">→ 商详页到达率 40%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-yellow" style="width:160px;text-align:center">商品详情页<br><small>6,000 UV</small></span>
+            <small style="color:var(--text-muted)">→ 加购率 12%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-orange" style="width:160px;text-align:center">加入购物车<br><small>720 人</small></span>
+            <small style="color:var(--text-muted)">→ 结账率 55%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-purple" style="width:160px;text-align:center">发起结账<br><small>396 人</small></span>
+            <small style="color:var(--text-muted)">→ 支付成功率 75%</small>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="flow-step fs-pink" style="width:160px;text-align:center">完成支付<br><small>297 人</small></span>
+            <small style="color:var(--text-muted)">→ 整体 CVR 1.98%</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">漏斗分析 SQL 实现 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-formula">
+          <span class="label">基于埋点事件的漏斗统计</span>
+          WITH funnel AS (<br>
+          &nbsp;&nbsp;SELECT<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;COUNT(DISTINCT CASE WHEN event='page_view' THEN user_id END) AS pv_users,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;COUNT(DISTINCT CASE WHEN event='view_item' THEN user_id END) AS detail_users,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;COUNT(DISTINCT CASE WHEN event='add_cart' THEN user_id END) AS cart_users,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;COUNT(DISTINCT CASE WHEN event='checkout' THEN user_id END) AS checkout_users,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;COUNT(DISTINCT CASE WHEN event='purchase' THEN user_id END) AS pay_users<br>
+          &nbsp;&nbsp;FROM dwd_event_log<br>
+          &nbsp;&nbsp;WHERE dt = '2025-03-10'<br>
+          )<br>
+          SELECT<br>
+          &nbsp;&nbsp;pv_users,<br>
+          &nbsp;&nbsp;detail_users,<br>
+          &nbsp;&nbsp;ROUND(detail_users*100.0/pv_users, 2) AS pv_to_detail_rate,<br>
+          &nbsp;&nbsp;ROUND(cart_users*100.0/detail_users, 2) AS detail_to_cart_rate,<br>
+          &nbsp;&nbsp;ROUND(pay_users*100.0/pv_users, 2) AS overall_cvr<br>
+          FROM funnel;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">各环节流失原因与优化</div>
+        <table class="compare-table">
+          <thead><tr><th>漏斗环节</th><th>常见流失原因</th><th>优化策略</th></tr></thead>
+          <tbody>
+            <tr><td>曝光→点击</td><td>广告素材不吸引、受众定位偏差</td><td>A/B 测试素材、优化受众包</td></tr>
+            <tr><td>点击→商详</td><td>落地页加载慢、内容与广告不符</td><td>提升页面速度、保持素材一致性</td></tr>
+            <tr><td>商详→加购</td><td>价格过高、缺乏信任感、无评价</td><td>展示 Reviews、倒计时优惠</td></tr>
+            <tr><td>加购→结账</td><td>运费过高、缺少支付方式</td><td>免运费门槛、添加本地支付</td></tr>
+            <tr><td>结账→支付</td><td>支付失败、流程过长、安全疑虑</td><td>简化结账、增加 Trust Badge</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">分维度漏斗对比分析</div>
+        <div class="card-desc">单一漏斗只能看整体，拆维度才能发现真正问题。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>按渠道拆</strong>：Facebook vs Google vs TikTok 的各环节转化率对比</li>
+          <li><strong>按设备拆</strong>：Mobile vs Desktop 的结账完成率差异（移动端通常低 10~20%）</li>
+          <li><strong>按地区拆</strong>：美区 vs 欧区 vs 东南亚的支付成功率差异</li>
+          <li><strong>按新老用户拆</strong>：新客 vs 老客的加购→支付转化率差距</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          发现：Mobile 端 加购→结账 流失 60%（Desktop 仅 30%）<br>
+          → 定位到移动端结账页面体验问题 → 优化后 CVR 提升 0.5%
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第三章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">📈</div>
+      三、留存分析与同期群（Cohort）
+      <span class="chapter-count">衡量产品粘性的核心方法</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">留存率的定义与类型 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>次日留存（Day 1）</strong>：注册/首访后第 2 天再次访问的用户比例</li>
+          <li><strong>7 日留存（Day 7）</strong>：注册后第 7 天仍活跃的比例，衡量短期粘性</li>
+          <li><strong>30 日留存（Day 30）</strong>：注册后第 30 天仍活跃的比例，衡量长期价值</li>
+          <li><strong>购买留存</strong>：首次购买后 N 天内再次购买的用户比例（跨境电商更关注）</li>
+        </ul>
+        <div class="card-formula">
+          <span class="label">留存率公式</span>
+          第 N 日留存率 = 第 N 日仍活跃用户数 / 第 0 日新增用户数 × 100%
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">同期群留存矩阵 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>注册月</th><th>Month 0</th><th>Month 1</th><th>Month 2</th><th>Month 3</th><th>Month 6</th></tr></thead>
+          <tbody>
+            <tr><td>2025-01</td><td>100%</td><td>35%</td><td>22%</td><td>18%</td><td>12%</td></tr>
+            <tr><td>2025-02</td><td>100%</td><td>38%</td><td>25%</td><td>20%</td><td>-</td></tr>
+            <tr><td>2025-03</td><td>100%</td><td>42%</td><td>28%</td><td>-</td><td>-</td></tr>
+          </tbody>
+        </table>
+        <div class="card-desc" style="margin-top:8px">对角线对比：3月 Cohort M1 留存 42% &gt; 1月 35%，说明产品改进有效；横向：各 Cohort 留存趋于稳定的月份即为"留存拐点"。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">留存分析 SQL 实现</div>
+        <div class="card-formula">
+          <span class="label">月度购买留存（同期群矩阵）</span>
+          WITH first_buy AS (<br>
+          &nbsp;&nbsp;SELECT user_id, DATE_FORMAT(MIN(pay_time),'%Y-%m') AS cohort_month<br>
+          &nbsp;&nbsp;FROM dwd_order_detail WHERE order_status='paid'<br>
+          &nbsp;&nbsp;GROUP BY user_id<br>
+          ),<br>
+          activity AS (<br>
+          &nbsp;&nbsp;SELECT DISTINCT o.user_id, f.cohort_month,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;TIMESTAMPDIFF(MONTH, CONCAT(f.cohort_month,'-01'), DATE_FORMAT(o.pay_time,'%Y-%m-01')) AS month_diff<br>
+          &nbsp;&nbsp;FROM dwd_order_detail o JOIN first_buy f ON o.user_id = f.user_id<br>
+          &nbsp;&nbsp;WHERE o.order_status='paid'<br>
+          )<br>
+          SELECT cohort_month, month_diff,<br>
+          &nbsp;&nbsp;COUNT(DISTINCT user_id) AS retained_users<br>
+          FROM activity<br>
+          GROUP BY cohort_month, month_diff<br>
+          ORDER BY cohort_month, month_diff;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">跨境电商留存关键洞察</div>
+        <ul class="card-points">
+          <li><strong>留存拐点</strong>：大多数跨境独立站在 Month 3~4 趋于稳定，这批是核心忠实用户</li>
+          <li><strong>品类差异</strong>：快消品（美妆/食品）留存通常高于耐用品（家具/电子），因为复购周期短</li>
+          <li><strong>渠道差异</strong>：Email 渠道获取的用户留存率通常远高于 Paid Social</li>
+          <li><strong>首单体验</strong>：首单配送时效 &lt; 7 天的用户，30 日留存比 &gt; 14 天的高出 2 倍</li>
+          <li><strong>"Aha Moment"</strong>：完成首单 + 留下评价的用户，6 月留存是普通用户的 3 倍</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第四章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">💎</div>
+      四、RFM 模型与 SQL 实现
+      <span class="chapter-count">经典用户价值分层</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">RFM 三维度定义 <span class="card-badge badge-must">必背</span></div>
+        <div class="metric-grid" style="margin-top:10px">
+          <div class="metric-card">
+            <div class="metric-abbr">R</div>
+            <div class="metric-name">Recency 最近购买距今天数</div>
+            <div class="metric-formula">R = TODAY - 最后购买日期</div>
+            <div class="metric-desc">R 值越小越好，说明用户近期有消费行为</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">F</div>
+            <div class="metric-name">Frequency 购买频次</div>
+            <div class="metric-formula">F = COUNT(DISTINCT order_id)</div>
+            <div class="metric-desc">F 值越大越好，高频消费是忠诚用户标志</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">M</div>
+            <div class="metric-name">Monetary 累计消费金额</div>
+            <div class="metric-formula">M = SUM(pay_amount)</div>
+            <div class="metric-desc">M 值越大越好，代表用户贡献的收入价值</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">RFM 八大用户分群 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>用户类型</th><th>R</th><th>F</th><th>M</th><th>运营策略</th></tr></thead>
+          <tbody>
+            <tr><td>重要价值用户</td><td>高</td><td>高</td><td>高</td><td>VIP 专属权益、优先服务</td></tr>
+            <tr><td>重要发展用户</td><td>高</td><td>低</td><td>高</td><td>提升购买频次、交叉推荐</td></tr>
+            <tr><td>重要保持用户</td><td>低</td><td>高</td><td>高</td><td>召回活动、流失预警</td></tr>
+            <tr><td>重要挽留用户</td><td>低</td><td>低</td><td>高</td><td>大额优惠券召回</td></tr>
+            <tr><td>一般价值用户</td><td>高</td><td>高</td><td>低</td><td>提升客单价、搭售推荐</td></tr>
+            <tr><td>一般发展用户</td><td>高</td><td>低</td><td>低</td><td>新品推荐、培养习惯</td></tr>
+            <tr><td>一般保持用户</td><td>低</td><td>高</td><td>低</td><td>唤醒活动、小额激励</td></tr>
+            <tr><td>流失用户</td><td>低</td><td>低</td><td>低</td><td>低成本触达或放弃</td></tr>
+          </tbody>
+        </table>
+        <div class="card-desc" style="margin-top:8px">R 高=近期有购买, R 低=很久未购买; F/M 高低以中位数为分界。</div>
+      </div>
+
+      <div class="card" style="grid-column: 1 / -1;">
+        <div class="card-title">RFM 完整 SQL 实现 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-formula">
+          <span class="label">Step 1: 计算 R/F/M 原始值</span>
+          WITH rfm_raw AS (<br>
+          &nbsp;&nbsp;SELECT user_id,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;DATEDIFF(CURRENT_DATE, MAX(pay_time)) AS recency,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;COUNT(DISTINCT order_id) AS frequency,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;SUM(pay_amount_usd) AS monetary<br>
+          &nbsp;&nbsp;FROM dwd_order_detail<br>
+          &nbsp;&nbsp;WHERE order_status = 'paid' AND pay_time >= DATE_SUB(CURRENT_DATE, INTERVAL 365 DAY)<br>
+          &nbsp;&nbsp;GROUP BY user_id<br>
+          ),
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">Step 2: 按分位数打分（1~5 分）</span>
+          rfm_score AS (<br>
+          &nbsp;&nbsp;SELECT user_id, recency, frequency, monetary,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;NTILE(5) OVER (ORDER BY recency ASC) AS r_score,&nbsp;&nbsp;-- R 越小越好，ASC 排序得高分<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;NTILE(5) OVER (ORDER BY frequency DESC) AS f_score,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;NTILE(5) OVER (ORDER BY monetary DESC) AS m_score<br>
+          &nbsp;&nbsp;FROM rfm_raw<br>
+          ),
+        </div>
+        <div class="card-formula" style="margin-top:8px">
+          <span class="label">Step 3: 基于中位数分群</span>
+          rfm_label AS (<br>
+          &nbsp;&nbsp;SELECT *,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;CASE WHEN r_score >= 3 THEN '高' ELSE '低' END AS r_level,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;CASE WHEN f_score >= 3 THEN '高' ELSE '低' END AS f_level,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;CASE WHEN m_score >= 3 THEN '高' ELSE '低' END AS m_level<br>
+          &nbsp;&nbsp;FROM rfm_score<br>
+          )<br>
+          SELECT *, CONCAT(r_level, f_level, m_level) AS rfm_group,<br>
+          &nbsp;&nbsp;CASE CONCAT(r_level, f_level, m_level)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN '高高高' THEN '重要价值用户'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN '高低高' THEN '重要发展用户'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN '低高高' THEN '重要保持用户'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN '低低高' THEN '重要挽留用户'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN '高高低' THEN '一般价值用户'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN '高低低' THEN '一般发展用户'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN '低高低' THEN '一般保持用户'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ELSE '流失用户'<br>
+          &nbsp;&nbsp;END AS user_type<br>
+          FROM rfm_label;
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第五章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-pink">🎯</div>
+      五、用户分层与精细化运营
+      <span class="chapter-count">千人千面的基础</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">常见用户分层维度 <span class="card-badge badge-core">核心</span></div>
+        <table class="compare-table">
+          <thead><tr><th>分层维度</th><th>分层方法</th><th>运营场景</th></tr></thead>
+          <tbody>
+            <tr><td>价值分层</td><td>RFM 模型、LTV 分位</td><td>差异化权益、资源分配</td></tr>
+            <tr><td>活跃分层</td><td>最近 N 天是否有行为</td><td>活跃/沉默/流失召回</td></tr>
+            <tr><td>生命周期</td><td>首单/复购/忠诚/流失</td><td>针对性触达策略</td></tr>
+            <tr><td>消费能力</td><td>AOV 分位数</td><td>高客单推荐 vs 性价比推荐</td></tr>
+            <tr><td>渠道偏好</td><td>注册来源/活跃渠道</td><td>渠道投放 ROI 评估</td></tr>
+            <tr><td>品类偏好</td><td>购买品类 Top N</td><td>个性化推荐、品类交叉</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">活跃度分层定义（跨境电商）</div>
+        <div class="card-desc" style="margin-bottom:8px">基于用户最近一次行为时间，将用户分为不同活跃层级。</div>
+        <table class="compare-table">
+          <thead><tr><th>层级</th><th>定义</th><th>占比参考</th><th>策略</th></tr></thead>
+          <tbody>
+            <tr><td>高活跃</td><td>最近 7 天内有访问</td><td>15~25%</td><td>推送新品、限时折扣</td></tr>
+            <tr><td>中活跃</td><td>8~30 天内有访问</td><td>20~30%</td><td>Push 通知、邮件 Reminder</td></tr>
+            <tr><td>低活跃</td><td>31~90 天内有访问</td><td>20~30%</td><td>召回优惠券、短信触达</td></tr>
+            <tr><td>沉默用户</td><td>91~180 天未访问</td><td>10~15%</td><td>EDM 召回、大额折扣</td></tr>
+            <tr><td>流失用户</td><td>180 天以上未访问</td><td>15~25%</td><td>低成本触达或标记流失</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">用户分层 SQL 实现</div>
+        <div class="card-formula">
+          <span class="label">活跃度分层 + 消费分层组合</span>
+          SELECT user_id,<br>
+          &nbsp;&nbsp;DATEDIFF(CURRENT_DATE, last_active_date) AS inactive_days,<br>
+          &nbsp;&nbsp;CASE<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN DATEDIFF(CURRENT_DATE, last_active_date) &lt;= 7 THEN '高活跃'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN DATEDIFF(CURRENT_DATE, last_active_date) &lt;= 30 THEN '中活跃'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN DATEDIFF(CURRENT_DATE, last_active_date) &lt;= 90 THEN '低活跃'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN DATEDIFF(CURRENT_DATE, last_active_date) &lt;= 180 THEN '沉默'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ELSE '流失'<br>
+          &nbsp;&nbsp;END AS active_level,<br>
+          &nbsp;&nbsp;CASE<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN total_paid_amount >= 500 THEN '高价值'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;WHEN total_paid_amount >= 100 THEN '中价值'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ELSE '低价值'<br>
+          &nbsp;&nbsp;END AS value_level<br>
+          FROM dws_user_summary;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">分层运营实战案例</div>
+        <div class="card-desc"><strong>场景：BFCM 大促前精准触达</strong></div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>高价值 + 高活跃</strong>：提前 3 天 VIP 专享预售，搭配专属折扣码</li>
+          <li><strong>高价值 + 沉默</strong>：大额满减券 + "We miss you" 召回邮件</li>
+          <li><strong>中价值 + 中活跃</strong>：常规促销邮件 + App Push</li>
+          <li><strong>低价值 + 低活跃</strong>：仅投放低成本 Retargeting 广告</li>
+          <li><strong>流失用户</strong>：不投入资源，避免骚扰导致退订</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          效果：分层精准触达比全量推送 ROI 提升 3~5 倍，退订率降低 40%
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第六章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-yellow">🧩</div>
+      六、用户画像体系
+      <span class="chapter-count">从数据到"人"的还原</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">用户画像的四层标签体系 <span class="card-badge badge-must">必背</span></div>
+        <table class="compare-table">
+          <thead><tr><th>层级</th><th>标签类型</th><th>示例</th><th>数据来源</th></tr></thead>
+          <tbody>
+            <tr><td>基础属性</td><td>静态标签（不常变）</td><td>性别、年龄、国家、注册渠道</td><td>注册信息、IP 定位</td></tr>
+            <tr><td>行为特征</td><td>统计标签（周期计算）</td><td>30 天访问次数、平均浏览时长、偏好品类</td><td>埋点日志聚合</td></tr>
+            <tr><td>消费特征</td><td>交易标签（周期计算）</td><td>LTV、AOV、复购率、RFM 等级</td><td>订单数据聚合</td></tr>
+            <tr><td>预测标签</td><td>算法标签（模型输出）</td><td>流失概率、购买意向、价格敏感度</td><td>ML 模型预测</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">跨境电商画像标签示例</div>
+        <div class="metric-grid" style="margin-top:8px">
+          <div class="metric-card">
+            <div class="metric-abbr">GEO</div>
+            <div class="metric-name">地域标签</div>
+            <div class="metric-formula">国家/州/城市/时区</div>
+            <div class="metric-desc">影响物流时效、关税、支付方式</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">DEV</div>
+            <div class="metric-name">设备偏好</div>
+            <div class="metric-formula">iOS / Android / Desktop</div>
+            <div class="metric-desc">iOS 用户客单价通常高于 Android</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CAT</div>
+            <div class="metric-name">品类偏好</div>
+            <div class="metric-formula">Top3 购买品类</div>
+            <div class="metric-desc">个性化推荐和交叉销售的核心依据</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">PAY</div>
+            <div class="metric-name">支付偏好</div>
+            <div class="metric-formula">信用卡/PayPal/COD</div>
+            <div class="metric-desc">影响结账页支付方式排序</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">PRC</div>
+            <div class="metric-name">价格敏感度</div>
+            <div class="metric-formula">折扣订单占比</div>
+            <div class="metric-desc">高敏感度用户优先推送促销活动</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CLV</div>
+            <div class="metric-name">客户生命周期阶段</div>
+            <div class="metric-formula">新客/成长/成熟/衰退</div>
+            <div class="metric-desc">决定触达频率和内容策略</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">画像标签加工流程</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">数据采集<br><small>埋点/订单/注册</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">ID 打通<br><small>设备ID→用户ID</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">标签计算<br><small>SQL/Spark 聚合</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">标签存储<br><small>Hive/HBase/ES</small></span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">标签服务<br><small>API/圈人平台</small></span>
+        </div>
+        <div class="card-formula" style="margin-top:12px">
+          <span class="label">标签计算 SQL 示例：品类偏好</span>
+          SELECT user_id,<br>
+          &nbsp;&nbsp;category,<br>
+          &nbsp;&nbsp;COUNT(*) AS buy_cnt,<br>
+          &nbsp;&nbsp;ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY COUNT(*) DESC) AS rn<br>
+          FROM dwd_order_detail<br>
+          WHERE order_status='paid'<br>
+          GROUP BY user_id, category<br>
+          -- 取 rn=1 即为用户最偏好品类
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">画像应用场景</div>
+        <ul class="card-points">
+          <li><strong>个性化推荐</strong>：基于品类偏好 + 价格敏感度推荐商品，CTR 提升 30%+</li>
+          <li><strong>精准广告</strong>：高价值用户 Lookalike 扩量，降低 CAC 20~40%</li>
+          <li><strong>EDM 千人千面</strong>：不同标签用户收到不同邮件内容和商品推荐</li>
+          <li><strong>客服分级</strong>：VIP 用户优先人工客服，普通用户智能客服兜底</li>
+          <li><strong>定价策略</strong>：价格不敏感用户推送原价新品，敏感用户推送折扣品</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第七章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-blue">🗺️</div>
+      七、用户路径分析
+      <span class="chapter-count">还原用户真实行为轨迹</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">路径分析的核心概念 <span class="card-badge badge-core">核心</span></div>
+        <div class="card-desc">路径分析追踪用户在产品中的实际操作序列，发现<strong>真实的行为模式</strong>而非假设的理想路径。</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>正向路径</strong>：从入口开始，追踪用户后续依次访问了哪些页面</li>
+          <li><strong>逆向路径</strong>：从目标页面（如支付成功页）倒推，分析用户从哪些路径到达</li>
+          <li><strong>桑基图（Sankey）</strong>：最常见的路径可视化方式，展示流量在页面间的流转分布</li>
+          <li><strong>Session 切割</strong>：按 30 分钟无操作为界切割 Session，一次 Session = 一条完整路径</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">跨境电商典型路径模式</div>
+        <div class="flow" style="flex-direction:column; gap:6px; margin-top:8px">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <small style="color:var(--text-muted);width:80px">高效路径：</small>
+            <span class="flow-step fs-green">广告落地</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-green">商品详情</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-green">加购</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-green">支付</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <small style="color:var(--text-muted);width:80px">犹豫路径：</small>
+            <span class="flow-step fs-yellow">广告落地</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-yellow">商品详情</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-yellow">返回列表</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-yellow">对比商品</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-yellow">加购</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <small style="color:var(--text-muted);width:80px">流失路径：</small>
+            <span class="flow-step fs-red">广告落地</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-red">商品详情</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-red">运费查看</span>
+            <span class="flow-arrow">→</span>
+            <span class="flow-step fs-red">离开</span>
+          </div>
+        </div>
+        <div class="card-formula" style="margin-top:10px">
+          洞察：大量用户在"运费查看"后离开 → 运费过高是流失主因 → 测试免运费策略
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">路径分析 SQL 实现</div>
+        <div class="card-formula">
+          <span class="label">用户行为序列构建（前 5 步）</span>
+          WITH ordered_events AS (<br>
+          &nbsp;&nbsp;SELECT user_id, session_id, event_name, event_time,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ROW_NUMBER() OVER (PARTITION BY user_id, session_id ORDER BY event_time) AS step<br>
+          &nbsp;&nbsp;FROM dwd_event_log<br>
+          &nbsp;&nbsp;WHERE dt = '2025-03-10'<br>
+          ),<br>
+          paths AS (<br>
+          &nbsp;&nbsp;SELECT session_id,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;MAX(CASE WHEN step=1 THEN event_name END) AS step1,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;MAX(CASE WHEN step=2 THEN event_name END) AS step2,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;MAX(CASE WHEN step=3 THEN event_name END) AS step3,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;MAX(CASE WHEN step=4 THEN event_name END) AS step4,<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;MAX(CASE WHEN step=5 THEN event_name END) AS step5<br>
+          &nbsp;&nbsp;FROM ordered_events WHERE step &lt;= 5<br>
+          &nbsp;&nbsp;GROUP BY session_id<br>
+          )<br>
+          SELECT step1, step2, step3, COUNT(*) AS session_cnt<br>
+          FROM paths<br>
+          GROUP BY step1, step2, step3<br>
+          ORDER BY session_cnt DESC<br>
+          LIMIT 20;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">路径分析的进阶应用</div>
+        <ul class="card-points">
+          <li><strong>关键节点识别</strong>：找到影响转化的"必经之路"页面，重点优化体验</li>
+          <li><strong>异常路径发现</strong>：用户频繁在某两个页面间来回跳转 → 可能是导航设计问题</li>
+          <li><strong>新功能采纳</strong>：上线新功能后，追踪有多少用户路径经过该功能入口</li>
+          <li><strong>搜索行为分析</strong>：搜索→无结果→离开 的路径占比高 → 优化搜索召回率</li>
+          <li><strong>跨设备路径</strong>：用户在 Mobile 浏览 → Desktop 下单的跨设备转化路径追踪</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第八章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-green">⚠️</div>
+      八、用户流失预测
+      <span class="chapter-count">在用户离开之前行动</span>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="card-title">流失定义与预警信号 <span class="card-badge badge-must">必背</span></div>
+        <div class="card-desc"><strong>流失定义</strong>因业务而异，跨境电商常用标准：</div>
+        <ul class="card-points" style="margin-top:8px">
+          <li><strong>访问流失</strong>：连续 90 天无任何访问行为（适用于高频品类）</li>
+          <li><strong>购买流失</strong>：超过 2 倍平均购买间隔未下单（需按品类差异化定义）</li>
+          <li><strong>订阅流失</strong>：取消邮件订阅或 App 卸载</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">流失预警信号（特征工程）</span>
+          ▸ 访问频率下降 &gt; 50%（对比前 30 天 vs 前 60~90 天）<br>
+          ▸ 最近一次购买距今超过历史平均间隔的 1.5 倍<br>
+          ▸ 加购但未支付次数增加（犹豫行为增多）<br>
+          ▸ 客服投诉/退货退款行为<br>
+          ▸ 邮件打开率持续下降
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">流失预测特征体系</div>
+        <table class="compare-table">
+          <thead><tr><th>特征类别</th><th>特征名称</th><th>说明</th></tr></thead>
+          <tbody>
+            <tr><td>行为特征</td><td>近 7/14/30 天访问次数</td><td>短中长期活跃度趋势</td></tr>
+            <tr><td>行为特征</td><td>最近访问距今天数</td><td>沉默时间越长越危险</td></tr>
+            <tr><td>交易特征</td><td>近 90 天订单数 / 金额</td><td>消费频率与金额变化</td></tr>
+            <tr><td>交易特征</td><td>退货率 / 退款次数</td><td>体验不满意的信号</td></tr>
+            <tr><td>互动特征</td><td>邮件打开率 / 点击率</td><td>营销触达有效性下降</td></tr>
+            <tr><td>互动特征</td><td>客服联系次数</td><td>投诉类联系是强流失信号</td></tr>
+            <tr><td>趋势特征</td><td>访问频率环比变化</td><td>下降趋势比绝对值更重要</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">流失预测建模流程 <span class="card-badge badge-adv">进阶</span></div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">定义流失标签</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">特征工程</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">样本构建</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">模型训练</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">离线评估</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">上线预测</span>
+        </div>
+        <ul class="card-points" style="margin-top:12px">
+          <li><strong>标签定义</strong>：用 T 时刻的特征预测 T+30 天内是否流失（二分类问题）</li>
+          <li><strong>常用算法</strong>：LightGBM / XGBoost（业界首选）、逻辑回归（可解释性强）</li>
+          <li><strong>评估指标</strong>：AUC &gt; 0.8 可用，关注 Precision@Top20%（前 20% 高风险用户的准确率）</li>
+          <li><strong>上线方式</strong>：每日批量预测 → 输出用户流失概率 → 写入画像表 → 运营圈人触达</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">流失召回策略与效果衡量</div>
+        <table class="compare-table">
+          <thead><tr><th>流失风险</th><th>召回方式</th><th>预期召回率</th><th>成本</th></tr></thead>
+          <tbody>
+            <tr><td>高风险（>0.8）</td><td>专属大额券 + 人工外呼</td><td>8~15%</td><td>高</td></tr>
+            <tr><td>中风险（0.5~0.8）</td><td>EDM + Push + 限时折扣</td><td>5~10%</td><td>中</td></tr>
+            <tr><td>低风险（0.3~0.5）</td><td>自动化邮件 + Retargeting</td><td>3~5%</td><td>低</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">召回 ROI 计算</span>
+          召回 ROI = 召回用户带来的增量 GMV / 召回活动总成本<br>
+          基准：召回 ROI > 3 认为策略有效
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 第九章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-orange">🧪</div>
+      九、A/B 测试体系
+      <span class="chapter-count">数据驱动决策的金标准</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">A/B 测试核心概念 <span class="card-badge badge-must">必背</span></div>
+        <ul class="card-points">
+          <li><strong>对照组（Control）</strong>：保持当前方案不变的用户群</li>
+          <li><strong>实验组（Treatment）</strong>：使用新方案（新页面/新价格/新推荐算法）的用户群</li>
+          <li><strong>随机分流</strong>：按 user_id Hash 取模分组，确保同一用户始终在同一组</li>
+          <li><strong>统计显著性</strong>：p-value &lt; 0.05 时认为差异非偶然，实验结论可信</li>
+          <li><strong>最小样本量</strong>：需提前通过 Power Analysis 计算，避免过早判定结果</li>
+          <li><strong>MDE（最小可检测效果）</strong>：实验能检测到的最小差异幅度，影响样本量需求</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">跨境电商常见 A/B 测试场景</div>
+        <table class="compare-table">
+          <thead><tr><th>测试场景</th><th>变量</th><th>核心指标</th></tr></thead>
+          <tbody>
+            <tr><td>落地页优化</td><td>页面布局/首图/CTA 按钮</td><td>Bounce Rate、CVR</td></tr>
+            <tr><td>定价策略</td><td>原价 vs 划线价 vs 满减</td><td>CVR、AOV、GMV</td></tr>
+            <tr><td>免运费门槛</td><td>$49 vs $69 vs 无门槛</td><td>AOV、购买率、利润率</td></tr>
+            <tr><td>推荐算法</td><td>协同过滤 vs 热门推荐</td><td>推荐点击率、转化率</td></tr>
+            <tr><td>结账流程</td><td>单页结账 vs 多步结账</td><td>结账完成率、弃单率</td></tr>
+            <tr><td>邮件营销</td><td>主题行/发送时间/内容</td><td>Open Rate、CTR、CVR</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title">A/B 测试完整流程</div>
+        <div class="flow" style="margin-top:10px">
+          <span class="flow-step fs-blue">提出假设</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-green">设计实验</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-yellow">计算样本量</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-purple">随机分流</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-orange">运行实验</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-red">统计检验</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step fs-pink">决策上线</span>
+        </div>
+        <div class="card-formula" style="margin-top:12px">
+          <span class="label">分流 SQL 示例</span>
+          SELECT user_id,<br>
+          &nbsp;&nbsp;CASE WHEN ABS(HASH(user_id)) % 100 &lt; 50<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;THEN 'control'<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;ELSE 'treatment'<br>
+          &nbsp;&nbsp;END AS ab_group<br>
+          FROM dim_user;
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">A/B 测试结果分析 SQL</div>
+        <div class="card-formula">
+          <span class="label">实验组 vs 对照组指标对比</span>
+          SELECT<br>
+          &nbsp;&nbsp;ab_group,<br>
+          &nbsp;&nbsp;COUNT(DISTINCT user_id) AS users,<br>
+          &nbsp;&nbsp;COUNT(DISTINCT CASE WHEN event='purchase' THEN user_id END) AS buyers,<br>
+          &nbsp;&nbsp;ROUND(COUNT(DISTINCT CASE WHEN event='purchase' THEN user_id END)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;* 100.0 / COUNT(DISTINCT user_id), 2) AS cvr,<br>
+          &nbsp;&nbsp;ROUND(AVG(CASE WHEN event='purchase' THEN amount END), 2) AS avg_aov<br>
+          FROM dwd_ab_test_log<br>
+          WHERE experiment_id = 'exp_free_shipping_v2'<br>
+          &nbsp;&nbsp;AND dt BETWEEN '2025-03-01' AND '2025-03-14'<br>
+          GROUP BY ab_group;
+        </div>
+        <ul class="card-points" style="margin-top:10px">
+          <li><strong>AA 验证</strong>：实验前先跑 AA 测试（两组都用旧方案），确认分流无偏差</li>
+          <li><strong>Guardrail 指标</strong>：除核心指标外，监控退货率、客诉率等护栏指标防止负面影响</li>
+          <li><strong>长期效应</strong>：短期 CVR 提升不代表长期有效，需关注留存和复购变化</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ==================== 第十章 ==================== -->
+    <div class="chapter-title">
+      <div class="chapter-icon icon-purple">📋</div>
+      十、用户分析报告模板
+      <span class="chapter-count">从分析到可落地的决策建议</span>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">用户分析报告结构 <span class="card-badge badge-must">必背</span></div>
+        <div class="flow" style="flex-direction:column; align-items:flex-start; gap:4px; margin-top:8px">
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-blue">1. 背景与目标</span><small style="color:var(--text-muted)">→ 分析的业务背景、解决什么问题、关键假设</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-green">2. 数据概览</span><small style="color:var(--text-muted)">→ 核心指标趋势、同环比变化、异常点标注</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-yellow">3. 深度分析</span><small style="color:var(--text-muted)">→ 漏斗/留存/RFM/路径等多维度拆解</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-orange">4. 关键发现</span><small style="color:var(--text-muted)">→ 3~5 条最重要的数据洞察（配数据支撑）</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-purple">5. 建议与行动</span><small style="color:var(--text-muted)">→ 针对每个发现给出可执行的优化建议</small></div>
+          <div style="display:flex; align-items:center; gap:8px"><span class="flow-step fs-pink">6. 附录</span><small style="color:var(--text-muted)">→ 数据口径定义、SQL 逻辑、数据源说明</small></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">月度用户健康度仪表盘 <span class="card-badge badge-core">核心</span></div>
+        <div class="metric-grid" style="margin-top:8px">
+          <div class="metric-card">
+            <div class="metric-abbr">MAU</div>
+            <div class="metric-name">月活跃用户数</div>
+            <div class="metric-formula">本月有访问行为的去重用户</div>
+            <div class="metric-desc">环比增长 &gt; 5% 为健康</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">M1</div>
+            <div class="metric-name">新客首月留存率</div>
+            <div class="metric-formula">首月回访 / 新注册用户</div>
+            <div class="metric-desc">基准值 30~40%</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">RPR</div>
+            <div class="metric-name">复购率</div>
+            <div class="metric-formula">2 单以上用户 / 总购买用户</div>
+            <div class="metric-desc">品牌站 &gt; 20% 为优秀</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-abbr">CHR</div>
+            <div class="metric-name">月流失率</div>
+            <div class="metric-formula">本月流失用户 / 上月活跃用户</div>
+            <div class="metric-desc">控制在 &lt; 5%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">报告写作的 STAR 法则</div>
+        <table class="compare-table">
+          <thead><tr><th>要素</th><th>含义</th><th>报告中的体现</th></tr></thead>
+          <tbody>
+            <tr><td>Situation</td><td>背景情境</td><td>"3 月 GMV 环比下降 12%，需要分析用户端原因"</td></tr>
+            <tr><td>Task</td><td>分析任务</td><td>"拆解用户侧变化，定位 GMV 下降的关键因素"</td></tr>
+            <tr><td>Action</td><td>分析方法</td><td>"通过漏斗分析发现加购→结账环节流失率上升 15%"</td></tr>
+            <tr><td>Result</td><td>结论建议</td><td>"建议优化移动端结账体验，预估 CVR 提升 0.3%"</td></tr>
+          </tbody>
+        </table>
+        <div class="card-formula" style="margin-top:10px">
+          好报告的标准：决策者看完后能直接回答"下一步该做什么"
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">跨境电商周报/月报核心模块</div>
+        <ul class="card-points">
+          <li><strong>流量概览</strong>：UV/PV 趋势、渠道分布变化、新老用户比例</li>
+          <li><strong>转化漏斗</strong>：各环节转化率 + 环比变化 + 异常环节高亮</li>
+          <li><strong>用户质量</strong>：新客获取成本（CAC）、首单 AOV、7 日留存率</li>
+          <li><strong>用户分层</strong>：活跃/沉默/流失用户数变化、RFM 分布迁移</li>
+          <li><strong>复购分析</strong>：复购率、复购周期、复购品类 Top 10</li>
+          <li><strong>流失预警</strong>：本月高风险流失用户数、已召回用户数和召回率</li>
+          <li><strong>AB 实验</strong>：在跑实验进度、已结论实验结果汇总</li>
+        </ul>
+        <div class="card-formula" style="margin-top:10px">
+          <span class="label">报告自动化</span>
+          SQL 定时任务 → 结果写入 ADS 层 → Superset/Metabase 自动刷新看板<br>
+          异常检测脚本 → 自动发送告警邮件（如 CVR 日环比降幅 &gt; 10%）
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+    const KEY = "user-analysis-theme";
+
+    const apply = (isLight) => {
+      html.classList.toggle("light", isLight);
+      thumb.textContent = isLight ? "🌙" : "☀️";
+      label.textContent = isLight ? "浅色" : "深色";
+    };
+
+    const saved = localStorage.getItem(KEY);
+    apply(saved ? saved === "light" : window.matchMedia("(prefers-color-scheme: light)").matches);
+
+    btn.addEventListener("click", () => {
+      const nowLight = html.classList.contains("light");
+      apply(!nowLight);
+      localStorage.setItem(KEY, !nowLight ? "light" : "dark");
+    });
+  </script>
+
+</body>
+</html>

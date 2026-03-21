@@ -1,0 +1,2956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React 前端交互状态管理面试评估表</title>
+  <style>
+    :root {
+      --bg: #0f111a;
+      --card-bg: #1a1e2e;
+      --card-hover: #1e2438;
+      --text-main: #e2e8f0;
+      --text-sub: #94a3b8;
+      --accent: #3b82f6;
+      --accent2: #10b981;
+      --border: #2d3748;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --pre-bg: #090c15;
+      --pre-border: rgba(255, 255, 255, 0.07);
+      --code-bg: rgba(255, 255, 255, 0.1);
+      --code-color: #93c5fd;
+      --answer-bg: rgba(0, 0, 0, 0.28);
+      --answer-strong: #fff;
+      --score-row-bg: rgba(255, 255, 255, 0.02);
+      --section-bg: rgba(59, 130, 246, 0.05);
+      --score-bar-bg: rgba(255, 255, 255, 0.03);
+      --table-th-bg: rgba(59, 130, 246, 0.12);
+      --table-th-color: #93c5fd;
+      --table-td-border: rgba(255, 255, 255, 0.05);
+      --h1-from: #fff;
+      --summary-hover: #fff;
+    }
+
+    /* ===== 白天模式 ===== */
+    html.light {
+      --bg: #f0f4f9;
+      --card-bg: #ffffff;
+      --card-hover: #f8faff;
+      --text-main: #1a2035;
+      --text-sub: #5a6a85;
+      --accent: #2563eb;
+      --accent2: #059669;
+      --border: #dde3ef;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --pre-bg: #1e2433;
+      --pre-border: rgba(0, 0, 0, 0.12);
+      --code-bg: rgba(37, 99, 235, 0.1);
+      --code-color: #1d4ed8;
+      --answer-bg: rgba(37, 99, 235, 0.04);
+      --answer-strong: #1a2035;
+      --score-row-bg: rgba(0, 0, 0, 0.025);
+      --section-bg: rgba(37, 99, 235, 0.06);
+      --score-bar-bg: rgba(0, 0, 0, 0.025);
+      --table-th-bg: rgba(37, 99, 235, 0.08);
+      --table-th-color: #1d4ed8;
+      --table-td-border: rgba(0, 0, 0, 0.05);
+      --h1-from: #1a2035;
+      --summary-hover: #1a2035;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.65;
+      padding: 40px 20px;
+      transition: background-color 0.35s, color 0.35s;
+    }
+
+    .container { max-width: 1060px; margin: 0 auto; }
+
+    /* ===== Header ===== */
+    header {
+      text-align: center;
+      padding-bottom: 40px;
+      margin-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      background: linear-gradient(135deg, var(--h1-from) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+
+    .subtitle { color: var(--text-sub); font-size: 1.05rem; }
+
+    .chips {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .chip {
+      font-size: 0.82rem;
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      background: rgba(59, 130, 246, 0.08);
+      color: var(--text-sub);
+    }
+
+    /* ===== Section ===== */
+    .section-title {
+      font-size: 1.35rem;
+      margin: 52px 0 24px;
+      padding: 12px 18px;
+      border-left: 4px solid var(--accent);
+      background: var(--section-bg);
+      border-radius: 0 8px 8px 0;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      transition: background 0.35s, color 0.35s;
+      justify-content: space-between;
+    }
+
+    .section-tag {
+      font-size: 0.82rem;
+      font-family: monospace;
+      color: var(--text-sub);
+      font-weight: normal;
+    }
+
+    /* ===== Card ===== */
+    .question-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 26px;
+      margin-bottom: 24px;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s, background 0.35s;
+    }
+
+    .question-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.25);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .question-card.accent { border-color: rgba(59, 130, 246, 0.5); }
+
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+
+    .q-title {
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: var(--text-main);
+      flex: 1;
+      line-height: 1.5;
+    }
+
+    .q-tag {
+      font-size: 0.73rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      border: 1px solid;
+    }
+
+    .tag-blue   { background: rgba(59,130,246,0.15); color:#93c5fd; border-color:rgba(59,130,246,0.25); }
+    .tag-green  { background: rgba(16,185,129,0.15); color:#6ee7b7; border-color:rgba(16,185,129,0.25); }
+    .tag-yellow { background: rgba(245,158,11,0.15); color:#fde68a; border-color:rgba(245,158,11,0.25); }
+    .tag-red    { background: rgba(239,68,68,0.15);  color:#fca5a5; border-color:rgba(239,68,68,0.25); }
+    .tag-purple { background: rgba(139,92,246,0.15); color:#c4b5fd; border-color:rgba(139,92,246,0.25); }
+
+    /* ===== Assessment Grid ===== */
+    .assessment-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 24px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .point-list h4,
+    .score-guide h4 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-sub);
+      margin-bottom: 12px;
+    }
+
+    .point-list ul { list-style: none; }
+
+    .point-list li {
+      margin-bottom: 7px;
+      padding-left: 18px;
+      position: relative;
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+
+    .point-list li::before {
+      content: "▸";
+      color: var(--accent);
+      position: absolute;
+      left: 0;
+    }
+
+    /* ===== Score Rows ===== */
+    .score-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 9px;
+      padding: 9px 11px;
+      border-radius: 6px;
+      background: var(--score-row-bg);
+      border-left: 2px solid transparent;
+      font-size: 0.86rem;
+      transition: background 0.35s;
+    }
+
+    .score-row.high { border-left-color: var(--success); }
+    .score-row.mid  { border-left-color: var(--warning); }
+    .score-row.low  { border-left-color: var(--text-sub); }
+
+    .score-label { font-weight: 700; margin-bottom: 3px; display: inline-block; font-size: 0.83rem; }
+    .level-high { color: var(--success); }
+    .level-mid  { color: var(--warning); }
+    .level-low  { color: var(--text-sub); }
+
+    .score-desc { color: var(--text-sub); font-size: 0.82rem; line-height: 1.5; }
+
+    /* ===== Details ===== */
+    details { margin-top: 16px; }
+
+    summary {
+      cursor: pointer;
+      color: var(--accent);
+      font-size: 0.87rem;
+      font-weight: 600;
+      user-select: none;
+      transition: color 0.2s;
+    }
+
+    summary:hover { color: var(--summary-hover); }
+
+    .answer-key {
+      margin-top: 12px;
+      background: var(--answer-bg);
+      padding: 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      border-left: 3px solid var(--accent);
+      color: var(--text-main);
+      line-height: 1.75;
+      transition: background 0.35s;
+    }
+
+    .answer-key strong { color: var(--answer-strong); }
+    .answer-key p { margin-bottom: 8px; }
+    .answer-key ul, .answer-key ol { padding-left: 20px; margin: 6px 0 8px; }
+    .answer-key li { margin-bottom: 4px; }
+
+    pre {
+      background: var(--pre-bg);
+      padding: 16px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 10px 0;
+      border: 1px solid var(--pre-border);
+      transition: background 0.35s, border-color 0.35s;
+    }
+
+    pre code {
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.83rem;
+      color: #a5d6a7;
+      background: none;
+      padding: 0;
+    }
+
+    code {
+      background: var(--code-bg);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 0.86em;
+      color: var(--code-color);
+      transition: background 0.35s, color 0.35s;
+    }
+
+    /* ===== Table ===== */
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.84rem;
+    }
+
+    .compare-table th {
+      background: var(--table-th-bg);
+      color: var(--table-th-color);
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.35s, color 0.35s;
+    }
+
+    .compare-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--table-td-border);
+      color: var(--text-sub);
+      vertical-align: top;
+      transition: border-color 0.35s;
+    }
+
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table td:first-child { color: var(--text-main); font-weight: 600; }
+
+    /* ===== Score Summary Bar ===== */
+    .score-bar {
+      background: var(--score-bar-bg);
+      border: 1px solid var(--border);
+      transition: background 0.35s;
+      border-radius: 10px;
+      padding: 18px 24px;
+      margin-bottom: 40px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      text-align: center;
+    }
+
+    .score-bar-item { font-size: 0.85rem; }
+    .score-bar-item .num { font-size: 1.5rem; font-weight: 700; color: var(--accent); display: block; }
+    .score-bar-item .label { color: var(--text-sub); font-size: 0.78rem; }
+
+    /* ===== 主题切换开关 ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 24px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 40px;
+      padding: 7px 14px 7px 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      transition: background 0.35s, border-color 0.35s, box-shadow 0.2s, transform 0.15s;
+      user-select: none;
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      font-family: "Segoe UI", -apple-system, sans-serif;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(59, 130, 246, 0.22);
+    }
+
+    .theme-toggle:active { transform: scale(0.96); }
+
+    /* 轨道 */
+    .toggle-track {
+      width: 36px;
+      height: 20px;
+      border-radius: 20px;
+      background: var(--border);
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.35s;
+    }
+
+    html.light .toggle-track { background: var(--accent); }
+
+    /* 滑块 */
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      line-height: 1;
+      transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    html.light .toggle-thumb { transform: translateX(16px); }
+
+    @media (max-width: 768px) {
+      .assessment-grid { grid-template-columns: 1fr; }
+      .score-bar { grid-template-columns: repeat(2, 1fr); }
+      .theme-toggle { top: 12px; right: 12px; padding: 6px 10px 6px 8px; font-size: 0.78rem; }
+      .score-panel { width: 240px; right: 8px; bottom: 8px; }
+    }
+
+    /* ===== 题目评分输入行 ===== */
+    .q-score-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--border);
+      flex-wrap: wrap;
+    }
+
+    .q-score-label {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+
+    .q-score-controls { display: flex; gap: 5px; flex-wrap: wrap; }
+
+    .score-quick {
+      padding: 3px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--score-row-bg);
+      color: var(--text-sub);
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: monospace;
+    }
+
+    .score-quick:hover { border-color: var(--accent); color: var(--text-main); }
+
+    .score-quick.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .q-score-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: auto;
+    }
+
+    .q-score-input {
+      width: 52px;
+      padding: 4px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--score-row-bg);
+      color: var(--text-main);
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, color 0.2s;
+      font-family: monospace;
+    }
+
+    .q-score-input:focus { border-color: var(--accent); }
+    .q-score-input.s-high { border-color: var(--success); color: var(--success); }
+    .q-score-input.s-mid  { border-color: var(--warning); color: var(--warning); }
+    .q-score-input.s-low  { border-color: var(--danger);  color: var(--danger); }
+
+    .q-score-sep { color: var(--text-sub); font-size: 0.9rem; }
+    .q-score-max { color: var(--text-sub); font-size: 0.82rem; font-weight: 600; }
+
+    /* ===== 汇总悬浮面板 ===== */
+    .score-panel {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 998;
+      width: 272px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+      transition: background 0.35s, border-color 0.35s;
+      overflow: hidden;
+    }
+
+    .score-panel.collapsed .panel-body { display: none; }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      cursor: pointer;
+      background: rgba(59,130,246,0.08);
+      border-bottom: 1px solid var(--border);
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .panel-header:hover { background: rgba(59,130,246,0.14); }
+
+    .panel-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .panel-header-btns { display: flex; gap: 6px; }
+
+    .btn-panel {
+      padding: 2px 9px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: var(--score-row-bg);
+      color: var(--text-sub);
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-panel:hover { border-color: var(--accent); color: var(--text-main); }
+    .btn-panel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-panel.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-panel.primary:hover { opacity: 0.88; }
+
+    .panel-body { padding: 12px 14px 14px; }
+
+    .panel-mod-row { margin-bottom: 9px; }
+
+    .panel-mod-name {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-bottom: 3px;
+    }
+
+    .panel-mod-score { font-weight: 700; color: var(--text-main); font-family: monospace; }
+
+    .mini-bar {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      overflow: hidden;
+    }
+
+    .mini-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent);
+      transition: width 0.35s cubic-bezier(0.34,1.56,0.64,1), background 0.3s;
+    }
+
+    .panel-divider {
+      margin: 10px 0;
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    .panel-total {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .panel-total-num {
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+      line-height: 1.15;
+      font-family: monospace;
+      transition: color 0.3s;
+    }
+
+    .panel-total-sub {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .total-bar-wrap {
+      height: 7px;
+      border-radius: 4px;
+      background: var(--border);
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    #panel-total-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--accent);
+      transition: width 0.4s cubic-bezier(0.34,1.56,0.64,1), background 0.3s;
+    }
+
+    .panel-answered {
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 7px;
+      margin-top: 11px;
+    }
+
+    .panel-actions .btn-panel { flex: 1; padding: 7px; font-size: 0.78rem; }
+  </style>
+</head>
+
+<body>
+
+  <!-- 评分汇总浮动面板 -->
+  <div class="score-panel collapsed" id="scorePanel">
+    <div class="panel-header" id="panelHeader">
+      <div class="panel-title">📊 评分汇总</div>
+      <div class="panel-header-btns" onclick="event.stopPropagation()">
+        <button class="btn-panel" id="btnClear">清空</button>
+        <button class="btn-panel primary" id="btnDownload">💾 下载</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div id="modRows"></div>
+      <hr class="panel-divider">
+      <div class="panel-total">
+        <span class="panel-total-num" id="panelTotalNum">0 / 190</span>
+        <div class="panel-total-sub" id="panelTotalPct">得分率 0%</div>
+        <div class="total-bar-wrap"><div id="panel-total-bar" style="width:0%"></div></div>
+      </div>
+      <div class="panel-answered" id="panelAnswered">已评 0 / 20 题</div>
+      <div class="panel-actions">
+        <button class="btn-panel" id="btnExpand">展开全部答案</button>
+        <button class="btn-panel primary" id="btnCollapse">🗜️ 折叠</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日夜切换开关 -->
+  <button class="theme-toggle" id="themeToggle" aria-label="切换白天/夜晚主题">
+    <div class="toggle-track">
+      <div class="toggle-thumb" id="toggleThumb">☀️</div>
+    </div>
+    <span id="toggleLabel">深色</span>
+  </button>
+
+  <div class="container">
+    <header>
+      <h1>React 资深前端交互 & 状态管理面试评估表</h1>
+      <p class="subtitle">组件原理 · 复杂状态 · 动画协同 · RSC · 资源优化 · 跨境电商通用技术 · 多语言 SEO</p>
+      <div class="chips">
+        <span class="chip">满分 190 分</span>
+        <span class="chip">七大考察模块 · 共 20 题</span>
+        <span class="chip">含参考答案与代码</span>
+        <span class="chip">React 18–19 / Next.js App Router / Zustand</span>
+      </div>
+    </header>
+
+    <!-- 分值汇总 -->
+    <div class="score-bar" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 12px;">
+      <div class="score-bar-item">
+        <span class="num">25</span>
+        <span class="label">一、React 核心原理</span>
+      </div>
+      <div class="score-bar-item">
+        <span class="num">20</span>
+        <span class="label">二、多组件架构规范</span>
+      </div>
+      <div class="score-bar-item">
+        <span class="num">25</span>
+        <span class="label">三、产品详情页场景</span>
+      </div>
+      <div class="score-bar-item">
+        <span class="num">20</span>
+        <span class="label">四、状态管理对比</span>
+      </div>
+    </div>
+    <div class="score-bar" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="score-bar-item">
+        <span class="num">10</span>
+        <span class="label">五、跨端性能优化</span>
+      </div>
+      <div class="score-bar-item">
+        <span class="num">40</span>
+        <span class="label">六、资深专项考察</span>
+      </div>
+      <div class="score-bar-item">
+        <span class="num">50</span>
+        <span class="label">七、独立站业务专项</span>
+      </div>
+    </div>
+
+    <!-- ==================== 模块 1 ==================== -->
+    <div class="section-title">
+      一、React 核心原理：Hooks 全解
+      <span class="section-tag">25 分 · 初级 → 专家</span>
+    </div>
+
+    <!-- Q1 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q1: 请说明 useState、useReducer、useRef 的使用场景区别，以及它们触发 re-render 的差异。</div>
+        <span class="q-tag tag-blue">基础 / 初级</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>useState</strong>：简单独立值，setter 调用 → 组件 re-render。</li>
+            <li><strong>useReducer</strong>：多个相互关联的状态，通过 action 集中管理，逻辑更清晰，便于测试；reducer 可抽离。</li>
+            <li><strong>useRef</strong>：存可变值但<strong>不触发 re-render</strong>；持有 DOM 引用；保存动画实例、定时器 ID。</li>
+            <li><strong>何时从 useState 升级到 useReducer</strong>：当 setter 调用超过 3 个、状态之间有依赖关系时。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (8分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">7–8 分</span>
+            <div class="score-desc">准确区分三者的 re-render 行为；useRef 用于绕开 React 渲染流；举出具体场景例子（动画实例、表单草稿）。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–6 分</span>
+            <div class="score-desc">知道三者基本用法，useRef 不触发渲染，但场景区分不够清晰。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">在需要 useReducer 的场景坚持用 useState；不知道 useRef 可存非 DOM 值。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案与代码示例</summary>
+        <div class="answer-key">
+          <p><strong>核心区别总结：</strong></p>
+<pre><code>// useState: 适合简单独立值
+const [count, setCount] = useState(0);
+
+// useReducer: 适合多状态互相关联（如表单）
+const [form, dispatch] = useReducer((state, action) => {
+  switch (action.type) {
+    case 'SET_SKU':  return { ...state, sku: action.payload, price: getPrice(action.payload) };
+    case 'SET_QTY':  return { ...state, qty: action.payload };
+    default: return state;
+  }
+}, { sku: null, qty: 1, price: 0 });
+
+// useRef: 不触发渲染，保存动画实例
+const animRef = useRef(null); // 存 GSAP Timeline，切换 SKU 时 .kill() 它</code></pre>
+          <p><strong>黄金法则</strong>：动画 Timeline / RAF ID / 三方 SDK 实例 <strong>永远存在 useRef</strong>，不要放 state。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q2: useEffect、useLayoutEffect、useMemo、useCallback 的执行时机和性能陷阱，分别是什么？</div>
+        <span class="q-tag tag-blue">中级</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>useEffect</strong>：Paint 之后异步执行，适合副作用（接口请求、订阅）；不适合 DOM 读写（会闪）。</li>
+            <li><strong>useLayoutEffect</strong>：DOM 变更后、Paint 之前同步执行；适合测量 DOM、动画初始化；SSR 时会报警告（用 useIsomorphicLayoutEffect 处理）。</li>
+            <li><strong>useMemo</strong>：缓存计算结果；滥用会增加内存开销（每次 re-render 检查依赖本身有成本）；仅用于昂贵计算。</li>
+            <li><strong>useCallback</strong>：缓存函数引用；子组件用 React.memo 包裹时才有意义；否则只是额外开销。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (9分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–9 分</span>
+            <div class="score-desc">精确描述 useLayoutEffect 执行时序；知道 useMemo/useCallback 存在负面成本，不盲目使用；提到 SSR 兼容处理。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">区分 useEffect 和 useLayoutEffect，知道 useMemo 缓存，但对"滥用有害"的理解不深。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">到处用 useMemo/useCallback "优化"，认为加了肯定更快。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案与执行时序图</summary>
+        <div class="answer-key">
+          <p><strong>执行顺序（一帧内）：</strong></p>
+          <ol>
+            <li>React 渲染（虚拟 DOM diff）</li>
+            <li>DOM 更新（真实 DOM 变化）</li>
+            <li><strong>useLayoutEffect</strong> 同步执行（← 读取 DOM 尺寸、初始化动画）</li>
+            <li>浏览器 Paint（像素绘制到屏幕）</li>
+            <li><strong>useEffect</strong> 异步执行（← 发接口、监听 WebSocket）</li>
+          </ol>
+          <p><strong>useMemo/useCallback 使用原则</strong>：先正常写，性能有问题再加；在 DevTools Profiler 中确认组件确实过度渲染后再包裹 memo。</p>
+<pre><code>// useIsomorphicLayoutEffect — 解决 SSR 警告
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect;</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q3: 深入理解 React 的 Fiber、调度机制 (Concurrent Mode) 和 Batching (批量更新) — 对性能有何影响？</div>
+        <span class="q-tag tag-red">高级 / 专家</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>Fiber 架构</strong>：每个组件对应一个 Fiber 节点（链表），将渲染拆成可中断的小任务（Work Units），让浏览器在空闲时执行。</li>
+            <li><strong>时间切片 (Time Slicing)</strong>：React 将渲染任务切成 5ms 的时间片，用 MessageChannel 调度，不阻塞用户交互。</li>
+            <li><strong>React 18 自动批处理</strong>：React 17 仅在事件处理中批量更新，18 中任何地方（setTimeout、Promise、原生事件）都自动批量更新。</li>
+            <li><strong>startTransition</strong>：标记低优先级更新（如搜索过滤），不阻塞高优先级的输入响应。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (8分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">7–8 分</span>
+            <div class="score-desc">理解 Fiber 可中断渲染；解释 React 18 Automatic Batching 的实际意义（减少 re-render 次数）；正确使用 startTransition 分离紧急/非紧急更新。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–6 分</span>
+            <div class="score-desc">知道 Concurrent Mode 和批量更新概念，但实战中不清楚何时使用 startTransition。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">认为 React 渲染是同步阻塞的，不了解调度机制。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考答案与代码示例</summary>
+        <div class="answer-key">
+          <p><strong>React 18 自动批处理（实战意义）：</strong></p>
+<pre><code>// React 17: setTimeout 中两个 setState 触发两次渲染
+// React 18: 自动批处理，只触发一次渲染
+setTimeout(() => {
+  setSku(newSku);     // 不立即渲染
+  setPrice(newPrice); // ← 与上面合并，只触发一次 re-render
+}, 0);
+
+// startTransition: 产品列表过滤不阻塞用户输入
+const [inputVal, setInputVal] = useState('');
+const [filtered, setFiltered] = useState(list);
+
+const handleChange = (e) => {
+  setInputVal(e.target.value);                // 紧急更新（输入框立即响应）
+  startTransition(() => {
+    setFiltered(list.filter(/* 昂贵计算 */)); // 低优先级（可被中断）
+  });
+};</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 2 ==================== -->
+    <div class="section-title">
+      二、多组件页面的架构规范与统一状态
+      <span class="section-tag">20 分 · 组件化设计</span>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q4: 一个页面有 30+ 个组件，如何设计组件层级、状态分层和 Props 规范？避免 Props Drilling 的方案有哪些？</div>
+        <span class="q-tag tag-green">架构设计</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>组件三分层</strong>：UI 展示组件（Dumb/Pure）、容器组件（Container，持有状态）、页面组件（Page，组合容器）。</li>
+            <li><strong>状态下放原则 (Colocate State)</strong>：状态尽量靠近使用它的组件，不要全放顶层。只有真正跨层级共享的才提升。</li>
+            <li><strong>Props Drilling 三种解法</strong>：① Context + useContext（轻量场景）；② 组件组合 (Composition) / children prop；③ 全局状态管理（Zustand/Redux）。</li>
+            <li><strong>文件规范</strong>：每个组件独立文件夹（Component/index.tsx + Component.types.ts + Component.module.css）。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">主动提出 Colocate State 原则（先下放再提升）；对比三种 Drilling 解法的成本；有实际项目中的组件目录规范经验。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 Context 解决 Drilling，有基本的组件分层意识。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">所有状态提升到 App 根组件，导致任何改动都触发全树重渲染。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案与目录结构</summary>
+        <div class="answer-key">
+          <p><strong>组件目录规范（大型项目）：</strong></p>
+<pre><code>src/
+├── components/           # 通用 UI 组件（无业务逻辑）
+│   ├── Button/
+│   │   ├── index.tsx
+│   │   ├── Button.types.ts
+│   │   └── Button.module.css
+├── features/             # 业务功能模块（含状态）
+│   ├── ProductDetail/
+│   │   ├── index.tsx     # 页面入口，组合下方容器
+│   │   ├── SkuSelector/  # 容器组件，持有选项状态
+│   │   ├── PriceDisplay/ # 展示组件，只接收 props
+│   │   └── store.ts      # Zustand store（仅此模块使用）
+└── stores/               # 全局共享状态</code></pre>
+          <p><strong>组件组合模式（避免 Drilling）：</strong></p>
+<pre><code>// ❌ 透传 props 的反模式
+&lt;Page user={user}&gt;
+  &lt;Layout user={user}&gt;
+    &lt;Header user={user}&gt;
+      &lt;Avatar user={user} /&gt;
+
+// ✅ Composition 模式
+&lt;Page&gt;
+  &lt;Layout header={&lt;Header&gt;&lt;Avatar /&gt;&lt;/Header&gt;} /&gt;
+&lt;/Page&gt;</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q5: 如何避免 React 组件的过度渲染（Over-rendering）？React.memo、useMemo、useCallback 的正确配合方式。</div>
+        <span class="q-tag tag-green">性能优化</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>Re-render 触发条件</strong>：父组件渲染 → 子组件默认全部渲染（不管 props 有没有变化）。</li>
+            <li><strong>React.memo</strong>：浅比较 props，props 无变化则跳过渲染；与 useCallback 配合才有效（函数引用每次都是新的）。</li>
+            <li><strong>三件套配合</strong>：父传给 memo 子组件的函数用 useCallback、对象用 useMemo 包裹，确保引用稳定。</li>
+            <li><strong>何时不需要优化</strong>：叶子组件渲染极快，优化反而增加内存和 GC 压力。</li>
+            <li><strong>诊断工具</strong>：React DevTools Profiler → 找"为什么渲染了"。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能解释浅比较的局限性；知道何时该优化、何时优化反而有害；使用 Profiler 定位问题而非凭感觉优化。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 memo + useCallback 配合，但不清楚优化的成本和边界。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">对所有组件加 memo，所有函数加 useCallback，认为没有副作用。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考代码与优化决策树</summary>
+        <div class="answer-key">
+<pre><code>// 父组件
+const Parent = () => {
+  const [count, setCount] = useState(0);
+
+  // ✅ 用 useCallback 稳定函数引用（配合 ChildMemo 使用）
+  const handleAdd = useCallback(() => setCount(c => c + 1), []);
+
+  // ✅ 用 useMemo 稳定对象引用（配合 ChildMemo 使用）
+  const config = useMemo(() => ({ theme: 'dark', size: 'large' }), []);
+
+  return &lt;&gt;
+    &lt;button onClick={() => setCount(c => c + 1)}&gt;+1&lt;/button&gt;
+    &lt;ChildMemo onAdd={handleAdd} config={config} /&gt;
+    &lt;SimpleChild /&gt; {/* 渲染极快，不需要 memo */}
+  &lt;/&gt;;
+};
+
+// 子组件用 React.memo 包裹才能利用稳定引用
+const ChildMemo = React.memo(({ onAdd, config }) =&gt; {
+  console.log('ChildMemo rendered'); // 只在 onAdd/config 变化时触发
+  return &lt;div onClick={onAdd}&gt;{config.theme}&lt;/div&gt;;
+});</code></pre>
+          <p><strong>优化决策流程</strong>：先用 Profiler 找到渲染慢的组件 → 确认 re-render 频率 → 确认子组件渲染成本高 → 再加 memo。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 3 ==================== -->
+    <div class="section-title">
+      三、产品详情页复杂交互场景
+      <span class="section-tag">25 分 · 实战难题</span>
+    </div>
+
+    <!-- Q6 -->
+    <div class="question-card accent">
+      <div class="q-header">
+        <div class="q-title">Q6: 产品详情页：用户切换 SKU 选项后，价格、图片、参数表、库存状态、样式主题同时联动更新，如何设计状态结构？</div>
+        <span class="q-tag tag-yellow">核心实战</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>单一数据源</strong>：所有联动数据以选中 SKU ID 为核心，其他数据通过 selector 派生，不在 state 中冗余存储。</li>
+            <li><strong>useReducer 集中管理</strong>：SET_OPTION action → 立即计算新 SKU → dispatch 单次触发所有订阅组件更新。</li>
+            <li><strong>避免状态爆炸</strong>：不要为每个联动项（价格、库存、颜色）各自维护一个 state，否则多次 setState 引发多次渲染。</li>
+            <li><strong>数据预处理</strong>：接口返回数据在进入 store 前做一次规范化（Normalize），建立 SKU Map，切换时 O(1) 查询。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (9分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">7–9 分</span>
+            <div class="score-desc">主动提出单一数据源+派生原则；使用 useReducer 或 Zustand 集中处理；对接口数据预规范化；考虑切换动画与数据更新的时序。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–6 分</span>
+            <div class="score-desc">能用 useState 加条件判断实现功能，但有冗余 state，存在多次渲染问题。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">每个组件各自请求接口，没有统一数据层，切换时出现闪烁或数据不同步。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案：Store 设计 + Selector 派生</summary>
+        <div class="answer-key">
+          <p><strong>Zustand Store 设计（产品详情页）：</strong></p>
+<pre><code>// store/productStore.ts
+interface ProductState {
+  product: Product;              // 原始产品数据（含所有 SKU）
+  selectedOptions: OptionMap;    // { color: 'red', size: 'M' }
+  skuMap: Record&lt;string, Sku&gt;;   // 预构建的 SKU 快查表
+}
+
+export const useProductStore = create&lt;ProductState&gt;()((set, get) => ({
+  product: null,
+  selectedOptions: {},
+  skuMap: {},
+
+  setOption: (key, value) => {
+    set(state => ({
+      selectedOptions: { ...state.selectedOptions, [key]: value }
+    }));
+  },
+}));
+
+// 派生 selector（组件中按需订阅，不触发无关组件更新）
+export const useCurrentSku = () =>
+  useProductStore(state => {
+    const key = buildSkuKey(state.selectedOptions); // 'red-M'
+    return state.skuMap[key];
+  });
+
+// 各组件只订阅自己关心的数据
+const PriceDisplay = () => {
+  const sku = useCurrentSku();       // ← 只在 sku 变化时渲染
+  return &lt;div&gt;¥{sku?.price}&lt;/div&gt;;
+};</code></pre>
+          <p><strong>关键优化</strong>：接口数据进入 store 前构建 <code>skuMap</code>，切换选项时 O(1) 查找，不需要每次遍历数组。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q7 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q7: 产品详情页中注入了 PayPal、Klarna 等第三方脚本，它们会插入 Shadow DOM 或 iframe 样式。如何处理样式冲突和主题联动？</div>
+        <span class="q-tag tag-red">高级 / 难点</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>Shadow DOM 隔离原理</strong>：第三方组件的样式封在 Shadow Root 内，外部 CSS 无法穿透，只有 CSS Custom Properties（变量）可以穿透。</li>
+            <li><strong>CSS 变量注入主题</strong>：PayPal Smart Buttons 支持 JS SDK 参数（style.color/size），Klarna 支持传参 data-theme；通过修改 <code>:root</code> 变量触发联动。</li>
+            <li><strong>iframe 样式注入</strong>：iframe 同域可操作 contentDocument 注入 style；跨域只能靠 postMessage 通知容器方主动调整。</li>
+            <li><strong>加载时机管理</strong>：用 <code>useEffect</code> 监听 SKU 切换，重新初始化 SDK 或调用其更新 API（如 PayPal Buttons 的 <code>close()</code> + <code>render()</code>）。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (8分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">7–8 分</span>
+            <div class="score-desc">清楚解释 Shadow DOM 穿透限制和 CSS 变量方案；知道 PayPal SDK 的 style 参数；处理了 SKU 切换时 SDK 重初始化的清理问题。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–6 分</span>
+            <div class="score-desc">知道第三方脚本有样式隔离，尝试用 !important 强行覆盖（不总是有效）。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不了解 Shadow DOM，认为全局 CSS 可覆盖所有样式。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案</summary>
+        <div class="answer-key">
+          <p><strong>CSS 变量穿透 Shadow DOM（唯一可靠方式）：</strong></p>
+<pre><code>/* 在 :root 设置变量（可穿透 Shadow Boundary） */
+:root {
+  --paypal-btn-color: gold;
+  --brand-primary: #0070ba;
+}
+
+/* SKU 颜色主题切换时，JS 直接修改 root 变量 */
+document.documentElement.style.setProperty('--paypal-btn-color', 'blue');</code></pre>
+          <p><strong>PayPal Smart Buttons 主题参数：</strong></p>
+<pre><code>// SKU 切换时销毁并重渲染 PayPal Buttons
+useEffect(() => {
+  const container = paypalContainerRef.current;
+  container.innerHTML = ''; // 清空旧按钮
+
+  window.paypal.Buttons({
+    style: {
+      color: currentSku.theme === 'dark' ? 'black' : 'gold',
+      shape: 'rect',
+      layout: 'vertical'
+    },
+    createOrder: () => { /* 用最新 sku.price 创建订单 */ }
+  }).render(container);
+
+  return () => container.innerHTML = ''; // 组件卸载清理
+}, [currentSku.id]);  // 依赖 SKU ID，切换时重建</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q8 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q8: 产品详情页有复杂动画（SKU 切换时图片飞入、价格滚动计数、Tab 滑动）如何与状态管理配合，避免动画撕裂？</div>
+        <span class="q-tag tag-yellow">动画+状态</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>先动画后更新数据</strong>：SKU 切换触发离场动画 → 动画回调中更新 store → 触发入场动画；避免数据和视觉不同步（数字跳了但图片还没换）。</li>
+            <li><strong>动画实例存 Ref</strong>：GSAP Timeline 存在 <code>useRef</code>，SKU 变化时 <code>tl.current.kill()</code> 打断旧动画再播新动画。</li>
+            <li><strong>Framer Motion AnimatePresence</strong>：以 SKU ID 作为 key，值变化时自动触发 exit + enter 动画序列。</li>
+            <li><strong>状态更新防抖</strong>：用户快速点击颜色时，防抖 300ms 再提交 store 更新，避免动画连续打断。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (8分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">7–8 分</span>
+            <div class="score-desc">给出"先动画后数据"的时序方案；用 Ref 管理动画实例；考虑快速连续切换的防抖/打断处理。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–6 分</span>
+            <div class="score-desc">能做基本切换动画，但不处理快速连续切换导致的动画冲突。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">在 state 中存动画状态，导致动画与数据更新顺序混乱。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案：动画与状态时序控制</summary>
+        <div class="answer-key">
+<pre><code>const tlRef = useRef(null);
+const pendingSkuRef = useRef(null); // 防抖期间记录最新目标
+
+const switchSku = useCallback(debounce((newSkuId) => {
+  // 1. 打断正在播的动画
+  tlRef.current?.kill();
+
+  // 2. 播放离场动画
+  const tl = gsap.timeline();
+  tlRef.current = tl;
+
+  tl.to(imageRef.current, { opacity: 0, y: -20, duration: 0.2 })
+    .add(() => {
+      // 3. 离场结束后更新 store（此时视觉上元素已消失）
+      useProductStore.getState().setOption('sku', newSkuId);
+    })
+    // 4. 更新 DOM 后播放入场动画（配合 useLayoutEffect）
+    .fromTo(imageRef.current,
+      { opacity: 0, y: 20 },
+      { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
+    );
+}, 150), []);  // 150ms 防抖</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 4 ==================== -->
+    <div class="section-title">
+      四、状态管理方案对比与更新优化
+      <span class="section-tag">20 分 · Context / Redux / Zustand</span>
+    </div>
+
+    <!-- Q9 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q9: 详细对比 useContext、Redux Toolkit、Zustand 的原理差异 — 更新 state 时，分别会导致哪些组件 re-render？如何精确控制？</div>
+        <span class="q-tag tag-purple">状态管理核心</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>useContext 缺陷</strong>：Context 值任何字段变化 → 所有 Consumer 全部 re-render（即使组件只用了其中一个字段）。解法：拆分多个 Context 或用 useMemo 包裹 Provider value。</li>
+            <li><strong>Redux 订阅机制</strong>：组件通过 <code>useSelector</code> 订阅，只有 selector 返回值变化才触发 re-render；全局一个 store，可时间旅行调试。</li>
+            <li><strong>Zustand 精确订阅</strong>：<code>useStore(state => state.price)</code>，只订阅 price 字段，其他字段更新不触发此组件；无 Provider 包裹，体积极小（1kb）。</li>
+            <li><strong>选型建议</strong>：独立站/中小项目首选 Zustand；大型企业项目需要严格数据流审计选 Redux；局部共享用 Context。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">精确解释 Context 全量更新的根本原因；对比 Zustand selector 精确订阅的实现；能给出各方案的适用场景和迁移成本评估。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">了解三者基本用法，知道 Context 有性能问题，但不清楚根本原因。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">把所有数据塞进一个 Context，独立站用 Redux 写大量模板代码。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看三者对比表 + 代码示例</summary>
+        <div class="answer-key">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>维度</th>
+                <th>useContext</th>
+                <th>Redux Toolkit</th>
+                <th>Zustand</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>re-render 范围</td>
+                <td>所有 Consumer（全量）</td>
+                <td>selector 变化的组件</td>
+                <td>selector 变化的组件</td>
+              </tr>
+              <tr>
+                <td>精确订阅</td>
+                <td>❌ 需手动拆分 Context</td>
+                <td>✅ useSelector</td>
+                <td>✅ 内置 selector</td>
+              </tr>
+              <tr>
+                <td>模板代码</td>
+                <td>少</td>
+                <td>多（slice/action/type）</td>
+                <td>极少</td>
+              </tr>
+              <tr>
+                <td>包体积</td>
+                <td>内置</td>
+                <td>~40kb</td>
+                <td>~1kb</td>
+              </tr>
+              <tr>
+                <td>DevTools</td>
+                <td>基础</td>
+                <td>Redux DevTools（时间旅行）</td>
+                <td>Redux DevTools 可选接入</td>
+              </tr>
+              <tr>
+                <td>适用场景</td>
+                <td>主题/语言/用户信息</td>
+                <td>大型企业项目</td>
+                <td>独立站/中小型项目</td>
+              </tr>
+            </tbody>
+          </table>
+<pre><code>// Zustand 精确订阅示例
+// 只有 price 变化才触发 PriceDisplay re-render
+const PriceDisplay = () => {
+  const price = useProductStore(state => state.currentSku?.price);
+  return &lt;span&gt;¥{price}&lt;/span&gt;;
+};
+
+// 只有 images 变化才触发 Gallery re-render
+const Gallery = () => {
+  const images = useProductStore(state => state.currentSku?.images);
+  return &lt;div&gt;{images?.map(img => &lt;img src={img} /&gt;)}&lt;/div&gt;;
+};</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q10 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q10: Zustand 进阶：如何做 store 分片（Slices）、如何配合 immer 处理深层嵌套更新、如何实现 persist 持久化？</div>
+        <span class="q-tag tag-purple">Zustand 深度</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>Slices 模式</strong>：将大 store 拆成多个 slice 函数，合并到一个 create 调用中，防止 store 臃肿。</li>
+            <li><strong>immer 中间件</strong>：处理深层嵌套对象更新时不需要手写展开语法，直接 mutate 草稿对象（不可变更新的语法糖）。</li>
+            <li><strong>persist 中间件</strong>：自动将 state 序列化到 localStorage/sessionStorage，页面刷新后恢复；需指定 partialize 只持久化部分字段（不存敏感数据）。</li>
+            <li><strong>订阅外部更新</strong>：<code>store.subscribe</code> 可在组件外监听 state 变化（如 URL 同步）。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能写出 slices 合并方式；理解 immer 中间件的 produce 机制；persist 配合 partialize 只持久化必要字段。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">用过 persist，知道 immer 是不可变库，但对 slices 模式不熟。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">所有状态放一个巨大的 store，手写嵌套展开更新（容易出 bug）。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考代码：Slices + Immer + Persist</summary>
+        <div class="answer-key">
+<pre><code>import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
+import { persist } from 'zustand/middleware';
+
+// Slice 1: 产品选项
+const createProductSlice = (set) => ({
+  product: null,
+  selectedOptions: {},
+  setOption: (key, val) =>
+    set(state => { state.selectedOptions[key] = val; }), // immer 直接 mutate
+});
+
+// Slice 2: 购物车
+const createCartSlice = (set) => ({
+  cartItems: [],
+  addToCart: (sku) =>
+    set(state => { state.cartItems.push(sku); }),
+});
+
+// 合并 + 中间件叠加
+export const useStore = create(
+  persist(
+    immer((...a) => ({
+      ...createProductSlice(...a),
+      ...createCartSlice(...a),
+    })),
+    {
+      name: 'shop-storage',
+      partialize: (state) => ({ cartItems: state.cartItems }), // 只持久化购物车
+    }
+  )
+);</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 5 ==================== -->
+    <div class="section-title">
+      五、跨端性能优化 (PC / Mobile / iOS / Android)
+      <span class="section-tag">10 分 · Platform Tuning</span>
+    </div>
+
+    <!-- Q11 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q11: 针对独立站产品详情页，分别说明 PC 端、移动端、iOS Safari、Android WebView 的特有性能问题和优化方案。</div>
+        <span class="q-tag tag-blue">跨端优化</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>PC</strong>：首屏资源加载（大图/3D/视频），Next.js ISR/SSG 预渲染；代码分割（动态 import 按需加载 3D 模块）。</li>
+            <li><strong>Mobile 通用</strong>：减少 JS 包体积（Tree Shaking/代码分割）；避免 300ms 点击延迟（touch-action: manipulation）；滚动性能（overscroll-behavior, passive listener）。</li>
+            <li><strong>iOS Safari</strong>：100vh 陷阱（用 100dvh 或 window.innerHeight）；position:fixed 在键盘弹出时位移（用 env(safe-area-inset-bottom)）；WebGL 显存上限极低（~256MB）。</li>
+            <li><strong>Android WebView</strong>：字体渲染 (-webkit-font-smoothing)；GPU 加速层级限制；低端机主线程繁忙时动画降级策略（prefers-reduced-motion）。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能针对每个平台给出具体的技术方案（非泛泛而谈）；知道 iOS Safari 的 100vh / safe-area 问题；主动提到低端机的动画降级策略。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道移动端要减少 JS 体积、用 passive listener，有基本的多端适配意识。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">认为 CSS 响应式布局就等于多端适配，不了解各平台特有 Bug。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看各平台关键技术方案</summary>
+        <div class="answer-key">
+          <table class="compare-table">
+            <thead>
+              <tr><th>平台</th><th>特有问题</th><th>解决方案</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>PC (Mac/Win)</td>
+                <td>大资源首屏加载慢；3D 模型卡顿</td>
+                <td>Next.js dynamic import；WebGL LOD（按距离降低精度）；prefetch 预加载</td>
+              </tr>
+              <tr>
+                <td>Mobile 通用</td>
+                <td>JS 包大；300ms 延迟；scroll 卡</td>
+                <td>code splitting；touch-action: manipulation；passive event listener；will-change 谨慎使用</td>
+              </tr>
+              <tr>
+                <td>iOS Safari</td>
+                <td>100vh = 含地址栏；键盘顶起 fixed；WebGL 显存 256MB</td>
+                <td>height: 100dvh；padding-bottom: env(safe-area-inset-bottom)；降低 Canvas 分辨率</td>
+              </tr>
+              <tr>
+                <td>Android WebView</td>
+                <td>低端机 JS 执行慢；合成层爆炸</td>
+                <td>减少 will-change 使用数量；Web Worker 计算复杂逻辑；prefers-reduced-motion 动画降级</td>
+              </tr>
+            </tbody>
+          </table>
+<pre><code>// iOS Safari 100vh 修复
+// CSS
+.hero { height: 100dvh; } /* 动态视口高度，自动排除导航栏 */
+
+// 安全区域适配（刘海屏/底部 Home 条）
+.add-to-cart-bar {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+// 动画降级（低端设备/用户设置）
+@media (prefers-reduced-motion: reduce) {
+  .animated { animation: none; transition: none; }
+}
+
+// JS 端检测
+const prefersReduced = window.matchMedia(
+  '(prefers-reduced-motion: reduce)'
+).matches;</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 6 ==================== -->
+    <div class="section-title">
+      六、资深专项：Hook 设计 · RSC · 资源优化 · 加载编排
+      <span class="section-tag">40 分 · Principal Level</span>
+    </div>
+
+    <!-- Q12 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q12: 设计一个团队通用的动画 Hook 库（如 useScrollAnimation、useSpring）— 如何保证 API 简洁、SSR 安全、可复用且无内存泄漏？</div>
+        <span class="q-tag tag-red">Hook 架构设计</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>声明式 API 设计</strong>：调用方只传配置对象，不感知 GSAP/RAF 实现细节；支持 <code>{ from, to, trigger, duration }</code> 参数风格。</li>
+            <li><strong>SSR 安全</strong>：所有 DOM/window 操作必须在 <code>useLayoutEffect</code> 或 <code>useEffect</code> 内；使用 <code>typeof window !== 'undefined'</code> 守卫或 <code>useIsomorphicLayoutEffect</code>。</li>
+            <li><strong>内存清理</strong>：<code>useEffect return</code> 中销毁动画实例（GSAP <code>ctx.revert()</code>、RAF cancel、IntersectionObserver disconnect）。</li>
+            <li><strong>暂停/恢复/中断</strong>：返回 <code>{ play, pause, reverse, kill }</code> 控制句柄，允许父组件命令式控制。</li>
+            <li><strong>prefers-reduced-motion</strong>：Hook 内部读取媒体查询，自动降级为无动画。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">完整设计 API + 清理 + SSR 三件套；主动提到 GSAP Context 批量清理；Hook 返回控制句柄供父组件命令式调用；考虑 reduced-motion。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">能封装基础 Hook，知道 useEffect cleanup，但不考虑 SSR 和 reduced-motion。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">直接在组件内写 GSAP，无封装；忘记清理导致路由切换后动画继续执行。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考设计：useScrollAnimation Hook</summary>
+        <div class="answer-key">
+          <p><strong>核心架构：</strong></p>
+<pre><code>// hooks/useScrollAnimation.ts
+const useScrollAnimation = (config: AnimConfig) => {
+  const ref = useRef(null);
+  const ctxRef = useRef(null);   // GSAP Context，用于批量清理
+
+  // SSR 安全 + DOM 保证存在
+  useIsomorphicLayoutEffect(() => {
+    if (!ref.current) return;
+
+    // 检查无障碍偏好
+    const reduced = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    if (reduced) return;
+
+    // GSAP Context 作用域 — 自动收集所有动画便于一次性清理
+    ctxRef.current = gsap.context(() => {
+      gsap.from(ref.current, {
+        ...config.from,
+        scrollTrigger: {
+          trigger: ref.current,
+          start: config.start ?? 'top 80%',
+          toggleActions: 'play none none reverse',
+        },
+      });
+    });
+
+    return () => ctxRef.current?.revert(); // 彻底清理，防止内存泄漏
+  }, []);  // 空依赖：只初始化一次
+
+  return ref;
+};
+
+// 使用方式 — 调用方完全不感知 GSAP
+const Hero = () => {
+  const ref = useScrollAnimation({ from: { opacity: 0, y: 60 } });
+  return &lt;section ref={ref}&gt;内容&lt;/section&gt;;
+};</code></pre>
+          <p><strong>进阶：返回控制句柄</strong>，供父组件在特定业务时机（如 SKU 切换）命令式 play/kill：</p>
+<pre><code>const { ref, play, kill } = useAnimation({ autoplay: false });
+// 点击按钮时手动触发
+&lt;button onClick={play}&gt;开始动画&lt;/button&gt;</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q13 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q13: Next.js App Router 下，React Server Components (RSC) 与动画的边界在哪里？如何设计"服务端骨架 + 客户端动画"的分层策略？</div>
+        <span class="q-tag tag-red">RSC + 动画边界</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>RSC 的本质限制</strong>：RSC 不能使用 useState/useEffect/DOM API，因为它运行在服务端，没有浏览器上下文；所有动画逻辑必须在 Client Component 中。</li>
+            <li><strong>"use client" 边界最小化</strong>：将 <code>"use client"</code> 推到叶子组件，而不是在页面级别标记，最大化服务端渲染范围，减少 JS bundle。</li>
+            <li><strong>服务端骨架 + 客户端动画</strong>：RSC 渲染静态 HTML 骨架（含占位 class/style）→ 水合后 Client Component 接管，播放入场动画覆盖骨架。</li>
+            <li><strong>Streaming + Suspense 动画</strong>：<code>&lt;Suspense fallback={&lt;Skeleton /&gt;}&gt;</code> 中 Skeleton 可有加载动画；数据就绪后 Framer Motion 入场动画替换。</li>
+            <li><strong>水合闪烁 (Hydration Flash)</strong>：初始 HTML 无动画状态 → JS 加载后动画启动，可能出现闪烁；解法是将初始样式设为动画的起始帧。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">清晰划分 RSC/CC 边界；知道 "use client" 向下传播但不向上；解决水合闪烁；Streaming 与动画的配合方案完整。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 RSC 不能用 hooks，会加 "use client"，但不清楚边界最小化策略。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">在 page.tsx 顶层加 "use client"，整个页面变 Client Component，失去 RSC 优势。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考架构：RSC + CC 分层设计</summary>
+        <div class="answer-key">
+          <p><strong>"use client" 边界最小化策略：</strong></p>
+<pre><code>// ❌ 错误：整页变 Client Component
+// app/product/page.tsx
+'use client';
+export default function ProductPage() {
+  // GSAP 在这里 → 整个 page 树都在客户端渲染
+}
+
+// ✅ 正确：RSC 做数据层，CC 只包动画叶子
+// app/product/page.tsx (RSC)
+export default async function ProductPage() {
+  const product = await fetchProduct(); // 服务端 fetch
+  return (
+    &lt;main&gt;
+      &lt;ProductHero product={product} /&gt;     {/* RSC: 静态渲染 */}
+      &lt;AnimatedGallery images={product.images} /&gt; {/* CC: 有动画 */}
+      &lt;Suspense fallback={&lt;ReviewsSkeleton /&gt;}&gt;
+        &lt;ReviewsSection productId={product.id} /&gt;
+      &lt;/Suspense&gt;
+    &lt;/main&gt;
+  );
+}
+
+// AnimatedGallery.tsx (Client Component)
+'use client';
+const AnimatedGallery = ({ images }) => {
+  useLayoutEffect(() => {
+    gsap.from('.gallery-item', { opacity: 0, y: 30, stagger: 0.08 });
+  }, []);
+  return &lt;div&gt;{images.map(img =&gt; ...)}&lt;/div&gt;;
+};</code></pre>
+          <p><strong>水合闪烁修复</strong>：让服务端 HTML 的初始状态 = 动画起始帧（如 opacity: 0），避免"先显示再消失再动画"的闪烁。</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q14 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q14: 独立站官网的图片、视频、字体、动画脚本如何做资源优化？CDN、缓存策略、懒加载的完整方案是什么？</div>
+        <span class="q-tag tag-yellow">资源优化 · CDN · 懒加载</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>图片格式与压缩</strong>：优先 AVIF &gt; WebP &gt; JPEG；Next.js <code>&lt;Image&gt;</code> 自动格式转换 + srcset；<code>priority</code> 属性标记 LCP 图片（首屏英雄图必须加）。</li>
+            <li><strong>视频优化</strong>：首屏背景视频用 <code>preload="metadata"</code> 只加载元数据；折叠以下视频用 IntersectionObserver 触发加载；优先 WebM + MP4 双格式兜底；关键帧 <code>poster</code> 图片防白屏。</li>
+            <li><strong>CDN 缓存策略</strong>：静态资源（JS/CSS/图片）Hash 命名 + <code>Cache-Control: max-age=31536000, immutable</code>；HTML 页面 <code>no-cache</code> + ETag；动态 API <code>s-maxage</code> Stale-While-Revalidate。</li>
+            <li><strong>动画脚本懒加载</strong>：GSAP / Three.js 用 <code>dynamic import()</code> 按需加载；只在组件进入视口（IntersectionObserver）时才 import；防止首屏 JS 包体积膨胀。</li>
+            <li><strong>字体优化</strong>：<code>font-display: swap</code> 防止字体加载阻塞渲染；Next.js 字体内联化（next/font）；关键字符子集（subset）减小体积。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能区分 LCP 图片与非 LCP 图片的不同策略（priority vs lazy）；给出 CDN 缓存头的具体值；动画库按需 import + 视口触发；提到 Stale-While-Revalidate 策略。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道图片 lazy loading、WebP 格式、CDN 加速，但缓存策略和动画懒加载方案不完整。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">所有图片 loading="lazy"（包括首屏 LCP 图片），GSAP 全量打包进首屏 bundle。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案：完整资源策略</summary>
+        <div class="answer-key">
+          <p><strong>1. 图片分级策略：</strong></p>
+<pre><code>// ❌ 错误：LCP 图片也懒加载 → LCP 分数崩溃
+&lt;img src="hero.jpg" loading="lazy" /&gt;
+
+// ✅ 首屏英雄图：priority 标记，预加载
+&lt;Image src="/hero.avif" priority sizes="100vw"
+  alt="hero" fill /&gt;
+
+// ✅ 折叠以下图片：懒加载 + 模糊占位
+&lt;Image src="/product.jpg" loading="lazy"
+  placeholder="blur" blurDataURL={blurURL} /&gt;</code></pre>
+
+          <p><strong>2. 动画脚本按需加载（视口触发）：</strong></p>
+<pre><code>// hooks/useAnimationModule.ts
+// 组件进入视口时才加载 GSAP — 首屏 JS 体积降低 60%+
+const useAnimationModule = (ref) => {
+  const [gsap, setGsap] = useState(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(async ([entry]) => {
+      if (entry.isIntersecting) {
+        const { gsap } = await import('gsap');           // 动态加载
+        const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+        gsap.registerPlugin(ScrollTrigger);
+        setGsap(gsap);
+        observer.disconnect();
+      }
+    }, { rootMargin: '200px' });  // 提前 200px 开始加载
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [])
+
+  return gsap;
+};</code></pre>
+
+          <p><strong>3. CDN 缓存头配置（next.config.js）：</strong></p>
+<pre><code>// next.config.js
+module.exports = {
+  async headers() {
+    return [{
+      source: '/_next/static/:path*',
+      headers: [{
+        key: 'Cache-Control',
+        // 静态资源 Hash 命名，永久缓存
+        value: 'public, max-age=31536000, immutable'
+      }]
+    }, {
+      source: '/api/:path*',
+      headers: [{
+        key: 'Cache-Control',
+        // API 响应：CDN 缓存 60s，过期后后台刷新（不阻塞用户）
+        value: 'public, s-maxage=60, stale-while-revalidate=300'
+      }]
+    }]
+  }
+};</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q15 -->
+    <div class="question-card accent">
+      <div class="q-header">
+        <div class="q-title">Q15: 页面有 10 个模块，如何控制它们的加载顺序和动画开始时机？什么是 Core Web Vitals，动画会怎样影响 LCP / CLS / INP 指标？</div>
+        <span class="q-tag tag-red">性能指标 · 加载编排</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>三大核心指标</strong>：LCP（最大内容渲染 &lt;2.5s）、CLS（布局稳定性 &lt;0.1）、INP（交互响应 &lt;200ms，取代 FID）。</li>
+            <li><strong>动画与 LCP 的冲突</strong>：首屏入场动画（fade-in/translate）会延迟 LCP 元素被浏览器"看见"的时间；解法是 LCP 元素不做入场动画，或动画 duration &lt; 100ms。</li>
+            <li><strong>动画与 CLS 的冲突</strong>：height/width/top/left 动画会触发 Layout，导致 CLS 分数升高；必须只用 <code>transform</code> 和 <code>opacity</code>；字体加载后的文字偏移也是 CLS 来源。</li>
+            <li><strong>动画与 INP 的冲突</strong>：JS 驱动的动画占用主线程 → 点击/输入事件响应延迟；解法是将动画移到 CSS/合成线程，或用 Web Worker 计算。</li>
+            <li><strong>多模块加载编排</strong>：首屏模块同步渲染 + 静态 HTML；第 2-4 屏用 Suspense + 动态 import 流式渲染；第 5 屏以后 IntersectionObserver 触发加载；动画初始化统一用 IntersectionObserver 而非页面 load 事件。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能准确说出 LCP/CLS/INP 的阈值和测量方法；指出动画的三大 CWV 影响场景及解法；给出多模块的优先级编排策略（首屏同步、中段流式、末段懒加载）。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 LCP 和 CLS 概念，知道 transform 不影响布局，但对 INP 和多模块编排策略不熟。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">不了解 Core Web Vitals，给所有模块加入场 fade-in 动画（包括 LCP 元素），导致 LCP 超标。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案：CWV 关键要点 + 模块编排代码</summary>
+        <div class="answer-key">
+          <p><strong>Core Web Vitals 与动画的冲突矩阵：</strong></p>
+          <table class="compare-table">
+            <thead>
+              <tr><th>指标</th><th>阈值</th><th>动画常见违规</th><th>修复方案</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>LCP</td>
+                <td>&lt; 2.5s</td>
+                <td>首屏英雄图 / 标题做 opacity:0 入场动画</td>
+                <td>LCP 元素不做入场动画；或 duration &lt; 100ms</td>
+              </tr>
+              <tr>
+                <td>CLS</td>
+                <td>&lt; 0.1</td>
+                <td>height/top/margin 动画；字体加载导致文字跳动</td>
+                <td>只用 transform/opacity；next/font 内联字体消除 FOUT</td>
+              </tr>
+              <tr>
+                <td>INP</td>
+                <td>&lt; 200ms</td>
+                <td>JS 动画阻塞主线程；点击后响应延迟</td>
+                <td>CSS 动画 / Web Animation API（合成线程）；长任务 yield 让位</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p><strong>10 模块页面的加载优先级编排：</strong></p>
+<pre><code>// 模块优先级分层策略
+// 第 1 层（首屏，0-100vh）：同步 SSR，无动画或极快动画
+// 第 2-4 层（100-400vh）：Suspense 流式渲染 + 入场动画
+// 第 5+ 层（400vh+）：IntersectionObserver 触发加载
+
+// app/page.tsx (Next.js App Router)
+export default function Page() {
+  return (
+    &lt;&gt;
+      {/* 第 1 层：同步渲染，LCP 元素不做入场动画 */}
+      &lt;HeroSection /&gt;
+
+      {/* 第 2-4 层：流式加载，有骨架动画 */}
+      &lt;Suspense fallback={&lt;FeatureSkeleton /&gt;}&gt;
+        &lt;FeatureSection /&gt;
+      &lt;/Suspense&gt;
+
+      {/* 第 5 层以下：完全懒加载 */}
+      &lt;LazyModule src="./ReviewsSection" /&gt;
+      &lt;LazyModule src="./FooterCTA" /&gt;
+    &lt;/&gt;
+  );
+}
+
+// 通用懒模块组件：进入视口前不加载 JS + 不执行动画
+const LazyModule = ({ src }) => {
+  const ref = useRef(null);
+  const [loaded, setLoaded] = useState(false);
+  const [Component, setComponent] = useState(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(async ([e]) => {
+      if (e.isIntersecting) {
+        const mod = await import(src);    // 视口内才加载
+        setComponent(() => mod.default);
+        setLoaded(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: '300px' });  // 提前 300px 开始加载，动画就绪
+
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [src]);
+
+  return (
+    &lt;div ref={ref}&gt;
+      {loaded ? &lt;Component /&gt; : &lt;ModuleSkeleton /&gt;}
+    &lt;/div&gt;
+  );
+};</code></pre>
+
+          <p><strong>动画开始时机黄金规则：</strong></p>
+          <ul>
+            <li>首屏 LCP 元素 → <strong>不做动画</strong>，或 duration ≤ 80ms 的极快过渡</li>
+            <li>首屏非 LCP 元素（副标题/按钮）→ 等 <code>window.onload</code> 后才开始</li>
+            <li>折叠以下模块 → <code>IntersectionObserver</code> 进入视口后才开始</li>
+            <li>页面所有动画 → 只用 <code>transform</code> + <code>opacity</code>，不碰 height/width/top/left</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- ==================== 模块 7 ==================== -->
+    <div class="section-title">
+      七、跨境电商独立站通用技术：渲染策略 · SEO · 多语言 · 活动页 · 工程化
+      <span class="section-tag">50 分 · 电商场景通用</span>
+    </div>
+
+    <!-- Q16 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q16: 跨境电商独立站，首页、产品列表、产品详情、购物车页面分别该选 SSG / ISR / SSR / CSR？如何设计数据更新机制，既保证 SEO 又避免数据过时？</div>
+        <span class="q-tag tag-blue">渲染策略 · SEO</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>各页面渲染策略</strong>：产品详情（SEO 核心，内容相对稳定）→ ISR + On-demand Revalidation（后台数据变更时精确刷新）；产品列表 → ISR（SEO 需要 HTML）；购物车/结账 → CSR（个性化数据无需 SEO）；活动首页 → 短时 ISR 或 SSR。</li>
+            <li><strong>On-demand ISR 原理</strong>：后端数据源变更时，调用 <code>revalidatePath</code> 或 <code>revalidateTag</code> 精确刷新指定页面缓存，不触发全站重建。</li>
+            <li><strong>API 安全边界</strong>：公开 API（产品展示数据）可在客户端调用；私密 API（订单操作、管理接口）必须走服务端 Route Handler，密钥绝不暴露给浏览器。</li>
+            <li><strong>购物车 Hydration 问题</strong>：购物车数量存于 localStorage，服务端不可知 → SSR 输出时无法知道数量 → 客户端水合后才显示；若不处理则报 Hydration Mismatch。</li>
+            <li><strong>电商 SEO 配置</strong>：Next.js metadata API 动态生成 title/description/og:image；产品页必须有 JSON-LD Product Schema（Google 搜索展示价格/评分）；分页列表用 canonical + rel=next/prev 防止重复内容。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">各页面渲染策略清晰且有充分理由；知道 On-demand ISR 原理；解决了 Cart hydration 问题；JSON-LD Schema 和 canonical 配置完整。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 ISR 能平衡性能和数据新鲜度，但对 On-demand 精确刷新和 hydration 差异不熟悉。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">所有页面 SSR（Serverless 成本高、响应慢）；私密 API 密钥写在前端代码中（安全漏洞）。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案：页面渲染策略决策 + SEO 结构化数据</summary>
+        <div class="answer-key">
+          <p><strong>电商各页面渲染策略决策表：</strong></p>
+          <table class="compare-table">
+            <thead>
+              <tr><th>页面类型</th><th>策略</th><th>revalidate</th><th>核心理由</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>首页 / 活动页</td><td>ISR 或 SSR</td><td>60–300s</td><td>Banner/价格变化频繁，需要及时更新；活动期可用 SSR</td></tr>
+              <tr><td>产品列表</td><td>ISR</td><td>600s</td><td>SEO 核心页，需 HTML 内容；产品变动用 On-demand 刷新</td></tr>
+              <tr><td>产品详情</td><td>ISR + On-demand</td><td>3600s</td><td>稳定内容 ISR 缓存；库存/价格客户端 SWR 实时获取</td></tr>
+              <tr><td>购物车 / 结账</td><td>CSR</td><td>—</td><td>高度个性化，无 SEO 需求；完全客户端渲染</td></tr>
+              <tr><td>用户中心 / 订单</td><td>CSR + 鉴权</td><td>—</td><td>登录后内容，屏蔽 Googlebot，不需要 SEO</td></tr>
+            </tbody>
+          </table>
+
+<pre><code>// app/products/[slug]/page.tsx — ISR + On-demand 结合
+export const revalidate = 3600; // 兜底：1 小时自动刷新
+
+export default async function ProductPage({ params }) {
+  const product = await fetchProduct(params.slug); // 服务端 API 调用
+
+  return (
+    &lt;&gt;
+      {/* JSON-LD Product Schema — Google 展示价格/评分的关键 */}
+      &lt;script type="application/ld+json" dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": product.title,
+          "image": product.images,
+          "offers": {
+            "@type": "Offer",
+            "price": product.price,
+            "priceCurrency": "USD",
+            "availability": product.inStock
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock"
+          }
+        })
+      }} /&gt;
+
+      &lt;ProductDetail product={product} /&gt;
+
+      {/* 库存/实时价格：客户端 SWR 独立获取，不依赖 ISR 缓存 */}
+      &lt;RealtimeInventory slug={params.slug} /&gt;
+    &lt;/&gt;
+  );
+}
+
+// app/api/revalidate/route.ts — 数据源变更时精确刷新
+export async function POST(req) {
+  const { slug, secret } = await req.json();
+  if (secret !== process.env.REVALIDATE_SECRET) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  await revalidatePath(\`/products/\${slug}\`);
+  return Response.json({ revalidated: true });
+}</code></pre>
+
+          <p><strong>Cart Hydration 差异修复：</strong></p>
+<pre><code>// 购物车数量只在客户端 mount 后才渲染（避免 hydration mismatch）
+const CartIcon = () => {
+  const [mounted, setMounted] = useState(false);
+  const count = useCartStore(s => s.items.length);
+
+  useEffect(() => setMounted(true), []);
+
+  return (
+    &lt;button&gt;
+      🛒 {mounted ? count : null}  {/* 服务端输出 null，客户端水合后显示数量 */}
+    &lt;/button&gt;
+  );
+};</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q17 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q17: 多站点多地区多语言架构设计 — 如何用 Next.js 实现 i18n 路由、hreflang 标签、区域 CDN 分发，以及动画组件如何适配 RTL 语言？</div>
+        <span class="q-tag tag-green">多语言 · SEO · 国际化</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>URL 结构选型</strong>：子路径 <code>/en/</code>、<code>/zh/</code>（同域 SEO 权重集中，推荐）；子域名 <code>en.site.com</code>（需要单独积累域名权重）；独立域名 <code>site.de</code>（本地化最强但维护成本高）。</li>
+            <li><strong>hreflang 标签</strong>：告诉搜索引擎该页面的不同语言版本；错误配置（如互相不引用对方）导致被忽略；每个语言页面必须在 <code>&lt;head&gt;</code> 中声明全套 hreflang。</li>
+            <li><strong>next-intl 库</strong>：App Router 下的国际化方案；中间件自动检测语言并重定向；服务端组件直接调用 <code>getTranslations()</code>；客户端用 <code>useTranslations()</code>。</li>
+            <li><strong>RTL（阿拉伯语/希伯来语）适配</strong>：CSS logical properties (<code>margin-inline-start</code> 而非 <code>margin-left</code>)；动画方向需要镜像翻转（向左飞入 → 向右飞入）；<code>dir="rtl"</code> 属性 + CSS <code>[dir="rtl"]</code> 选择器覆盖。</li>
+            <li><strong>区域定价/货币</strong>：通过 IP 地理位置（Vercel Edge / Cloudflare）检测用户所在地区，返回对应货币价格；Next.js Middleware 在 CDN 边缘自动切换货币，无需服务端往返；避免价格硬编码在前端。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能说明三种 URL 结构的 SEO 权重差异；知道 hreflang 必须双向引用；处理了 RTL 动画方向翻转；提到 Edge Middleware 做地区货币切换；了解 next-intl 中间件路由机制。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">有 i18n 实现经验，知道 next-intl 或 react-i18next，但对 hreflang 双向引用规则和 RTL 动画适配不熟。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">用 URL 参数 ?lang=en 实现多语言（SEO 最差方案）；不了解 hreflang；RTL 语言布局乱。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案：next-intl + hreflang + RTL 动画</summary>
+        <div class="answer-key">
+          <p><strong>next-intl App Router 目录结构：</strong></p>
+<pre><code>app/
+├── [locale]/           // 动态语言段：en / zh / de / ar
+│   ├── layout.tsx      // 设置 html lang 属性
+│   ├── page.tsx        // 首页
+│   └── products/
+│       └── [handle]/
+│           └── page.tsx
+└── middleware.ts       // 自动语言检测 + 重定向</code></pre>
+
+          <p><strong>hreflang 正确配置（必须双向引用）：</strong></p>
+<pre><code>// app/[locale]/products/[handle]/page.tsx
+export async function generateMetadata({ params }) {
+  const locales = ['en', 'zh', 'de', 'ar'];
+  return {
+    alternates: {
+      languages: Object.fromEntries(
+        locales.map(locale => [
+          locale,
+          \`https://site.com/\${locale}/products/\${params.handle}\`
+        ])
+      )
+    }
+  };
+  // 生成：&lt;link rel="alternate" hreflang="en" href="..." /&gt;
+  // 每个语言页面都包含所有语言的 hreflang，形成闭环
+}</code></pre>
+
+          <p><strong>RTL 语言动画方向适配：</strong></p>
+<pre><code>// 动画工具函数：根据文档方向翻转 X 轴动画
+const getDirectionalAnimation = (fromX) => {
+  const isRTL = document.documentElement.dir === 'rtl';
+  return { x: isRTL ? -fromX : fromX }; // RTL 镜像翻转
+};
+
+// 使用示例：产品卡片从右侧飞入
+gsap.from('.product-card', {
+  ...getDirectionalAnimation(60), // LTR:+60px, RTL:-60px
+  opacity: 0,
+  stagger: 0.08
+});
+
+// CSS 逻辑属性（天然支持 RTL，无需 JS 判断）
+.card {
+  margin-inline-start: 16px;  /* LTR: margin-left; RTL: margin-right */
+  padding-inline-end: 24px;   /* LTR: padding-right; RTL: padding-left */
+}</code></pre>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q18 -->
+    <div class="question-card accent">
+      <div class="q-header">
+        <div class="q-title">Q18: 电商活动页的三大技术挑战 — ①倒计时与服务端时间同步 ②限时库存实时更新 ③动效快速投放与 SEO 隔离，分别给出完整方案。</div>
+        <span class="q-tag tag-yellow">活动页 · 实时数据 · 快速投放</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>倒计时时间同步</strong>：客户端本地时间不可信（用户可篡改）；从 API 或 HTTP 响应头获取服务器时间，计算偏差量 <code>offset = serverTime - Date.now()</code>；倒计时始终用 <code>Date.now() + offset</code> 计算剩余时长。</li>
+            <li><strong>库存实时更新技术选型</strong>：轮询（简单但高频请求有浪费）vs WebSocket（双向，适合聊天/频繁交互）vs SSE - Server-Sent Events（服务端单向推送，自动重连，高并发活动首选）；后端数据变更时通过事件广播，而非每次都查库。</li>
+            <li><strong>活动动效快速投放</strong>：动画参数（duration/color/stagger/类型）由 CMS 配置而不是硬编码；设计师直接输出 Lottie JSON 文件接入，零开发成本；前端读取配置渲染动效，运营可自助调整。</li>
+            <li><strong>SEO 隔离</strong>：活动期间活动页加 <code>noindex</code>，防止临时内容污染正式产品页排名；活动结束后 301 重定向到对应产品页（保留 Google 传递的点击权重）。</li>
+            <li><strong>A/B 测试边缘分流</strong>：通过 Next.js Middleware + Edge Config 在 CDN 边缘层分流不同活动版本，不需要服务端往返，不影响 SEO。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">时间同步含偏差补偿逻辑；能说明 SSE 相比轮询/WebSocket 在活动高并发场景的优势；动效配置化方案（CMS 驱动 + Lottie）；活动页 noindex + 结束后 301 完整闭环。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道服务端时间同步，库存用轮询，但不考虑 SEO 隔离策略和动效快速投放工作流。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">倒计时用 <code>new Date()</code> 客户端本地时间；活动页不加 noindex（临时内容长期污染 SEO）；每次活动都需要开发写动画代码。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考方案：时间同步 + SSE 推送 + 动效配置化</summary>
+        <div class="answer-key">
+          <p><strong>1. 倒计时服务端时间同步（含网络延迟补偿）：</strong></p>
+<pre><code>// hooks/useServerCountdown.ts
+const useServerCountdown = (endTime: string) => {
+  const [timeLeft, setTimeLeft] = useState(0);
+  const offsetRef = useRef(0);
+
+  useEffect(() => {
+    const t0 = Date.now();
+    fetch('/api/server-time').then(async res => {
+      const t1 = Date.now();
+      const serverNow = Number(res.headers.get('X-Server-Time'));
+      // 补偿网络往返延迟的一半，使偏差更精准
+      offsetRef.current = serverNow - t0 - (t1 - t0) / 2;
+
+      const tick = () => {
+        const correctedNow = Date.now() + offsetRef.current;
+        const remaining = new Date(endTime).getTime() - correctedNow;
+        setTimeLeft(Math.max(0, remaining));
+      };
+      tick();
+      const id = setInterval(tick, 1000);
+      return () => clearInterval(id);
+    });
+  }, [endTime]);
+
+  return timeLeft; // 毫秒数，组件自行格式化为 HH:MM:SS
+};</code></pre>
+
+          <p><strong>2. 库存实时推送 — SSE vs 轮询对比：</strong></p>
+          <table class="compare-table">
+            <thead><tr><th>方案</th><th>适用场景</th><th>优点</th><th>缺点</th></tr></thead>
+            <tbody>
+              <tr><td>轮询 (Polling)</td><td>低频更新，简单场景</td><td>实现最简单</td><td>无效请求多，高并发时服务器压力大</td></tr>
+              <tr><td>SSE</td><td>活动页库存/价格推送</td><td>服务端主动推送，自动重连，HTTP 复用</td><td>单向，不能从客户端发送消息</td></tr>
+              <tr><td>WebSocket</td><td>实时聊天/双向高频交互</td><td>双向通信，延迟最低</td><td>需要维护长连接，活动高并发成本高</td></tr>
+            </tbody>
+          </table>
+<pre><code>// 客户端：SSE 订阅库存变更
+const useInventorySSE = (productId: string) => {
+  const [stock, setStock] = useState&lt;number | null&gt;(null);
+
+  useEffect(() => {
+    const es = new EventSource(`/api/inventory/stream?id=${productId}`);
+    es.onmessage = (e) => {
+      const { stock } = JSON.parse(e.data);
+      setStock(stock);
+    };
+    es.addEventListener('sold-out', () => setStock(0));
+    return () => es.close(); // 组件卸载时断开连接
+  }, [productId]);
+
+  return stock;
+};</code></pre>
+
+          <p><strong>3. 活动动效配置化（CMS 驱动，运营自助）：</strong></p>
+<pre><code>// CMS (Sanity/Contentful) 中定义活动动效配置
+// 运营可以修改，无需提交代码
+interface CampaignAnimConfig {
+  type: 'fadeUp' | 'slideIn' | 'zoom' | 'lottie';
+  duration: number;      // 0.3 ~ 1.5
+  stagger: number;       // 子元素错开延迟
+  themeColor: string;    // 活动主题色（CSS 变量注入）
+  lottieUrl?: string;    // 设计师输出的 Lottie JSON URL
+}
+
+// 通用活动动效组件：配置驱动
+const CampaignSection = ({ config }: { config: CampaignAnimConfig }) => {
+  const containerRef = useRef(null);
+
+  useLayoutEffect(() => {
+    // 注入主题色
+    containerRef.current.style.setProperty('--campaign-color', config.themeColor);
+
+    if (config.type === 'lottie') {
+      // Lottie：设计师直接输出，零开发成本
+      import('@lottiefiles/lottie-player').then(() => {
+        const player = document.createElement('lottie-player');
+        player.setAttribute('src', config.lottieUrl);
+        player.setAttribute('autoplay', '');
+        containerRef.current.appendChild(player);
+      });
+      return;
+    }
+
+    // GSAP 动效：读取配置参数
+    gsap.from(containerRef.current.querySelectorAll('.anim-item'), {
+      opacity: 0,
+      y: config.type === 'fadeUp' ? 50 : 0,
+      scale: config.type === 'zoom' ? 0.8 : 1,
+      duration: config.duration,
+      stagger: config.stagger,
+      ease: 'power3.out'
+    });
+  }, [config]);
+
+  return &lt;div ref={containerRef}&gt;{/* 活动内容由 CMS 渲染 */}&lt;/div&gt;;
+};</code></pre>
+
+          <p><strong>4. 活动页 SEO 完整生命周期管理：</strong></p>
+          <ul>
+            <li><strong>活动进行中</strong>：<code>&lt;meta name="robots" content="noindex"&gt;</code> 防止临时内容被收录</li>
+            <li><strong>活动结束</strong>：<code>301 Permanent Redirect</code> → 对应商品页（保留 Google 传递的流量权重，不要用 302）</li>
+            <li><strong>URL 规范</strong>：<code>/campaigns/sale-2025-blackfriday/</code>，独立路径不与主站产品页产生 canonical 竞争</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q19 -->
+    <div class="question-card">
+      <div class="q-header">
+        <div class="q-title">Q19: 深度考察 IntersectionObserver — 如何封装通用 <code>useInView</code> Hook，同时满足懒加载、动画触发、曝光埋点三种场景？参数如何精确控制？</div>
+        <span class="q-tag tag-blue">可见性检测 · 懒加载 · 埋点</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>三个关键参数</strong>：<code>root</code>（观察相对的祖先容器，默认视口）、<code>rootMargin</code>（提前/延后触发边界，如 <code>"200px 0px"</code> 提前 200px 开始加载）、<code>threshold</code>（触发时目标元素的可见比例，0~1，数组则多次触发）。</li>
+            <li><strong>三种场景的参数差异</strong>：懒加载 → threshold=0 + rootMargin="300px"（提前加载）；动画触发 → threshold=0.2（至少 20% 可见时才播）；曝光埋点 → threshold=0.5 + 只触发一次（用户真正"看到了"）。</li>
+            <li><strong>once 选项</strong>：动画和埋点通常只触发一次（进入视口后 disconnect）；懒加载同理；只有无限滚动等需要反复触发（不 disconnect）。</li>
+            <li><strong>SSR 兼容</strong>：服务端没有 <code>IntersectionObserver</code>，Hook 内必须判断 <code>typeof IntersectionObserver !== 'undefined'</code>，否则 Next.js 服务端渲染时报错。</li>
+            <li><strong>曝光埋点的精确性</strong>：不能在组件 mount 时就上报（元素可能在折叠以下用户没看到）；必须通过 IntersectionObserver 确认真正进入视口 + 停留超过 500ms 才算有效曝光（防止快速滚动误触）。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能精准区分三种场景下的参数配置；封装了 once/delay 等选项；处理了 SSR 兼容；曝光埋点有停留时长校验（非快速滚过）；知道 disconnect 时机。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">能用 IntersectionObserver 实现基本懒加载和动画触发，但不清楚参数精细化配置和埋点的准确性问题。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">用 window.scroll 事件 + getBoundingClientRect 手动计算（性能差且不准）；在组件 mount 时直接上报曝光（不管用户有没有看到）。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考代码：通用 useInView Hook + 三场景用法</summary>
+        <div class="answer-key">
+          <p><strong>1. 通用 useInView Hook（满足所有场景）：</strong></p>
+<pre><code>// hooks/useInView.ts
+interface UseInViewOptions {
+  root?: Element | null;
+  rootMargin?: string;    // 提前/延后触发：正值提前，负值延后
+  threshold?: number | number[];
+  once?: boolean;         // true = 触发一次后自动 disconnect
+  delay?: number;         // 需停留 N ms 后才确认"已看到"
+}
+
+const useInView = (options: UseInViewOptions = {}) => {
+  const {
+    rootMargin = '0px',
+    threshold = 0,
+    once = true,
+    delay = 0,
+  } = options;
+
+  const ref = useRef&lt;Element&gt;(null);
+  const [inView, setInView] = useState(false);
+  const timerRef = useRef&lt;ReturnType&lt;typeof setTimeout&gt;&gt;(null);
+
+  useEffect(() => {
+    // SSR 兼容
+    if (typeof IntersectionObserver === 'undefined') return;
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (delay > 0) {
+          // 停留 delay ms 后才确认（防止快速滚过误触）
+          timerRef.current = setTimeout(() => {
+            setInView(true);
+            if (once) observer.disconnect();
+          }, delay);
+        } else {
+          setInView(true);
+          if (once) observer.disconnect();
+        }
+      } else {
+        // 离开视口：清除未完成的 delay 计时
+        if (timerRef.current) clearTimeout(timerRef.current);
+      }
+    }, { rootMargin, threshold });
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [rootMargin, threshold, once, delay]);
+
+  return { ref, inView };
+};</code></pre>
+
+          <p><strong>2. 三种场景的参数配置对比：</strong></p>
+<pre><code>// ① 懒加载：提前 300px 开始加载，threshold=0（刚出现就触发）
+const LazyImage = ({ src }) => {
+  const { ref, inView } = useInView({ rootMargin: '300px 0px', once: true });
+  return (
+    &lt;div ref={ref}&gt;
+      {inView ? &lt;img src={src} /&gt; : &lt;Skeleton /&gt;}
+    &lt;/div&gt;
+  );
+};
+
+// ② 动画触发：至少 20% 可见才播放，防止刚露出一条线就触发
+const AnimatedSection = () => {
+  const { ref, inView } = useInView({ threshold: 0.2, once: true });
+  useEffect(() => {
+    if (inView) gsap.from(ref.current, { opacity: 0, y: 40, duration: 0.6 });
+  }, [inView]);
+  return &lt;section ref={ref}&gt;内容&lt;/section&gt;;
+};
+
+// ③ 曝光埋点：50% 可见 + 停留 500ms 才算有效曝光，once=true 只上报一次
+const ProductCard = ({ productId }) => {
+  const { ref, inView } = useInView({
+    threshold: 0.5,
+    delay: 500,    // 停留超过 500ms 才上报，过滤快速滚过
+    once: true,
+  });
+
+  useEffect(() => {
+    if (inView) {
+      analytics.track('product_impression', { productId });
+    }
+  }, [inView, productId]);
+
+  return &lt;div ref={ref}&gt;&lt;/div&gt;;
+};</code></pre>
+
+          <p><strong>3. rootMargin 方向记忆：</strong>遵循 CSS margin 顺序 <code>"上 右 下 左"</code>，正值扩大触发区域（提前触发），负值缩小（延后触发）。</p>
+          <ul>
+            <li><code>"300px 0px"</code> → 上方提前 300px 触发（适合懒加载）</li>
+            <li><code>"-10% 0px"</code> → 进入视口 10% 后才触发（适合文字动画，避免太早播）</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- Q20 -->
+    <div class="question-card accent">
+      <div class="q-header">
+        <div class="q-title">Q20: 前端错误监控与性能上报 — Error Boundary 如何捕获动画组件崩溃并优雅降级？Web Vitals 如何自动采集上报？</div>
+        <span class="q-tag tag-red">监控 · 可观测性</span>
+      </div>
+      <div class="assessment-grid">
+        <div class="point-list">
+          <h4>考察关键点</h4>
+          <ul>
+            <li><strong>Error Boundary 设计</strong>：Class Component 实现 <code>componentDidCatch</code>；捕获子树中的渲染/生命周期错误；不能捕获异步错误（需另外处理）；函数组件可用 <code>react-error-boundary</code> 库。</li>
+            <li><strong>动画组件崩溃降级</strong>：GSAP 操作 DOM 出错 → Error Boundary 捕获 → 渲染无动画的静态版本；保证页面核心功能（加购/结账）不因动画错误而不可用。</li>
+            <li><strong>异步错误捕获</strong>：Promise rejection、fetch 失败不会被 Error Boundary 捕获；需要 <code>window.addEventListener('unhandledrejection')</code> 配合上报。</li>
+            <li><strong>Web Vitals 自动上报</strong>：使用 <code>web-vitals</code> 库的 <code>onCLS / onLCP / onINP</code> 回调，在页面卸载时批量上报到分析端点（避免阻塞页面）；用 <code>navigator.sendBeacon</code> 确保页面关闭时数据不丢失。</li>
+            <li><strong>上报策略</strong>：采样率（100% 用户上报成本高）；P75/P95 分位数比均值更有价值；按地区/设备类型分组，定位特定用户群的性能问题。</li>
+          </ul>
+        </div>
+        <div class="score-guide">
+          <h4>评分标准 (10分)</h4>
+          <div class="score-row high">
+            <span class="score-label level-high">8–10 分</span>
+            <div class="score-desc">能设计带降级 UI 的 Error Boundary；区分同步和异步错误的捕获方式；Web Vitals 上报用 sendBeacon 防数据丢失；提到采样率和分位数分析策略。</div>
+          </div>
+          <div class="score-row mid">
+            <span class="score-label level-mid">4–7 分</span>
+            <div class="score-desc">知道 Error Boundary 基本用法，用过 Sentry，但不清楚动画降级策略和 Web Vitals 具体采集方式。</div>
+          </div>
+          <div class="score-row low">
+            <span class="score-label level-low">0–3 分</span>
+            <div class="score-desc">没有 Error Boundary，一个组件报错导致整页白屏；不了解 Web Vitals 是什么以及如何影响 Google 搜索排名。</div>
+          </div>
+        </div>
+      </div>
+      <details>
+        <summary>查看参考代码：Error Boundary 动画降级 + Web Vitals 上报</summary>
+        <div class="answer-key">
+          <p><strong>1. 动画组件的 Error Boundary 降级方案：</strong></p>
+<pre><code>// 使用 react-error-boundary（函数组件友好）
+import { ErrorBoundary } from 'react-error-boundary';
+
+// 降级 UI：无动画的静态版本，核心功能完整保留
+const AnimationFallback = ({ error, resetErrorBoundary }) => (
+  &lt;div className="static-hero"&gt;
+    {/* 原始静态内容，无 GSAP / Three.js，保证可用性 */}
+    &lt;h1&gt;{heroTitle}&lt;/h1&gt;
+    &lt;button onClick={resetErrorBoundary}&gt;重新加载动画&lt;/button&gt;
+    {process.env.NODE_ENV === 'development' && (
+      &lt;pre&gt;{error.message}&lt;/pre&gt;  // 开发环境显示错误详情
+    )}
+  &lt;/div&gt;
+);
+
+// 包裹动画模块：只隔离动画，不影响购物车/结账
+const ProductPage = () => (
+  &lt;main&gt;
+    &lt;ErrorBoundary
+      FallbackComponent={AnimationFallback}
+      onError={(error) => {
+        // 上报错误到 Sentry，附带用户环境信息
+        Sentry.captureException(error, {
+          tags: { module: 'animation', page: 'product' }
+        });
+      }}
+    &gt;
+      &lt;AnimatedGallery /&gt;       {/* GSAP 动画可能报错 */}
+      &lt;ParallaxSection /&gt;       {/* Three.js 可能报错 */}
+    &lt;/ErrorBoundary&gt;
+
+    {/* 结账流程不包在 ErrorBoundary 内，避免被误捕获 */}
+    &lt;AddToCartButton /&gt;
+    &lt;CheckoutPanel /&gt;
+  &lt;/main&gt;
+);</code></pre>
+
+          <p><strong>2. Web Vitals 自动采集上报（不丢数据）：</strong></p>
+<pre><code>// lib/reportWebVitals.ts
+import { onCLS, onLCP, onINP, onFCP, onTTFB } from 'web-vitals';
+
+const reportMetric = (metric) => {
+  // sendBeacon：页面关闭时也能发出，不阻塞卸载
+  const body = JSON.stringify({
+    name: metric.name,        // 'LCP' | 'CLS' | 'INP' ...
+    value: metric.value,      // 实测值
+    rating: metric.rating,    // 'good' | 'needs-improvement' | 'poor'
+    delta: metric.delta,      // 相比上次的变化量
+    id: metric.id,
+    // 附带设备/地区信息，用于分组分析
+    ua: navigator.userAgent,
+    locale: navigator.language,
+    url: location.pathname,
+  });
+
+  navigator.sendBeacon('/api/analytics/vitals', body);
+};
+
+// 在 _app.tsx 或 layout.tsx 中注册
+export const initWebVitals = () => {
+  onCLS(reportMetric);   // 布局稳定性（动画 height 变化是 CLS 主要来源）
+  onLCP(reportMetric);   // 最大内容渲染（首屏英雄图加载速度）
+  onINP(reportMetric);   // 交互响应（JS 动画阻塞主线程会影响此指标）
+  onFCP(reportMetric);   // 首次内容渲染
+  onTTFB(reportMetric);  // 首字节时间（服务端响应速度）
+};</code></pre>
+
+          <p><strong>3. 上报分析策略建议：</strong></p>
+          <ul>
+            <li><strong>P75 分位数</strong>比均值更真实，过滤极端值影响（极少数超慢用户拉高均值）</li>
+            <li><strong>分组维度</strong>：按地区（欧美 vs 亚洲）、设备类型（iOS / Android / PC）、页面类型分别分析，定位特定用户群的性能问题</li>
+            <li><strong>采样率</strong>：高流量时只上报 10–30% 用户的数据，节省带宽和存储成本</li>
+            <li><strong>告警阈值</strong>：LCP &gt; 4s 或 INP &gt; 500ms 时触发 Slack/邮件告警，第一时间感知线上回归</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+  </div>
+
+  <script>
+    const html = document.documentElement;
+    const btn = document.getElementById("themeToggle");
+    const thumb = document.getElementById("toggleThumb");
+    const label = document.getElementById("toggleLabel");
+
+    const STORAGE_KEY = "react-interview-theme";
+
+    const applyTheme = (isLight) => {
+      if (isLight) {
+        html.classList.add("light");
+        thumb.textContent = "🌙";
+        label.textContent = "浅色";
+      } else {
+        html.classList.remove("light");
+        thumb.textContent = "☀️";
+        label.textContent = "深色";
+      }
+    };
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const preferLight = saved
+      ? saved === "light"
+      : window.matchMedia("(prefers-color-scheme: light)").matches;
+
+    applyTheme(preferLight);
+
+    btn.addEventListener("click", () => {
+      const isNowLight = html.classList.contains("light");
+      applyTheme(!isNowLight);
+      localStorage.setItem(STORAGE_KEY, !isNowLight ? "light" : "dark");
+    });
+  </script>
+
+  <!-- ===== 评分系统 ===== -->
+  <script>
+  (function () {
+    const SCORE_KEY = "react-interview-scores-v2";
+
+    const MOD_CONFIG = [
+      { name: "一、React核心原理",    range: [0,  2],  max: 25 },
+      { name: "二、多组件架构规范",   range: [3,  4],  max: 20 },
+      { name: "三、产品详情页场景",   range: [5,  7],  max: 25 },
+      { name: "四、状态管理对比",     range: [8,  9],  max: 20 },
+      { name: "五、跨端性能优化",     range: [10, 10], max: 10 },
+      { name: "六、资深专项考察",     range: [11, 14], max: 40 },
+      { name: "七、独立站业务专项",   range: [15, 19], max: 50 },
+    ];
+    const TOTAL_MAX = 190;
+
+    // 读取存储的得分
+    let scores = {};
+    try { scores = JSON.parse(localStorage.getItem(SCORE_KEY) || "{}"); } catch (e) {}
+
+    const allCards = document.querySelectorAll(".question-card");
+
+    // ===== 1. 构建面板模块行 =====
+    const modRowsEl = document.getElementById("modRows");
+    MOD_CONFIG.forEach((mod, mi) => {
+      const div = document.createElement("div");
+      div.className = "panel-mod-row";
+      div.innerHTML = `
+        <div class="panel-mod-name">
+          <span>${mod.name}</span>
+          <span class="panel-mod-score" id="ms${mi}">0/${mod.max}</span>
+        </div>
+        <div class="mini-bar"><div class="mini-bar-fill" id="mb${mi}" style="width:0%"></div></div>
+      `;
+      modRowsEl.appendChild(div);
+    });
+
+    // ===== 2. 为每张题目卡片注入评分行 =====
+    allCards.forEach((card, idx) => {
+      const h4 = card.querySelector(".score-guide h4");
+      const m = h4?.textContent.match(/\((\d+)分\)/);
+      const maxScore = m ? parseInt(m[1]) : 10;
+
+      if (!(idx in scores)) scores[idx] = null;
+
+      // 从评分标准中提取快速分值
+      const levels = card.querySelectorAll(".score-label");
+      const qVals = new Set([0, maxScore]);
+      levels.forEach(l => {
+        const rm = l.textContent.match(/(\d+)[–—\-](\d+)/);
+        if (rm) { qVals.add(parseInt(rm[1])); qVals.add(parseInt(rm[2])); }
+        else { const nm = l.textContent.match(/\d+/g); if (nm) nm.forEach(n => qVals.add(parseInt(n))); }
+      });
+      const sortedVals = [...qVals].filter(v => v >= 0 && v <= maxScore).sort((a, b) => a - b);
+
+      const row = document.createElement("div");
+      row.className = "q-score-row";
+      row.innerHTML = `
+        <span class="q-score-label">Q${idx + 1} 评分</span>
+        <div class="q-score-controls">
+          ${sortedVals.map(v => `<button class="score-quick" data-v="${v}">${v}</button>`).join("")}
+        </div>
+        <div class="q-score-input-wrap">
+          <input class="q-score-input" type="number"
+            min="0" max="${maxScore}"
+            placeholder="—"
+            value="${scores[idx] !== null && scores[idx] !== undefined ? scores[idx] : ""}"
+          />
+          <span class="q-score-sep">/</span>
+          <span class="q-score-max">${maxScore}</span>
+        </div>
+      `;
+      card.appendChild(row);
+
+      const input = row.querySelector(".q-score-input");
+
+      // 应用已保存的样式
+      if (scores[idx] !== null && scores[idx] !== undefined) {
+        applyStyling(row, scores[idx], maxScore);
+      }
+
+      // 快速分值按钮
+      row.querySelectorAll(".score-quick").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const v = parseInt(btn.dataset.v);
+          input.value = v;
+          scores[idx] = v;
+          save(); update(); applyStyling(row, v, maxScore);
+        });
+      });
+
+      // 输入框
+      input.addEventListener("input", () => {
+        const raw = input.value;
+        if (raw === "") {
+          scores[idx] = null;
+          applyStyling(row, null, maxScore);
+        } else {
+          let v = Math.min(Math.max(0, parseInt(raw) || 0), maxScore);
+          input.value = v;
+          scores[idx] = v;
+          applyStyling(row, v, maxScore);
+        }
+        save(); update();
+      });
+    });
+
+    function applyStyling(row, val, max) {
+      const inp = row.querySelector(".q-score-input");
+      inp.className = "q-score-input";
+      row.querySelectorAll(".score-quick").forEach(b => b.classList.toggle("active", parseInt(b.dataset.v) === val));
+      if (val === null || val === undefined) return;
+      if (val >= max * 0.75) inp.classList.add("s-high");
+      else if (val >= max * 0.4)  inp.classList.add("s-mid");
+      else inp.classList.add("s-low");
+    }
+
+    function save() {
+      try { localStorage.setItem(SCORE_KEY, JSON.stringify(scores)); } catch (e) {}
+    }
+
+    // ===== 3. 实时更新面板 =====
+    function update() {
+      let totalScore = 0;
+      let totalAnswered = 0;
+
+      MOD_CONFIG.forEach((mod, mi) => {
+        let modScore = 0;
+        for (let i = mod.range[0]; i <= mod.range[1]; i++) {
+          const v = scores[i];
+          if (v !== null && v !== undefined) { modScore += v; totalAnswered++; }
+        }
+        totalScore += modScore;
+        const pct = Math.round(modScore / mod.max * 100);
+        const color = pct >= 75 ? "var(--success)" : pct >= 40 ? "var(--warning)" : "var(--danger)";
+        const ms = document.getElementById("ms" + mi);
+        const mb = document.getElementById("mb" + mi);
+        if (ms) ms.textContent = `${modScore}/${mod.max}`;
+        if (mb) { mb.style.width = pct + "%"; mb.style.background = color; }
+      });
+
+      const pct = Math.round(totalScore / TOTAL_MAX * 100);
+      const color = pct >= 75 ? "var(--success)" : pct >= 40 ? "var(--warning)" : "var(--danger)";
+
+      const numEl = document.getElementById("panelTotalNum");
+      const barEl = document.getElementById("panel-total-bar");
+      if (numEl) { numEl.textContent = `${totalScore} / ${TOTAL_MAX}`; numEl.style.color = color; }
+      if (barEl) { barEl.style.width = pct + "%"; barEl.style.background = color; }
+      const pctEl = document.getElementById("panelTotalPct");
+      if (pctEl) pctEl.textContent = `得分率 ${pct}%`;
+      const anEl = document.getElementById("panelAnswered");
+      if (anEl) anEl.textContent = `已评 ${totalAnswered} / ${allCards.length} 题`;
+    }
+
+    update();
+
+    // ===== 4. 面板折叠 =====
+    document.getElementById("panelHeader").addEventListener("click", () => {
+      document.getElementById("scorePanel").classList.toggle("collapsed");
+    });
+
+    document.getElementById("btnCollapse").addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.getElementById("scorePanel").classList.add("collapsed");
+    });
+
+    // ===== 5. 展开/折叠所有答案 =====
+    let allExpanded = false;
+    document.getElementById("btnExpand").addEventListener("click", (e) => {
+      e.stopPropagation();
+      allExpanded = !allExpanded;
+      document.querySelectorAll("details").forEach(d => d.open = allExpanded);
+      e.target.textContent = allExpanded ? "折叠全部答案" : "展开全部答案";
+    });
+
+    // ===== 6. 清空评分 =====
+    document.getElementById("btnClear").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!confirm("确认清空所有评分？")) return;
+      allCards.forEach((card, idx) => {
+        scores[idx] = null;
+        const row = card.querySelector(".q-score-row");
+        if (!row) return;
+        const inp = row.querySelector(".q-score-input");
+        if (inp) { inp.value = ""; inp.className = "q-score-input"; }
+        row.querySelectorAll(".score-quick").forEach(b => b.classList.remove("active"));
+      });
+      save(); update();
+    });
+
+    // ===== 7. 下载报告（Canvas 绘制评分卡）=====
+    document.getElementById("btnDownload").addEventListener("click", (e) => {
+      e.stopPropagation();
+      const btnDl = document.getElementById("btnDownload");
+      btnDl.textContent = "生成中…";
+      btnDl.disabled = true;
+
+      try {
+        const isLight = document.documentElement.classList.contains("light");
+        const BG       = isLight ? "#f0f4f9" : "#0f111a";
+        const SURFACE  = isLight ? "#ffffff" : "#1a1e2e";
+        const BORDER   = isLight ? "#dde3ef" : "#2d3748";
+        const TEXT      = isLight ? "#1a2035" : "#e2e8f0";
+        const TEXT_SUB  = isLight ? "#5a6a85" : "#94a3b8";
+        const ACCENT    = isLight ? "#2563eb" : "#3b82f6";
+        const GREEN     = "#10b981";
+        const YELLOW    = "#f59e0b";
+        const RED       = "#ef4444";
+        const DPR       = window.devicePixelRatio || 2;
+
+        // ---- 收集题目数据 ----
+        const rows = [];
+        allCards.forEach((card, idx) => {
+          const h4   = card.querySelector(".score-guide h4");
+          const m    = h4?.textContent.match(/\((\d+)分\)/);
+          const max  = m ? parseInt(m[1]) : 10;
+          const cur  = scores[idx] !== null && scores[idx] !== undefined ? scores[idx] : null;
+          // 取题目文字，截短
+          const raw  = card.querySelector(".q-title")?.textContent.replace(/\s+/g, " ").trim() || "";
+          const title = raw.length > 52 ? raw.slice(0, 52) + "…" : raw;
+          rows.push({ idx, title, cur, max });
+        });
+
+        const totalMax  = TOTAL_MAX;
+        const totalCur  = rows.reduce((s, r) => s + (r.cur ?? 0), 0);
+        const answered  = rows.filter(r => r.cur !== null).length;
+        const pct       = Math.round(totalCur / totalMax * 100);
+        const date      = new Date().toLocaleDateString("zh-CN");
+
+        // ---- Canvas 尺寸 ----
+        const W       = 860;
+        const ROW_H   = 38;
+        const PADDING = 32;
+        const HDR_H   = 110;
+        const MOD_HDR = 34;
+        const FTR_H   = 110;
+
+        // 计算每个模块需要的高度
+        let totalContentH = HDR_H + PADDING;
+        MOD_CONFIG.forEach(mod => {
+          totalContentH += MOD_HDR;
+          const qCount = mod.range[1] - mod.range[0] + 1;
+          totalContentH += qCount * ROW_H + 8;
+        });
+        totalContentH += FTR_H + PADDING;
+
+        const H = totalContentH;
+        const canvas = document.createElement("canvas");
+        canvas.width  = W * DPR;
+        canvas.height = H * DPR;
+        const ctx = canvas.getContext("2d");
+        ctx.scale(DPR, DPR);
+
+        // ---- 背景 ----
+        ctx.fillStyle = BG;
+        ctx.fillRect(0, 0, W, H);
+
+        // ---- 顶部 Header ----
+        ctx.fillStyle = SURFACE;
+        roundRect(ctx, PADDING, 16, W - PADDING * 2, HDR_H - 16, 10);
+        ctx.fill();
+
+        ctx.fillStyle = ACCENT;
+        ctx.font = `700 18px "Segoe UI", sans-serif`;
+        ctx.fillText("React 资深前端 · 面试评估报告", PADDING + 20, 48);
+
+        ctx.fillStyle = TEXT_SUB;
+        ctx.font = `13px "Segoe UI", sans-serif`;
+        ctx.fillText(`评估日期：${date}　　已评 ${answered} / ${rows.length} 题`, PADDING + 20, 70);
+
+        // 总分大字
+        const scoreColor = pct >= 75 ? GREEN : pct >= 45 ? YELLOW : RED;
+        ctx.fillStyle = scoreColor;
+        ctx.font = `800 32px "Segoe UI", monospace`;
+        ctx.textAlign = "right";
+        ctx.fillText(`${totalCur}`, W - PADDING - 90, 60);
+        ctx.font = `14px "Segoe UI", sans-serif`;
+        ctx.fillStyle = TEXT_SUB;
+        ctx.fillText(`/ ${totalMax}`, W - PADDING - 20, 60);
+        ctx.font = `13px "Segoe UI", sans-serif`;
+        ctx.fillText(`得分率 ${pct}%`, W - PADDING - 20, 80);
+        ctx.textAlign = "left";
+
+        // 总分进度条
+        const BAR_X = PADDING + 20;
+        const BAR_Y = 82;
+        const BAR_W = W - PADDING * 2 - 40;
+        const BAR_H = 6;
+        ctx.fillStyle = BORDER;
+        roundRect(ctx, BAR_X, BAR_Y, BAR_W, BAR_H, 3);
+        ctx.fill();
+        ctx.fillStyle = scoreColor;
+        roundRect(ctx, BAR_X, BAR_Y, Math.max(4, BAR_W * pct / 100), BAR_H, 3);
+        ctx.fill();
+
+        // ---- 模块 + 题目行 ----
+        let y = HDR_H + PADDING;
+
+        MOD_CONFIG.forEach((mod) => {
+          // 模块标题行
+          ctx.fillStyle = isLight ? "rgba(37,99,235,0.07)" : "rgba(59,130,246,0.08)";
+          roundRect(ctx, PADDING, y, W - PADDING * 2, MOD_HDR - 4, 6);
+          ctx.fill();
+
+          // 模块得分
+          let modScore = 0;
+          for (let i = mod.range[0]; i <= mod.range[1]; i++) {
+            modScore += scores[i] !== null && scores[i] !== undefined ? scores[i] : 0;
+          }
+          const modPct = Math.round(modScore / mod.max * 100);
+          const modColor = modPct >= 75 ? GREEN : modPct >= 45 ? YELLOW : RED;
+
+          ctx.fillStyle = ACCENT;
+          ctx.font = `600 13px "Segoe UI", sans-serif`;
+          ctx.fillText(mod.name, PADDING + 12, y + 21);
+
+          ctx.fillStyle = modColor;
+          ctx.font = `700 13px "Segoe UI", monospace`;
+          ctx.textAlign = "right";
+          ctx.fillText(`${modScore} / ${mod.max}`, W - PADDING - 12, y + 21);
+          ctx.textAlign = "left";
+
+          y += MOD_HDR;
+
+          // 题目行
+          for (let i = mod.range[0]; i <= mod.range[1]; i++) {
+            const r = rows[i];
+            if (!r) continue;
+
+            // 行背景（交替）
+            if ((i - mod.range[0]) % 2 === 0) {
+              ctx.fillStyle = isLight ? "rgba(0,0,0,0.02)" : "rgba(255,255,255,0.015)";
+              ctx.fillRect(PADDING, y, W - PADDING * 2, ROW_H);
+            }
+
+            // Q 编号
+            ctx.fillStyle = ACCENT;
+            ctx.font = `600 12px "Consolas", monospace`;
+            ctx.fillText(`Q${i + 1}`, PADDING + 12, y + 24);
+
+            // 题目标题
+            ctx.fillStyle = TEXT;
+            ctx.font = `13px "Segoe UI", sans-serif`;
+            ctx.fillText(r.title, PADDING + 42, y + 24);
+
+            // 得分 / 最高分
+            const scoreStr = r.cur !== null ? String(r.cur) : "—";
+            const qColor = r.cur === null ? TEXT_SUB
+              : r.cur >= r.max * 0.75 ? GREEN
+              : r.cur >= r.max * 0.4  ? YELLOW : RED;
+
+            ctx.fillStyle = qColor;
+            ctx.font = `700 13px "Consolas", monospace`;
+            ctx.textAlign = "right";
+            ctx.fillText(scoreStr, W - PADDING - 42, y + 24);
+            ctx.fillStyle = TEXT_SUB;
+            ctx.font = `12px "Segoe UI", sans-serif`;
+            ctx.fillText(`/${r.max}`, W - PADDING - 14, y + 24);
+            ctx.textAlign = "left";
+
+            // 分隔线
+            ctx.strokeStyle = BORDER;
+            ctx.globalAlpha = 0.5;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(PADDING + 12, y + ROW_H);
+            ctx.lineTo(W - PADDING - 12, y + ROW_H);
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            y += ROW_H;
+          }
+          y += 8;
+        });
+
+        // ---- 底部汇总 ----
+        y += 8;
+        ctx.fillStyle = SURFACE;
+        roundRect(ctx, PADDING, y, W - PADDING * 2, FTR_H - 20, 10);
+        ctx.fill();
+
+        // 左：总分
+        ctx.fillStyle = scoreColor;
+        ctx.font = `800 40px "Segoe UI", monospace`;
+        ctx.textAlign = "center";
+        ctx.fillText(`${totalCur}`, PADDING + 90, y + 56);
+        ctx.font = `14px "Segoe UI", sans-serif`;
+        ctx.fillStyle = TEXT_SUB;
+        ctx.fillText(`/ ${totalMax}  (${pct}%)`, PADDING + 90, y + 76);
+
+        // 中：评级
+        const grade = pct >= 90 ? "优秀 ★★★" : pct >= 75 ? "良好 ★★☆" : pct >= 60 ? "合格 ★☆☆" : "待提升 ☆☆☆";
+        const gradeColor = pct >= 90 ? GREEN : pct >= 75 ? ACCENT : pct >= 60 ? YELLOW : RED;
+        ctx.fillStyle = gradeColor;
+        ctx.font = `700 20px "Segoe UI", sans-serif`;
+        ctx.fillText(grade, W / 2, y + 48);
+        ctx.font = `12px "Segoe UI", sans-serif`;
+        ctx.fillStyle = TEXT_SUB;
+        ctx.fillText(`已评 ${answered} / ${rows.length} 题`, W / 2, y + 70);
+
+        ctx.textAlign = "left";
+        ctx.fillStyle = TEXT_SUB;
+        ctx.font = `11px "Segoe UI", sans-serif`;
+        ctx.fillText("React 资深前端动画工程师评估体系 v2", PADDING + 20, y + FTR_H - 30);
+
+        // ---- 下载 ----
+        const link = document.createElement("a");
+        link.download = `React面试评分报告_${date.replace(/\//g, "-")}.png`;
+        link.href = canvas.toDataURL("image/png", 0.95);
+        link.click();
+
+      } catch (err) {
+        alert("生成失败：" + err.message);
+      } finally {
+        btnDl.textContent = "💾 下载";
+        btnDl.disabled = false;
+      }
+    });
+
+    // 辅助：圆角矩形
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+  })();
+  </script>
+
+</body>
+</html>

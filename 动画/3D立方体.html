@@ -1,204 +1,423 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Cube</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
-    /* 立方体的整体容器 */
+    :root {
+      --face-size: 180px;
+      --half-size: 90px;
+      --perspective: 900px;
+      --accent: #00f5d4;
+      --accent2: #f72585;
+      --bg: #050a14;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: "Share Tech Mono", monospace;
+      color: #e0e0e0;
+      overflow: hidden;
+    }
+
+    /* 背景网格 */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 245, 212, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 245, 212, 0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 背景光晕 */
+    body::after {
+      content: "";
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 245, 212, 0.06) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page_wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+    }
+
+    .title {
+      font-family: "Orbitron", sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0.7;
+    }
+
+    /* 场景容器 */
     .scene {
-      width: 200px;
-      height: 200px;
-      perspective: 600px;
-      /* 增加透视效果 */
+      width: var(--face-size);
+      height: var(--face-size);
+      perspective: var(--perspective);
       display: flex;
       justify-content: center;
       align-items: center;
+      cursor: grab;
     }
 
-    /* 立方体容器 */
+    .scene:active {
+      cursor: grabbing;
+    }
+
+    /* 立方体 */
     .cube {
       position: relative;
-      width: 100px;
-      height: 100px;
+      width: var(--face-size);
+      height: var(--face-size);
       transform-style: preserve-3d;
-      /* 启用 3D 效果 */
-      animation: rotate 6s infinite linear;
-      /* 旋转动画 */
+      will-change: transform;
     }
 
-    /* 立方体的每个面 */
+    /* 每个面的公共样式 */
     .face {
       position: absolute;
-      width: 100px;
-      height: 100px;
-      background: rgba(0, 128, 255, 0.7);
-      /* 设置默认背景颜色 */
+      width: var(--face-size);
+      height: var(--face-size);
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      font-size: 20px;
-      color: #fff;
+      font-family: "Orbitron", sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      gap: 10px;
     }
 
-    /* 定义每个面的颜色和位置 */
+    .face .icon {
+      font-size: 36px;
+      opacity: 0.85;
+      line-height: 1;
+    }
+
+    .face .label {
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      opacity: 0.7;
+    }
+
     .front {
-      transform: translateZ(50px);
-      background: rgba(255, 0, 0, 0.7);
+      transform: translateZ(var(--half-size));
+      background: linear-gradient(135deg, rgba(247, 37, 133, 0.55), rgba(247, 37, 133, 0.25));
+      box-shadow: inset 0 0 30px rgba(247, 37, 133, 0.2);
     }
 
     .back {
-      transform: rotateY(180deg) translateZ(50px);
-      background: rgba(0, 255, 0, 0.7);
+      transform: rotateY(180deg) translateZ(var(--half-size));
+      background: linear-gradient(135deg, rgba(114, 9, 183, 0.55), rgba(114, 9, 183, 0.25));
+      box-shadow: inset 0 0 30px rgba(114, 9, 183, 0.2);
     }
 
     .left {
-      transform: rotateY(-90deg) translateZ(50px);
-      background: rgba(0, 0, 255, 0.7);
+      transform: rotateY(-90deg) translateZ(var(--half-size));
+      background: linear-gradient(135deg, rgba(0, 180, 216, 0.55), rgba(0, 180, 216, 0.25));
+      box-shadow: inset 0 0 30px rgba(0, 180, 216, 0.2);
     }
 
     .right {
-      transform: rotateY(90deg) translateZ(50px);
-      background: rgba(255, 255, 0, 0.7);
+      transform: rotateY(90deg) translateZ(var(--half-size));
+      background: linear-gradient(135deg, rgba(76, 201, 240, 0.55), rgba(76, 201, 240, 0.25));
+      box-shadow: inset 0 0 30px rgba(76, 201, 240, 0.2);
     }
 
     .top {
-      transform: rotateX(90deg) translateZ(50px);
-      background: rgba(255, 0, 255, 0.7);
+      transform: rotateX(90deg) translateZ(var(--half-size));
+      background: linear-gradient(135deg, rgba(0, 245, 212, 0.55), rgba(0, 245, 212, 0.25));
+      box-shadow: inset 0 0 30px rgba(0, 245, 212, 0.2);
     }
 
     .bottom {
-      transform: rotateX(-90deg) translateZ(50px);
-      background: rgba(0, 255, 255, 0.7);
+      transform: rotateX(-90deg) translateZ(var(--half-size));
+      background: linear-gradient(135deg, rgba(181, 23, 158, 0.55), rgba(181, 23, 158, 0.25));
+      box-shadow: inset 0 0 30px rgba(181, 23, 158, 0.2);
     }
 
-    /* 添加旋转动画 */
-    @keyframes rotate {
-      0% {
-        transform: rotateX(0deg) rotateY(0deg);
-      }
+    /* 提示信息 */
+    .hint {
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      color: rgba(255, 255, 255, 0.3);
+      display: flex;
+      gap: 20px;
+    }
 
-      100% {
-        transform: rotateX(360deg) rotateY(360deg);
-      }
+    .hint span::before {
+      content: "— ";
+      color: var(--accent);
+      opacity: 0.6;
+    }
+
+    /* 知识点面板 */
+    .info_panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 680px;
+      width: 100%;
+      padding: 0 20px;
+    }
+
+    .info_card {
+      border: 1px solid rgba(0, 245, 212, 0.12);
+      background: rgba(0, 245, 212, 0.03);
+      padding: 16px 18px;
+      border-radius: 2px;
+      transition: border-color 0.25s, background 0.25s;
+    }
+
+    .info_card:hover {
+      border-color: rgba(0, 245, 212, 0.3);
+      background: rgba(0, 245, 212, 0.07);
+    }
+
+    .info_card .q_label {
+      font-size: 11px;
+      letter-spacing: 0.35em;
+      color: var(--accent);
+      opacity: 0.6;
+      margin-bottom: 8px;
+    }
+
+    .info_card .q_text {
+      font-size: 13px;
+      line-height: 1.65;
+      color: rgba(255, 255, 255, 0.55);
+      font-family: "Share Tech Mono", monospace;
+    }
+
+    .info_card .q_text strong {
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: normal;
+    }
+
+    /* 展开答案 */
+    .info_card details summary {
+      cursor: pointer;
+      color: var(--accent);
+      opacity: 0.5;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      margin-top: 10px;
+      list-style: none;
+      transition: opacity 0.2s;
+    }
+
+    .info_card details summary:hover {
+      opacity: 0.9;
+    }
+
+    .info_card details[open] summary {
+      opacity: 0.8;
+    }
+
+    .info_card details .answer {
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.75;
+      color: rgba(0, 245, 212, 0.65);
+      border-left: 2px solid rgba(0, 245, 212, 0.2);
+      padding-left: 12px;
     }
   </style>
 </head>
 
 <body>
-  <div style="padding: 20px; font-family: Arial, sans-serif;">
-    <h1>CSS 3D 立方体动画演示</h1>
-    <div style="margin-bottom: 20px; line-height: 1.8;">
-      <h3>面试问题：</h3>
-      <p>
-        <strong>1. perspective 和 transform-style: preserve-3d 的作用是什么？缺少任何一个会怎样？</strong>
-        <br />
-        <!-- 答案: -->
-        <!-- 
-            perspective 用于给 3D 场景添加透视效果，让近大远小的视觉更真实。通常加在父容器（如 .scene）上。
-            transform-style: preserve-3d 让子元素保留 3D 变换（即每个面能处于三维空间，默认是 flat 展平成二维）。
-            缺少 perspective 就没有立体感，所有面看起来像平面叠加；缺少 preserve-3d 所有子元素的 3D 效果都被压成一个平面。
-          -->
-      </p>
-      <p>
-        <strong>2. 为什么每个面都要用 translateZ(50px)？这个 50px 是怎么计算出来的？</strong>
-        <br />
-        <!-- 答案: -->
-        <!-- 
-            这样让每个面离立方体中心的距离为"半个边长"，假设边长是 100px，则每个面都在距中心正负 50px 的位置拼成立方体。
-            translateZ(50px) 就是立方体边长 / 2。这样刚好把六个面拼成立体方盒。
-          -->
-      </p>
-      <p>
-        <strong>3. 如果要做一个 200px 的立方体，每个面的 transform 应该怎么写？</strong>
-        <br />
-        <!-- 答案: -->
-        <!-- 
-            200px 边长时，translateZ(100px)（因为 200/2=100）：
-            .front  transform: translateZ(100px);
-            .back   transform: rotateY(180deg) translateZ(100px);
-            .left   transform: rotateY(-90deg) translateZ(100px);
-            .right  transform: rotateY(90deg) translateZ(100px);
-            .top    transform: rotateX(90deg) translateZ(100px);
-            .bottom transform: rotateX(-90deg) translateZ(100px);
-          -->
-      </p>
-      <p>
-        <strong>4. rotateY(180deg) translateZ(50px) 和 translateZ(50px) rotateY(180deg) 效果一样吗？为什么？</strong>
-        <br />
-        <!-- 答案: -->
-        <!--
-            不一样。CSS transform 是按顺序执行的。
-            rotateY(180deg) translateZ(50px)：先旋转再拉远，即沿 Y 旋转后再推到屏幕外 50px。
-            translateZ(50px) rotateY(180deg)：先拉远再旋转，相当于远处的面旋转回来。
-            视觉效果完全不同。
-          -->
-      </p>
-      <p>
-        <strong>5. 如何让立方体跟随鼠标移动而旋转（交互式 3D）？</strong>
-        <br />
-        <!-- 答案: -->
-        <!--
-            监听 mousemove（或 pointermove）事件，根据鼠标坐标映射 rotateX/rotateY 值，动态设置 .cube 的 transform：
-            例如：
-              document.addEventListener("mousemove", e => {
-                const rotX = (e.clientY / window.innerHeight - 0.5) * 360;
-                const rotY = (e.clientX / window.innerWidth - 0.5) * 360;
-                cube.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
-              });
-          -->
-      </p>
-      <p>
-        <strong>6. 如何优化 3D 动画性能？will-change 应该怎么用？</strong>
-        <br />
-        <!-- 答案: -->
-        <!--
-            优化手段：1) 用 transform/opacity 实现动画，避免布局/重绘。
-            2) 给 .cube 加 will-change: transform;，提示浏览器提前优化复合层。
-            比如：
-              .cube { will-change: transform; }
-            注意：不要无限制对太多元素用 will-change，否则反而会浪费资源。
-          -->
-      </p>
-      <p>
-        <strong>7. 如何实现立方体的每个面贴上不同的图片？</strong>
-        <br />
-        <!-- 答案: -->
-        <!--
-            给每个 .face 元素单独设置 background-image 或 <img> 子元素，用绝对定位和 cover 适配。
-            例如：
-              .front { background-image: url(front.png); background-size: cover; }
-              .back  { background-image: url(back.png); ... }
-              ...
-          -->
-      </p>
-      <p>
-        <strong>8. backface-visibility 属性的作用是什么？什么时候需要用？</strong>
-        <br />
-        <!-- 答案: -->
-        <!--
-            backface-visibility: hidden 表示背面朝向用户时不显示该面，可避免背面文字/图片穿帮反转。
-            适用于需要透明或者只让正面可见的 3D 元素，例如卡片翻转动画。
-            默认值是 visible，背面会显示（看起来倒过来）。
-          -->
-      </p>
-    </div>
-  </div>
+  <div class="page_wrapper">
+    <p class="title">CSS 3D Cube · 交互演示</p>
 
-  <div style="display: flex; justify-content: center;">
-    <div class="scene">
-      <div class="cube">
-        <div class="face front">Front</div>
-        <div class="face back">Back</div>
-        <div class="face left">Left</div>
-        <div class="face right">Right</div>
-        <div class="face top">Top</div>
-        <div class="face bottom">Bottom</div>
+    <div class="scene" id="scene">
+      <div class="cube" id="cube">
+        <div class="face front">
+          <span class="icon">⬡</span>
+          <span class="label">FRONT</span>
+        </div>
+        <div class="face back">
+          <span class="icon">⬡</span>
+          <span class="label">BACK</span>
+        </div>
+        <div class="face left">
+          <span class="icon">⬡</span>
+          <span class="label">LEFT</span>
+        </div>
+        <div class="face right">
+          <span class="icon">⬡</span>
+          <span class="label">RIGHT</span>
+        </div>
+        <div class="face top">
+          <span class="icon">⬡</span>
+          <span class="label">TOP</span>
+        </div>
+        <div class="face bottom">
+          <span class="icon">⬡</span>
+          <span class="label">BOTTOM</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hint">
+      <span>拖拽旋转</span>
+      <span>松开恢复自转</span>
+    </div>
+
+    <div class="info_panel">
+      <div class="info_card">
+        <div class="q_label">Q 01</div>
+        <div class="q_text"><strong>perspective</strong> 与 <strong>preserve-3d</strong> 的作用？缺一会怎样？</div>
+        <details>
+          <summary>▸ 查看答案</summary>
+          <div class="answer">perspective 给场景添加近大远小的透视感，通常设在父容器。preserve-3d 让子元素保持三维空间关系。缺少 perspective 则无立体感；缺少 preserve-3d 所有面被压成二维平面。</div>
+        </details>
+      </div>
+      <div class="info_card">
+        <div class="q_label">Q 02</div>
+        <div class="q_text"> <strong>translateZ(xx PX) 该怎么设置?</strong>？</div>
+        <details>
+          <summary>▸ 查看答案</summary>
+          <div class="answer">translateZ = 边长 / 2。边长 140px 时，各面从中心向外推 70px，六面刚好拼成封闭正方体。</div>
+        </details>
+      </div>
+      <div class="info_card">
+        <div class="q_label">Q 03</div>
+        <div class="q_text"><strong>rotateY(180deg) translateZ</strong> 与 <strong>translateZ rotateY(180deg)</strong> 效果相同吗？</div>
+        <details>
+          <summary>▸ 查看答案</summary>
+          <div class="answer">不同。CSS transform 按书写顺序执行，前者先旋转坐标系再位移，后者先位移再旋转，结果完全不同。</div>
+        </details>
+      </div>
+      <div class="info_card">
+        <div class="q_label">Q 04</div>
+        <div class="q_text">如何优化 3D 动画性能？<strong>will-change</strong> 怎么用？</div>
+        <details>
+          <summary>▸ 查看答案</summary>
+          <div class="answer">只用 transform/opacity 驱动动画避免重排重绘；给动画元素加 will-change: transform 提示浏览器提升为合成层。注意不要滥用，否则反而消耗内存。</div>
+        </details>
+      </div>
+      <div class="info_card">
+        <div class="q_label">Q 05</div>
+        <div class="q_text">如何实现<strong>鼠标拖拽</strong>旋转立方体？</div>
+        <details>
+          <summary>▸ 查看答案</summary>
+          <div class="answer">监听 pointerdown/pointermove/pointerup，记录起始坐标，计算位移量映射为 rotateX/rotateY 增量，通过 JS 动态设置 cube.style.transform。</div>
+        </details>
+      </div>
+      <div class="info_card">
+        <div class="q_label">Q 06</div>
+        <div class="q_text"><strong>backface-visibility</strong> 的作用？何时使用？</div>
+        <details>
+          <summary>▸ 查看答案</summary>
+          <div class="answer">设为 hidden 后，背面朝向用户时该面不渲染，避免内容出现镜像翻转。常用于卡片翻转动画，防止正反面同时可见。</div>
+        </details>
       </div>
     </div>
   </div>
 
+  <script>
+    const cubeEl = document.getElementById("cube");
+
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let rotX = 15;
+    let rotY = 0;
+    let velX = 0;
+    let velY = 0.6;
+    let rafId = null;
+
+    const applyTransform = () => {
+      cubeEl.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    };
+
+    const tick = () => {
+      if (!isDragging) {
+        rotY += velY;
+        rotX += velX;
+        velX *= 0.96;
+        velY = velY * 0.96 + 0.6 * 0.04;
+        applyTransform();
+      }
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    cubeEl.addEventListener("pointerdown", (e) => {
+      isDragging = true;
+      cubeEl.setPointerCapture(e.pointerId);
+      startX = e.clientX;
+      startY = e.clientY;
+      velX = 0;
+      velY = 0;
+    });
+
+    cubeEl.addEventListener("pointermove", (e) => {
+      if (!isDragging) return;
+
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      velY = dx * 0.5;
+      velX = -dy * 0.5;
+
+      rotY += dx * 0.5;
+      rotX -= dy * 0.5;
+
+      startX = e.clientX;
+      startY = e.clientY;
+
+      applyTransform();
+    });
+
+    cubeEl.addEventListener("pointerup", () => {
+      isDragging = false;
+    });
+
+    cubeEl.addEventListener("pointercancel", () => {
+      isDragging = false;
+    });
+
+    tick();
+  </script>
 </body>
 
 </html>
