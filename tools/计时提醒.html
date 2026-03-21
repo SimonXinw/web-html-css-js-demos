@@ -289,12 +289,25 @@
             border: 1px solid rgba(148, 163, 184, 0.25);
         }
 
+        .hint-block {
+            padding: 0 4px calc(8px + var(--safe-bottom));
+        }
+
         .hint {
             font-size: 0.72rem;
             color: var(--muted);
             line-height: 1.55;
-            padding: 0 4px calc(8px + var(--safe-bottom));
-            opacity: 0.9;
+            margin-bottom: 10px;
+            opacity: 0.92;
+        }
+
+        .hint:last-child {
+            margin-bottom: 0;
+        }
+
+        .hint strong {
+            color: #cbd5e1;
+            font-weight: 600;
         }
 
         /* 训练中自动收起参数，突出倒计时 */
@@ -347,6 +360,10 @@
                     <input type="checkbox" id="useVoice" checked>
                     <label for="useVoice">语音播报（数字、「休息三秒」、组间「开始休息」）</label>
                 </div>
+                <div class="toggle-row">
+                    <input type="checkbox" id="useWakeLock" checked>
+                    <label for="useWakeLock">训练中尽量保持屏幕常亮（防自动锁屏，需浏览器支持）</label>
+                </div>
             </div>
         </details>
 
@@ -362,9 +379,17 @@
             <button type="button" class="btn-reset" id="btnReset" disabled>重置</button>
         </div>
 
-        <p class="hint">
-            提示音为浏览器实时合成。组间只播「开始休息」，秒数仅屏幕显示。首次使用请点「开始」以解锁声音；请确认手机未静音、标签页未静音。
-        </p>
+        <div class="hint-block">
+            <p class="hint">
+                <strong>声音：</strong>提示音为浏览器合成；首次请点「开始」解锁音频。手机勿静音、勿关标签页声音。
+            </p>
+            <p class="hint">
+                <strong>防锁屏：</strong>勾选「保持屏幕常亮」后，在支持 Wake Lock 的浏览器（如 Android Chrome、新版 Safari）会在训练期间请求「屏幕唤醒锁」，可减轻自动锁屏导致的中断。若仍会自动锁屏，请在系统设置里延长「自动锁定」时间，或 iOS 可用「引导式访问」锁定在当前页。
+            </p>
+            <p class="hint">
+                <strong>后台：</strong>网页切到后台或锁屏后，系统通常会<strong>暂停或节流</strong>定时器与音频，无法像原生 App 一样可靠后台计时。建议训练时<strong>保持本页在前台</strong>；可将本站「添加到主屏幕」全屏使用，减少误触退出。
+            </p>
+        </div>
     </div>
 
     <script>
@@ -375,6 +400,7 @@
         const actionSecEl = document.getElementById("actionSec");
         const groupRestSecEl = document.getElementById("groupRestSec");
         const useVoiceEl = document.getElementById("useVoice");
+        const useWakeLockEl = document.getElementById("useWakeLock");
         const btnStart = document.getElementById("btnStart");
         const btnStop = document.getElementById("btnStop");
         const btnReset = document.getElementById("btnReset");
@@ -387,6 +413,37 @@
         let audioCtx = null;
         let running = false;
         let abortFlag = false;
+        let wakeLockHandle = null;
+
+        async function acquireWakeLock() {
+            if (!useWakeLockEl.checked) return;
+            if (!("wakeLock" in navigator) || !navigator.wakeLock) return;
+            try {
+                if (wakeLockHandle) {
+                    await wakeLockHandle.release();
+                    wakeLockHandle = null;
+                }
+                wakeLockHandle = await navigator.wakeLock.request("screen");
+            } catch (e) {
+                console.warn("Wake Lock 请求失败:", e);
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (!wakeLockHandle) return;
+            try {
+                await wakeLockHandle.release();
+            } catch (e) {
+                console.warn("Wake Lock 释放:", e);
+            }
+            wakeLockHandle = null;
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible" && running && useWakeLockEl.checked) {
+                acquireWakeLock();
+            }
+        });
 
         function getAudioContext() {
             if (!audioCtx) {
@@ -520,6 +577,8 @@
             roundsPerGroupEl.disabled = true;
             actionSecEl.disabled = true;
             groupRestSecEl.disabled = true;
+            useWakeLockEl.disabled = true;
+            await acquireWakeLock();
 
             const metaBase = (g, r) => ({
                 groupIndex: g,
@@ -528,72 +587,79 @@
                 roundsPerGroup,
             });
 
-            for (let g = 1; g <= totalGroups; g++) {
-                if (abortFlag) break;
+            let sessionCompleted = false;
 
-                for (let round = 1; round <= roundsPerGroup; round++) {
+            try {
+                for (let g = 1; g <= totalGroups; g++) {
                     if (abortFlag) break;
 
-                    // —— 动作：N → 1（N 可配置） —— //
-                    for (let n = actionSec; n >= 1; n--) {
+                    for (let round = 1; round <= roundsPerGroup; round++) {
                         if (abortFlag) break;
-                        setUI("动作倒计时", String(n), "action", metaBase(g, round));
-                        beepCountdown();
-                        speakActionCount(n);
-                        await delay(1000);
-                    }
-                    if (abortFlag) break;
 
-                    beepRoundDone();
-
-                    // —— 短休 3 秒 —— //
-                    for (let r = REST_SEC; r >= 1; r--) {
-                        if (abortFlag) break;
-                        setUI("休息三秒", String(r), "shortRest", metaBase(g, round));
-                        if (r === REST_SEC) {
-                            speak("休息三秒");
-                        } else {
-                            speakNumber(r);
+                        // —— 动作：N → 1（N 可配置） —— //
+                        for (let n = actionSec; n >= 1; n--) {
+                            if (abortFlag) break;
+                            setUI("动作倒计时", String(n), "action", metaBase(g, round));
+                            beepCountdown();
+                            speakActionCount(n);
+                            await delay(1000);
                         }
-                        beepRest();
-                        await delay(1000);
-                    }
-                }
-
-                if (abortFlag) break;
-
-                // —— 组间休息（最后一组之后不休息；仅朗读「开始休息」，不读秒数） —— //
-                if (g < totalGroups && groupRestSec > 0) {
-                    await delay(350);
-                    speak("开始休息");
-                    playTone(392, 180, "sine");
-
-                    for (let sec = groupRestSec; sec >= 1; sec--) {
                         if (abortFlag) break;
-                        setUI("组间休息", String(sec), "groupRest", {
-                            groupIndex: g,
-                            totalGroups,
-                            groupRestLabel: "界面倒计时，不报读秒数",
-                            roundInGroup: 0,
-                            roundsPerGroup: 0,
-                        });
-                        await delay(1000);
+
+                        beepRoundDone();
+
+                        // —— 短休 3 秒 —— //
+                        for (let r = REST_SEC; r >= 1; r--) {
+                            if (abortFlag) break;
+                            setUI("休息三秒", String(r), "shortRest", metaBase(g, round));
+                            if (r === REST_SEC) {
+                                speak("休息三秒");
+                            } else {
+                                speakNumber(r);
+                            }
+                            beepRest();
+                            await delay(1000);
+                        }
+                    }
+
+                    if (abortFlag) break;
+
+                    // —— 组间休息（最后一组之后不休息；仅朗读「开始休息」，不读秒数） —— //
+                    if (g < totalGroups && groupRestSec > 0) {
+                        await delay(350);
+                        speak("开始休息");
+                        playTone(392, 180, "sine");
+
+                        for (let sec = groupRestSec; sec >= 1; sec--) {
+                            if (abortFlag) break;
+                            setUI("组间休息", String(sec), "groupRest", {
+                                groupIndex: g,
+                                totalGroups,
+                                groupRestLabel: "界面倒计时，不报读秒数",
+                                roundInGroup: 0,
+                                roundsPerGroup: 0,
+                            });
+                            await delay(1000);
+                        }
                     }
                 }
+                sessionCompleted = !abortFlag;
+            } finally {
+                running = false;
+                await releaseWakeLock();
+                appEl.classList.remove("app--running");
+                configPanel.open = true;
+                btnStart.disabled = false;
+                btnStop.disabled = true;
+                btnReset.disabled = false;
+                groupCountEl.disabled = false;
+                roundsPerGroupEl.disabled = false;
+                actionSecEl.disabled = false;
+                groupRestSecEl.disabled = false;
+                useWakeLockEl.disabled = false;
             }
 
-            running = false;
-            appEl.classList.remove("app--running");
-            configPanel.open = true;
-            btnStart.disabled = false;
-            btnStop.disabled = true;
-            btnReset.disabled = false;
-            groupCountEl.disabled = false;
-            roundsPerGroupEl.disabled = false;
-            actionSecEl.disabled = false;
-            groupRestSecEl.disabled = false;
-
-            if (!abortFlag) {
+            if (sessionCompleted) {
                 setUI("全部完成", "✓", "done", null);
                 loopInfo.innerHTML =
                     `共 <strong>${totalGroups}</strong> 组 × 每组 <strong>${roundsPerGroup}</strong> 次`;
