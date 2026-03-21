@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>计时提醒</title>
+    <style>
+        :root {
+            --bg: #0c1222;
+            --card: #151f32;
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --accent: #38bdf8;
+            --amber: #fbbf24;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-x: env(safe-area-inset-left, 0px);
+            --tap: 52px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse 100% 60% at 50% -15%, rgba(30, 58, 95, 0.55) 0%, transparent 55%),
+                linear-gradient(180deg, #0f172a 0%, var(--bg) 40%);
+            color: var(--text);
+            min-height: 100%;
+            min-height: 100dvh;
+            line-height: 1.45;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 全屏主架：中间留给倒计时 */
+        .app {
+            display: flex;
+            flex-direction: column;
+            min-height: 100dvh;
+            max-width: 560px;
+            margin: 0 auto;
+            padding: calc(10px + var(--safe-top)) calc(12px + var(--safe-x)) 0;
+        }
+
+        .top {
+            flex-shrink: 0;
+            margin-bottom: 10px;
+        }
+
+        .top h1 {
+            font-size: clamp(1.15rem, 4.2vw, 1.35rem);
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .sub {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 4px;
+            line-height: 1.45;
+        }
+
+        /* 可折叠参数，训练中可收起多看数字 */
+        .config-panel {
+            flex-shrink: 0;
+            background: var(--card);
+            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .config-panel summary {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            min-height: var(--tap);
+        }
+
+        .config-panel summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .config-panel summary::after {
+            content: "▼";
+            font-size: 0.65rem;
+            opacity: 0.55;
+            transition: transform 0.2s;
+        }
+
+        .config-panel[open] summary::after {
+            transform: rotate(-180deg);
+        }
+
+        .config-panel .inner {
+            padding: 0 14px 14px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 12px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-span2 {
+            grid-column: 1 / -1;
+        }
+
+        .field label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .field input[type="number"] {
+            width: 100%;
+            min-height: 48px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            background: #0c1324;
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .field input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        .toggle-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .toggle-row input {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            margin-top: 2px;
+            accent-color: var(--accent);
+        }
+
+        .toggle-row label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        /* 中间：倒计时占满剩余空间 */
+        .stage {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8px 4px 12px;
+            min-height: 0;
+        }
+
+        .phase {
+            font-size: clamp(0.72rem, 2.8vw, 0.85rem);
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+            max-width: 100%;
+            padding: 0 8px;
+        }
+
+        .big-num {
+            font-size: clamp(4.5rem, 26vw, 9rem);
+            font-weight: 800;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+            background: linear-gradient(180deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(0 4px 24px rgba(56, 189, 248, 0.12));
+        }
+
+        .big-num.rest {
+            font-size: clamp(2.5rem, 14vw, 4rem);
+            background: linear-gradient(180deg, var(--amber), #d97706);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .big-num.group-rest {
+            font-size: clamp(3.2rem, 18vw, 6rem);
+            background: linear-gradient(180deg, #c084fc, #9333ea);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .loop-info {
+            margin-top: 12px;
+            font-size: clamp(0.8rem, 3.2vw, 0.95rem);
+            color: var(--muted);
+            line-height: 1.5;
+            max-width: 100%;
+            padding: 0 6px;
+        }
+
+        .loop-info strong {
+            color: var(--accent);
+        }
+
+        /* 底部固定操作栏 */
+        .action-bar {
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr;
+            gap: 10px;
+            padding: 12px 0 calc(12px + var(--safe-bottom));
+            background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.85) 30%);
+        }
+
+        button {
+            min-height: var(--tap);
+            padding: 0 12px;
+            border-radius: 14px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        button:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-start {
+            background: linear-gradient(145deg, #0ea5e9, #2563eb);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        .btn-stop {
+            background: #334155;
+            color: var(--text);
+        }
+
+        .btn-reset {
+            background: rgba(148, 163, 184, 0.12);
+            color: var(--muted);
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+
+        .hint {
+            font-size: 0.72rem;
+            color: var(--muted);
+            line-height: 1.55;
+            padding: 0 4px calc(8px + var(--safe-bottom));
+            opacity: 0.9;
+        }
+
+        /* 训练中自动收起参数，突出倒计时 */
+        .app--running .config-panel:not([open]) summary {
+            opacity: 0.95;
+        }
+
+        .app--running .config-panel[open] {
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2);
+        }
+
+        @media (min-width: 480px) {
+            .app {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app" id="app">
+        <header class="top">
+            <h1>⏱ 计时提醒</h1>
+            <p class="sub">一组 = 多次「10 秒倒计时 + 短休 3 秒」；组与组之间可设长休。</p>
+        </header>
+
+        <details class="config-panel" id="configPanel" open>
+            <summary>参数设置</summary>
+            <div class="inner">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="groupCount">组数</label>
+                        <input type="number" id="groupCount" min="1" max="99" value="2" inputmode="numeric">
+                    </div>
+                    <div class="field">
+                        <label for="roundsPerGroup">每组次数</label>
+                        <input type="number" id="roundsPerGroup" min="1" max="999" value="20" inputmode="numeric">
+                    </div>
+                    <div class="field field-span2">
+                        <label for="groupRestSec">组间休息（秒，0=不休息）</label>
+                        <input type="number" id="groupRestSec" min="0" max="3600" value="60" inputmode="numeric">
+                    </div>
+                </div>
+                <div class="toggle-row">
+                    <input type="checkbox" id="useVoice" checked>
+                    <label for="useVoice">语音播报（数字、「休息三秒」、组间「开始休息」）</label>
+                </div>
+            </div>
+        </details>
+
+        <section class="stage" aria-live="polite">
+            <div class="phase" id="phaseLabel">就绪</div>
+            <div class="big-num" id="mainDisplay">—</div>
+            <div class="loop-info" id="loopInfo"></div>
+        </section>
+
+        <div class="action-bar">
+            <button type="button" class="btn-start" id="btnStart">开始</button>
+            <button type="button" class="btn-stop" id="btnStop" disabled>停止</button>
+            <button type="button" class="btn-reset" id="btnReset" disabled>重置</button>
+        </div>
+
+        <p class="hint">
+            提示音为浏览器实时合成。组间只播「开始休息」，秒数仅屏幕显示。首次使用请点「开始」以解锁声音；请确认手机未静音、标签页未静音。
+        </p>
+    </div>
+
+    <script>
+        const appEl = document.getElementById("app");
+        const configPanel = document.getElementById("configPanel");
+        const groupCountEl = document.getElementById("groupCount");
+        const roundsPerGroupEl = document.getElementById("roundsPerGroup");
+        const groupRestSecEl = document.getElementById("groupRestSec");
+        const useVoiceEl = document.getElementById("useVoice");
+        const btnStart = document.getElementById("btnStart");
+        const btnStop = document.getElementById("btnStop");
+        const btnReset = document.getElementById("btnReset");
+        const phaseLabel = document.getElementById("phaseLabel");
+        const mainDisplay = document.getElementById("mainDisplay");
+        const loopInfo = document.getElementById("loopInfo");
+
+        const ACTION_SEC = 10;
+        const REST_SEC = 3;
+
+        let audioCtx = null;
+        let running = false;
+        let abortFlag = false;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new Ctx();
+            }
+            return audioCtx;
+        }
+
+        /**
+         * 用 Web Audio 合成短促提示音（无需外部 mp3）
+         * @param {number} freqHz 频率
+         * @param {number} durationMs 时长
+         * @param {string} type 振荡器类型
+         */
+        function playTone(freqHz, durationMs, type = "sine") {
+            try {
+                const ctx = getAudioContext();
+                if (ctx.state === "suspended") {
+                    ctx.resume();
+                }
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.value = freqHz;
+                const t0 = ctx.currentTime;
+                const dur = durationMs / 1000;
+                gain.gain.setValueAtTime(0.0001, t0);
+                gain.gain.exponentialRampToValueAtTime(0.12, t0 + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t0);
+                osc.stop(t0 + dur + 0.02);
+            } catch (e) {
+                console.warn("playTone:", e);
+            }
+        }
+
+        /** 倒计时每秒：较高音 */
+        function beepCountdown() {
+            playTone(880, 120, "sine");
+        }
+
+        /** 休息阶段每秒：较低音 */
+        function beepRest() {
+            playTone(440, 150, "triangle");
+        }
+
+        /** 一轮结束短促双音 */
+        function beepRoundDone() {
+            playTone(523, 80, "sine");
+            setTimeout(() => playTone(659, 100, "sine"), 100);
+        }
+
+        function speak(text) {
+            if (!useVoiceEl.checked) return;
+            try {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = "zh-CN";
+                u.rate = 1;
+                window.speechSynthesis.speak(u);
+            } catch (e) {
+                console.warn("speak:", e);
+            }
+        }
+
+        const NUM_ZH = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
+
+        function speakNumber(n) {
+            if (n >= 1 && n <= 10) {
+                speak(n === 10 ? "十" : NUM_ZH[n]);
+            }
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        /**
+         * @param {"idle"|"action"|"shortRest"|"groupRest"|"done"} variant
+         */
+        function setUI(phase, bigText, variant, meta) {
+            mainDisplay.classList.remove("rest", "group-rest");
+            if (variant === "shortRest") {
+                mainDisplay.classList.add("rest");
+            } else if (variant === "groupRest") {
+                mainDisplay.classList.add("group-rest");
+            }
+            phaseLabel.textContent = phase;
+            mainDisplay.textContent = bigText;
+
+            if (!meta) {
+                loopInfo.textContent = "";
+                return;
+            }
+            if (meta.groupRestLabel) {
+                loopInfo.innerHTML =
+                    `第 <strong>${meta.groupIndex}</strong> / ${meta.totalGroups} 组 · <span style="opacity:0.85">${meta.groupRestLabel}</span>`;
+                return;
+            }
+            const { groupIndex, totalGroups, roundInGroup, roundsPerGroup } = meta;
+            if (totalGroups >= 1 && roundsPerGroup >= 1 && groupIndex >= 1 && roundInGroup >= 1) {
+                loopInfo.innerHTML =
+                    `第 <strong>${groupIndex}</strong> / ${totalGroups} 组 · 第 <strong>${roundInGroup}</strong> / ${roundsPerGroup} 次`;
+            } else {
+                loopInfo.textContent = "";
+            }
+        }
+
+        async function runSession(totalGroups, roundsPerGroup, groupRestSec) {
+            abortFlag = false;
+            running = true;
+            appEl.classList.add("app--running");
+            configPanel.open = false;
+            btnStart.disabled = true;
+            btnStop.disabled = false;
+            btnReset.disabled = true;
+            groupCountEl.disabled = true;
+            roundsPerGroupEl.disabled = true;
+            groupRestSecEl.disabled = true;
+
+            const metaBase = (g, r) => ({
+                groupIndex: g,
+                totalGroups,
+                roundInGroup: r,
+                roundsPerGroup,
+            });
+
+            for (let g = 1; g <= totalGroups; g++) {
+                if (abortFlag) break;
+
+                for (let round = 1; round <= roundsPerGroup; round++) {
+                    if (abortFlag) break;
+
+                    // —— 动作：10 → 1 —— //
+                    for (let n = ACTION_SEC; n >= 1; n--) {
+                        if (abortFlag) break;
+                        setUI("动作倒计时", String(n), "action", metaBase(g, round));
+                        beepCountdown();
+                        speakNumber(n);
+                        await delay(1000);
+                    }
+                    if (abortFlag) break;
+
+                    beepRoundDone();
+
+                    // —— 短休 3 秒 —— //
+                    for (let r = REST_SEC; r >= 1; r--) {
+                        if (abortFlag) break;
+                        setUI("休息三秒", String(r), "shortRest", metaBase(g, round));
+                        if (r === REST_SEC) {
+                            speak("休息三秒");
+                        } else {
+                            speakNumber(r);
+                        }
+                        beepRest();
+                        await delay(1000);
+                    }
+                }
+
+                if (abortFlag) break;
+
+                // —— 组间休息（最后一组之后不休息；仅朗读「开始休息」，不读秒数） —— //
+                if (g < totalGroups && groupRestSec > 0) {
+                    await delay(350);
+                    speak("开始休息");
+                    playTone(392, 180, "sine");
+
+                    for (let sec = groupRestSec; sec >= 1; sec--) {
+                        if (abortFlag) break;
+                        setUI("组间休息", String(sec), "groupRest", {
+                            groupIndex: g,
+                            totalGroups,
+                            groupRestLabel: "界面倒计时，不报读秒数",
+                            roundInGroup: 0,
+                            roundsPerGroup: 0,
+                        });
+                        await delay(1000);
+                    }
+                }
+            }
+
+            running = false;
+            appEl.classList.remove("app--running");
+            configPanel.open = true;
+            btnStart.disabled = false;
+            btnStop.disabled = true;
+            btnReset.disabled = false;
+            groupCountEl.disabled = false;
+            roundsPerGroupEl.disabled = false;
+            groupRestSecEl.disabled = false;
+
+            if (!abortFlag) {
+                setUI("全部完成", "✓", "done", null);
+                loopInfo.innerHTML =
+                    `共 <strong>${totalGroups}</strong> 组 × 每组 <strong>${roundsPerGroup}</strong> 次`;
+                playTone(1046, 200, "sine");
+            } else {
+                setUI("已停止", "—", "idle", null);
+                loopInfo.textContent = "";
+            }
+        }
+
+        btnStart.addEventListener("click", () => {
+            let G = parseInt(groupCountEl.value, 10);
+            let R = parseInt(roundsPerGroupEl.value, 10);
+            let S = parseInt(groupRestSecEl.value, 10);
+            G = Number.isFinite(G) && G >= 1 ? Math.min(G, 99) : 2;
+            R = Number.isFinite(R) && R >= 1 ? Math.min(R, 999) : 20;
+            S = Number.isFinite(S) && S >= 0 ? Math.min(S, 3600) : 60;
+            groupCountEl.value = String(G);
+            roundsPerGroupEl.value = String(R);
+            groupRestSecEl.value = String(S);
+            getAudioContext();
+            runSession(G, R, S);
+        });
+
+        btnStop.addEventListener("click", () => {
+            abortFlag = true;
+            window.speechSynthesis.cancel();
+        });
+
+        btnReset.addEventListener("click", () => {
+            abortFlag = true;
+            window.speechSynthesis.cancel();
+            appEl.classList.remove("app--running");
+            configPanel.open = true;
+            setUI("就绪", "—", "idle", null);
+            loopInfo.textContent = "";
+            btnReset.disabled = true;
+        });
+
+        setUI("就绪", "—", "idle", null);
+    </script>
+</body>
+
+</html>
