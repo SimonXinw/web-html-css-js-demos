@@ -319,7 +319,7 @@
     <div class="app" id="app">
         <header class="top">
             <h1>⏱ 计时提醒</h1>
-            <p class="sub">一组 = 多次「10 秒倒计时 + 短休 3 秒」；组与组之间可设长休。</p>
+            <p class="sub">一组 = 多次「动作倒计时 + 短休 3 秒」；秒数可改，默认 10 秒。</p>
         </header>
 
         <details class="config-panel" id="configPanel" open>
@@ -334,8 +334,12 @@
                         <label for="roundsPerGroup">每组次数</label>
                         <input type="number" id="roundsPerGroup" min="1" max="999" value="20" inputmode="numeric">
                     </div>
-                    <div class="field field-span2">
-                        <label for="groupRestSec">组间休息（秒，0=不休息）</label>
+                    <div class="field">
+                        <label for="actionSec">每次动作（秒）</label>
+                        <input type="number" id="actionSec" min="1" max="300" value="10" inputmode="numeric">
+                    </div>
+                    <div class="field">
+                        <label for="groupRestSec">组间休息（秒）</label>
                         <input type="number" id="groupRestSec" min="0" max="3600" value="60" inputmode="numeric">
                     </div>
                 </div>
@@ -368,6 +372,7 @@
         const configPanel = document.getElementById("configPanel");
         const groupCountEl = document.getElementById("groupCount");
         const roundsPerGroupEl = document.getElementById("roundsPerGroup");
+        const actionSecEl = document.getElementById("actionSec");
         const groupRestSecEl = document.getElementById("groupRestSec");
         const useVoiceEl = document.getElementById("useVoice");
         const btnStart = document.getElementById("btnStart");
@@ -377,7 +382,6 @@
         const mainDisplay = document.getElementById("mainDisplay");
         const loopInfo = document.getElementById("loopInfo");
 
-        const ACTION_SEC = 10;
         const REST_SEC = 3;
 
         let audioCtx = null;
@@ -459,6 +463,16 @@
             }
         }
 
+        /** 动作倒计时语音：1～10 用中文数字，更大用数字串（交给系统 TTS） */
+        function speakActionCount(n) {
+            if (!useVoiceEl.checked) return;
+            if (n >= 1 && n <= 10) {
+                speakNumber(n);
+            } else {
+                speak(String(n));
+            }
+        }
+
         function delay(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
@@ -494,7 +508,7 @@
             }
         }
 
-        async function runSession(totalGroups, roundsPerGroup, groupRestSec) {
+        async function runSession(totalGroups, roundsPerGroup, groupRestSec, actionSec) {
             abortFlag = false;
             running = true;
             appEl.classList.add("app--running");
@@ -504,6 +518,7 @@
             btnReset.disabled = true;
             groupCountEl.disabled = true;
             roundsPerGroupEl.disabled = true;
+            actionSecEl.disabled = true;
             groupRestSecEl.disabled = true;
 
             const metaBase = (g, r) => ({
@@ -519,12 +534,12 @@
                 for (let round = 1; round <= roundsPerGroup; round++) {
                     if (abortFlag) break;
 
-                    // —— 动作：10 → 1 —— //
-                    for (let n = ACTION_SEC; n >= 1; n--) {
+                    // —— 动作：N → 1（N 可配置） —— //
+                    for (let n = actionSec; n >= 1; n--) {
                         if (abortFlag) break;
                         setUI("动作倒计时", String(n), "action", metaBase(g, round));
                         beepCountdown();
-                        speakNumber(n);
+                        speakActionCount(n);
                         await delay(1000);
                     }
                     if (abortFlag) break;
@@ -575,6 +590,7 @@
             btnReset.disabled = false;
             groupCountEl.disabled = false;
             roundsPerGroupEl.disabled = false;
+            actionSecEl.disabled = false;
             groupRestSecEl.disabled = false;
 
             if (!abortFlag) {
@@ -591,15 +607,18 @@
         btnStart.addEventListener("click", () => {
             let G = parseInt(groupCountEl.value, 10);
             let R = parseInt(roundsPerGroupEl.value, 10);
+            let A = parseInt(actionSecEl.value, 10);
             let S = parseInt(groupRestSecEl.value, 10);
             G = Number.isFinite(G) && G >= 1 ? Math.min(G, 99) : 2;
             R = Number.isFinite(R) && R >= 1 ? Math.min(R, 999) : 20;
+            A = Number.isFinite(A) && A >= 1 ? Math.min(A, 300) : 10;
             S = Number.isFinite(S) && S >= 0 ? Math.min(S, 3600) : 60;
             groupCountEl.value = String(G);
             roundsPerGroupEl.value = String(R);
+            actionSecEl.value = String(A);
             groupRestSecEl.value = String(S);
             getAudioContext();
-            runSession(G, R, S);
+            runSession(G, R, S, A);
         });
 
         btnStop.addEventListener("click", () => {
