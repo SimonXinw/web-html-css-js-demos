@@ -1,17 +1,90 @@
 /**
  * config.js
- * 全局配置：API Key、地图默认中心、Mock 门店数据
+ * 全局配置：API Key、地图默认中心、Mock 门店数据、与 valerion google-maps-modal 对齐的文案与 locale 回退
  *
  * 实际使用时将 GOOGLE_MAPS_API_KEY 替换为自己的 Key，
  * 并将 MOCK_STORES 替换为真实 API 请求（见 fetchStores）。
+ *
+ * URL 参数 ?locale=de|uk|fr|eu|us 可切换「定位失败/拒绝」时的默认城市与 Places 区域限制（与组件内 getLatestNextLocale 行为类似）。
  */
 
 /* ---- Google Maps API Key ---- */
 const GOOGLE_MAPS_API_KEY = "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI";
 
-/* ---- 默认地图中心（未获取到用户位置时使用） ---- */
-const DEFAULT_MAP_CENTER = { lat: 38.9072, lng: -77.0369 }; // 华盛顿 D.C.
+/**
+ * 与 valerion components/google-maps-modal/index.tsx LOCALE_CITY_DEFAULTS / DEFAULT_CITY 对齐
+ */
+const LOCALE_CITY_DEFAULTS = {
+  de: { lat: 52.52, lng: 13.405, cityLabel: "Berlin, Germany" },
+  uk: { lat: 51.5074, lng: -0.1278, cityLabel: "London, United Kingdom" },
+  fr: { lat: 48.8566, lng: 2.3522, cityLabel: "Paris, France" },
+  eu: { lat: 50.8503, lng: 4.3517, cityLabel: "Brussels, Belgium" },
+};
+
+const DEFAULT_CITY = {
+  lat: 38.9072,
+  lng: -77.0369,
+  cityLabel: "Washington, D.C., USA",
+};
+
+/**
+ * 从 URL 读取 locale，缺省为 us（使用 DEFAULT_CITY）
+ */
+function getLocaleCode() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const raw = (params.get("locale") || "us").toLowerCase();
+
+    return raw;
+  } catch {
+    return "us";
+  }
+}
+
+function getLocaleCityDefault() {
+  const locale = getLocaleCode();
+
+  return LOCALE_CITY_DEFAULTS[locale] ?? DEFAULT_CITY;
+}
+
+/** 与组件 getInitialMapCenter 一致：按当前 locale 默认城市 */
+function getInitialMapCenter() {
+  const { lat, lng } = getLocaleCityDefault();
+
+  return { lat, lng };
+}
+
+/* ---- 默认地图中心（脚本加载时的兜底，弹窗内优先用 getInitialMapCenter） ---- */
+const DEFAULT_MAP_CENTER = { lat: DEFAULT_CITY.lat, lng: DEFAULT_CITY.lng };
 const DEFAULT_ZOOM = 5;
+
+/**
+ * 与 valerion resolveStoreFinderCopy / resolveDeniedLocationCopy 默认值对齐（演示页无 CMS，写死对象）
+ */
+const STORE_FINDER_COPY = {
+  modalTitle: "Select store",
+  searchPlaceholder: "Enter your zip code, city, address",
+  searchHint:
+    "Enter a city, ZIP code, or address to find nearby stores, or tap the location icon on the right to use your current location.",
+  currentLocationText: "",
+  storeListNavBtnText: "Anreise",
+  storeListErrorTitle: "Sorry, we can't load stores right now.",
+  storeListErrorDesc:
+    "This may be due to a network issue or a temporary error. Please try again later.",
+  googleMapsErrorTitle: "Something went wrong while loading the map. Please retry.",
+  googleMapsRetryBtnText: "Retry",
+};
+
+const DENIED_LOCATION_COPY = {
+  modalTitle: "Location Access",
+  description: `Please follow these steps to enable location access:
+
+1. Open your browser settings
+2. Navigate to Privacy & Security/Site Settings
+3. Enable location access permission
+4. Refresh this page to try again`,
+  closeButtonLabel: "Got it",
+};
 
 /* ---- 1km = X 英里 ---- */
 const KM_TO_MILES = 0.621371192;
