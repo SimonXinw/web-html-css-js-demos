@@ -1,7 +1,33 @@
 /**
  * utils.js
- * 工具函数：Haversine 直线距离 + 逆地理编码
+ * 工具函数：Haversine 直线距离 + 逆地理编码 + 门店头像字段校验（与 isUsableStorePortrait 一致）
  */
+
+const INVALID_PORTRAIT_PLACEHOLDERS = new Set([
+  "null",
+  "undefined",
+  "none",
+  "-",
+  "n/a",
+  "na",
+]);
+
+/**
+ * 接口 avatar 是否为可用的图片地址（排除空值与常见占位符）
+ * 对齐 valerion components/google-maps-modal/isUsableStorePortrait.ts
+ *
+ * @param {string|undefined|null} value
+ * @returns {boolean}
+ */
+function isUsableStorePortrait(value) {
+  const raw = typeof value === "string" ? value.trim() : "";
+
+  if (!raw) {
+    return false;
+  }
+
+  return !INVALID_PORTRAIT_PLACEHOLDERS.has(raw.toLowerCase());
+}
 
 /**
  * Haversine 公式：计算两点间球面直线距离（km）

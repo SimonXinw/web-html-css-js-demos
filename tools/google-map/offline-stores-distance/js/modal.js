@@ -19,7 +19,7 @@ const State = {
   mapsReady: false,
   stores: [],
   activeStoreId: null,
-  mapCenter: { ...DEFAULT_MAP_CENTER },
+  mapCenter: { ...getInitialMapCenter() },
   zoom: DEFAULT_ZOOM,
   /** 用于距离计算的用户锚点（搜索选中 / 定位） */
   userAnchor: null,
@@ -27,6 +27,10 @@ const State = {
   distancesKm: {},
   /** Places Autocomplete Session Token（用于 API 计费分组） */
   sessionToken: null,
+  /** 门店列表接口加载中 */
+  storeListFetching: false,
+  /** 选点 fetchFields、逆地理、距离重算等（与组件 isListAuxLoading 一致） */
+  listAuxBusy: false,
 };
 
 /* ============================================================
@@ -49,6 +53,10 @@ const Els = {
   locationDeniedClose: $("locationDeniedClose"),
   locationDeniedOverlay: $("locationDeniedOverlay"),
   gotItBtn: $("gotItBtn"),
+  searchDesc: $("searchDesc"),
+  modalTitle: $("modalTitle"),
+  locationDeniedTitle: $("locationDeniedTitle"),
+  locationDeniedDesc: $("locationDeniedDesc"),
 };
 
 /* ============================================================
@@ -78,8 +86,21 @@ function closeModal() {
   State.userAnchor = null;
   State.distancesKm = {};
   State.activeStoreId = null;
+  State.storeListFetching = false;
+  State.listAuxBusy = false;
+  refreshListOverlay();
+
+  State.mapCenter = { ...getInitialMapCenter() };
+  State.zoom = DEFAULT_ZOOM;
+  if (State.mapsReady) {
+    MapManager.panTo(State.mapCenter, State.zoom);
+  }
 
   MapManager.renderUserMarker(null);
+
+  if (State.mapsReady) {
+    MapManager.renderStoreMarkers(State.stores, null, getMapMarkerOptions());
+  }
 }
 
 /* ============================================================
@@ -87,7 +108,7 @@ function closeModal() {
    ============================================================ */
 
 async function loadStores() {
-  setListLoading(true);
+  setStoreListFetching(true);
 
   try {
     const stores = await fetchStores();
@@ -96,13 +117,17 @@ async function loadStores() {
 
     /* 地图已就绪则同步渲染标记 */
     if (State.mapsReady) {
-      MapManager.renderStoreMarkers(stores, State.activeStoreId, handleStoreClick);
+      MapManager.renderStoreMarkers(stores, State.activeStoreId, getMapMarkerOptions());
+    }
+
+    if (State.userAnchor) {
+      void recalcDistancesWithOverlay();
     }
   } catch (err) {
     console.error("[modal] loadStores failed:", err);
     renderSidebarError();
   } finally {
-    setListLoading(false);
+    setStoreListFetching(false);
   }
 }
 
@@ -119,7 +144,7 @@ function tryAutoLocate() {
     return;
   }
 
-  /* 延迟 0ms 避免阻塞弹窗动画 */
+  /* 延迟 0ms 避免阻塞弹窗动画（与组件一致） */
   setTimeout(() => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -130,20 +155,36 @@ function tryAutoLocate() {
         State.zoom = 12;
         State.userAnchor = { lat, lng };
 
-        MapManager.panTo({ lat, lng }, 12);
-        MapManager.renderUserMarker({ lat, lng });
-        updateDistances();
-
-        /* 逆地理编码填充搜索框 */
         if (State.mapsReady) {
-          const address = await geocodeLatLngToFormattedAddress(lat, lng);
-          if (address && State.isOpen) {
-            Els.searchInput.value = address;
+          MapManager.panTo({ lat, lng }, 12);
+          MapManager.renderUserMarker({ lat, lng });
+        }
+
+        setListAuxBusy(true);
+        try {
+          if (State.mapsReady) {
+            const address = await geocodeLatLngToFormattedAddress(lat, lng);
+            const displayText =
+              address ||
+              (STORE_FINDER_COPY.currentLocationText || "").trim() ||
+              `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+            if (State.isOpen) {
+              Els.searchInput.value = displayText;
+            }
           }
+
+          if (State.stores.length > 0) {
+            State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
+            renderSidebar();
+          }
+        } finally {
+          setListAuxBusy(false);
         }
       },
       () => {
-        /* 静默失败：用户拒绝或超时，无需弹窗提示 */
+        /* 拒绝或超时：回退到当前 locale 默认城市（与 handleFallbackToLocaleCity 一致） */
+        fallbackToLocaleCity();
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
     );
@@ -166,6 +207,7 @@ function handleLocateMe() {
   }
 
   Els.locateBtn.classList.add("locating");
+  setListAuxBusy(true);
 
   navigator.geolocation.getCurrentPosition(
     async (position) => {
@@ -177,22 +219,41 @@ function handleLocateMe() {
       State.mapCenter = { lat, lng };
       State.zoom = 12;
 
-      MapManager.panTo({ lat, lng }, 12);
-      MapManager.renderUserMarker({ lat, lng });
-      updateDistances();
-
-      /* 逆地理编码填充搜索框 */
       if (State.mapsReady) {
-        const address = await geocodeLatLngToFormattedAddress(lat, lng);
-        Els.searchInput.value = address ?? `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        MapManager.panTo({ lat, lng }, 12);
+        MapManager.renderUserMarker({ lat, lng });
+      }
+
+      try {
+        if (State.mapsReady) {
+          const address = await geocodeLatLngToFormattedAddress(lat, lng);
+          const displayText =
+            address ||
+            (STORE_FINDER_COPY.currentLocationText || "").trim() ||
+            `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+          Els.searchInput.value = displayText;
+        } else {
+          Els.searchInput.value = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        }
+
+        if (State.stores.length > 0) {
+          State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
+          renderSidebar();
+        }
+      } catch (geocodeErr) {
+        console.error("[modal] Locate geocode error:", geocodeErr);
+      } finally {
+        setListAuxBusy(false);
       }
     },
     (err) => {
       Els.locateBtn.classList.remove("locating");
+      setListAuxBusy(false);
 
       if (err.code === 1) {
-        /* 用户拒绝授权 */
         Els.locationDeniedModal.style.display = "flex";
+        fallbackToLocaleCity();
       } else {
         console.warn("[modal] Geolocation error:", err.message);
       }
@@ -228,11 +289,20 @@ async function handleSearchInput(e) {
   try {
     const { AutocompleteSuggestion } = await google.maps.importLibrary("places");
     const sessionToken = await getSessionToken();
+    const locale = getLocaleCode();
+    const restrictCountries = ["de", "uk", "fr", "eu"];
+    const requestOptions = { input: val, sessionToken };
 
-    const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
-      input: val,
-      sessionToken,
-    });
+    if (restrictCountries.includes(locale)) {
+      if (locale === "eu") {
+        requestOptions.includedRegionCodes = ["de", "fr", "it", "es", "nl"];
+      } else {
+        requestOptions.includedRegionCodes = [locale === "uk" ? "gb" : locale];
+      }
+    }
+
+    const { suggestions } =
+      await AutocompleteSuggestion.fetchAutocompleteSuggestions(requestOptions);
 
     if (suggestions && suggestions.length > 0) {
       renderSuggestions(suggestions);
@@ -280,12 +350,15 @@ async function handleSuggestionClick(suggestion) {
   /* Session Token 用完后重置 */
   State.sessionToken = null;
 
+  setListAuxBusy(true);
   try {
     const place = pred.toPlace();
     await place.fetchFields({ fields: ["location", "formattedAddress", "displayName"] });
 
     const loc = place.location;
-    if (!loc) return;
+    if (!loc) {
+      return;
+    }
 
     const lat = typeof loc.lat === "function" ? loc.lat() : loc.lat;
     const lng = typeof loc.lng === "function" ? loc.lng() : loc.lng;
@@ -294,11 +367,19 @@ async function handleSuggestionClick(suggestion) {
     State.zoom = 12;
     State.userAnchor = { lat, lng };
 
-    MapManager.panTo({ lat, lng }, 12);
-    MapManager.renderUserMarker({ lat, lng });
-    updateDistances();
+    if (State.mapsReady) {
+      MapManager.panTo({ lat, lng }, 12);
+      MapManager.renderUserMarker({ lat, lng });
+    }
+
+    if (State.stores.length > 0) {
+      State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
+      renderSidebar();
+    }
   } catch (err) {
     console.error("[modal] Place details error:", err);
+  } finally {
+    setListAuxBusy(false);
   }
 }
 
@@ -311,11 +392,62 @@ function hideSuggestions() {
    距离计算与门店列表排序
    ============================================================ */
 
-function updateDistances() {
-  if (!State.userAnchor || State.stores.length === 0) return;
+/**
+ * 定位失败/拒绝时：地图与锚点切到 locale 默认城市，搜索框填入城市名（与组件 handleFallbackToLocaleCity 一致）
+ */
+function fallbackToLocaleCity() {
+  const { lat, lng, cityLabel } = getLocaleCityDefault();
 
-  State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
-  renderSidebar();
+  State.mapCenter = { lat, lng };
+  State.zoom = 12;
+  State.userAnchor = { lat, lng };
+  Els.searchInput.value = cityLabel;
+
+  if (State.mapsReady) {
+    MapManager.panTo({ lat, lng }, 12);
+    MapManager.renderUserMarker({ lat, lng });
+    MapManager.renderStoreMarkers(State.stores, State.activeStoreId, getMapMarkerOptions());
+  }
+
+  if (State.stores.length > 0) {
+    State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
+    renderSidebar();
+  }
+}
+
+function refreshListOverlay() {
+  const busy = State.storeListFetching || State.listAuxBusy;
+
+  Els.spinnerOverlay.style.display = busy ? "flex" : "none";
+  Els.storeList.classList.toggle("loading", busy);
+}
+
+function setStoreListFetching(loading) {
+  State.storeListFetching = loading;
+  refreshListOverlay();
+}
+
+function setListAuxBusy(busy) {
+  State.listAuxBusy = busy;
+  refreshListOverlay();
+}
+
+/** 距离重算并刷新列表（带列表遮罩，行为接近组件内 userAnchor effect） */
+async function recalcDistancesWithOverlay() {
+  if (!State.userAnchor || State.stores.length === 0) {
+    State.distancesKm = {};
+    renderSidebar();
+
+    return;
+  }
+
+  setListAuxBusy(true);
+  try {
+    State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
+    renderSidebar();
+  } finally {
+    setListAuxBusy(false);
+  }
 }
 
 /* ============================================================
@@ -402,7 +534,7 @@ function buildStoreCardHTML(store) {
           ${phoneHtml}
         </div>
         <div class="action_area">
-          <button class="directions_btn" data-id="${store.id}">Directions</button>
+          <button class="directions_btn" data-id="${store.id}">${STORE_FINDER_COPY.storeListNavBtnText}</button>
         </div>
       </div>
     </div>
@@ -444,8 +576,8 @@ function renderSidebarError() {
         </svg>
       </div>
       <div>
-        <p class="empty_title">Sorry, we can't load stores right now.</p>
-        <p class="empty_desc">This may be due to a network issue or a temporary error. Please try again later.</p>
+        <p class="empty_title">${STORE_FINDER_COPY.storeListErrorTitle}</p>
+        <p class="empty_desc">${STORE_FINDER_COPY.storeListErrorDesc}</p>
       </div>
     </div>
   `;
@@ -464,7 +596,7 @@ function handleStoreClick(storeId) {
     State.mapCenter = { lat: store.lat, lng: store.lng };
     State.zoom = 14;
     MapManager.panTo({ lat: store.lat, lng: store.lng }, 14);
-    MapManager.renderStoreMarkers(State.stores, storeId, handleStoreClick);
+    MapManager.renderStoreMarkers(State.stores, storeId, getMapMarkerOptions());
   }
 
   /* 更新卡片激活样式（避免整体重渲染）*/
@@ -490,14 +622,31 @@ function openDirections(storeId) {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
+/** 关闭地图上的门店详情卡片并取消选中（对齐 MapContent onCloseStoreDetail） */
+function handleCloseStoreDetail() {
+  State.activeStoreId = null;
+
+  if (State.mapsReady) {
+    MapManager.renderStoreMarkers(State.stores, null, getMapMarkerOptions());
+  }
+
+  Els.storeList.querySelectorAll(".store_card").forEach((card) => {
+    card.classList.remove("active");
+  });
+}
+
+function getMapMarkerOptions() {
+  return {
+    onStoreClick: handleStoreClick,
+    onDirections: (store) => openDirections(store.id),
+    onCloseStoreDetail: handleCloseStoreDetail,
+    navButtonText: STORE_FINDER_COPY.storeListNavBtnText,
+  };
+}
+
 /* ============================================================
    loading 状态
    ============================================================ */
-
-function setListLoading(loading) {
-  Els.spinnerOverlay.style.display = loading ? "flex" : "none";
-  Els.storeList.classList.toggle("loading", loading);
-}
 
 /* ============================================================
    Google Maps 脚本加载就绪回调
@@ -518,7 +667,11 @@ function onMapsReady() {
 
   /* 如果门店已加载完成，立即渲染标记 */
   if (State.stores.length > 0) {
-    MapManager.renderStoreMarkers(State.stores, State.activeStoreId, handleStoreClick);
+    MapManager.renderStoreMarkers(State.stores, State.activeStoreId, getMapMarkerOptions());
+  }
+
+  if (State.userAnchor) {
+    MapManager.renderUserMarker(State.userAnchor);
   }
 }
 
@@ -534,9 +687,17 @@ function bindEvents() {
   Els.closeBtn.addEventListener("click", closeModal);
   Els.overlay.addEventListener("click", closeModal);
 
-  /* ESC 键关闭 */
+  /* ESC：先关闭地图详情卡片，再关弹窗（与常见地图弹窗交互一致） */
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && State.isOpen) closeModal();
+    if (e.key !== "Escape" || !State.isOpen) {
+      return;
+    }
+
+    if (State.activeStoreId) {
+      handleCloseStoreDetail();
+    } else {
+      closeModal();
+    }
   });
 
   /* 搜索框输入 */
@@ -566,6 +727,23 @@ function bindEvents() {
 }
 
 /* ============================================================
+   文案注入（与 resolveStoreFinderCopy / resolveDeniedLocationCopy 结果一致）
+   ============================================================ */
+
+function applyUiCopy() {
+  const c = STORE_FINDER_COPY;
+  const d = DENIED_LOCATION_COPY;
+
+  Els.modalTitle.textContent = c.modalTitle;
+  Els.searchInput.placeholder = c.searchPlaceholder;
+  Els.searchDesc.textContent = c.searchHint;
+  Els.locationDeniedTitle.textContent = d.modalTitle;
+  Els.locationDeniedDesc.textContent = d.description;
+  Els.gotItBtn.textContent = d.closeButtonLabel;
+}
+
+/* ============================================================
    初始化入口
    ============================================================ */
+applyUiCopy();
 bindEvents();
