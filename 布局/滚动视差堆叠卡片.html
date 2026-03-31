@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>滚动视差堆叠卡片</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+
+    body {
+      margin: 0;
+      background-color: #121212;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .hero {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .hero h1 {
+      font-size: 4rem;
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      color: #a0a0a0;
+      max-width: 600px;
+    }
+
+    .stacking-container {
+      position: relative;
+      padding: 10vh 0;
+      margin: 0 auto;
+      max-width: 1000px;
+      width: 90%;
+    }
+
+    .card {
+      position: sticky;
+      top: 15vh; /* 吸顶位置 */
+      height: 70vh;
+      border-radius: 30px;
+      padding: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 -20px 40px rgba(0, 0, 0, 0.4);
+      transform-origin: top center;
+      transition: transform 0.1s linear, filter 0.1s linear;
+      margin-bottom: 100px;
+      overflow: hidden;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.6));
+      pointer-events: none;
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card h2 {
+      font-size: 3rem;
+      margin: 0;
+    }
+
+    .card p {
+      font-size: 1.2rem;
+      opacity: 0.8;
+      max-width: 500px;
+    }
+
+    .card .tag {
+      align-self: flex-start;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* 为不同卡片设置不同的背景和变量，用于 JS 计算视差 */
+    .card-1 { background: #ff4b1f; background: linear-gradient(to right, #ff9068, #ff4b1f); z-index: 1; }
+    .card-2 { background: #1D976C; background: linear-gradient(to right, #93F9B9, #1D976C); z-index: 2; }
+    .card-3 { background: #4CB8C4; background: linear-gradient(to right, #3CD3AD, #4CB8C4); z-index: 3; }
+    .card-4 { background: #8E2DE2; background: linear-gradient(to right, #4A00E0, #8E2DE2); z-index: 4; }
+
+    .footer {
+      height: 80vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      font-weight: 600;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        top: 10vh;
+        height: 75vh;
+        padding: 30px;
+      }
+      .card h2 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <h1>Scroll Down</h1>
+    <p>体验在滚动过程中，卡片如纸牌般自然堆叠在顶部的 3D 视差视觉效果。这利用了 position: sticky 与基于滚动监听的实时缩放变换。</p>
+  </div>
+
+  <div class="stacking-container">
+    
+    <div class="card card-1" data-index="1">
+      <div class="card-content">
+        <div class="tag">Design</div>
+        <h2>第一步：构思</h2>
+      </div>
+      <div class="card-content">
+        <p>好的设计始于纯粹的灵感与周密的逻辑构架。在布局之上建立秩序，为用户提供直觉般的导航体验。</p>
+      </div>
+    </div>
+
+    <div class="card card-2" data-index="2">
+      <div class="card-content">
+        <div class="tag">Development</div>
+        <h2>第二步：构建</h2>
+      </div>
+      <div class="card-content">
+        <p>利用现代 CSS 属性与丝滑的硬件加速动画，将静态的设计稿转化为具备生命力的互动界面。</p>
+      </div>
+    </div>
+
+    <div class="card card-3" data-index="3">
+      <div class="card-content">
+        <div class="tag">Animation</div>
+        <h2>第三步：动效</h2>
+      </div>
+      <div class="card-content">
+        <p>动效并非炫技，而是用于交代界面元素的空间关系与状态转换，提供最有效的视觉反馈。</p>
+      </div>
+    </div>
+
+    <div class="card card-4" data-index="4">
+      <div class="card-content">
+        <div class="tag">Launch</div>
+        <h2>第四步：发布</h2>
+      </div>
+      <div class="card-content">
+        <p>完成所有细节的打磨，确保在各个视口与设备上都能展现出如丝般顺滑的堆叠体验。</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    End of the stack.
+  </div>
+
+  <script>
+    const cards = document.querySelectorAll('.card');
+
+    function handleScroll() {
+      // 获取当前视口顶部的滚动距离
+      const scrollY = window.scrollY;
+
+      cards.forEach((card, index) => {
+        // 卡片距离文档顶部的初始偏移量（注意：这里不精确考虑 sticky 后的变化，所以用 offsetTop 仅作参考）
+        // 更好的方式是获取相对于父容器的位置
+        const rect = card.getBoundingClientRect();
+        
+        // 当卡片到达顶部 sticky 位置时（CSS 中设定的 top: 15vh）
+        // window.innerHeight * 0.15 即 15vh
+        const stickyTop = window.innerHeight * 0.15;
+
+        // 如果卡片已经碰到了 sticky 的天花板
+        if (rect.top <= stickyTop + 1) {
+          // 计算超出的滚动距离
+          // 利用下一个元素的距离来计算当前元素的缩放
+          // 这里使用一个更平滑的计算：基于它自身相对于顶部的偏移
+          
+          // 获取它的原本 top 位置（如果在标准文档流中）
+          const offsetTop = card.parentElement.offsetTop + (index * (card.offsetHeight + 100)); 
+          
+          // distance 是滚动越过该卡片 sticky 点的距离
+          let distance = scrollY + stickyTop - offsetTop;
+          
+          if (distance > 0) {
+            // 后续每滚动 100px 缩小 1%
+            let scale = 1 - (distance / 4000);
+            scale = Math.max(scale, 0.85); // 最小缩放到 0.85
+            
+            // 下滑时逐渐变暗
+            let brightness = 1 - (distance / 2000);
+            brightness = Math.max(brightness, 0.4);
+
+            card.style.transform = `scale(${scale})`;
+            card.style.filter = `brightness(${brightness})`;
+          } else {
+            card.style.transform = `scale(1)`;
+            card.style.filter = `brightness(1)`;
+          }
+        } else {
+          // 未到达 sticky 点时，保持正常
+          card.style.transform = `scale(1)`;
+          card.style.filter = `brightness(1)`;
+        }
+      });
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // 初始化执行一次
+    handleScroll();
+  </script>
+</body>
+</html>
