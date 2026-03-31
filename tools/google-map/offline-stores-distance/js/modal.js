@@ -33,6 +33,9 @@ const State = {
   listAuxBusy: false,
 };
 
+/** 地图挂在 #googleMap（桌面）还是 #googleMapMobile（移动槽位），与 valerion 双容器策略一致 */
+let mapLayoutMode = null;
+
 /* ============================================================
    DOM 节点引用
    ============================================================ */
@@ -46,6 +49,7 @@ const Els = {
   storeList: $("storeList"),
   spinnerOverlay: $("spinnerOverlay"),
   mapLoading: $("mapLoading"),
+  mapLoadingMobile: $("mapLoadingMobile"),
   searchInput: $("searchInput"),
   searchDropdown: $("searchDropdown"),
   locateBtn: $("locateBtn"),
@@ -68,6 +72,11 @@ function openModal() {
   State.isOpen = true;
   Els.modal.classList.add("active");
   document.body.style.overflow = "hidden";
+
+  /* 地图已就绪时：对齐当前视口容器并触发 resize（避免仅依赖 window.resize） */
+  if (State.mapsReady) {
+    syncMapToLayout();
+  }
 
   loadStores();
   tryAutoLocate();
@@ -649,23 +658,62 @@ function getMapMarkerOptions() {
    ============================================================ */
 
 /* ============================================================
-   Google Maps 脚本加载就绪回调
+   地图容器：桌面 #googleMap / 移动侧栏 #googleMapMobile（对齐 valerion）
    ============================================================ */
 
-function onMapsReady() {
-  State.mapsReady = true;
+function isMobileMapLayout() {
+  return window.matchMedia("(max-width: 768px)").matches;
+}
 
-  /* 隐藏地图区 loading 占位 */
-  Els.mapLoading.classList.add("hidden");
+function getMapSurfaceEl() {
+  return isMobileMapLayout()
+    ? document.getElementById("googleMapMobile")
+    : document.getElementById("googleMap");
+}
 
-  /* 初始化地图 */
-  MapManager.init(
-    document.getElementById("googleMap"),
-    State.mapCenter,
-    State.zoom
-  );
+function triggerGoogleMapResize() {
+  const map = MapManager.getMap();
+  if (map && window.google?.maps?.event) {
+    window.google.maps.event.trigger(map, "resize");
+  }
+}
 
-  /* 如果门店已加载完成，立即渲染标记 */
+function debounceMap(fn, ms) {
+  let timerId = null;
+
+  return (...args) => {
+    window.clearTimeout(timerId);
+    timerId = window.setTimeout(() => {
+      fn.apply(null, args);
+    }, ms);
+  };
+}
+
+/**
+ * 视口在桌面/移动之间切换时，销毁并挂到新容器（单实例 Map，与组件双挂载点行为一致）
+ */
+function syncMapToLayout() {
+  if (!State.mapsReady || !mapLayoutMode) {
+    return;
+  }
+
+  const nextMode = isMobileMapLayout() ? "mobile" : "desktop";
+
+  if (nextMode === mapLayoutMode) {
+    triggerGoogleMapResize();
+
+    return;
+  }
+
+  const surface = getMapSurfaceEl();
+  if (!surface) {
+    return;
+  }
+
+  mapLayoutMode = nextMode;
+  MapManager.destroy();
+  MapManager.init(surface, State.mapCenter, State.zoom);
+
   if (State.stores.length > 0) {
     MapManager.renderStoreMarkers(State.stores, State.activeStoreId, getMapMarkerOptions());
   }
@@ -673,6 +721,44 @@ function onMapsReady() {
   if (State.userAnchor) {
     MapManager.renderUserMarker(State.userAnchor);
   }
+
+  Els.mapLoading.classList.add("hidden");
+  if (Els.mapLoadingMobile) {
+    Els.mapLoadingMobile.classList.add("hidden");
+  }
+
+  triggerGoogleMapResize();
+}
+
+/* ============================================================
+   Google Maps 脚本加载就绪回调
+   ============================================================ */
+
+function onMapsReady() {
+  const surface = getMapSurfaceEl();
+  if (!surface) {
+    return;
+  }
+
+  State.mapsReady = true;
+  mapLayoutMode = isMobileMapLayout() ? "mobile" : "desktop";
+
+  MapManager.init(surface, State.mapCenter, State.zoom);
+
+  Els.mapLoading.classList.add("hidden");
+  if (Els.mapLoadingMobile) {
+    Els.mapLoadingMobile.classList.add("hidden");
+  }
+
+  if (State.stores.length > 0) {
+    MapManager.renderStoreMarkers(State.stores, State.activeStoreId, getMapMarkerOptions());
+  }
+
+  if (State.userAnchor) {
+    MapManager.renderUserMarker(State.userAnchor);
+  }
+
+  triggerGoogleMapResize();
 }
 
 /* ============================================================
@@ -724,6 +810,8 @@ function bindEvents() {
 
   /* Google Maps 脚本加载完成事件（由 index.html 的 callback 触发） */
   document.addEventListener("googlemapsready", onMapsReady);
+
+  window.addEventListener("resize", debounceMap(syncMapToLayout, 200));
 }
 
 /* ============================================================
