@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>谷歌搜索自动填充地图（自定义样式）</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #171a21;
+      --panel-border: #2a3040;
+      --text: #eef3ff;
+      --muted: #9aa7c2;
+      --input-bg: #111620;
+      --input-border: #323b50;
+      --focus: #5d8cff;
+      --error: #ff6b6b;
+      --btn: #5d8cff;
+      --btn-hover: #4a79f4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(circle at top right, #1f2942 0%, var(--bg) 42%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .layout {
+      width: min(1200px, 100%);
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 16px;
+    }
+
+    .panel {
+      background: rgba(23, 26, 33, 0.96);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .panel_title {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+
+    .field_row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .input {
+      width: 100%;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input::placeholder {
+      color: #7482a0;
+    }
+
+    .input:focus {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(93, 140, 255, 0.2);
+    }
+
+    .input.readonly {
+      background: #0c111b;
+      color: #b7c4de;
+      cursor: not-allowed;
+    }
+
+    .input.error {
+      border-color: var(--error);
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.16);
+    }
+
+    .error_text {
+      min-height: 18px;
+      font-size: 12px;
+      color: var(--error);
+      line-height: 1.4;
+    }
+
+    .checkout_btn {
+      margin-top: 6px;
+      height: 42px;
+      border: none;
+      border-radius: 12px;
+      background: var(--btn);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .checkout_btn:hover {
+      background: var(--btn-hover);
+    }
+
+    .map_wrap {
+      background: #0c111b;
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      min-height: 620px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      min-height: 620px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .map_wrap {
+        min-height: 420px;
+      }
+
+      #map {
+        min-height: 420px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <section class="panel">
+      <h2 class="panel_title">Address Selection (Custom UI)</h2>
+
+      <div class="field">
+        <label class="label" for="location-input">Address</label>
+        <input class="input" id="location-input" type="text" placeholder="Search US address" />
+      </div>
+
+      <div class="field">
+        <label class="label" for="apartment-input">Apt / Suite (optional)</label>
+        <input class="input" id="apartment-input" type="text" placeholder="Apt, Suite, etc." />
+      </div>
+
+      <div class="field">
+        <label class="label" for="locality-input">City</label>
+        <input class="input" id="locality-input" type="text" placeholder="City" />
+      </div>
+
+      <div class="field_row">
+        <div class="field">
+          <label class="label" for="administrative_area_level_1-input">State / Province</label>
+          <input class="input" id="administrative_area_level_1-input" type="text" placeholder="State" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="postal_code-input">Zip / Postal code</label>
+          <input class="input" id="postal_code-input" type="text" placeholder="Zip code" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label" for="country-input">Country</label>
+        <input class="input readonly" id="country-input" type="text" readonly />
+      </div>
+
+      <div class="error_text" id="zip-error"></div>
+      <button class="checkout_btn" type="button">Checkout</button>
+    </section>
+
+    <section class="map_wrap">
+      <div id="map"></div>
+    </section>
+  </div>
+
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI&libraries=places"></script>
+  <script>
+    const SHORT_NAME_ADDRESS_COMPONENT_TYPES = new Set([
+      "street_number",
+      "administrative_area_level_1",
+      "postal_code",
+    ]);
+
+    const ADDRESS_COMPONENT_TYPES_IN_FORM = [
+      "location",
+      "locality",
+      "administrative_area_level_1",
+      "postal_code",
+    ];
+
+    const els = {
+      location: document.getElementById("location-input"),
+      locality: document.getElementById("locality-input"),
+      state: document.getElementById("administrative_area_level_1-input"),
+      zip: document.getElementById("postal_code-input"),
+      country: document.getElementById("country-input"),
+      zipError: document.getElementById("zip-error"),
+    };
+
+    let map;
+    let marker;
+    let zipValidateTimer = null;
+
+    function getFormInputElement(componentType) {
+      return document.getElementById(componentType + "-input");
+    }
+
+    function setZipError(message) {
+      els.zipError.textContent = message || "";
+      const hasError = Boolean(message);
+      els.zip.classList.toggle("error", hasError);
+      els.state.classList.toggle("error", hasError);
+    }
+
+    function fillInAddress(place) {
+      function getComponentName(componentType) {
+        for (const component of place.address_components || []) {
+          if (component.types[0] === componentType) {
+            return SHORT_NAME_ADDRESS_COMPONENT_TYPES.has(componentType)
+              ? component.short_name
+              : component.long_name;
+          }
+        }
+
+        return "";
+      }
+
+      function getComponentText(componentType) {
+        if (componentType === "location") {
+          return (
+            getComponentName("street_number") + " " + getComponentName("route")
+          ).trim();
+        }
+
+        return getComponentName(componentType);
+      }
+
+      ADDRESS_COMPONENT_TYPES_IN_FORM.forEach((id) => {
+        const input = getFormInputElement(id);
+        if (input) {
+          input.value = getComponentText(id);
+        }
+      });
+
+      setZipError("");
+    }
+
+    function renderAddress(place) {
+      if (!place.geometry || !place.geometry.location) {
+        return;
+      }
+
+      map.setCenter(place.geometry.location);
+      marker.setPosition(place.geometry.location);
+      map.setZoom(16);
+    }
+
+    async function isZipCodeInStateLive(postalCode, state) {
+      if (!postalCode || !state) {
+        setZipError("");
+        return true;
+      }
+
+      const geocoder = new google.maps.Geocoder();
+      const result = await geocoder.geocode({ address: postalCode });
+
+      if (!result || !result.results || !result.results[0]) {
+        setZipError("请输入有效的邮编。");
+        return false;
+      }
+
+      const components = result.results[0].address_components || [];
+      const foundState = components.find((component) =>
+        component.types.includes("administrative_area_level_1")
+      );
+
+      const stateLower = state.toLowerCase();
+      const matched =
+        foundState &&
+        (String(foundState.short_name).toLowerCase() === stateLower ||
+          String(foundState.long_name).toLowerCase() === stateLower);
+
+      if (!matched) {
+        setZipError("邮编不在当前省/州范围内，请检查。");
+        return false;
+      }
+
+      setZipError("");
+      return true;
+    }
+
+    function scheduleZipValidation() {
+      const postalCode = els.zip.value.trim();
+      const state = els.state.value.trim();
+
+      window.clearTimeout(zipValidateTimer);
+      zipValidateTimer = window.setTimeout(() => {
+        isZipCodeInStateLive(postalCode, state).catch(() => {
+          setZipError("网络错误，无法校验邮编。");
+        });
+      }, 280);
+    }
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 37.4221, lng: -122.0841 },
+        zoom: 11,
+        fullscreenControl: true,
+        streetViewControl: true,
+        mapTypeControl: false,
+      });
+
+      marker = new google.maps.Marker({
+        map: map,
+      });
+
+      els.country.value = "United States";
+
+      const autocomplete = new google.maps.places.Autocomplete(els.location, {
+        fields: ["address_components", "geometry", "name"],
+        types: ["address"],
+        componentRestrictions: { country: "US" },
+      });
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+
+        if (!place.geometry) {
+          window.alert("未获取到地址详情，请从下拉建议中选择地址。");
+          return;
+        }
+
+        renderAddress(place);
+        fillInAddress(place);
+      });
+
+      els.zip.addEventListener("input", scheduleZipValidation);
+      els.state.addEventListener("input", scheduleZipValidation);
+    }
+
+    initMap();
+  </script>
+</body>
+</html>

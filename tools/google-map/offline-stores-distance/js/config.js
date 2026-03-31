@@ -171,18 +171,53 @@ const MOCK_STORES = [
 ];
 
 /**
- * 获取门店列表
- * 当前返回 Mock 数据；替换为真实 API 时改写此函数：
- *
- * async function fetchStores() {
- *   const res = await fetch("/prod-api/client/offlineStore/list?brand=valerion&pageSize=100");
- *   const data = await res.json();
- *   return data.rows.map(mapRawStore);
- * }
+ * 组件 service.ts 对齐：uk/de/fr 传 site，其它 locale 不传。
+ * @param {string} locale
+ * @returns {string|undefined}
  */
-async function fetchStores() {
+function getStoreSiteParamByLocale(locale) {
+  const normalized = (locale || "").toLowerCase();
+
+  return ["uk", "de", "fr"].includes(normalized) ? normalized : undefined;
+}
+
+/**
+ * 获取门店列表
+ * 当前返回 Mock 数据；同时模拟组件 service.ts 的参数与过滤逻辑：
+ * - 入参: pageNum/pageSize/brand/site
+ * - 可见性过滤: isShow === 1 && isDeleted === 0
+ * - locale 站点过滤: uk/de/fr 传 site
+ *
+ * @param {{ pageNum?: number, pageSize?: number, brand?: string, site?: string }} params
+ */
+async function fetchStores(params = {}) {
+  const {
+    pageNum = 1,
+    pageSize = 100,
+    brand = "valerion",
+    site,
+  } = params;
+
+  void pageNum;
+  void pageSize;
+  void brand;
+
+  const locale = getLocaleCode();
+  const resolvedSite = site || getStoreSiteParamByLocale(locale);
+
   /* 模拟网络延迟 300ms */
   await new Promise((resolve) => setTimeout(resolve, 300));
 
-  return MOCK_STORES;
+  const visibleStores = MOCK_STORES.filter((store) => {
+    const isShow = store.isShow ?? 1;
+    const isDeleted = store.isDeleted ?? 0;
+
+    return isShow === 1 && isDeleted === 0;
+  });
+
+  if (!resolvedSite) {
+    return visibleStores;
+  }
+
+  return visibleStores.filter((store) => !store.site || store.site === resolvedSite);
 }

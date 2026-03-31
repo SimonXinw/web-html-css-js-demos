@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>绘制多边形区域与包含判断 (Drawing & Polygon Intersection)</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; font-family: sans-serif; }
+        #map { height: 100%; width: 100%; }
+        .info-panel {
+            position: absolute;
+            top: 60px; /* 避开绘制工具栏 */
+            left: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            z-index: 10;
+            max-width: 300px;
+        }
+        .stats { margin-top: 10px; font-weight: bold; color: #d50000; }
+        /* 简单自定义标记 */
+        .mock-marker {
+            width: 20px;
+            height: 20px;
+            background-color: #9e9e9e;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .mock-marker.active {
+            background-color: #ea4335;
+            transform: scale(1.3);
+            z-index: 2;
+        }
+    </style>
+    <script>
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111",
+            v: "weekly"
+        });
+    </script>
+</head>
+<body>
+    <div class="info-panel">
+        <h3>绘制多边形过滤</h3>
+        <p>1. 使用地图上方的工具栏选择 <b>"多边形工具"</b> (Polygon)。<br>
+           2. 在地图上绘制一个区域。<br>
+           3. 区域内的点将变为红色高亮。</p>
+        <div class="stats" id="stats">区域内选中点数: 0</div>
+        <button onclick="clearPolygons()" style="margin-top: 10px;">清除绘制区域</button>
+    </div>
+    <div id="map"></div>
+    <script>
+        let map;
+        let drawingManager;
+        let mockMarkers = []; // 存储所有点的信息：{ position, element }
+        let currentPolygon = null;
+
+        // 生成测试数据
+        function generateMockData(center, count) {
+            const data = [];
+            for (let i = 0; i < count; i++) {
+                data.push({
+                    lat: center.lat + (Math.random() - 0.5) * 0.15,
+                    lng: center.lng + (Math.random() - 0.5) * 0.15,
+                });
+            }
+            return data;
+        }
+
+        async function initMap() {
+            const { Map } = await google.maps.importLibrary("maps");
+            const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+            const { DrawingManager } = await google.maps.importLibrary("drawing");
+            const { poly } = await google.maps.importLibrary("geometry");
+
+            const center = { lat: 34.887285, lng: -92.404604 };
+            
+            map = new Map(document.getElementById("map"), {
+                zoom: 12,
+                center: center,
+                mapId: "DEMO_MAP_ID",
+            });
+
+            // 初始化测试数据点
+            const mockPositions = generateMockData(center, 50);
+            mockPositions.forEach(pos => {
+                const el = document.createElement("div");
+                el.className = "mock-marker";
+                
+                new AdvancedMarkerElement({
+                    map: map,
+                    position: pos,
+                    content: el
+                });
+
+                mockMarkers.push({ position: pos, element: el });
+            });
+
+            // 初始化绘制管理器
+            drawingManager = new DrawingManager({
+                drawingMode: google.maps.drawing.OverlayType.POLYGON,
+                drawingControl: true,
+                drawingControlOptions: {
+                    position: google.maps.ControlPosition.TOP_CENTER,
+                    drawingModes: [
+                        google.maps.drawing.OverlayType.POLYGON,
+                        google.maps.drawing.OverlayType.CIRCLE
+                    ],
+                },
+                polygonOptions: {
+                    fillColor: "#1967d2",
+                    fillOpacity: 0.2,
+                    strokeWeight: 2,
+                    strokeColor: "#1967d2",
+                    clickable: false,
+                    editable: true,
+                    zIndex: 1,
+                },
+                circleOptions: {
+                    fillColor: "#1967d2",
+                    fillOpacity: 0.2,
+                    strokeWeight: 2,
+                    strokeColor: "#1967d2",
+                    clickable: false,
+                    editable: true,
+                    zIndex: 1,
+                }
+            });
+
+            drawingManager.setMap(map);
+
+            // 监听绘制完成事件
+            google.maps.event.addListener(drawingManager, 'overlaycomplete', function(event) {
+                // 如果已经有绘制的区域，先清除之前的
+                if (currentPolygon) {
+                    currentPolygon.setMap(null);
+                }
+                currentPolygon = event.overlay;
+                
+                // 切换回拖拽地图模式
+                drawingManager.setDrawingMode(null);
+
+                checkMarkersInShape(event);
+
+                // 监听形状编辑事件（顶点拖拽等）
+                if (event.type === 'polygon') {
+                    const path = currentPolygon.getPath();
+                    google.maps.event.addListener(path, 'set_at', () => checkMarkersInShape(event));
+                    google.maps.event.addListener(path, 'insert_at', () => checkMarkersInShape(event));
+                } else if (event.type === 'circle') {
+                    google.maps.event.addListener(currentPolygon, 'radius_changed', () => checkMarkersInShape(event));
+                    google.maps.event.addListener(currentPolygon, 'center_changed', () => checkMarkersInShape(event));
+                }
+            });
+        }
+
+        // 检查点是否在区域内
+        async function checkMarkersInShape(event) {
+            const { poly, spherical } = await google.maps.importLibrary("geometry");
+            let count = 0;
+
+            mockMarkers.forEach(item => {
+                const latLng = new google.maps.LatLng(item.position.lat, item.position.lng);
+                let isInside = false;
+
+                if (event.type === 'polygon') {
+                    // 判断多边形包含
+                    isInside = poly.containsLocation(latLng, event.overlay);
+                } else if (event.type === 'circle') {
+                    // 判断圆包含（计算距离）
+                    const distance = spherical.computeDistanceBetween(latLng, event.overlay.getCenter());
+                    isInside = distance <= event.overlay.getRadius();
+                }
+
+                if (isInside) {
+                    item.element.classList.add("active");
+                    count++;
+                } else {
+                    item.element.classList.remove("active");
+                }
+            });
+
+            document.getElementById("stats").innerText = `区域内选中点数: ${count}`;
+        }
+
+        // 清除区域
+        window.clearPolygons = function() {
+            if (currentPolygon) {
+                currentPolygon.setMap(null);
+                currentPolygon = null;
+            }
+            mockMarkers.forEach(item => item.element.classList.remove("active"));
+            document.getElementById("stats").innerText = `区域内选中点数: 0`;
+        }
+
+        initMap();
+    </script>
+</body>
+</html>

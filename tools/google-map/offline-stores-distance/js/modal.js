@@ -116,11 +116,23 @@ function closeModal() {
    门店数据加载
    ============================================================ */
 
+function getStoreSiteParamByLocale() {
+  const locale = getLocaleCode();
+
+  return ["uk", "de", "fr"].includes(locale) ? locale : undefined;
+}
+
 async function loadStores() {
   setStoreListFetching(true);
 
   try {
-    const stores = await fetchStores();
+    const site = getStoreSiteParamByLocale();
+    const stores = await fetchStores({
+      pageNum: 1,
+      pageSize: 100,
+      brand: "valerion",
+      ...(site ? { site } : {}),
+    });
     State.stores = stores;
     renderSidebar();
 
@@ -402,26 +414,24 @@ function hideSuggestions() {
    ============================================================ */
 
 /**
- * 定位失败/拒绝时：地图与锚点切到 locale 默认城市，搜索框填入城市名（与组件 handleFallbackToLocaleCity 一致）
+ * 定位失败/拒绝时回退 locale 城市。
+ * 对齐组件最新逻辑：只改地图视角，不设置 userAnchor，不回填搜索框，不触发距离计算。
  */
 function fallbackToLocaleCity() {
-  const { lat, lng, cityLabel } = getLocaleCityDefault();
+  const { lat, lng } = getLocaleCityDefault();
 
   State.mapCenter = { lat, lng };
   State.zoom = 12;
-  State.userAnchor = { lat, lng };
-  Els.searchInput.value = cityLabel;
+  State.userAnchor = null;
+  State.distancesKm = {};
 
   if (State.mapsReady) {
     MapManager.panTo({ lat, lng }, 12);
-    MapManager.renderUserMarker({ lat, lng });
+    MapManager.renderUserMarker(null);
     MapManager.renderStoreMarkers(State.stores, State.activeStoreId, getMapMarkerOptions());
   }
 
-  if (State.stores.length > 0) {
-    State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
-    renderSidebar();
-  }
+  renderSidebar();
 }
 
 function refreshListOverlay() {
