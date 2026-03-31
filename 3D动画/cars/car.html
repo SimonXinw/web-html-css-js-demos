@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赛博朋克 3D 赛车 (Cyberpunk 3D Racing) - Game Mode</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        #ui-layer {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #0ff;
+            pointer-events: none;
+            text-shadow: 0 0 10px #0ff;
+            z-index: 10;
+        }
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .info {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        .controls {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #f0f;
+            text-shadow: 0 0 10px #f0f;
+        }
+        #speedometer {
+            font-size: 32px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 15px #0ff, 0 0 30px #0ff;
+            margin-top: 10px;
+        }
+        #score-display {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff0;
+            text-shadow: 0 0 15px #ff0, 0 0 30px #ff0;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+    <!-- 使用 Import Map 引入 Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="ui-layer">
+        <h1>Neon Racer 3D</h1>
+        <div class="info" id="game-status">状态: 引擎已启动，请按 W 键或 ↑ 键开始驾驶</div>
+        <div id="score-display">得分: 0</div>
+        <div id="speedometer">0 KM/H</div>
+        <div class="controls">
+            [W] / [↑] : 加速 (Accelerate)<br>
+            [S] / [↓] : 刹车/倒车 (Brake/Reverse)<br>
+            [A] / [←] : 左转 (Steer Left)<br>
+            [D] / [→] : 右转 (Steer Right)<br>
+            [Space] : 氮气加速 (Nitro Boost)<br><br>
+            <span style="color: yellow;">※ 撞击光环收集得分。如果无法移动，请先点击画面，或关闭中文输入法。</span>
+        </div>
+    </div>
+    <div id="canvas-container"></div>
+
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>
