@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bento 网格卡片平滑展开</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #0f1016;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 200px);
+      gap: 20px;
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    .bento-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 30px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .bento-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .bento-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      /* 缩小光晕的半径，使手电筒聚焦范围更小 */
+      background: radial-gradient(200px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.15) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* 当鼠标停留在整个网格区域时，激活所有卡片的光圈（通过距鼠标的距离自然淡出） */
+    .bento-grid:hover .bento-card::before {
+      opacity: 1;
+    }
+
+    .bento-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Grid Span Configurations */
+    .card-1 { grid-column: span 2; grid-row: span 2; background: linear-gradient(135deg, #FF6B6B, #556270); }
+    .card-2 { grid-column: span 2; }
+    .card-3 { grid-column: span 1; grid-row: span 2; }
+    .card-4 { grid-column: span 1; }
+    .card-5 { grid-column: span 2; }
+    .card-6 { grid-column: span 1; }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .card-subtitle {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Fullscreen View */
+    .fullscreen-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #0f1016;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .fullscreen-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .expanded-card {
+      position: fixed;
+      z-index: 101;
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+      /* Animation handled via JS */
+      transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      will-change: transform, width, height, border-radius;
+    }
+
+    .expanded-card .close-btn {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s ease 0.3s, background 0.2s;
+    }
+
+    .expanded-card .close-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .expanded-card.expanded .close-btn {
+      opacity: 1;
+    }
+
+    .expanded-content {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .expanded-card.expanded .expanded-content {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .expanded-content h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+    }
+
+    .expanded-content p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    @media (max-width: 768px) {
+      .bento-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        gap: 16px;
+      }
+      .bento-card {
+        grid-column: span 1 !important;
+        grid-row: span 1 !important;
+        height: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bento-grid">
+    <div class="bento-card card-1">
+      <h2 class="card-title">创新设计</h2>
+      <p class="card-subtitle">打破常规的布局美学</p>
+    </div>
+    <div class="bento-card card-2">
+      <h2 class="card-title">流畅动效</h2>
+      <p class="card-subtitle">基于 FLIP 原理的丝滑过渡</p>
+    </div>
+    <div class="bento-card card-3">
+      <h2 class="card-title">响应式</h2>
+      <p class="card-subtitle">适配各种设备尺寸</p>
+    </div>
+    <div class="bento-card card-4">
+      <h2 class="card-title">极简</h2>
+      <p class="card-subtitle">Less is more</p>
+    </div>
+    <div class="bento-card card-5">
+      <h2 class="card-title">性能优化</h2>
+      <p class="card-subtitle">硬件加速与重绘控制</p>
+    </div>
+    <div class="bento-card card-6">
+      <h2 class="card-title">灵感</h2>
+      <p class="card-subtitle">源自 Bento Box</p>
+    </div>
+  </div>
+
+  <div class="fullscreen-overlay" id="overlay"></div>
+
+  <script>
+    // 添加全局鼠标光晕辐射效果
+    const grid = document.querySelector('.bento-grid');
+    const cards = document.querySelectorAll('.bento-card');
+    
+    // 当鼠标在网格内移动时，统一更新所有卡片的光晕中心坐标
+    grid.addEventListener('mousemove', e => {
+      cards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        // 计算鼠标相对于当前卡片内部的局部坐标
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mouse-x', `${x}px`);
+        card.style.setProperty('--mouse-y', `${y}px`);
+      });
+    });
+
+    const overlay = document.getElementById('overlay');
+    let activeExpandedCard = null;
+    let originalCard = null;
+
+    document.querySelectorAll('.bento-card').forEach(card => {
+      card.addEventListener('click', () => {
+        if (activeExpandedCard) return;
+
+        originalCard = card;
+        const rect = card.getBoundingClientRect();
+        const style = window.getComputedStyle(card);
+        
+        // 创建展开的卡片
+        const expanded = document.createElement('div');
+        expanded.className = 'expanded-card';
+        expanded.style.left = `${rect.left}px`;
+        expanded.style.top = `${rect.top}px`;
+        expanded.style.width = `${rect.width}px`;
+        expanded.style.height = `${rect.height}px`;
+        expanded.style.background = style.background;
+        expanded.style.backgroundColor = style.backgroundColor;
+
+        // 内容
+        const title = card.querySelector('.card-title').textContent;
+        const subtitle = card.querySelector('.card-subtitle').textContent;
+        
+        expanded.innerHTML = `
+          <button class="close-btn">&times;</button>
+          <div class="expanded-content">
+            <h1>${title}</h1>
+            <p>${subtitle}</p>
+            <p style="margin-top: 24px;">这是一段占位文本。通过在源元素与目标元素之间进行平滑的位置和尺寸插值，我们能够创造出这种连贯的空间扩张感。此动画技术避免了生硬的层级跳跃，在高级 UI 设计中被广泛应用。</p>
+          </div>
+        `;
+
+        document.body.appendChild(expanded);
+        activeExpandedCard = expanded;
+
+        // 隐藏原卡片
+        card.style.opacity = '0';
+        overlay.classList.add('active');
+
+        // 触发重排
+        expanded.offsetHeight; 
+
+        // 扩张动画
+        expanded.style.left = '5vw';
+        expanded.style.top = '5vh';
+        expanded.style.width = '90vw';
+        expanded.style.height = '90vh';
+        expanded.style.borderRadius = '32px';
+        
+        expanded.classList.add('expanded');
+
+        // 绑定关闭事件
+        expanded.querySelector('.close-btn').addEventListener('click', closeCard);
+      });
+    });
+
+    function closeCard() {
+      if (!activeExpandedCard || !originalCard) return;
+
+      const rect = originalCard.getBoundingClientRect();
+      const expanded = activeExpandedCard;
+
+      expanded.classList.remove('expanded');
+      overlay.classList.remove('active');
+
+      // 收缩动画
+      expanded.style.left = `${rect.left}px`;
+      expanded.style.top = `${rect.top}px`;
+      expanded.style.width = `${rect.width}px`;
+      expanded.style.height = `${rect.height}px`;
+      expanded.style.borderRadius = '24px';
+
+      // 动画结束后清理
+      setTimeout(() => {
+        originalCard.style.opacity = '1';
+        expanded.remove();
+        activeExpandedCard = null;
+        originalCard = null;
+      }, 600);
+    }
+  </script>
+</body>
+</html>
