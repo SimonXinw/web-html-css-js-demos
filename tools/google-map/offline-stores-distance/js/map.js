@@ -273,7 +273,7 @@ const MapManager = (() => {
   }
 
   function init(container, center, zoom) {
-    if (mapInstance) {
+    if (mapInstance || !container) {
       return;
     }
 
@@ -462,5 +462,9 @@ const MapManager = (() => {
     mapInstance = null;
   }
 
-  return { init, panTo, renderUserMarker, renderStoreMarkers, destroy };
+  function getMap() {
+    return mapInstance;
+  }
+
+  return { init, panTo, renderUserMarker, renderStoreMarkers, destroy, getMap };
 })();

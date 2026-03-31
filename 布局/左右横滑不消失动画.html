@@ -469,6 +469,10 @@
             eventListeners: 0,
           };
 
+          this._handlerSeq = 0;
+          this._perfInterval = null;
+          this._perfRaf = 0;
+
           // DOM 元素
           this.elements = {
             container: null,
@@ -561,17 +565,17 @@
 
         addEventHandler(event, element, handler) {
           element.addEventListener(event, handler);
-          this.handlers.set(`${event}_${element}`, handler);
+          const id = ++this._handlerSeq;
+          this.handlers.set(id, { event, element, handler });
           this.performance.eventListeners++;
         }
 
-        removeEventHandler(event, element) {
-          const handler = this.handlers.get(`${event}_${element}`);
-          if (handler) {
-            element.removeEventListener(event, handler);
-            this.handlers.delete(`${event}_${element}`);
-            this.performance.eventListeners--;
-          }
+        removeEventHandler(id) {
+          const rec = this.handlers.get(id);
+          if (!rec) return;
+          rec.element.removeEventListener(rec.event, rec.handler);
+          this.handlers.delete(id);
+          this.performance.eventListeners--;
         }
 
         initAccessibility() {
@@ -679,24 +683,17 @@
         scrollToActiveTab() {
           if (!this.state.activeTab) return;
 
-          const containerRect = this.elements.container.getBoundingClientRect();
-          const activeRect = this.state.activeTab.getBoundingClientRect();
-          const containerScrollLeft = this.elements.container.scrollLeft;
-          const containerWidth = this.elements.container.clientWidth;
-          const activeWidth = this.state.activeTab.clientWidth;
+          const el = this.state.activeTab;
+          const c = this.elements.container;
+          const cw = c.clientWidth;
+          const maxScroll = Math.max(0, c.scrollWidth - cw);
+          const w = el.offsetWidth;
+          const left = el.offsetLeft;
+          let next = left - (cw - w) / 2;
+          next = Math.max(0, Math.min(next, maxScroll));
 
-          let targetScrollLeft = containerScrollLeft;
-
-          if (activeRect.left < containerRect.left) {
-            // 左侧超出
-            targetScrollLeft = this.state.activeTab.offsetLeft - 20;
-          } else if (activeRect.right > containerRect.right) {
-            // 右侧超出
-            targetScrollLeft = this.state.activeTab.offsetLeft - containerWidth + activeWidth + 20;
-          }
-
-          this.elements.container.scrollTo({
-            left: targetScrollLeft,
+          c.scrollTo({
+            left: next,
             behavior: this.options.scrollBehavior,
           });
         }
@@ -808,36 +805,51 @@
         }
 
         startPerformanceMonitor() {
-          setInterval(() => {
+          if (this._perfInterval) return;
+
+          this._perfInterval = setInterval(() => {
             this.updatePerformanceStats();
           }, 1000);
+
+          let lastTime = performance.now();
+          let frames = 0;
+          const loop = () => {
+            this._perfRaf = requestAnimationFrame(loop);
+            frames++;
+            const now = performance.now();
+            if (now >= lastTime + 1000) {
+              this.performance.fps = Math.round((frames * 1000) / (now - lastTime));
+              const fpsEl = document.getElementById("fps");
+              if (fpsEl) fpsEl.textContent = this.performance.fps;
+              frames = 0;
+              lastTime = now;
+            }
+          };
+          this._perfRaf = requestAnimationFrame(loop);
+        }
+
+        stopPerformanceMonitor() {
+          if (this._perfInterval) {
+            clearInterval(this._perfInterval);
+            this._perfInterval = null;
+          }
+          if (this._perfRaf) {
+            cancelAnimationFrame(this._perfRaf);
+            this._perfRaf = 0;
+          }
         }
 
         updatePerformanceStats() {
-          // 内存使用情况
           if (performance.memory) {
-            this.performance.memoryUsage = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
-            document.getElementById('memoryUsage').textContent = this.performance.memoryUsage + 'MB';
+            this.performance.memoryUsage = Math.round(
+              performance.memory.usedJSHeapSize / 1024 / 1024
+            );
+            const memEl = document.getElementById("memoryUsage");
+            if (memEl) memEl.textContent = this.performance.memoryUsage + "MB";
           }
 
-          // 事件监听器数量
-          document.getElementById('eventListeners').textContent = this.performance.eventListeners;
-
-          // FPS监控（简化版）
-          let lastTime = performance.now();
-          let frames = 0;
-          const measureFPS = () => {
-            frames++;
-            const currentTime = performance.now();
-            if (currentTime >= lastTime + 1000) {
-              this.performance.fps = Math.round((frames * 1000) / (currentTime - lastTime));
-              document.getElementById('fps').textContent = this.performance.fps;
-              frames = 0;
-              lastTime = currentTime;
-            }
-            requestAnimationFrame(measureFPS);
-          };
-          measureFPS();
+          const evEl = document.getElementById("eventListeners");
+          if (evEl) evEl.textContent = this.performance.eventListeners;
         }
 
         dispatchEvent(eventName, detail) {
@@ -874,18 +886,17 @@
         }
 
         destroy() {
-          // 清理事件监听器
-          this.handlers.forEach((handler, key) => {
-            const [event, element] = key.split('_');
-            element.removeEventListener(event, handler);
+          this.stopPerformanceMonitor();
+
+          this.handlers.forEach((rec) => {
+            rec.element.removeEventListener(rec.event, rec.handler);
           });
           this.handlers.clear();
 
-          // 清理状态
           this.state = {};
           this.elements = {};
-          
-          this.log('Tab组件已销毁');
+
+          this.log("Tab组件已销毁");
         }
 
         log(...args) {
@@ -920,8 +931,10 @@
         });
 
         // 监听Tab切换事件
-        document.getElementById('tabsContainer').addEventListener('tabchange', (e) => {
-          console.log('Tab切换事件:', e.detail);
+        document.getElementById("tabsContainer").addEventListener("tabchange", (e) => {
+          if (tabsInstance && tabsInstance.options.debug) {
+            console.log("Tab切换事件:", e.detail);
+          }
         });
       }
 

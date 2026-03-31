@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>弹窗动效合集</title>
+  <link rel="stylesheet" href="shared/dialog-base.css" />
+  <style>
+    :root {
+      --dlg-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .dlg-demo-page {
+      padding-top: 48px;
+    }
+
+    .mode-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 560px;
+      margin-bottom: 8px;
+    }
+
+    .mode-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--dlg-border);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--dlg-text-muted);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+
+    .mode-btn:hover {
+      color: var(--dlg-text);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .mode-btn.is-active {
+      background: rgba(91, 140, 255, 0.22);
+      border-color: rgba(91, 140, 255, 0.45);
+      color: var(--dlg-accent-hover);
+    }
+
+    /* —— 下滑入 —— */
+    .anim-slide-down[data-modal-panel] {
+      opacity: 0;
+      transform: translateY(-28px);
+      transition:
+        opacity var(--dlg-duration) var(--dlg-ease),
+        transform var(--dlg-duration) var(--dlg-ease);
+    }
+
+    .anim-slide-down[data-modal-panel].is-open {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* —— 弹性弹出 —— */
+    .anim-bounce[data-modal-panel] {
+      opacity: 0;
+      transform: scale(0.75);
+      transition:
+        opacity var(--dlg-duration) var(--dlg-spring),
+        transform var(--dlg-duration) var(--dlg-spring);
+    }
+
+    .anim-bounce[data-modal-panel].is-open {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* —— 底抽屉 —— */
+    .dlg-overlay.dlg-overlay--drawer {
+      align-items: flex-end;
+      padding: 0;
+    }
+
+    .anim-drawer[data-modal-panel] {
+      width: 100%;
+      max-width: none;
+      border-radius: var(--dlg-radius) var(--dlg-radius) 0 0;
+      transform: translateY(100%);
+      transition: transform var(--dlg-duration) var(--dlg-ease);
+    }
+
+    .anim-drawer[data-modal-panel].is-open {
+      transform: translateY(0);
+    }
+
+    /* —— 毛玻璃 —— */
+    .dlg-overlay.dlg-overlay--blur {
+      background: rgba(8, 10, 16, 0.45);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+
+    .anim-blur-panel[data-modal-panel] {
+      opacity: 0;
+      transform: scale(0.94) translateY(8px);
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      background: rgba(26, 31, 42, 0.82);
+      transition:
+        opacity var(--dlg-duration) var(--dlg-ease),
+        transform var(--dlg-duration) var(--dlg-ease);
+    }
+
+    .anim-blur-panel[data-modal-panel].is-open {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    /* —— 旋转进入 —— */
+    .anim-spin[data-modal-panel] {
+      opacity: 0;
+      transform: rotate(-8deg) scale(0.9);
+      transition:
+        opacity var(--dlg-duration) var(--dlg-ease),
+        transform var(--dlg-duration) var(--dlg-ease);
+    }
+
+    .anim-spin[data-modal-panel].is-open {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+  </style>
+</head>
+<body class="dlg-demo-page">
+  <a class="dlg-back" href="message提醒框.html">← Message 示例</a>
+
+  <h1>弹窗动效合集</h1>
+  <p class="desc" id="modeDesc"></p>
+
+  <div class="mode-picker" role="tablist" aria-label="选择动效类型" id="modePicker"></div>
+
+  <div class="dlg-demo-actions">
+    <button type="button" class="dlg-btn" id="btnOpen">打开弹窗</button>
+  </div>
+
+  <div class="dlg-overlay" id="overlay" style="display: none" hidden>
+    <div
+      class="dlg-panel"
+      id="modalPanel"
+      data-modal-panel
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dlgTitle"
+    >
+      <button type="button" class="dlg-panel__close" id="btnClose" aria-label="关闭">&times;</button>
+      <div class="dlg-panel__body">
+        <h2 class="dlg-panel__title" id="dlgTitle"></h2>
+        <p class="dlg-panel__text" id="dlgText"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared/modal-controller.js"></script>
+  <script>
+    const MODES = [
+      {
+        id: "slide",
+        label: "下滑入",
+        panelClass: "anim-slide-down",
+        overlayClasses: [],
+        duration: 360,
+        title: "自下滑入",
+        desc: "面板从上方轻微下落并淡入，类似通知式弹层。",
+        body: "适合与页面顶部信息区在视觉上一致的对话框。"
+      },
+      {
+        id: "bounce",
+        label: "弹性弹出",
+        panelClass: "anim-bounce",
+        overlayClasses: [],
+        duration: 420,
+        title: "弹性缓动",
+        desc: "略带回弹的 cubic-bezier，体量感更活泼（营销/游戏风）。",
+        body: "关闭时沿同曲线收回，duration 略长于普通淡入更合适。"
+      },
+      {
+        id: "drawer",
+        label: "底抽屉",
+        panelClass: "anim-drawer",
+        overlayClasses: ["dlg-overlay--drawer"],
+        duration: 380,
+        title: "底部抽屉",
+        desc: "贴底全宽上滑，常见于移动端操作面板。",
+        body: "点击遮罩或 Esc 关闭；时长与 ModalController 的 duration 一致。"
+      },
+      {
+        id: "blur",
+        label: "毛玻璃",
+        panelClass: "anim-blur-panel",
+        overlayClasses: ["dlg-overlay--blur"],
+        duration: 340,
+        title: "毛玻璃",
+        desc: "遮罩与面板使用 backdrop-filter（旧浏览器退化为半透明）。",
+        body: "面板为半透 + blur，与 dialog-base 默认实色略有不同。"
+      },
+      {
+        id: "spin",
+        label: "旋转进入",
+        panelClass: "anim-spin",
+        overlayClasses: [],
+        duration: 400,
+        title: "旋转 + 淡入",
+        desc: "绕 Z 轴轻微旋正并放大，适合轻量强调。",
+        body: "角度不宜过大；可与 prefers-reduced-motion 配合关闭动画。"
+      }
+    ];
+
+    const overlay = document.getElementById("overlay");
+    const panel = document.getElementById("modalPanel");
+    const modeDesc = document.getElementById("modeDesc");
+    const dlgTitle = document.getElementById("dlgTitle");
+    const dlgText = document.getElementById("dlgText");
+    const modePicker = document.getElementById("modePicker");
+
+    const modal = new ModalController("#overlay", { duration: MODES[0].duration });
+
+    function getMode(id) {
+      return MODES.find((m) => m.id === id) || MODES[0];
+    }
+
+    function applyModeVisual(mode) {
+      document.documentElement.style.setProperty("--dlg-duration", `${mode.duration}ms`);
+
+      overlay.className = "dlg-overlay";
+      mode.overlayClasses.forEach((c) => overlay.classList.add(c));
+
+      panel.className = "dlg-panel " + mode.panelClass;
+
+      modeDesc.textContent = mode.desc;
+      dlgTitle.textContent = mode.title;
+      dlgText.textContent = mode.body;
+    }
+
+    function setMode(id) {
+      const mode = getMode(id);
+      const closingMs = modal.options.duration;
+
+      const run = () => {
+        modal.options.duration = mode.duration;
+        applyModeVisual(mode);
+
+        modePicker.querySelectorAll(".mode-btn").forEach((btn) => {
+          btn.classList.toggle("is-active", btn.getAttribute("data-mode") === mode.id);
+          btn.setAttribute("aria-selected", btn.getAttribute("data-mode") === mode.id ? "true" : "false");
+        });
+      };
+
+      if (overlay.classList.contains("is-open")) {
+        modal.close();
+        window.setTimeout(run, closingMs);
+      } else {
+        run();
+      }
+    }
+
+    MODES.forEach((mode) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "mode-btn" + (mode.id === MODES[0].id ? " is-active" : "");
+      btn.textContent = mode.label;
+      btn.setAttribute("data-mode", mode.id);
+      btn.setAttribute("role", "tab");
+      btn.setAttribute("aria-selected", mode.id === MODES[0].id ? "true" : "false");
+      btn.addEventListener("click", () => setMode(mode.id));
+      modePicker.appendChild(btn);
+    });
+
+    applyModeVisual(getMode(MODES[0].id));
+
+    document.getElementById("btnOpen").addEventListener("click", () => modal.open());
+    document.getElementById("btnClose").addEventListener("click", () => modal.close());
+  </script>
+</body>
+</html>
