@@ -1,0 +1,138 @@
+/* 基础重置 */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    overflow: hidden;
+    background-color: #f0f2f5;
+}
+
+/* 侧边栏样式 */
+#sidebar {
+    width: 380px;
+    background: #ffffff;
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+#sidebar h2 {
+    margin-top: 0;
+    color: #1a73e8;
+    font-size: 22px;
+    border-bottom: 2px solid #e8eaed;
+    padding-bottom: 12px;
+}
+
+#sidebar p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #3c4043;
+    background-color: #e8f0fe;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border-left: 4px solid #1a73e8;
+}
+
+/* 控制组 */
+.control-group {
+    margin-bottom: 28px;
+}
+
+.control-group > label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #202124;
+    font-size: 15px;
+}
+
+/* 按钮容器 */
+.button-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.location-btn {
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    color: #3c4043;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.location-btn:hover {
+    background-color: #f8f9fa;
+    border-color: #1a73e8;
+    color: #1a73e8;
+}
+
+.location-btn.active {
+    background-color: #1a73e8;
+    color: #ffffff;
+    border-color: #1a73e8;
+    box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
+}
+
+/* 滑动条控制 */
+.slider-container {
+    margin-bottom: 18px;
+}
+
+.slider-container label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #5f6368;
+    margin-bottom: 8px;
+}
+
+.slider-container span {
+    font-weight: 700;
+    color: #1a73e8;
+    min-width: 50px;
+    text-align: right;
+}
+
+input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+    accent-color: #1a73e8;
+}
+
+/* 底部提示信息 */
+.info-footer {
+    margin-top: auto;
+    font-size: 12px;
+    color: #80868b;
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #e8eaed;
+}
+
+/* 地图容器 */
+#map-container {
+    flex: 1;
+    position: relative;
+    background-color: #000; /* 3D 加载背景 */
+}
+
+/* gmp-map-3d 自定义标签支持全屏 */
+gmp-map-3d {
+    width: 100%;
+    height: 100%;
+    display: block;
+}

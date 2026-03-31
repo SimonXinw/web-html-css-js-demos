@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>交互式路线规划 (Directions & Draggable Waypoints)</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; font-family: sans-serif; display: flex; }
+        #map { height: 100%; flex: 1; }
+        #sidebar {
+            width: 350px;
+            background: white;
+            padding: 20px;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        select, button { padding: 8px; font-size: 14px; }
+        #directions-panel { flex: 1; margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px; font-size: 14px; }
+        .info { background: #e8f0fe; padding: 10px; border-radius: 6px; color: #1967d2; font-size: 14px; line-height: 1.5; }
+    </style>
+    <script>
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111",
+            v: "weekly"
+        });
+    </script>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="sidebar">
+        <h3>交互式路线规划</h3>
+        <div class="info">
+            您可以直接在地图上拖动起点 (A)、终点 (B) 或路线上的任意点来改变途径路线。
+        </div>
+        <div class="control-group">
+            <label>出行方式:</label>
+            <select id="mode">
+                <option value="DRIVING">驾车 (Driving)</option>
+                <option value="WALKING">步行 (Walking)</option>
+                <option value="BICYCLING">骑行 (Bicycling)</option>
+                <option value="TRANSIT">公交 (Transit)</option>
+            </select>
+        </div>
+        <div id="directions-panel">请等待路线加载...</div>
+    </div>
+    <script>
+        let map;
+        let directionsService;
+        let directionsRenderer;
+
+        // 模拟位置数据
+        const MOCK_START = { lat: 34.887285, lng: -92.404604 };
+        const MOCK_END = { lat: 34.746483, lng: -92.289595 }; // Little Rock 附近
+
+        async function initMap() {
+            const { Map } = await google.maps.importLibrary("maps");
+            const { DirectionsService, DirectionsRenderer } = await google.maps.importLibrary("routes");
+
+            map = new Map(document.getElementById("map"), {
+                zoom: 11,
+                center: MOCK_START,
+                mapId: "DEMO_MAP_ID",
+            });
+
+            directionsService = new DirectionsService();
+            // 启用 draggable: true 以允许用户在地图上拖拽路线
+            directionsRenderer = new DirectionsRenderer({
+                map: map,
+                panel: document.getElementById("directions-panel"),
+                draggable: true,
+            });
+
+            // 当用户拖拽路线后触发重新计算和显示
+            directionsRenderer.addListener("directions_changed", () => {
+                const directions = directionsRenderer.getDirections();
+                if (directions) {
+                    computeTotalDistance(directions);
+                }
+            });
+
+            document.getElementById("mode").addEventListener("change", calculateAndDisplayRoute);
+
+            calculateAndDisplayRoute();
+        }
+
+        function calculateAndDisplayRoute() {
+            const selectedMode = document.getElementById("mode").value;
+            directionsService.route(
+                {
+                    origin: MOCK_START,
+                    destination: MOCK_END,
+                    travelMode: google.maps.TravelMode[selectedMode],
+                },
+                (response, status) => {
+                    if (status === "OK") {
+                        directionsRenderer.setDirections(response);
+                    } else {
+                        window.alert("路线请求失败，原因: " + status);
+                    }
+                }
+            );
+        }
+
+        function computeTotalDistance(result) {
+            let totalDist = 0;
+            let totalTime = 0;
+            const route = result.routes[0];
+
+            if (!route) return;
+
+            for (let i = 0; i < route.legs.length; i++) {
+                totalDist += route.legs[i].distance.value;
+                totalTime += route.legs[i].duration.value;
+            }
+
+            totalDist = totalDist / 1000; // 转换为公里
+            const hours = Math.floor(totalTime / 3600);
+            const minutes = Math.floor((totalTime % 3600) / 60);
+
+            console.log(`总距离: ${totalDist.toFixed(2)} km, 总时间: ${hours}小时 ${minutes}分钟`);
+        }
+
+        initMap();
+    </script>
+</body>
+</html>

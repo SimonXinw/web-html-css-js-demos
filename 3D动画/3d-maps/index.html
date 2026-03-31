@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps 3D 立体地形与建筑漫游</title>
+    
+    <!-- 将 CSS 直接内联，避免路径或加载问题 -->
+    <style>
+        /* 基础重置 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            overflow: hidden;
+            background-color: #f0f2f5;
+        }
+
+        /* 侧边栏样式 */
+        #sidebar {
+            width: 380px;
+            background: #ffffff;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        #sidebar h2 {
+            margin-top: 0;
+            color: #1a73e8;
+            font-size: 22px;
+            border-bottom: 2px solid #e8eaed;
+            padding-bottom: 12px;
+        }
+
+        #sidebar p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #3c4043;
+            background-color: #e8f0fe;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border-left: 4px solid #1a73e8;
+        }
+
+        /* 控制组 */
+        .control-group {
+            margin-bottom: 28px;
+        }
+
+        .control-group > label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #202124;
+            font-size: 15px;
+        }
+
+        /* 按钮容器 */
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .location-btn {
+            background-color: #ffffff;
+            border: 1px solid #dadce0;
+            color: #3c4043;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .location-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #1a73e8;
+            color: #1a73e8;
+        }
+
+        .location-btn.active {
+            background-color: #1a73e8;
+            color: #ffffff;
+            border-color: #1a73e8;
+            box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
+        }
+
+        /* 滑动条控制 */
+        .slider-container {
+            margin-bottom: 18px;
+        }
+
+        .slider-container label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #5f6368;
+            margin-bottom: 8px;
+        }
+
+        .slider-container span {
+            font-weight: 700;
+            color: #1a73e8;
+            min-width: 50px;
+            text-align: right;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: #1a73e8;
+        }
+
+        /* 底部提示信息 */
+        .info-footer {
+            margin-top: auto;
+            font-size: 12px;
+            color: #80868b;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e8eaed;
+        }
+
+        /* 地图容器 */
+        #map-container {
+            flex: 1;
+            position: relative;
+            background-color: #000; /* 3D 加载背景 */
+        }
+
+        /* gmp-map-3d 自定义标签支持全屏 */
+        gmp-map-3d {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    </style>
+    
+    <!-- Google Maps API (注意需要 alpha 版本和 maps3d 库) -->
+    <script>
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            // 这里替换为您真实的 API Key
+            key: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111", 
+            v: "alpha" // 必须使用 alpha 版本以启用 3D Maps 特性
+        });
+    </script>
+</head>
+<body>
+    <!-- 左侧控制面板 -->
+    <div id="sidebar">
+        <h2>3D 立体地图漫游</h2>
+        <p>按住 <b>Shift + 鼠标左键</b> 拖动，或者按住 <b>鼠标中键滚轮</b> 拖动，可以自由调整地图的倾斜(Tilt)和旋转(Heading)视角，体验真实 3D 地形和建筑。</p>
+        
+        <div class="control-group">
+            <label>漫游地标：</label>
+            <div id="location-buttons" class="button-container">
+                <!-- 按钮通过 JS 动态生成 -->
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>视角控制：</label>
+            <div class="slider-container">
+                <label for="heading-slider">旋转角度 (Heading): <span id="heading-value">0°</span></label>
+                <input type="range" id="heading-slider" min="-180" max="180" value="0">
+            </div>
+            <div class="slider-container">
+                <label for="tilt-slider">倾斜角度 (Tilt): <span id="tilt-value">45°</span></label>
+                <input type="range" id="tilt-slider" min="0" max="90" value="45">
+            </div>
+            <div class="slider-container">
+                <label for="range-slider">相机距离 (Range): <span id="range-value">1000m</span></label>
+                <input type="range" id="range-slider" min="100" max="20000" value="1000" step="100">
+            </div>
+        </div>
+
+        <div class="info-footer" id="status-message">
+            提示: 数据来自 Google Photorealistic 3D Maps (真实沉浸式 3D 地图)。
+        </div>
+    </div>
+
+    <!-- 地图容器 -->
+    <div id="map-container">
+        <!-- Map3DElement 将被 JS 动态挂载到这里 -->
+    </div>
+
+    <!-- 将 JS 逻辑直接内联，去掉 type="module"，避免双击打开时的 CORS 跨域拦截 -->
+    <script>
+        // --- 1. 配置数据 ---
+        const LOCATIONS = [
+            {
+                id: "tokyo_tower",
+                name: "东京铁塔",
+                center: { lat: 35.6585805, lng: 139.7454329, altitude: 0 },
+                heading: 45,
+                tilt: 65,
+                range: 800
+            },
+            {
+                id: "new_york",
+                name: "纽约曼哈顿",
+                center: { lat: 40.712743, lng: -74.005974, altitude: 0 },
+                heading: 120,
+                tilt: 60,
+                range: 1500
+            },
+            {
+                id: "fuji_mountain",
+                name: "富士山 (地形)",
+                center: { lat: 35.3606, lng: 138.7274, altitude: 3000 },
+                heading: 0,
+                tilt: 75,
+                range: 15000 // 看山体需要将相机拉远一点
+            },
+            {
+                id: "grand_canyon",
+                name: "科罗拉多大峡谷",
+                center: { lat: 36.1069, lng: -112.1129, altitude: 1000 },
+                heading: -45,
+                tilt: 65,
+                range: 4000
+            },
+            {
+                id: "paris",
+                name: "巴黎埃菲尔铁塔",
+                center: { lat: 48.8584, lng: 2.2945, altitude: 0 },
+                heading: 90,
+                tilt: 60,
+                range: 1000
+            }
+        ];
+
+        // --- 2. DOM 元素引用 ---
+        const mapContainer = document.getElementById("map-container");
+        const locationButtonsContainer = document.getElementById("location-buttons");
+        const headingSlider = document.getElementById("heading-slider");
+        const tiltSlider = document.getElementById("tilt-slider");
+        const rangeSlider = document.getElementById("range-slider");
+        const headingValue = document.getElementById("heading-value");
+        const tiltValue = document.getElementById("tilt-value");
+        const rangeValue = document.getElementById("range-value");
+        const statusMessage = document.getElementById("status-message");
+
+        let map3DElement = null;
+        let isAnimating = false;
+
+        // --- 3. 初始化 3D 地图应用 ---
+        const initApp = async () => {
+            try {
+                // 动态导入 3D Maps 库 (需要 alpha 版本的 API)
+                const { Map3DElement } = await google.maps.importLibrary("maps3d");
+
+                // 创建 3D 地图实例 (默认使用配置中的第一个地点)
+                const defaultLocation = LOCATIONS[0];
+                
+                map3DElement = new Map3DElement({
+                    center: defaultLocation.center,
+                    heading: defaultLocation.heading,
+                    tilt: defaultLocation.tilt,
+                    range: defaultLocation.range,
+                });
+
+                // 将地图挂载到容器中
+                mapContainer.appendChild(map3DElement);
+
+                // 绑定事件和 UI
+                setupUI();
+                setupMapEvents();
+
+            } catch (error) {
+                console.error("加载 3D 地图失败:", error);
+                statusMessage.innerHTML = `<span style="color: red;">加载失败：${error.message}</span>`;
+                mapContainer.innerHTML = `
+                    <div style="color: white; padding: 20px; font-family: sans-serif;">
+                        <h3>加载地图失败</h3>
+                        <p>请检查以下几点：</p>
+                        <ol>
+                            <li>您的 API Key 是否正确？</li>
+                            <li>您的 API Key 是否在 Google Cloud 控制台启用了 <b>Map 3D API</b>?</li>
+                            <li>是否开启了硬件加速/WebGL?</li>
+                        </ol>
+                        <p style="color: #ff5252">错误详情: ${error.message}</p>
+                    </div>
+                `;
+            }
+        };
+
+        // --- 4. 渲染按钮和绑定滑动条事件 ---
+        const setupUI = () => {
+            // 1. 渲染地点切换按钮
+            LOCATIONS.forEach((location, index) => {
+                const btn = document.createElement("button");
+                btn.className = `location-btn ${index === 0 ? "active" : ""}`;
+                btn.textContent = location.name;
+                
+                btn.addEventListener("click", () => {
+                    // 更新活跃状态
+                    document.querySelectorAll(".location-btn").forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+
+                    // 飞向新地点
+                    flyToLocation(location);
+                });
+
+                locationButtonsContainer.appendChild(btn);
+            });
+
+            // 2. 绑定滑动条事件 (修改视角)
+            const updateCameraFromSliders = () => {
+                if (!map3DElement) return;
+                
+                const heading = parseFloat(headingSlider.value);
+                const tilt = parseFloat(tiltSlider.value);
+                const range = parseFloat(rangeSlider.value);
+
+                // 更新文本显示
+                headingValue.textContent = `${heading}°`;
+                tiltValue.textContent = `${tilt}°`;
+                rangeValue.textContent = `${range}m`;
+
+                // 直接更新地图参数实现即时响应
+                map3DElement.heading = heading;
+                map3DElement.tilt = tilt;
+                map3DElement.range = range;
+            };
+
+            // 使用 input 事件实现拖拽时的实时更新
+            headingSlider.addEventListener("input", updateCameraFromSliders);
+            tiltSlider.addEventListener("input", updateCameraFromSliders);
+            rangeSlider.addEventListener("input", updateCameraFromSliders);
+        };
+
+        // --- 5. 飞行动画 (3D 过渡) ---
+        const flyToLocation = (location) => {
+            if (!map3DElement) return;
+
+            // 标记正在动画中，避免地图内部事件冲突修改滑动条
+            isAnimating = true;
+
+            // 更新滑动条 UI 以匹配新地点
+            headingSlider.value = location.heading;
+            tiltSlider.value = location.tilt;
+            rangeSlider.value = location.range;
+            
+            headingValue.textContent = `${location.heading}°`;
+            tiltValue.textContent = `${location.tilt}°`;
+            rangeValue.textContent = `${location.range}m`;
+
+            // 使用 flyCameraTo 方法实现平滑的 3D 飞行过渡
+            map3DElement.flyCameraTo({
+                endCamera: {
+                    center: location.center,
+                    heading: location.heading,
+                    tilt: location.tilt,
+                    range: location.range
+                },
+                durationMillis: 3000 // 飞行持续时间 3 秒
+            });
+
+            // 动画结束后解除标记
+            setTimeout(() => {
+                isAnimating = false;
+            }, 3100);
+        };
+
+        // --- 6. 监听用户在地图上的鼠标交互，反向更新左侧的滑动条 ---
+        const setupMapEvents = () => {
+            if (!map3DElement) return;
+
+            const updateUIFromCamera = () => {
+                // 如果正在执行代码触发的飞行动画，则不覆盖滑动条状态
+                if (isAnimating) return;
+
+                const currentHeading = Math.round(map3DElement.heading || 0);
+                const currentTilt = Math.round(map3DElement.tilt || 0);
+                const currentRange = Math.round(map3DElement.range || 0);
+
+                // 更新滑动条和文本
+                headingSlider.value = currentHeading;
+                tiltSlider.value = currentTilt;
+                rangeSlider.value = currentRange;
+
+                headingValue.textContent = `${currentHeading}°`;
+                tiltValue.textContent = `${currentTilt}°`;
+                rangeValue.textContent = `${currentRange}m`;
+            };
+
+            // 监听视角变化相关的几个核心事件
+            map3DElement.addEventListener("gmp-headingchange", updateUIFromCamera);
+            map3DElement.addEventListener("gmp-tiltchange", updateUIFromCamera);
+            map3DElement.addEventListener("gmp-rangechange", updateUIFromCamera);
+        };
+
+        // 启动应用
+        initApp();
+    </script>
+</body>
+</html>

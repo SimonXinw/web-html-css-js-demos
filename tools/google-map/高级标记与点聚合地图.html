@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>高级标记与点聚合 (Advanced Markers & Clustering)</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <style>
+        html, body { height: 100%; margin: 0; padding: 0; font-family: sans-serif; }
+        #map { height: 100%; width: 100%; }
+        /* 自定义标记样式 */
+        .custom-marker {
+            background-color: #4285F4;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .custom-marker:hover {
+            transform: scale(1.1);
+            background-color: #0F52BA;
+        }
+        .info-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+    </style>
+    <!-- 引入 MarkerClusterer 库 -->
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+    <script>
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+            key: "AIzaSyAOavTIWq4qRgppoQYzktYy5j0Yshb3HRI-111", // 请替换为您真实的 API Key
+            v: "beta" // 使用 beta 版本以获得最新的高级标记特性
+        });
+    </script>
+</head>
+<body>
+    <div class="info-panel">
+        <h3>高级标记与点聚合</h3>
+        <p>此示例展示了如何使用最新的 <code>AdvancedMarkerElement</code> (替代已废弃的 Marker)<br>以及 <code>@googlemaps/markerclusterer</code> 实现海量数据的点聚合。</p>
+    </div>
+    <div id="map"></div>
+    <script>
+        let map;
+
+        // 生成 100 个模拟数据点
+        function generateMockData(center, count) {
+            const data = [];
+            for (let i = 0; i < count; i++) {
+                const latOffset = (Math.random() - 0.5) * 0.1;
+                const lngOffset = (Math.random() - 0.5) * 0.1;
+                data.push({
+                    id: i + 1,
+                    position: { lat: center.lat + latOffset, lng: center.lng + lngOffset },
+                    name: `Store #${i + 1}`
+                });
+            }
+            return data;
+        }
+
+        async function initMap() {
+            // 使用最新的 importLibrary 方法异步加载所需的库
+            const { Map } = await google.maps.importLibrary("maps");
+            const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+            const center = { lat: 34.887285, lng: -92.404604 };
+            const mockData = generateMockData(center, 100);
+
+            // 必须传入 mapId 才能使用 AdvancedMarkerElement
+            map = new Map(document.getElementById("map"), {
+                zoom: 12,
+                center: center,
+                mapId: "DEMO_MAP_ID",
+            });
+
+            const markers = mockData.map((location) => {
+                // 创建自定义 HTML 元素作为标记
+                const markerElement = document.createElement("div");
+                markerElement.className = "custom-marker";
+                markerElement.textContent = location.name;
+
+                // 创建 AdvancedMarkerElement
+                const marker = new AdvancedMarkerElement({
+                    map: map,
+                    position: location.position,
+                    content: markerElement,
+                    title: location.name,
+                });
+
+                // 添加点击交互
+                marker.addListener("click", () => {
+                    map.setZoom(15);
+                    map.setCenter(marker.position);
+                    alert(`您点击了：${location.name}`);
+                });
+
+                return marker;
+            });
+
+            // 初始化点聚合器
+            new markerClusterer.MarkerClusterer({ markers, map });
+        }
+
+        initMap();
+    </script>
+</body>
+</html>
