@@ -196,7 +196,7 @@ function tryAutoLocate() {
           }
 
           if (State.stores.length > 0) {
-            State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
+            State.distancesKm = await computeAllDistancesKmAsync(State.userAnchor, State.stores);
             renderSidebar();
           }
         } finally {
@@ -259,7 +259,7 @@ function handleLocateMe() {
         }
 
         if (State.stores.length > 0) {
-          State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
+          State.distancesKm = await computeAllDistancesKmAsync(State.userAnchor, State.stores);
           renderSidebar();
         }
       } catch (geocodeErr) {
@@ -394,7 +394,7 @@ async function handleSuggestionClick(suggestion) {
     }
 
     if (State.stores.length > 0) {
-      State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
+      State.distancesKm = await computeAllDistancesKmAsync(State.userAnchor, State.stores);
       renderSidebar();
     }
   } catch (err) {
@@ -462,7 +462,7 @@ async function recalcDistancesWithOverlay() {
 
   setListAuxBusy(true);
   try {
-    State.distancesKm = computeAllDistancesKm(State.userAnchor, State.stores);
+    State.distancesKm = await computeAllDistancesKmAsync(State.userAnchor, State.stores);
     renderSidebar();
   } finally {
     setListAuxBusy(false);

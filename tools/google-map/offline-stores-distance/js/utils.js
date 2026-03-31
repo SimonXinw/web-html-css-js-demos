@@ -96,20 +96,80 @@ function geocodeLatLngToFormattedAddress(lat, lng) {
 }
 
 /**
- * 批量计算用户到各门店的直线距离（km）
+ * 批量计算用户到各门店的距离（km）
+ * 逻辑：
+ * 1. 优先使用 Google Maps DistanceMatrixService 请求真实距离。
+ * 2. 如果请求不到或部分失败，回退到直线距离（Haversine）。
+ * 3. 都没有的话就不返回该 store 的距离。
  *
  * @param {{ lat: number, lng: number }} userAnchor - 用户位置
  * @param {Array} stores - 门店数组
- * @returns {Object} { [storeId]: distanceKm }
+ * @returns {Promise<Object>} { [storeId]: distanceKm }
  */
-function computeAllDistancesKm(userAnchor, stores) {
+async function computeAllDistancesKmAsync(userAnchor, stores) {
   const result = {};
 
+  if (!userAnchor || typeof userAnchor.lat !== "number" || typeof userAnchor.lng !== "number") {
+    return result;
+  }
+
+  let googleDistances = {};
+
+  // 尝试调用 Google Distance Matrix API
+  if (typeof window !== "undefined" && window.google?.maps?.DistanceMatrixService) {
+    try {
+      const service = new google.maps.DistanceMatrixService();
+      const destinations = stores.filter(s => typeof s.lat === "number" && typeof s.lng === "number");
+      
+      // Google API 每次最多 25 个目的地
+      const CHUNK_SIZE = 25;
+      const chunks = [];
+      for (let i = 0; i < destinations.length; i += CHUNK_SIZE) {
+        chunks.push(destinations.slice(i, i + CHUNK_SIZE));
+      }
+
+      await Promise.all(chunks.map(async (chunk) => {
+        try {
+          const response = await new Promise((resolve, reject) => {
+            service.getDistanceMatrix(
+              {
+                origins: [userAnchor],
+                destinations: chunk.map(s => ({ lat: s.lat, lng: s.lng })),
+                travelMode: google.maps.TravelMode.DRIVING,
+                unitSystem: google.maps.UnitSystem.METRIC,
+              },
+              (res, status) => {
+                if (status === "OK") resolve(res);
+                else reject(new Error("DistanceMatrix status: " + status));
+              }
+            );
+          });
+
+          const elements = response.rows[0].elements;
+          elements.forEach((el, idx) => {
+            if (el.status === "OK" && el.distance) {
+              googleDistances[chunk[idx].id] = el.distance.value / 1000; // 转换为 km
+            }
+          });
+        } catch (e) {
+          console.warn("[utils] DistanceMatrixService chunk error:", e);
+        }
+      }));
+    } catch (err) {
+      console.warn("[utils] DistanceMatrixService error:", err);
+    }
+  }
+
+  // 综合填充结果
   stores.forEach((store) => {
-    result[store.id] = haversineDistanceKm(userAnchor, {
-      lat: store.lat,
-      lng: store.lng,
-    });
+    if (googleDistances[store.id] !== undefined) {
+      result[store.id] = googleDistances[store.id];
+    } else if (typeof store.lat === "number" && typeof store.lng === "number") {
+      result[store.id] = haversineDistanceKm(userAnchor, {
+        lat: store.lat,
+        lng: store.lng,
+      });
+    }
   });
 
   return result;
