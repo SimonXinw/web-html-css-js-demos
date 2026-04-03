@@ -1,0 +1,130 @@
+:root {
+  --bg: #0f1419;
+  --card: #1a2332;
+  --text: #e8eaed;
+  --muted: #8b949e;
+  --accent: #3d9eff;
+  --border: #2d3848;
+  --radius: 12px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: radial-gradient(1200px 600px at 10% -10%, #1a2744 0%, var(--bg) 55%);
+  color: var(--text);
+  line-height: 1.55;
+  min-height: 100vh;
+}
+
+.hub_page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px 56px;
+}
+
+.hub_crumb {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+}
+
+.hub_crumb a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.hub_crumb a:hover {
+  text-decoration: underline;
+}
+
+.hub_title {
+  margin: 0 0 12px;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hub_lead {
+  margin: 0 0 32px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 52rem;
+}
+
+.hub_lead code {
+  font-size: 0.85em;
+  background: var(--card);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.hub_grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 560px) {
+  .hub_grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.hub_card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 20px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hub_card:hover {
+  border-color: rgba(61, 158, 255, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.hub_card_tag {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.hub_card strong {
+  font-size: 1.05rem;
+}
+
+.hub_card_desc {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.hub_footer {
+  margin-top: 40px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.hub_footer code {
+  font-size: 0.9em;
+  background: var(--card);
+  padding: 1px 5px;
+  border-radius: 4px;
+}

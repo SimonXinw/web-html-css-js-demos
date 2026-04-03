@@ -1,0 +1,201 @@
+:root {
+  --bg: #faf7f2;
+  --card: #fff;
+  --text: #2c2419;
+  --muted: #7a6e63;
+  --border: #e8e0d8;
+  --accent: #c45c26;
+  --radius: 14px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 18px 48px;
+}
+
+.crumb {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+}
+
+.crumb a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.head h1 {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+}
+
+.sub {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
+  box-shadow: 0 8px 30px rgba(44, 36, 25, 0.08);
+}
+
+.product_visual {
+  height: 160px;
+  border-radius: 12px;
+  background: linear-gradient(160deg, #d4a574 0%, #8b5a2b 50%, #3d2914 100%);
+  margin-bottom: 16px;
+}
+
+.product_title {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+}
+
+.product_desc {
+  margin: 0 0 18px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.currency_row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cur_tab {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #faf6f1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.15s ease;
+}
+
+.cur_tab:hover {
+  border-color: #cbb8a8;
+}
+
+.cur_tab:active {
+  transform: scale(0.97);
+}
+
+.cur_tab.is-active {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
+}
+
+.price_stack {
+  position: relative;
+  min-height: 3.2rem;
+  margin-bottom: 18px;
+}
+
+.price_layer {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.price_layer.is-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.price_layer.is-exit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  transform: translateY(-12px);
+}
+
+.sym {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.rate_panel {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  background: #faf6f1;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 0.82rem;
+}
+
+.rate_panel > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+.rate_panel > div + div {
+  border-top: 1px dashed var(--border);
+}
+
+.rate_panel dt {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.rate_panel dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 600;
+}
+
+.cta {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.cta:hover {
+  box-shadow: 0 6px 20px rgba(196, 92, 38, 0.35);
+}
+
+.cta:active {
+  transform: scale(0.99);
+}

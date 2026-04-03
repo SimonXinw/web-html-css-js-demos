@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>电商多层选项 · Shopify 风格变体交互设计</title>
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #fff;
+      --text: #121212;
+      --muted: #6d7175;
+      --border: #e3e5e8;
+      --accent: #008060;
+      --disabled-bg: #f1f2f3;
+      --disabled-text: #b5b5b5;
+      --sold-bg: #fff8e6;
+      --sold-text: #8a6116;
+      --selected-ring: #121212;
+      --radius: 8px;
+      --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+
+    .design-doc-shell {
+      margin-top: 32px;
+      margin-bottom: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .design-doc-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: var(--text);
+      list-style: none;
+    }
+
+    .design-doc-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .design-doc-summary-title {
+      line-height: 1.35;
+    }
+
+    .design-doc-summary-end {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .design-doc-hint-expanded {
+      display: none;
+    }
+
+    .design-doc-shell[open] .design-doc-hint-collapsed {
+      display: none;
+    }
+
+    .design-doc-shell[open] .design-doc-hint-expanded {
+      display: inline;
+    }
+
+    .design-doc-chevron {
+      display: inline-block;
+      font-size: 0.65rem;
+      line-height: 1;
+      transition: transform 0.2s ease;
+      color: var(--muted);
+    }
+
+    .design-doc-shell:not([open]) .design-doc-chevron {
+      transform: rotate(-90deg);
+    }
+
+    .design-doc-panel.design-doc {
+      padding: 16px 22px 20px;
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      border-top: 1px solid var(--border);
+      background: transparent;
+    }
+
+    .design-doc h2 {
+      font-size: 1rem;
+      margin: 20px 0 8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .design-doc p,
+    .design-doc li {
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    .design-doc ul {
+      margin: 0;
+      padding-left: 1.2rem;
+    }
+
+    .design-doc code {
+      font-size: 0.85em;
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .design-doc h3 {
+      font-size: 1rem;
+      margin: 18px 0 8px;
+      color: #334155;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .design-lead {
+      font-size: 0.95rem;
+      color: #475569;
+      padding: 12px 14px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      border-left: 4px solid var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .design-doc table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 12px 0 20px;
+    }
+
+    .design-doc th,
+    .design-doc td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    .design-doc th {
+      background: #f8fafc;
+      font-weight: 600;
+    }
+
+    .design-callout {
+      margin: 14px 0;
+      padding: 12px 14px;
+      background: #fefce8;
+      border: 1px solid #fde047;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+
+    .design-steps {
+      margin: 0;
+      padding-left: 1.2rem;
+      font-size: 0.9rem;
+    }
+
+    .design-steps li {
+      margin-bottom: 8px;
+    }
+
+    .fn-list {
+      font-size: 0.88rem;
+      font-family: ui-monospace, Consolas, monospace;
+      background: #f8fafc;
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    .product-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .product-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 4px;
+    }
+
+    .product-price {
+      font-size: 1.1rem;
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+
+    .option-group {
+      margin-bottom: 20px;
+    }
+
+    .option-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+
+    .option-label span {
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    .option-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .swatch {
+      position: relative;
+      min-height: 44px;
+      min-width: 44px;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
+    }
+
+    .swatch:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .swatch[data-state="available"]:hover:not(.selected) {
+      border-color: #999;
+    }
+
+    .swatch.selected {
+      border-color: var(--selected-ring);
+      box-shadow: 0 0 0 1px var(--selected-ring);
+    }
+
+    .swatch[data-state="disabled"] {
+      background: var(--disabled-bg);
+      color: var(--disabled-text);
+      cursor: not-allowed;
+      text-decoration: line-through;
+      opacity: 0.85;
+    }
+
+    .swatch[data-state="sold_out"] {
+      background: var(--sold-bg);
+      color: var(--sold-text);
+      border-color: #e8d9a8;
+      cursor: pointer;
+    }
+
+    .swatch[data-state="sold_out"]::after {
+      content: "售罄";
+      display: block;
+      font-size: 0.65rem;
+      margin-top: 2px;
+      font-weight: 600;
+    }
+
+    .variant-meta {
+      margin-top: 20px;
+      padding: 12px 14px;
+      background: #f6f6f7;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .variant-meta strong {
+      color: var(--text);
+    }
+
+    .actions {
+      margin-top: 20px;
+    }
+
+    .btn-cart {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .btn-cart:disabled {
+      background: #c9cccf;
+      cursor: not-allowed;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .legend-dot.available {
+      background: var(--card);
+    }
+
+    .legend-dot.disabled {
+      background: var(--disabled-bg);
+    }
+
+    .legend-dot.sold_out {
+      background: var(--sold-bg);
+    }
+
+    .case_tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .case_tab {
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+
+    .case_tab:hover {
+      border-color: #999;
+    }
+
+    .case_tab[aria-selected="true"] {
+      background: var(--text);
+      color: #fff;
+      border-color: var(--text);
+    }
+
+    .case_hint {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0 0 16px;
+      line-height: 1.45;
+    }
+
+    .page_nav_link {
+      margin: 0 0 18px;
+      font-size: 0.88rem;
+    }
+
+    .page_nav_link a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .page_nav_link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <p class="page_nav_link"><a href="跨境电商场景/index.html">更多场景：跨境电商交互（关税、物流、币种、地址、合规）→</a></p>
+    <!-- ========== 可交互 Demo（置顶） ========== -->
+    <section class="product-card" aria-label="商品选项演示">
+      <div class="case_tabs" role="tablist" aria-label="切换案例层数">
+        <button type="button" class="case_tab" role="tab" id="tab-one" aria-selected="false" aria-controls="demo-panel" data-case="one">案例 ① 单层选项</button>
+        <button type="button" class="case_tab" role="tab" id="tab-two" aria-selected="true" aria-controls="demo-panel" data-case="two">案例 ② 双层选项</button>
+        <button type="button" class="case_tab" role="tab" id="tab-three" aria-selected="false" aria-controls="demo-panel" data-case="three">案例 ③ 三层选项（通用）</button>
+      </div>
+      <p class="case_hint" id="caseHint"></p>
+
+      <h2 class="product-title" id="productTitle">示例卫衣 · 多层变体</h2>
+      <p class="product-price" id="priceLine">请选择规格查看价格</p>
+
+      <div id="optionMount"></div>
+
+      <div class="variant-meta" id="variantMeta" hidden>
+        当前变体：<strong id="variantId">—</strong> · SKU <span id="variantSku">—</span>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn-cart" id="btnCart" disabled>加入购物车</button>
+      </div>
+
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot available"></span> 可选 / 可售</span>
+        <span class="legend-item"><span class="legend-dot sold_out"></span> 有变体但不可售</span>
+        <span class="legend-item"><span class="legend-dot disabled"></span> 无对应变体（禁用）</span>
+      </div>
+    </section>
+
+    <!-- ========== 设计说明（置底 · 自学向，默认收起） ========== -->
+    <details class="design-doc-shell">
+      <summary class="design-doc-summary">
+        <span id="design-summary-label" class="design-doc-summary-title">设计说明 · 多层选项与变体（自学版）</span>
+        <span class="design-doc-summary-end">
+          <span class="design-doc-hint-collapsed">点击展开</span>
+          <span class="design-doc-hint-expanded">点击收起</span>
+          <span class="design-doc-chevron" aria-hidden="true">▼</span>
+        </span>
+      </summary>
+      <section class="design-doc design-doc-panel" aria-labelledby="design-summary-label">
+
+      <p class="design-lead">
+        <strong>适合谁：</strong>要在前端实现「多规格商品页」、对接 Shopify / 自建电商后台的同学。<br />
+        <strong>怎么用本文档：</strong>先在上面 Demo 里切换三个案例、点点选项看界面变化；再按下面章节顺序读；最后打开本页底部的 <code>&lt;script&gt;</code>，对照「§7 函数索引」逐行跟读。<br />
+        <strong>核心就两件事：</strong>① 每个按钮的状态怎么算（<code>computeOptionState</code>）；② 当前选的是哪一条变体（<code>resolveVariant</code>）。
+      </p>
+
+      <h2>0. 建议学习顺序（约 30～60 分钟）</h2>
+      <ol class="design-steps">
+        <li>读「§1 术语对照」— 知道 Option、Variant、selection 各是什么。</li>
+        <li>读「§2 数据模型」— 看懂 <code>optionDefinitions</code> 与 <code>variants</code> 如何对应。</li>
+        <li>玩 Demo：单层 → 双层 → 三层，观察「禁用 / 售罄 / 可选」三种样式。</li>
+        <li>读「§4 核心算法」+ 小例子 — 用手工推演一层选项的状态。</li>
+        <li>读「§5、§6」— 理解 <code>resolveVariant</code>、改选上层后为何要 clear + autoFill。</li>
+        <li>在源码里搜索函数名，对 <code>matches</code> 打 <code>console.log</code> 验证。</li>
+      </ol>
+
+      <h2>1. 术语对照（和页面、代码一致）</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>术语</th>
+            <th>含义</th>
+            <th>在代码里</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>选项层 / Option</td>
+            <td>商品的一个维度，如「颜色」「尺码」。第 0、1、2… 层顺序固定。</td>
+            <td><code>optionDefinitions[]</code>，含 <code>name</code>、<code>values[]</code></td>
+          </tr>
+          <tr>
+            <td>变体 / Variant</td>
+            <td>每层各选一个值后对应的<strong>一条</strong> SKU（独立价格、库存等）。</td>
+            <td><code>variants[]</code>，<code>optionValues</code> 下标与层号一致</td>
+          </tr>
+          <tr>
+            <td>当前选择 selection</td>
+            <td>用户当前点了什么；某层未选为 <code>null</code>。</td>
+            <td><code>selection["颜色"]</code> 等</td>
+          </tr>
+          <tr>
+            <td><code>availableForSale</code></td>
+            <td>是否允许下单（可接库存、上架状态）。</td>
+            <td><code>true</code> 时「加入购物车」才可点</td>
+          </tr>
+          <tr>
+            <td><code>available</code></td>
+            <td>本 Demo 辅助字段，用于按钮文案区分「暂时不可售 / 已售罄」等。</td>
+            <td>见 <code>updateSummary</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>2. 数据模型（为什么要两套数组）</h2>
+      <h3>2.1 <code>optionDefinitions</code> —— 页面上画哪些按钮</h3>
+      <p>声明有几层、每层叫什么、每层有哪些<strong>展示用</strong>候选值。注意：界面上可以画出某个值，但该值可能对当前上层组合<strong>无变体</strong>，这时由算法标成禁用，而不是从数组里删掉。</p>
+
+      <h3>2.2 <code>variants</code> —— 真正可卖的「行」</h3>
+      <p>后台通常一行 SKU 一条。前端用这些行判断：某组合<strong>是否存在</strong>、<strong>能不能卖</strong>。</p>
+
+      <div class="design-callout">
+        <strong>举例（双层）：</strong>层0=颜色，层1=尺码。变体 <code>["黑色","S"]</code> 是「黑+S」这一条 SKU。
+        若数据里<strong>没有</strong> <code>["黑色","XL"]</code>，用户选「黑色」后，尺码 <strong>XL</strong> 应算 <strong>disabled</strong>（根本没有这条组合，不是卖光）。
+      </div>
+
+      <h2>3. 三种 UI 状态（务必分清业务含义）</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>状态</th>
+            <th>含义（一句话）</th>
+            <th>本页表现</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>available</code></td>
+            <td>在当前上层选择下，存在含该值的变体，且<strong>至少一条可售</strong>。</td>
+            <td>正常按钮；选满后一般可加购。</td>
+          </tr>
+          <tr>
+            <td><code>sold_out</code></td>
+            <td>组合<strong>存在</strong>，但匹配到的变体<strong>全部不可售</strong>。</td>
+            <td>黄底 +「售罄」；可选中加购禁用。</td>
+          </tr>
+          <tr>
+            <td><code>disabled</code></td>
+            <td>当前上层下<strong>没有任何变体</strong>用到该值。</td>
+            <td>灰、删除线、不可点。</td>
+          </tr>
+        </tbody>
+      </table>
+      <p><strong>易混点：</strong>「售罄」= 有 SKU 但不能卖；「禁用」= 没有这条 SKU。两种含义不同，样式应区分。</p>
+
+      <h2>4. 核心算法：<code>computeOptionState(layerIndex, value)</code></h2>
+      <p>问题：画第 <code>i</code> 层、值为 <code>v</code> 的按钮时，应是 available / sold_out / disabled 哪一种？</p>
+
+      <h3>4.1 与源码一致的步骤</h3>
+      <ol class="design-steps">
+        <li>取出全部 <code>variants</code>。</li>
+        <li><strong>按上层已选过滤</strong>：对层 <code>0 … i-1</code>，若 <code>selection[该层名]</code> 已是具体值，则只保留 <code>variant.optionValues[层号] === 该值</code>；若某层为 <code>null</code>，该层<strong>不参与</strong>过滤。</li>
+        <li>再过滤：只保留 <code>variant.optionValues[i] === v</code>，得到 <code>matches</code>。</li>
+        <li><code>matches.length === 0</code> → <code>disabled</code>。</li>
+        <li>否则若存在 <code>availableForSale === true</code> → <code>available</code>。</li>
+        <li>否则 → <code>sold_out</code>。</li>
+      </ol>
+
+      <h3>4.2 手工推演（双层，已选 颜色=黑色）</h3>
+      <p><strong>问：尺码 XL？</strong> 若无任何变体是「黑+XL」→ 过滤后为空 → <strong>disabled</strong>。</p>
+      <p><strong>问：尺码 L？</strong> 若仅一条「黑+L」且 <code>availableForSale: false</code> → <strong>sold_out</strong>。</p>
+      <p><strong>第 0 层：</strong>没有「上层」，步骤 2 里循环 <code>0…-1</code> 不执行，只看「第 0 层 = v」的所有变体。</p>
+
+      <h2>5. 当前变体：<code>resolveVariant()</code></h2>
+      <p>当<strong>每一层</strong>在 <code>selection</code> 里都有值时，按层顺序拼成元组，在 <code>variants</code> 里找 <code>optionValues</code> 完全一致的一行；用于价格、SKU、加购。未选满或找不到则清空展示。</p>
+
+      <h2>6. 改选上层：<code>clearLowerLayers</code> + <code>autoFillFromLayer</code></h2>
+      <h3>6.1 为何要 clear</h3>
+      <p>例如从「灰+M」改成「藏青」，若不存在「藏青+M」，下层「M」在新状态下会变成 <code>disabled</code>，必须把非法下层清掉（或改掉），否则无法和任何变体对齐。</p>
+
+      <h3>6.2 为何要 autoFill</h3>
+      <p>清完后若让用户再逐层点，体验碎。因此在用户点完第 <code>k</code> 层后，对 <code>k+1、k+2…</code> 每层依次选：<strong>第一个 <code>available</code>，否则第一个 <code>sold_out</code></strong>。切换案例 Tab 时用 <code>autoFillFromLayer(-1)</code> 从第 0 层起填满一整条默认规格链。</p>
+
+      <h2>7. 脚本函数索引（对照学习）</h2>
+      <div class="fn-list">
+        <strong>computeOptionState(i, v)</strong> — 第 i 层、值 v 的三态<br />
+        <strong>resolveVariant()</strong> — 选满后解析当前 SKU<br />
+        <strong>clearLowerLayers(k)</strong> — 改第 k 层后清除变非法的下层<br />
+        <strong>autoFillFromLayer(k)</strong> — 从 k+1 层起自动「先可售后售罄」<br />
+        <strong>renderOptions()</strong> — 生成选项 DOM<br />
+        <strong>updateSummary()</strong> — 价格、SKU、加购按钮<br />
+        <strong>switchCase(key)</strong> — 切换 <code>DEMO_CASES</code> 并重置默认选中
+      </div>
+
+      <h2>8. 与 Shopify 真机的差异</h2>
+      <ul>
+        <li>Shopify 另有：<code>?variant=</code>、默认变体、多市场、主图随变体切换等，本页未实现。</li>
+        <li>真实接口字段可能是 <code>option1</code> / <code>selectedOptions</code> 等，但<strong>过滤与三态逻辑与本文一致</strong>。</li>
+      </ul>
+
+      <h2>9. 三个 Tab 各练什么</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>案例</th>
+            <th>学习重点</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>单层</td>
+            <td>无上层过滤；区分 XL「无变体=禁用」与 L「有变体不可售=售罄」。</td>
+          </tr>
+          <tr>
+            <td>双层</td>
+            <td>典型服装流；下层状态随上层变化。</td>
+          </tr>
+          <tr>
+            <td>三层</td>
+            <td>同一套代码扩展到三维 <code>optionValues</code>；如「白+S」无整条变体时 S 被禁用。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>10. 自学自检（能答上即过关）</h2>
+      <ul>
+        <li>「售罄」与「禁用」分别对应 <code>matches</code> 的哪种情况？</li>
+        <li>计算第 0 层时，「上层过滤」实际执行了几层？</li>
+        <li>若去掉 <code>autoFillFromLayer</code> 只保留 <code>clearLowerLayers</code>，用户会多做什么操作？</li>
+      </ul>
+      </section>
+    </details>
+  </div>
+
+  <script>
+    /**
+     * 三个案例共用同一套算法；仅 optionDefinitions 层数与 variants.optionValues 长度不同。
+     */
+    const DEMO_CASES = {
+      one: {
+        hint: "仅一层「尺码」：XL 无变体 → 禁用；L 仅有不可售变体 → 售罄样式。",
+        product: {
+          title: "基础款 T 恤（单层 · 仅尺码）",
+          optionDefinitions: [{ name: "尺码", position: 0, values: ["S", "M", "L", "XL"] }],
+          variants: [
+            { id: "1-s", optionValues: ["S"], sku: "T-S", price: 89, available: true, availableForSale: true },
+            { id: "1-m", optionValues: ["M"], sku: "T-M", price: 89, available: true, availableForSale: true },
+            { id: "1-l", optionValues: ["L"], sku: "T-L", price: 99, available: false, availableForSale: false },
+          ],
+        },
+      },
+      two: {
+        hint: "两层「颜色 × 尺码」：与 Shopify 常见服装 PDP 一致；黑色+XL 等组合无变体 → 禁用。",
+        product: {
+          title: "卫衣（双层 · 颜色 × 尺码）",
+          optionDefinitions: [
+            { name: "颜色", position: 0, values: ["黑色", "灰色", "藏青"] },
+            { name: "尺码", position: 1, values: ["S", "M", "L", "XL"] },
+          ],
+          variants: [
+            { id: "v1", optionValues: ["黑色", "S"], sku: "BK-S", price: 199, available: true, availableForSale: true },
+            { id: "v2", optionValues: ["黑色", "M"], sku: "BK-M", price: 199, available: true, availableForSale: true },
+            { id: "v3", optionValues: ["黑色", "L"], sku: "BK-L", price: 209, available: false, availableForSale: false },
+            { id: "v4", optionValues: ["灰色", "S"], sku: "GY-S", price: 199, available: true, availableForSale: false },
+            { id: "v5", optionValues: ["灰色", "M"], sku: "GY-M", price: 199, available: true, availableForSale: true },
+            { id: "v6", optionValues: ["灰色", "L"], sku: "GY-L", price: 209, available: true, availableForSale: true },
+            { id: "v7", optionValues: ["藏青", "M"], sku: "NV-M", price: 219, available: true, availableForSale: true },
+            { id: "v8", optionValues: ["藏青", "L"], sku: "NV-L", price: 219, available: true, availableForSale: true },
+          ],
+        },
+      },
+      three: {
+        hint: "三层（通用）：颜色 × 尺码 × 版本。未上架的组合会禁用；例如选「白」后「S」不可选；礼盒款部分售罄。",
+        product: {
+          title: "联名款（三层 · 颜色 × 尺码 × 版本）",
+          optionDefinitions: [
+            { name: "颜色", position: 0, values: ["黑色", "白色"] },
+            { name: "尺码", position: 1, values: ["S", "M", "L"] },
+            { name: "版本", position: 2, values: ["标准", "礼盒"] },
+          ],
+          variants: [
+            { id: "3-1", optionValues: ["黑色", "S", "标准"], sku: "BK-S-STD", price: 259, available: true, availableForSale: true },
+            { id: "3-2", optionValues: ["黑色", "S", "礼盒"], sku: "BK-S-GIFT", price: 299, available: true, availableForSale: false },
+            { id: "3-3", optionValues: ["黑色", "M", "标准"], sku: "BK-M-STD", price: 259, available: true, availableForSale: true },
+            { id: "3-4", optionValues: ["黑色", "M", "礼盒"], sku: "BK-M-GIFT", price: 299, available: true, availableForSale: true },
+            { id: "3-5", optionValues: ["黑色", "L", "标准"], sku: "BK-L-STD", price: 269, available: true, availableForSale: true },
+            { id: "3-6", optionValues: ["白色", "M", "标准"], sku: "WH-M-STD", price: 259, available: true, availableForSale: true },
+            { id: "3-7", optionValues: ["白色", "M", "礼盒"], sku: "WH-M-GIFT", price: 299, available: true, availableForSale: true },
+            { id: "3-8", optionValues: ["白色", "L", "标准"], sku: "WH-L-STD", price: 269, available: true, availableForSale: true },
+          ],
+        },
+      },
+    };
+
+    let activeCaseKey = "two";
+    let PRODUCT = DEMO_CASES[activeCaseKey].product;
+
+    /** 当前每层选中的值 */
+    const selection = {};
+
+    function rebuildSelectionFromProduct() {
+      Object.keys(selection).forEach((k) => {
+        delete selection[k];
+      });
+      PRODUCT.optionDefinitions.forEach((opt) => {
+        selection[opt.name] = null;
+      });
+    }
+
+    rebuildSelectionFromProduct();
+
+    function computeOptionState(layerIndex, value) {
+      const defs = PRODUCT.optionDefinitions;
+      const variants = PRODUCT.variants;
+
+      const matches = variants.filter((v) => {
+        for (let i = 0; i < layerIndex; i += 1) {
+          const name = defs[i].name;
+          const picked = selection[name];
+          if (picked !== null && picked !== undefined && v.optionValues[i] !== picked) {
+            return false;
+          }
+        }
+        return v.optionValues[layerIndex] === value;
+      });
+
+      if (matches.length === 0) {
+        return "disabled";
+      }
+
+      const anyForSale = matches.some((v) => v.availableForSale === true);
+      if (anyForSale) {
+        return "available";
+      }
+
+      return "sold_out";
+    }
+
+    function resolveVariant() {
+      const defs = PRODUCT.optionDefinitions;
+      const allPicked = defs.every((d) => selection[d.name] !== null && selection[d.name] !== undefined);
+      if (!allPicked) {
+        return null;
+      }
+
+      const tuple = defs.map((d) => selection[d.name]);
+      return (
+        PRODUCT.variants.find((v) => tuple.every((val, i) => v.optionValues[i] === val)) || null
+      );
+    }
+
+    function formatPrice(n) {
+      return `¥${n}`;
+    }
+
+    function renderOptions() {
+      const mount = document.getElementById("optionMount");
+      mount.replaceChildren();
+
+      PRODUCT.optionDefinitions.forEach((opt, layerIndex) => {
+        const group = document.createElement("div");
+        group.className = "option-group";
+        group.setAttribute("role", "group");
+        group.setAttribute("aria-labelledby", `opt-label-${layerIndex}`);
+
+        const label = document.createElement("label");
+        label.className = "option-label";
+        label.id = `opt-label-${layerIndex}`;
+        const picked = selection[opt.name];
+        label.innerHTML = `${opt.name} <span>${picked ? `已选：${picked}` : "请选择"}</span>`;
+
+        const row = document.createElement("div");
+        row.className = "option-swatches";
+
+        opt.values.forEach((value) => {
+          const state = computeOptionState(layerIndex, value);
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "swatch";
+          btn.dataset.state = state;
+          btn.textContent = value;
+          btn.setAttribute("aria-pressed", picked === value ? "true" : "false");
+          if (state === "disabled") {
+            btn.disabled = true;
+            btn.setAttribute("aria-disabled", "true");
+          }
+
+          if (picked === value) {
+            btn.classList.add("selected");
+          }
+
+          btn.addEventListener("click", () => {
+            if (state === "disabled") {
+              return;
+            }
+            selection[opt.name] = value;
+            clearLowerLayers(layerIndex);
+            autoFillFromLayer(layerIndex);
+            renderOptions();
+            updateSummary();
+          });
+
+          row.appendChild(btn);
+        });
+
+        group.appendChild(label);
+        group.appendChild(row);
+        mount.appendChild(group);
+      });
+    }
+
+    function clearLowerLayers(fromLayerIndex) {
+      const defs = PRODUCT.optionDefinitions;
+      for (let i = fromLayerIndex + 1; i < defs.length; i += 1) {
+        const name = defs[i].name;
+        const current = selection[name];
+        if (current === null) {
+          continue;
+        }
+        if (computeOptionState(i, current) === "disabled") {
+          selection[name] = null;
+        }
+      }
+    }
+
+    /**
+     * 从第 fromLayerIndex 层之后开始，逐层自动选中「第一个可点」的值：
+     * 优先 available（可售），其次 sold_out；全为 disabled 则该层保持 null。
+     * fromLayerIndex === -1 时表示从第 0 层开始填满（用于切换案例 Tab 后的默认规格）。
+     */
+    function autoFillFromLayer(fromLayerIndex) {
+      const defs = PRODUCT.optionDefinitions;
+      for (let i = fromLayerIndex + 1; i < defs.length; i += 1) {
+        const opt = defs[i];
+        let chosen = null;
+        for (let v = 0; v < opt.values.length; v += 1) {
+          const value = opt.values[v];
+          if (computeOptionState(i, value) === "available") {
+            chosen = value;
+            break;
+          }
+        }
+        if (!chosen) {
+          for (let v = 0; v < opt.values.length; v += 1) {
+            const value = opt.values[v];
+            if (computeOptionState(i, value) === "sold_out") {
+              chosen = value;
+              break;
+            }
+          }
+        }
+        selection[opt.name] = chosen;
+      }
+    }
+
+    function updateSummary() {
+      const variant = resolveVariant();
+      const priceLine = document.getElementById("priceLine");
+      const meta = document.getElementById("variantMeta");
+      const variantId = document.getElementById("variantId");
+      const variantSku = document.getElementById("variantSku");
+      const btnCart = document.getElementById("btnCart");
+
+      if (!variant) {
+        priceLine.textContent = "请选择完整规格查看价格";
+        meta.hidden = true;
+        btnCart.disabled = true;
+        btnCart.textContent = "加入购物车";
+        return;
+      }
+
+      priceLine.textContent = `${formatPrice(variant.price)}`;
+      meta.hidden = false;
+      variantId.textContent = variant.id;
+      variantSku.textContent = variant.sku;
+
+      if (variant.availableForSale) {
+        btnCart.disabled = false;
+        btnCart.textContent = "加入购物车";
+      } else {
+        btnCart.disabled = true;
+        btnCart.textContent = variant.available ? "暂时不可售" : "已售罄";
+      }
+    }
+
+    function syncCaseTabs() {
+      document.querySelectorAll(".case_tab").forEach((btn) => {
+        const isOn = btn.dataset.case === activeCaseKey;
+        btn.setAttribute("aria-selected", isOn ? "true" : "false");
+      });
+    }
+
+    function switchCase(key) {
+      if (!DEMO_CASES[key]) {
+        return;
+      }
+      activeCaseKey = key;
+      PRODUCT = DEMO_CASES[key].product;
+      rebuildSelectionFromProduct();
+      autoFillFromLayer(-1);
+
+      document.getElementById("productTitle").textContent = PRODUCT.title;
+      document.getElementById("caseHint").textContent = DEMO_CASES[key].hint;
+
+      syncCaseTabs();
+      renderOptions();
+      updateSummary();
+    }
+
+    document.querySelectorAll(".case_tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        switchCase(btn.dataset.case);
+      });
+    });
+
+    switchCase("two");
+  </script>
+</body>
+</html>

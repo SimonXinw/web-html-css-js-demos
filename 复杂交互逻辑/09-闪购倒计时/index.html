@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>闪购倒计时 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>闪购倒计时 &amp; 库存竞争</h1>
+      <p class="sub">
+        限时抢购：翻牌倒计时动效 · 库存进度条实时消耗 · 在线人数浮动 · 购买状态机（加载 / 成功 / 售罄）
+      </p>
+    </header>
+
+    <section class="flash_card" id="flashCard">
+
+      <!-- Product Hero -->
+      <div class="product_hero">
+        <div class="product_img">🎧</div>
+        <div class="product_info">
+          <div class="flash_badge">⚡ 闪购特惠</div>
+          <h2 class="product_name">ANC Pro 主动降噪耳机</h2>
+          <p class="product_sub">40hr续航 · Hi-Res认证 · 多点连接</p>
+          <div class="price_row">
+            <span class="price_flash">$39.99</span>
+            <span class="price_orig">$89.99</span>
+            <span class="price_off">-56%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Countdown Timer -->
+      <div class="countdown_wrap">
+        <p class="countdown_label">距离活动结束</p>
+        <div class="countdown" id="countdown" aria-live="polite" aria-label="倒计时">
+          <div class="count_unit">
+            <div class="count_box">
+              <span class="count_digit" id="d-h0">0</span>
+              <span class="count_digit" id="d-h1">2</span>
+            </div>
+            <span class="count_unit_label">时</span>
+          </div>
+          <span class="count_sep">:</span>
+          <div class="count_unit">
+            <div class="count_box">
+              <span class="count_digit" id="d-m0">3</span>
+              <span class="count_digit" id="d-m1">0</span>
+            </div>
+            <span class="count_unit_label">分</span>
+          </div>
+          <span class="count_sep">:</span>
+          <div class="count_unit">
+            <div class="count_box">
+              <span class="count_digit" id="d-s0">0</span>
+              <span class="count_digit" id="d-s1">0</span>
+            </div>
+            <span class="count_unit_label">秒</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Progress -->
+      <div class="stock_section">
+        <div class="stock_header">
+          <span class="stock_label">库存告急</span>
+          <span class="stock_count" id="stockCount">47 件</span>
+        </div>
+        <div class="stock_bar_track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="47">
+          <div class="stock_bar_fill" id="stockBar" style="width:47%"></div>
+        </div>
+        <div class="stock_footer">
+          <span class="watching_pill" id="watchingPill">
+            <span class="watching_dot"></span>
+            <span id="watchingCount">128</span> 人正在抢购
+          </span>
+          <span class="sold_pct" id="soldPct">已售 53%</span>
+        </div>
+      </div>
+
+      <!-- Purchase Button -->
+      <button class="buy_btn" id="buyBtn" data-state="idle" aria-label="立即抢购">
+        <span class="btn_layer" data-state="idle">立即抢购</span>
+        <span class="btn_layer" data-state="loading" aria-hidden="true">
+          <span class="btn_spinner"></span>加入中…
+        </span>
+        <span class="btn_layer" data-state="success" aria-hidden="true">✓ 已加入购物车！</span>
+        <span class="btn_layer" data-state="soldout" aria-hidden="true">😢 已售罄</span>
+      </button>
+
+      <div class="trust_row">
+        <span class="trust_item">🔒 安全支付</span>
+        <span class="trust_item">↩️ 30天退换</span>
+        <span class="trust_item">✈️ 全球配送</span>
+      </div>
+
+      <!-- Sold-out overlay (injected by JS) -->
+    </section>
+
+    <p class="fineprint">
+      演示说明：活动截止时间为 2.5 小时后；库存每 3 秒模拟减少 1 件；连续点击可触发售罄状态；售罄后刷新页面重置。
+    </p>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

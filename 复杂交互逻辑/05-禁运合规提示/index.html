@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>禁运合规提示 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>禁运与合规提示</h1>
+      <p class="sub">购物车中含<strong>带电 / 液体 / 磁性</strong>等限制属性时，结算前弹出<strong>底部抽屉</strong>：图标弹跳、条款勾选后才可继续——降低误发与拒收风险。</p>
+    </header>
+
+    <section class="card" aria-label="购物车">
+      <h2 class="card_title">购物车</h2>
+      <ul class="lines" id="cartLines"></ul>
+
+      <div class="row_btns">
+        <button type="button" class="btn btn--ghost" id="btnAddNormal">添加：T 恤</button>
+        <button type="button" class="btn btn--warn" id="btnAddRestricted">添加：蓝牙耳机（含锂电）</button>
+      </div>
+
+      <button type="button" class="checkout" id="btnCheckout">去结算</button>
+    </section>
+  </div>
+
+  <div class="overlay" id="overlay" hidden></div>
+  <div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" hidden>
+    <div class="drawer_handle" aria-hidden="true"></div>
+    <div class="drawer_head">
+      <span class="warn_icon" aria-hidden="true">!</span>
+      <h2 id="drawerTitle">运输限制提示</h2>
+    </div>
+    <p class="drawer_body">
+      您的订单含 <strong>锂离子电池</strong> 商品。部分航线 / 国家可能对纯电、容量或包装有额外限制；错误申报可能导致退运或罚金（演示文案）。
+    </p>
+    <label class="ack">
+      <input type="checkbox" id="ackCheck" />
+      <span>我已阅读并理解上述运输与合规风险</span>
+    </label>
+    <button type="button" class="drawer_cta" id="drawerContinue" disabled>继续结算</button>
+    <button type="button" class="drawer_close" id="drawerClose">关闭</button>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
