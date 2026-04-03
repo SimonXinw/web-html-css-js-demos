@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>多仓发货拆单 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>多仓发货拆单</h1>
+      <p class="sub">
+        海外仓（发货快运费低）与国内仓（备货全履约慢）协同。切换目的国时，商品按各自的<strong>库存策略</strong>被动态分配至不同包裹，运费与 ETA 分别展示。
+      </p>
+    </header>
+
+    <section class="card" aria-label="购物车分仓">
+      <div class="dest_bar">
+        <span class="dest_label">配送至：</span>
+        <select id="selDest" class="input_sel">
+          <option value="US">美国 (US) - 触发美国本地仓</option>
+          <option value="UK">英国 (UK) - 全由中国仓发货</option>
+        </select>
+      </div>
+
+      <div class="pkgs" id="pkgContainer" aria-live="polite"></div>
+
+      <div class="summary">
+        <div class="sum_row">
+          <span>商品总计</span>
+          <span class="sum_val" id="sumGoods">$0.00</span>
+        </div>
+        <div class="sum_row">
+          <span>分仓运费合计</span>
+          <span class="sum_val" id="sumShip">$0.00</span>
+        </div>
+        <div class="sum_row sum_row--total">
+          <span>预估总额</span>
+          <span class="sum_total" id="sumTotal">$0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <p class="fineprint">
+      如果商品支持在用户目的国所在的海外仓直接履约，就会分入「包裹 1 (海外仓)」；否则归入「包裹 2 (国内直发)」。真实业务中运费还需加权体积重与合箱。
+    </p>
+  </div>
+
+  <template id="tplPkg">
+    <div class="pkg_card">
+      <div class="pkg_head">
+        <div class="pkg_badge"></div>
+        <div class="pkg_title"></div>
+        <div class="pkg_eta"></div>
+      </div>
+      <ul class="pkg_items"></ul>
+      <div class="pkg_foot">
+        <span class="pkg_ship_lbl">本包裹运费：</span>
+        <span class="pkg_ship_val"></span>
+      </div>
+    </div>
+  </template>
+
+  <script src="main.js"></script>
+</body>
+</html>

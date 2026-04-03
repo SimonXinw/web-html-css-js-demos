@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>国家地址联动 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>国家地址联动</h1>
+      <p class="sub">切换<strong>国家</strong>后，二级行政区标签与选项集整体替换，容器带<strong>高度过渡</strong>；美国补邮编行。提交空邮编时触发<strong>抖动校验</strong>（仅演示）。</p>
+    </header>
+
+    <form class="card" id="addrForm" novalidate>
+      <div class="field">
+        <label class="label" for="country">国家 / 地区</label>
+        <select id="country" class="input" required>
+          <option value="">请选择</option>
+          <option value="US">United States</option>
+          <option value="JP">日本</option>
+          <option value="AU">Australia</option>
+          <option value="CN">中国大陆</option>
+        </select>
+      </div>
+
+      <div class="region_shell" id="regionShell" aria-hidden="true">
+        <div class="region_inner" id="regionInner">
+          <div class="field">
+            <label class="label" id="regionLabel" for="region">—</label>
+            <select id="region" class="input"></select>
+          </div>
+        </div>
+      </div>
+
+      <div class="field field--zip" id="zipField" hidden>
+        <label class="label" for="zip">ZIP Code</label>
+        <input id="zip" class="input" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="5 位数字" maxlength="10" />
+      </div>
+
+      <p class="msg" id="formMsg" role="status"></p>
+
+      <button type="submit" class="submit_btn" id="submitBtn">保存地址（演示）</button>
+    </form>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

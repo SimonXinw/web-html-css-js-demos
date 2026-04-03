@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>购物车飞入动效 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Fixed Cart Icon -->
+  <button class="cart_icon_btn" id="cartIconBtn" aria-label="打开购物车">
+    <span class="cart_icon_svg">🛒</span>
+    <span class="cart_badge" id="cartBadge">0</span>
+  </button>
+
+  <!-- Side Cart Panel -->
+  <div class="cart_overlay" id="cartOverlay"></div>
+  <aside class="cart_panel" id="cartPanel" aria-label="购物车" aria-hidden="true">
+    <div class="cart_panel_head">
+      <h2 class="cart_panel_title">购物车</h2>
+      <button class="cart_close_btn" id="cartCloseBtn" aria-label="关闭">✕</button>
+    </div>
+
+    <ul class="cart_items_list" id="cartItemsList">
+      <!-- items injected by JS -->
+    </ul>
+
+    <div class="cart_empty" id="cartEmpty">
+      <span class="cart_empty_icon">🛒</span>
+      <p>购物车还空着</p>
+      <p class="cart_empty_sub">从下方商品中选购吧</p>
+    </div>
+
+    <div class="cart_summary" id="cartSummary" hidden>
+      <div class="sum_row">
+        <span>商品小计</span>
+        <span class="sum_val" id="sumSubtotal">$0.00</span>
+      </div>
+      <div class="sum_row">
+        <span>跨境运费</span>
+        <span class="sum_val">$4.99</span>
+      </div>
+      <div class="sum_row sum_row--total">
+        <span>预估总价</span>
+        <span class="sum_val sum_val--total" id="sumTotal">$4.99</span>
+      </div>
+      <button class="checkout_btn" id="checkoutBtn" data-state="idle">
+        <span class="checkout_layer" data-state="idle">去结算 →</span>
+        <span class="checkout_layer" data-state="loading">
+          <span class="btn_spinner"></span>处理中…
+        </span>
+        <span class="checkout_layer" data-state="success">✓ 订单已提交！</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Page -->
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>购物车飞入动效</h1>
+      <p class="sub">
+        点击「加入购物车」：商品图标沿抛物线飞入购物车 · 徽章弹簧跳动 · 侧边栏滑入 · 数量增减带动画 · 价格滚动计数
+      </p>
+    </header>
+
+    <ul class="product_grid" id="productGrid" role="list">
+      <!-- products injected by JS -->
+    </ul>
+
+    <p class="fineprint">
+      演示：商品数量 +/− 各自带弹簧缩放；移除商品有高度折叠动画；结算按钮模拟提交状态机。
+    </p>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

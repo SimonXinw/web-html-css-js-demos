@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>跨境电商场景 · 复杂交互 Demo 导航</title>
+  <link rel="stylesheet" href="hub.css" />
+</head>
+<body>
+  <div class="hub_page">
+    <header class="hub_header">
+      <p class="hub_crumb"><a href="../电商选项交互.html">← 多层选项与变体</a></p>
+      <h1 class="hub_title">跨境电商场景</h1>
+      <p class="hub_lead">
+        五个独立小页，模拟独立站 / 平台跨境售卖里常见的<strong>价格、物流、币种、地址、合规</strong>交互。
+        每个子文件夹内含 <code>index.html</code>、<code>styles.css</code>、<code>main.js</code>，便于你对照学习动画与状态机。
+      </p>
+    </header>
+
+    <ul class="hub_grid" role="list">
+      <li>
+        <a class="hub_card" href="01-关税与到手价/index.html">
+          <span class="hub_card_tag">价格拆解</span>
+          <strong>关税与到手价</strong>
+          <span class="hub_card_desc">目的国 / 贸易条款切换，费用行依次展开，数字滚动逼近目标。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="02-跨境物流时间线/index.html">
+          <span class="hub_card_tag">物流可视化</span>
+          <strong>跨境物流时间线</strong>
+          <span class="hub_card_desc">轨段竖线对齐圆点；滚动感应区「一格一步」；顶栏进度条 + 自动播放。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="03-多币种切换/index.html">
+          <span class="hub_card_tag">收银台</span>
+          <strong>多币种切换</strong>
+          <span class="hub_card_desc">币种 chip 切换，价格层叠淡入淡出，汇率与手续费说明联动。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="04-国家地址联动/index.html">
+          <span class="hub_card_tag">表单</span>
+          <strong>国家地址联动</strong>
+          <span class="hub_card_desc">国家切换时二级行政区标签与选项集替换，带高度过渡与校验动效。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="05-禁运合规提示/index.html">
+          <span class="hub_card_tag">合规</span>
+          <strong>禁运与合规提示</strong>
+          <span class="hub_card_desc">含限制属性商品结算前抽屉警告、图标弹跳、确认后才可继续。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="06-多约束结算联动/index.html">
+          <span class="hub_card_tag">状态机</span>
+          <strong>多约束结算联动</strong>
+          <span class="hub_card_desc">国家×物流×货值×主体耦合；欧盟 VAT/IOSS；禁用原因；阻塞清单驱动提交。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="07-运费体积重计费/index.html">
+          <span class="hub_card_tag">价格拆解</span>
+          <strong>运费体积重计费</strong>
+          <span class="hub_card_desc">实重与体积重（抛重）柱状图对比；动态判断计费赢家。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="08-多仓发货拆单/index.html">
+          <span class="hub_card_tag">订单分配</span>
+          <strong>多仓发货拆单</strong>
+          <span class="hub_card_desc">基于目的国和商品库存类型，动态拆分多包裹与分别计算运费。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="09-闪购倒计时/index.html">
+          <span class="hub_card_tag">限时促销</span>
+          <strong>闪购倒计时 &amp; 库存竞争</strong>
+          <span class="hub_card_desc">翻牌倒计时动效；库存消耗进度条 + 紧急脉冲；在线人数实时浮动；购买状态机（加载 / 成功 / 售罄叠层）。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="10-购物车飞入动效/index.html">
+          <span class="hub_card_tag">购物体验</span>
+          <strong>购物车飞入动效</strong>
+          <span class="hub_card_desc">商品图标沿抛物线飞入购物车；徽章弹簧跳动；侧边栏滑入；数量增减弹性缩放；价格滚动计数器；移除折叠动画。</span>
+        </a>
+      </li>
+      <li>
+        <a class="hub_card" href="11-商品规格对比/index.html">
+          <span class="hub_card_tag">选品决策</span>
+          <strong>商品规格对比</strong>
+          <span class="hub_card_desc">勾选 2–4 件商品；对比条从底部弹出；抽屉上滑 + 行交错入场；胜出指标绿色高亮；SVG雷达图动态绘制综合评分。</span>
+        </a>
+      </li>
+    </ul>
+
+    <footer class="hub_footer">
+      本地直接用浏览器打开各 <code>index.html</code> 即可；若需同源接口可配合仓库内 <code>server/</code> 静态服务。
+    </footer>
+  </div>
+</body>
+</html>

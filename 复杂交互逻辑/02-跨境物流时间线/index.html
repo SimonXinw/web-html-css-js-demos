@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>跨境物流时间线 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>跨境物流时间线</h1>
+      <p class="sub">竖线为<strong>每段独立轨道</strong>，从上一节点圆心连到下一节点圆心。在下方<strong>滚动感应区</strong>内向下滚一格推进一个节点、向上滚退回；也可点按钮播放或重置。</p>
+    </header>
+
+    <section class="card" aria-label="物流轨迹">
+      <div class="card_head">
+        <div>
+          <div class="tracking_no">LP752918364CN</div>
+          <div class="tracking_meta">专线经济 · 目的国：德国</div>
+        </div>
+        <div class="card_actions">
+          <button type="button" class="btn btn--ghost" id="btnReset">重置</button>
+          <button type="button" class="btn btn--primary" id="btnPlay">自动播放</button>
+        </div>
+      </div>
+
+      <div class="progress_bar" aria-hidden="true">
+        <div class="progress_fill" id="progressFill"></div>
+      </div>
+
+      <ol class="timeline" id="timeline" role="list">
+        <li class="step" data-index="0">
+          <div class="step_rail">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="rail_line" aria-hidden="true"></span>
+          </div>
+          <div class="step_body">
+            <strong>仓库揽收</strong>
+            <span>深圳仓 · 已称重出库</span>
+            <time>4月1日 09:20</time>
+          </div>
+        </li>
+        <li class="step" data-index="1">
+          <div class="step_rail">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="rail_line" aria-hidden="true"></span>
+          </div>
+          <div class="step_body">
+            <strong>出境报关</strong>
+            <span>海关放行 · 转交国际干线</span>
+            <time>4月2日 14:05</time>
+          </div>
+        </li>
+        <li class="step" data-index="2">
+          <div class="step_rail">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="rail_line" aria-hidden="true"></span>
+          </div>
+          <div class="step_body">
+            <strong>国际运输</strong>
+            <span>航班 / 海运中转（演示）</span>
+            <time>运输中</time>
+          </div>
+        </li>
+        <li class="step" data-index="3">
+          <div class="step_rail">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="rail_line" aria-hidden="true"></span>
+          </div>
+          <div class="step_body">
+            <strong>目的国清关</strong>
+            <span>待收件人税号 / IOSS（如有）</span>
+            <time>预计 2–4 工作日</time>
+          </div>
+        </li>
+        <li class="step" data-index="4">
+          <div class="step_rail">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="rail_line rail_line--last" aria-hidden="true"></span>
+          </div>
+          <div class="step_body">
+            <strong>尾程派送</strong>
+            <span>DHL / 本地邮政</span>
+            <time>清关完成后 1–3 日</time>
+          </div>
+        </li>
+      </ol>
+
+      <div
+        class="scroll_pad"
+        id="scrollPad"
+        tabindex="0"
+        role="application"
+        aria-label="滚动推进：向下滚一格前进，向上滚一格后退"
+      >
+        <div class="scroll_pad_inner">
+          <span class="scroll_pad_icon" aria-hidden="true">↕</span>
+          <p class="scroll_pad_title">滚动感应区</p>
+          <p class="scroll_pad_hint">鼠标移入此区域，<strong>向下滚</strong> → 下一节点；<strong>向上滚</strong> → 上一节点（触控板/鼠标滚轮均可）。</p>
+          <p class="scroll_pad_step" id="scrollPadStep">当前节点：1 / 5</p>
+        </div>
+      </div>
+
+      <div class="step_btns" role="group" aria-label="无滚轮时用手动步进">
+        <button type="button" class="step_btn" id="btnPrev">上一节点</button>
+        <button type="button" class="step_btn" id="btnNext">下一节点</button>
+      </div>
+
+      <p class="fineprint">线段画在每个节点下方的「轨」里，与圆点同一列居中对齐，避免整根伪元素对不齐的问题。真实轨迹仍以承运商回传为准。</p>
+    </section>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

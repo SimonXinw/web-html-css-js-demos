@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>多币种切换 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>多币种切换</h1>
+      <p class="sub">商品基准价为 <strong>CNY</strong>；切换展示币种时，价格区做<strong>层叠交叉淡化</strong>，底部汇率与「跨境支付手续费」说明同步更新——常见独立站收银体验。</p>
+    </header>
+
+    <article class="card">
+      <div class="product_visual" aria-hidden="true"></div>
+      <h2 class="product_title">极简双肩包 · 跨境款</h2>
+      <p class="product_desc">演示用固定基准价，汇率与费率为写死数据。</p>
+
+      <div class="currency_row" role="tablist" aria-label="展示币种" id="currencyTabs"></div>
+
+      <div class="price_stack" aria-live="polite">
+        <div class="price_layer is-active" id="priceLayer">
+          <span class="sym" id="priceSym">¥</span>
+          <span class="num" id="priceNum">599.00</span>
+        </div>
+      </div>
+
+      <dl class="rate_panel" id="ratePanel">
+        <div><dt>兑人民币</dt><dd id="rateText">1 CNY = 1.00 CNY</dd></div>
+        <div><dt>支付通道费（演示）</dt><dd id="feeText">约 0.8% 跨境手续费已折算进展示价</dd></div>
+      </dl>
+
+      <button type="button" class="cta" id="btnCart">加入购物车（演示）</button>
+    </article>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

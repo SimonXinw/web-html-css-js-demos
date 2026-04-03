@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>多约束结算联动 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>多约束结算联动</h1>
+      <p class="sub">
+        模拟「报价 / 结账前」<strong>多字段互相牵制</strong>：同一物流方式在不同国家可用性不同；欧盟高货值对个人买家要处理 VAT；
+        DDP 仅部分线路开放。禁用项可悬停看原因，底部根据规则生成<strong>阻塞项清单</strong>，全部满足才可提交。
+      </p>
+    </header>
+
+    <section class="card" aria-label="约束试算">
+      <div class="grid2">
+        <div class="field">
+          <label class="label" for="country">目的国</label>
+          <select id="country" class="input"></select>
+        </div>
+        <div class="field">
+          <span class="label">订单货值（演示 USD）</span>
+          <div class="seg" id="valueSeg" role="group" aria-label="货值档位"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label">购买主体</span>
+        <div class="seg" id="entitySeg" role="group" aria-label="主体"></div>
+      </div>
+
+      <div class="field">
+        <span class="label">物流方式（与目的国联动）</span>
+        <div class="ship_list" id="shipList" role="radiogroup" aria-label="物流"></div>
+        <p class="ship_hint" id="shipHint" hidden></p>
+      </div>
+
+      <div class="panel panel--eu" id="euPanel" hidden>
+        <div class="panel_title">欧盟 VAT / IOSS（演示规则）</div>
+        <p class="panel_text" id="euExplain"></p>
+        <label class="check_row">
+          <input type="checkbox" id="iossAck" />
+          <span>我已了解：个人包裹货值超演示阈值时，可能需要缴纳 VAT / 使用 IOSS 预缴（演示勾选）</span>
+        </label>
+        <div class="field field--vat" id="vatField" hidden>
+          <label class="label" for="vatId">企业 VAT 号（B2B 演示）</label>
+          <input id="vatId" class="input" type="text" placeholder="例 DE123456789" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="panel panel--ddp" id="ddpPanel" hidden>
+        <strong>DDP 说明</strong>
+        <p class="panel_text" id="ddpExplain"></p>
+      </div>
+
+      <div class="blockers" id="blockers" aria-live="polite">
+        <div class="blockers_title">当前阻塞（需全部消除才可提交）</div>
+        <ul class="blockers_list" id="blockersList"></ul>
+      </div>
+
+      <button type="button" class="submit" id="btnSubmit" disabled>确认报价方案</button>
+    </section>
+
+    <p class="fineprint">
+      规则写在 <code>main.js</code> 的 <code>RULES</code> / <code>computeConstraints</code>，便于你对照改数据。
+      真实系统还会接承运商 API、关务与支付通道策略。
+    </p>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

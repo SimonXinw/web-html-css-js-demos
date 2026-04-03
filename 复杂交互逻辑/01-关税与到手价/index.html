@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>关税与到手价 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>关税与到手价</h1>
+      <p class="sub">模拟结算页：切换<strong>目的国</strong>与<strong>贸易条款</strong>（DDP / 买家承担关税），费用行依次展开，金额用短时数字动画逼近结果。</p>
+    </header>
+
+    <section class="card" aria-label="价格试算">
+      <div class="toolbar">
+        <div class="field">
+          <span class="label">目的国 / 地区</span>
+          <div class="chips" id="countryChips" role="tablist" aria-label="目的国"></div>
+        </div>
+        <div class="field">
+          <span class="label">条款</span>
+          <div class="toggle" role="group" aria-label="贸易条款">
+            <button type="button" class="toggle_btn is-active" data-term="ddp" id="termDdp">DDP（卖家包税）</button>
+            <button type="button" class="toggle_btn" data-term="dap" id="termDap">DAP（买家自理关税）</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="product_row">
+        <div class="thumb" aria-hidden="true"></div>
+        <div>
+          <div class="product_name">便携咖啡机 · 样品价</div>
+          <div class="product_meta">发货地：中国深圳 · 申报品类：小家电</div>
+        </div>
+        <div class="product_price">
+          <span class="currency">USD</span>
+          <span id="goodsPrice">129.00</span>
+        </div>
+      </div>
+
+      <div class="breakdown" id="breakdown">
+        <div class="breakdown_row" data-row="shipping">
+          <span>国际运费（估算）</span>
+          <span class="amt" id="rowShipping">0.00</span>
+        </div>
+        <div class="breakdown_row" data-row="duty">
+          <span>关税 / 增值税（估算）<button type="button" class="info_btn" id="dutyTipBtn" aria-expanded="false" title="说明">i</button></span>
+          <span class="amt duty_amt">
+            <span id="rowDuty">0.00</span>
+            <span class="duty_suffix" id="dutySuffix" hidden>（到付）</span>
+          </span>
+        </div>
+        <div class="breakdown_row breakdown_row--fee" data-row="service">
+          <span>支付 / 跨境通道费</span>
+          <span class="amt" id="rowFee">0.00</span>
+        </div>
+        <div class="breakdown_total" data-row="total">
+          <span id="totalLabel">预计实付（USD）</span>
+          <span class="amt amt--lg" id="rowTotal">0.00</span>
+        </div>
+      </div>
+
+      <p class="fineprint" id="fineprint"></p>
+    </section>
+
+    <div class="tip_pop" id="dutyTip" role="tooltip" hidden>
+      演示数据：关税按申报价比例简化计算；真实站点需接关务规则与 HS 编码。
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
