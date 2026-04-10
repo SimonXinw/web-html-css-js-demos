@@ -39,6 +39,47 @@
       padding: 24px 20px 48px;
     }
 
+    /* PC：案例 Demo 与数据结构左右分栏 */
+    .demo_data_layout {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .demo_data_layout .data-structure-card {
+      margin-top: 0;
+    }
+
+    @media (min-width: 900px) {
+      .page {
+        max-width: 1100px;
+      }
+
+      .demo_data_layout {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 28px;
+      }
+
+      .demo_data_layout .product-card {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+
+      .demo_data_layout .data-structure-card {
+        flex: 0 0 440px;
+        width: 440px;
+        max-width: 100%;
+        position: sticky;
+        top: 24px;
+        align-self: flex-start;
+      }
+
+      .demo_data_layout .data-structure-pre {
+        max-height: min(560px, calc(100vh - 140px));
+      }
+    }
+
     .design-doc-shell {
       margin-top: 32px;
       margin-bottom: 0;
@@ -415,12 +456,66 @@
     .page_nav_link a:hover {
       text-decoration: underline;
     }
+
+    .data-structure-card {
+      margin-top: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px 22px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .data-structure-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .data-structure-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .data-structure-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .data-structure-pre {
+      margin: 0;
+      padding: 14px 16px;
+      max-height: 420px;
+      overflow: auto;
+      font-family: ui-monospace, Consolas, "Cascadia Code", monospace;
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: #1e293b;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      white-space: pre;
+      word-break: normal;
+    }
+
+    .data-structure-note {
+      margin: 10px 0 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
   </style>
 </head>
 <body>
   <div class="page">
     <p class="page_nav_link"><a href="跨境电商场景/index.html">更多场景：跨境电商交互（关税、物流、币种、地址、合规）→</a></p>
-    <!-- ========== 可交互 Demo（置顶） ========== -->
+    <div class="demo_data_layout">
+    <!-- ========== 可交互 Demo（左侧 · PC 与数据结构并排） ========== -->
     <section class="product-card" aria-label="商品选项演示">
       <div class="case_tabs" role="tablist" aria-label="切换案例层数">
         <button type="button" class="case_tab" role="tab" id="tab-one" aria-selected="false" aria-controls="demo-panel" data-case="one">案例 ① 单层选项</button>
@@ -448,6 +543,18 @@
         <span class="legend-item"><span class="legend-dot disabled"></span> 无对应变体（禁用）</span>
       </div>
     </section>
+
+    <section class="data-structure-card" aria-labelledby="data-structure-title">
+      <div class="data-structure-head">
+        <h2 class="data-structure-title" id="data-structure-title">当前案例数据结构</h2>
+        <span class="data-structure-meta" id="dataStructureCaseLabel">案例：—</span>
+      </div>
+      <pre class="data-structure-pre" id="dataStructurePre" tabindex="0">{}</pre>
+      <p class="data-structure-note">
+        含 <code>product</code>（<code>optionDefinitions</code>、<code>variants</code>）与运行时 <code>selection</code>；切换 Tab 或点击选项后会自动刷新。宽屏下本块固定在右侧，便于对照 Demo。
+      </p>
+    </section>
+    </div>
 
     <!-- ========== 设计说明（置底 · 自学向，默认收起） ========== -->
     <details class="design-doc-shell">
@@ -756,6 +863,31 @@
       return `¥${n}`;
     }
 
+    const DATA_CASE_LABELS = { one: "① 单层", two: "② 双层", three: "③ 三层" };
+
+    function refreshDataStructureView() {
+      const pre = document.getElementById("dataStructurePre");
+      const label = document.getElementById("dataStructureCaseLabel");
+      if (!pre || !label) {
+        return;
+      }
+
+      const payload = {
+        caseKey: activeCaseKey,
+        caseLabel: DATA_CASE_LABELS[activeCaseKey] || activeCaseKey,
+        hint: DEMO_CASES[activeCaseKey] ? DEMO_CASES[activeCaseKey].hint : "",
+        product: {
+          title: PRODUCT.title,
+          optionDefinitions: PRODUCT.optionDefinitions,
+          variants: PRODUCT.variants,
+        },
+        selection: { ...selection },
+      };
+
+      label.textContent = `案例：${payload.caseLabel}（${payload.caseKey}）`;
+      pre.textContent = JSON.stringify(payload, null, 2);
+    }
+
     function renderOptions() {
       const mount = document.getElementById("optionMount");
       mount.replaceChildren();
@@ -869,6 +1001,7 @@
         meta.hidden = true;
         btnCart.disabled = true;
         btnCart.textContent = "加入购物车";
+        refreshDataStructureView();
         return;
       }
 
@@ -884,6 +1017,8 @@
         btnCart.disabled = true;
         btnCart.textContent = variant.available ? "暂时不可售" : "已售罄";
       }
+
+      refreshDataStructureView();
     }
 
     function syncCaseTabs() {
