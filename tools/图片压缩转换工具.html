@@ -146,6 +146,11 @@
       color: white;
     }
 
+    .btn-sequential {
+      background: #845ef7;
+      color: white;
+    }
+
     .btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
@@ -396,7 +401,12 @@
           <button id="clearButton" class="btn btn-secondary">
             🗑️ 清除图片
           </button>
-          <a id="downloadButton" class="btn btn-success" style="display: none">📦 下载全部</a>
+          <button type="button" id="downloadButton" class="btn btn-success" disabled title="转换完成后可打包下载">
+            📦 打包 ZIP 下载
+          </button>
+          <button type="button" id="downloadSequentialButton" class="btn btn-sequential" disabled title="转换完成后可逐张下载">
+            📥 批量单张下载
+          </button>
         </div>
       </div>
     </div>
@@ -418,6 +428,7 @@
       const formatSelect = document.getElementById("formatSelect");
       const qualityInput = document.getElementById("qualityInput");
       const downloadButton = document.getElementById("downloadButton");
+      const downloadSequentialButton = document.getElementById("downloadSequentialButton");
       const clearButton = document.getElementById("clearButton");
       const resultDiv = document.getElementById("result");
       const statusMessage = document.getElementById("statusMessage");
@@ -425,7 +436,21 @@
 
       let imagesData = []; // 存储每个图片的dataUrl和新文件名
       let conversionInProgress = false; // 标识转换状态，防止重复转换
+      let sequentialDownloadInProgress = false; // 批量单张下载进行中
       let isDragging = false; // 拖拽状态
+
+      const SEQUENTIAL_DOWNLOAD_DELAY_MS = 500;
+
+      /**
+       * 下载类按钮始终显示；无转换结果或正在处理时禁用，避免「找不到按钮」的困惑
+       */
+      function syncDownloadControlsState() {
+        const hasData = imagesData.length > 0;
+        const busy = conversionInProgress || sequentialDownloadInProgress;
+        const canUse = hasData && !busy;
+        downloadButton.disabled = !canUse;
+        downloadSequentialButton.disabled = !canUse;
+      }
 
       // 监听文件选择
       fileInput.addEventListener("change", handleFileSelect, false);
@@ -471,10 +496,17 @@
         }
       });
 
-      // 下载按钮点击事件
+      // 下载按钮点击事件（ZIP）
       downloadButton.addEventListener("click", function () {
-        if (!conversionInProgress) {
+        if (!conversionInProgress && !sequentialDownloadInProgress) {
           downloadImages();
+        }
+      });
+
+      // 批量单张下载（逐张触发浏览器下载，非 ZIP）
+      downloadSequentialButton.addEventListener("click", function () {
+        if (!conversionInProgress) {
+          downloadImagesSequentially();
         }
       });
 
@@ -503,6 +535,7 @@
         // 开始转换
         showMessage("🔄 图片转换中...", "info");
         conversionInProgress = true;
+        syncDownloadControlsState();
 
         const conversionPromises = Array.from(files).map((file) =>
           convertSingleImage(file, outputFormat, quality)
@@ -513,7 +546,7 @@
           .then(() => {
             showMessage(`✅ 成功转换 ${files.length} 张图片！`, "success");
 
-            downloadButton.style.display = "block";
+            syncDownloadControlsState();
 
             if (files.length === 1) {
               // 单张图片直接下载
@@ -531,6 +564,7 @@
           })
           .finally(() => {
             conversionInProgress = false;
+            syncDownloadControlsState();
           });
       }
 
@@ -599,7 +633,7 @@
       function resetConversionState() {
         imagesData = [];
         resultDiv.innerHTML = "";
-        downloadButton.style.display = "none";
+        syncDownloadControlsState();
       }
 
       /**
@@ -696,6 +730,75 @@
             console.error("下载失败:", error);
             showMessage("❌ 下载失败", "error");
           });
+      }
+
+      /**
+       * 触发单次文件下载（不弹状态提示，供批量逐张调用）
+       * @param {string} dataUrl
+       * @param {string} fileName
+       */
+      function triggerFileDownload(dataUrl, fileName) {
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      /**
+       * 按间隔逐张触发下载（每张独立文件，非 ZIP；具体是否全部保存由浏览器策略决定）
+       */
+      function downloadImagesSequentially() {
+        if (imagesData.length === 0) {
+          showMessage("没有可下载的图片", "warning");
+          return;
+        }
+
+        if (sequentialDownloadInProgress) {
+          showMessage("逐张下载正在进行中，请稍候...", "warning");
+          return;
+        }
+
+        sequentialDownloadInProgress = true;
+        syncDownloadControlsState();
+
+        const list = imagesData.slice();
+        const total = list.length;
+
+        showMessage(`📥 开始批量单张下载（共 ${total} 张，每张间隔 ${SEQUENTIAL_DOWNLOAD_DELAY_MS}ms）...`, "info");
+
+        const finish = () => {
+          sequentialDownloadInProgress = false;
+          syncDownloadControlsState();
+          showMessage(
+            `✅ 已依次触发 ${total} 个下载任务。若浏览器拦截或多张进同一位置，请在设置中允许多文件下载，或改用「打包 ZIP」。`,
+            "success"
+          );
+        };
+
+        const step = (index) => {
+          if (index >= total) {
+            finish();
+            return;
+          }
+
+          const item = list[index];
+          try {
+            triggerFileDownload(item.dataUrl, item.newFileName);
+            showMessage(
+              `📥 批量单张下载 ${index + 1} / ${total}：${item.newFileName}`,
+              "info"
+            );
+          } catch (error) {
+            console.error("逐张下载失败:", error);
+            showMessage(`❌ 本张失败，已跳过：${item.newFileName}`, "warning");
+          }
+
+          setTimeout(() => step(index + 1), SEQUENTIAL_DOWNLOAD_DELAY_MS);
+        };
+
+        step(0);
       }
 
       /**
@@ -809,14 +912,7 @@
        */
       function downloadImage(dataUrl, fileName) {
         try {
-          const a = document.createElement("a");
-          a.href = dataUrl;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-
-          // 显示下载提示
+          triggerFileDownload(dataUrl, fileName);
           showMessage(`📥 ${fileName} 下载完成！`, "success");
         } catch (error) {
           console.error("下载失败:", error);
@@ -870,10 +966,12 @@
           return;
         }
 
-        downloadButton.style.display = "none";
+        syncDownloadControlsState();
 
         showMessage(`📁 已选择 ${files.length} 个图片文件`, "info");
       }
+
+      syncDownloadControlsState();
     });
   </script>
 </body>
