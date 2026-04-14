@@ -1,204 +1,759 @@
 <!DOCTYPE html>
-<html lang="e1n">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <style>
-      div {
-        width: 100px;
-        height: 100px;
-        background-color: red;
-        position: absolute;
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>碰壁运动 · 匀速 / 缓冲</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(ellipse 120% 80% at 50% 20%, #1e293b 0%, #0f172a 45%, #020617 100%);
+      color: #e2e8f0;
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .ball {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #f472b6 0%, #a78bfa 50%, #38bdf8 100%);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.25) inset,
+        0 12px 40px rgba(15, 23, 42, 0.55),
+        0 0 60px rgba(167, 139, 250, 0.35);
+      will-change: transform;
+      transform: translate3d(40px, 40px, 0);
+      transition: box-shadow 0.35s ease, filter 0.35s ease;
+      touch-action: none;
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .ball.dragging {
+      cursor: grabbing;
+      transition: box-shadow 0.35s ease, filter 0.35s ease;
+    }
+
+    .ball.hit {
+      filter: brightness(1.15) saturate(1.2);
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.4) inset,
+        0 16px 48px rgba(15, 23, 42, 0.65),
+        0 0 80px rgba(244, 114, 182, 0.45);
+    }
+
+    .panel {
+      position: fixed;
+      z-index: 10;
+      top: max(12px, env(safe-area-inset-top));
+      right: max(12px, env(safe-area-inset-right));
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 14px 16px;
+      max-width: min(280px, calc(100vw - 24px));
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+    }
+
+    .panel h1 {
+      margin: 0 0 4px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .panel p {
+      margin: 0;
+      font-size: 0.72rem;
+      line-height: 1.45;
+      color: #94a3b8;
+    }
+
+    .mode_row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .mode_row label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      color: #cbd5e1;
+    }
+
+    .mode_row input {
+      accent-color: #a78bfa;
+    }
+
+    .damp_label {
+      width: 100%;
+    }
+
+    .btn_row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      flex: 1 1 auto;
+      min-height: 40px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(51, 65, 85, 0.6);
+      color: #f1f5f9;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    button:hover {
+      background: rgba(71, 85, 105, 0.75);
+      border-color: rgba(167, 139, 250, 0.45);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .hint {
+      font-size: 0.68rem;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .speed_row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .speed_row label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+    }
+
+    .speed_row .unit {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .speed_inputs {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .speed_inputs input[type="range"] {
+      flex: 1;
+      min-width: 0;
+      height: 8px;
+      accent-color: #a78bfa;
+      border-radius: 4px;
+    }
+
+    .speed_inputs input[type="number"] {
+      width: 5.5rem;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(30, 41, 59, 0.9);
+      color: #e2e8f0;
+      font-size: 0.85rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .speed_inputs input[type="number"]:focus {
+      outline: 2px solid rgba(167, 139, 250, 0.5);
+      outline-offset: 2px;
+    }
+
+    .color_row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .color_row label {
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      flex-shrink: 0;
+    }
+
+    .ball_color_input {
+      width: 3rem;
+      height: 2rem;
+      padding: 0;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 10px;
+      cursor: pointer;
+      background: rgba(30, 41, 59, 0.6);
+    }
+
+    .ball_color_input::-webkit-color-swatch-wrapper {
+      padding: 3px;
+    }
+
+    .ball_color_input::-webkit-color-swatch {
+      border-radius: 7px;
+      border: none;
+    }
+
+    .ball_color_input::-moz-color-swatch {
+      border-radius: 7px;
+      border: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stage" id="stage" aria-hidden="true">
+    <div class="ball" id="ball" role="presentation"></div>
+  </div>
+
+  <aside class="panel" aria-label="控制">
+    <h1>碰壁运动</h1>
+    <p>rAF + 按秒积分；<code>vx,vy</code> 即为 px/s。重置时按当前全局速度赋初速；拖掷速度为手势估出的 px/s。</p>
+    <div class="speed_row">
+      <label for="speed-px">全局速度 <span class="unit">px/s</span></label>
+      <div class="speed_inputs">
+        <input type="range" id="speed-range" min="30" max="900" value="220" step="5" aria-label="速度滑块" />
+        <input type="number" id="speed-px" min="30" max="900" value="220" step="5" inputmode="numeric"
+          aria-label="速度数值 像素每秒" />
+      </div>
+    </div>
+    <div class="mode_row">
+      <label>
+        <input type="radio" name="mode" value="linear" checked />
+        匀速反弹
+      </label>
+      <label>
+        <input type="radio" name="mode" value="buffer" />
+        缓冲靠边
+      </label>
+    </div>
+    <div class="mode_row">
+      <label class="damp_label">
+        <input type="checkbox" id="chk-realistic-damp" />
+        现实阻尼（松手后渐停）
+      </label>
+    </div>
+    <div class="color_row">
+      <label for="ball-color">小球颜色</label>
+      <input type="color" id="ball-color" class="ball_color_input" value="#a78bfa" title="选择小球颜色"
+        aria-label="小球颜色" />
+    </div>
+    <div class="btn_row">
+      <button type="button" id="btn-pause">暂停</button>
+      <button type="button" id="btn-reset">重置</button>
+    </div>
+    <p class="hint">碰壁仍有高亮反馈，颜色由上方取色器自定。现实阻尼时间常数约 6.5s，接近静止时才归零。</p>
+  </aside>
+
+  <script>
+    const ball = document.getElementById("ball");
+    const stage = document.getElementById("stage");
+    const speedRange = document.getElementById("speed-range");
+    const speedPxInput = document.getElementById("speed-px");
+    const ballColorInput = document.getElementById("ball-color");
+
+    const SOFT_ZONE = 140;
+    const MIN_SPEED_PX = 30;
+    const MAX_SPEED_PX = 900;
+    const THROW_WINDOW_MS = 140;
+    const THROW_MAX_SPEED = 920;
+    const THROW_MIN_SPEED = 28;
+    /** 松手投掷：在估出的 px/s 上乘以该系数，再受 THROW_MAX_SPEED 限制 */
+    const THROW_VELOCITY_GAIN = 2.1;
+    const SAMPLE_MAX = 14;
+    /** 现实阻尼：v *= exp(-dt/τ)，τ 越大停得越慢 */
+    const DAMP_TIME_CONSTANT_SEC = 6.5;
+    const DAMP_STOP_EPS = 1.8;
+
+    const chkRealisticDamp = document.getElementById("chk-realistic-damp");
+
+    function clamp(n, a, b) {
+      return Math.min(b, Math.max(a, n));
+    }
+
+    let px = 48;
+    let py = 48;
+
+    /** 与控件同步：重置与调节「全局速度」时参照的标量（px/s） */
+    let globalSpeedPxS = clamp(
+      Math.round(Number(speedPxInput.value)),
+      MIN_SPEED_PX,
+      MAX_SPEED_PX,
+    );
+
+    let vx = globalSpeedPxS * (Math.random() > 0.5 ? 1 : -1);
+    let vy = globalSpeedPxS * (Math.random() > 0.5 ? 1 : -1) * 0.85;
+
+    let mode = "linear";
+    let realisticDamping = false;
+    let paused = false;
+    let rafId = 0;
+    let lastTs = 0;
+
+    let hitUntil = 0;
+
+    let dragging = false;
+    let activePointerId = null;
+    let grabOffX = 0;
+    let grabOffY = 0;
+    const dragSamples = [];
+
+    function ballSize() {
+      return ball.offsetWidth || 88;
+    }
+
+    function bounds() {
+      const w = ballSize();
+      const maxX = Math.max(0, stage.clientWidth - w);
+      const maxY = Math.max(0, stage.clientHeight - w);
+
+      return { maxX, maxY, w };
+    }
+
+    function stagePointFromEvent(ev) {
+      const r = stage.getBoundingClientRect();
+
+      return {
+        x: ev.clientX - r.left,
+        y: ev.clientY - r.top,
+      };
+    }
+
+    /**
+     * 投掷速度：在 THROW_WINDOW_MS 内取轨迹点，对各相邻段算 (Δs/Δt)，
+     * 越靠后的段权重越大（模拟“出手瞬间”更可信）。单位：px/s（与 vx,vy 一致）。
+     */
+    function estimateThrowVelocity(samples) {
+      if (samples.length < 2) {
+        return { vx: 0, vy: 0 };
       }
-    </style>
-    <script src="./js功能库/utils.js"></script>
-  </head>
-  <body>
-    <div></div>
 
-    <script>
-      /**
-       * @线性运动
-       */
-      function linearMotion(config) {
-        let { speedX = 10, speedY = 10, ms = 1, className = "" } = config;
+      const tEnd = samples[samples.length - 1].t;
+      const tCut = tEnd - THROW_WINDOW_MS;
+      const valid = samples.filter((s) => s.t >= tCut);
 
-        var div = document.querySelector(className);
-
-        //  时刻判断
-        const timer = setInterval(() => {
-          var maxY = document.documentElement.clientHeight - div.offsetHeight;
-
-          var maxX = document.documentElement.clientWidth - div.offsetWidth;
-
-          var x = div.offsetLeft;
-
-          var y = div.offsetTop;
-
-          // 碰撞 - 左
-          if (x <= 0) {
-            div.style.backgroundColor = Utils.randomColor();
-
-            speedY = Utils.randomPositiveOrNegative(speedY);
-
-            speedX = Math.abs(speedX);
-          }
-
-          // 碰撞 - 右
-          if (x >= maxX) {
-            div.style.backgroundColor = Utils.randomColor();
-
-            speedY = Utils.randomPositiveOrNegative(speedY);
-
-            speedX = -Math.abs(speedX);
-          }
-
-          // 碰撞 - 上
-          if (y <= 0) {
-            div.style.backgroundColor = Utils.randomColor();
-
-            speedX = Utils.randomPositiveOrNegative(speedX);
-
-            speedY = Math.abs(speedY);
-          }
-
-          // 碰撞 - 下
-          if (y >= maxY) {
-            div.style.backgroundColor = Utils.randomColor();
-
-            speedX = Utils.randomPositiveOrNegative(speedX);
-
-            speedY = -Math.abs(speedY);
-          }
-
-          //  赋值 最终应该是多少的距离，位置
-          div.style.left = x + speedX + "px";
-
-          div.style.top = y + speedY + "px";
-        }, ms);
-
-        // END
+      if (valid.length < 2) {
+        return { vx: 0, vy: 0 };
       }
 
-      /**
-       * @缓冲运动
-       */
-      function bufferMove(config) {
-        let {
-          speedX = 10,
-          speedY = 10,
-          timesX = 20,
-          timesY = 20,
-          isSpeedChange,
-          ms = 1,
-          className = "div",
-        } = config;
+      let sumWx = 0;
+      let sumWy = 0;
+      let sumW = 0;
 
-        // 取整
-        const intNumber = (speed) => {
-          let num = speed;
-          if (num > 0) {
-            num = Math.ceil(num);
-          } else {
-            num = Math.floor(num);
-          }
+      for (let i = 1; i < valid.length; i++) {
+        const a = valid[i - 1];
+        const b = valid[i];
+        const dtSec = (b.t - a.t) / 1000;
 
-          return num;
-        };
+        if (dtSec < 0.006) {
+          continue;
+        }
 
-        var div = document.querySelector(className);
+        const segVx = (b.x - a.x) / dtSec;
+        const segVy = (b.y - a.y) / dtSec;
+        const w = i;
 
-        //  时刻判断
-        const timer = setInterval(() => {
-          var maxY = document.documentElement.clientHeight - div.offsetHeight;
-
-          var maxX = document.documentElement.clientWidth - div.offsetWidth;
-
-          var x = div.offsetLeft;
-
-          var y = div.offsetTop;
-
-          // 速度再计算
-          if (speedX > 0 && isSpeedChange) {
-            speedX = (maxX - x) / timesX;
-          }
-
-          if (!(speedX > 0) && isSpeedChange) {
-            speedX = -x / timesX;
-          }
-
-          speedX = intNumber(speedX);
-
-          // 判断上边距，下边距
-          if (x <= 0) {
-            div.style.backgroundColor = Utils.randomColor();
-
-            speedY = Utils.randomPositiveOrNegative(speedY);
-
-            // 缓冲运动才有
-            if (isSpeedChange) speedX = maxX / 10;
-            if (!isSpeedChange) speedX = Math.abs(speedX);
-          } else if (x >= maxX) {
-            div.style.backgroundColor = Utils.randomColor();
-
-            speedY = Utils.randomPositiveOrNegative(speedY);
-
-            // 缓冲运动才有
-            if (isSpeedChange) speedX = -x / 10;
-            if (!isSpeedChange) speedX = -Math.abs(speedX);
-          }
-
-          // 速度再计算
-          if (speedY > 0 && isSpeedChange) {
-            speedY = (maxY - y) / timesY;
-          }
-
-          if (!(speedY > 0) && isSpeedChange) {
-            speedY = -y / timesY;
-          }
-
-          speedY = intNumber(speedY);
-
-          // 判断上边距，判断下边距，重新决定速度
-          if (y <= 0) {
-            div.style.backgroundColor = Utils.randomColor();
-
-            speedX = Utils.randomPositiveOrNegative(speedX);
-
-            if (isSpeedChange) speedY = maxY / 10;
-            if (!isSpeedChange) speedY = Math.abs(speedY);
-          } else if (y >= maxY) {
-            div.style.backgroundColor = Utils.randomColor();
-
-            speedX = Utils.randomPositiveOrNegative(speedX);
-
-            if (isSpeedChange) speedY = -y / 10;
-            if (!isSpeedChange) speedY = -Math.abs(speedY);
-          }
-
-          //  赋值 最终应该是多少的距离，位置
-          div.style.left = x + speedX + "px";
-          div.style.top = y + speedY + "px";
-        }, ms);
+        sumWx += segVx * w;
+        sumWy += segVy * w;
+        sumW += w;
       }
 
-      // 启动
-      // bufferMove({
-      //   speedX: 2,
-      //   speedY: 2,
-      //   ms: 20,
-      //   isSpeedChange: false,
-      //   className: "div",
-      // });
+      if (sumW < 1e-6) {
+        return { vx: 0, vy: 0 };
+      }
 
-      // 启动
-      linearMotion({
-        speedX: 2,
-        speedY: 2,
-        ms: 20,
-        className: "div",
+      let evx = sumWx / sumW;
+      let evy = sumWy / sumW;
+      const mag = Math.hypot(evx, evy);
+
+      if (mag < THROW_MIN_SPEED) {
+        return { vx: 0, vy: 0 };
+      }
+
+      if (mag > THROW_MAX_SPEED) {
+        const s = THROW_MAX_SPEED / mag;
+
+        evx *= s;
+        evy *= s;
+      }
+
+      return { vx: evx, vy: evy };
+    }
+
+    function pushDragSample(ev) {
+      const p = stagePointFromEvent(ev);
+      const t = performance.now();
+
+      dragSamples.push({ t, x: p.x, y: p.y });
+
+      while (dragSamples.length > SAMPLE_MAX) {
+        dragSamples.shift();
+      }
+    }
+
+    function endDrag(ev) {
+      if (!dragging || ev.pointerId !== activePointerId) {
+        return;
+      }
+
+      dragging = false;
+      activePointerId = null;
+      ball.classList.remove("dragging");
+
+      try {
+        ball.releasePointerCapture(ev.pointerId);
+      } catch (_) {
+        /* ignore */
+      }
+
+      const v = estimateThrowVelocity(dragSamples);
+
+      let tvx = v.vx * THROW_VELOCITY_GAIN;
+      let tvy = v.vy * THROW_VELOCITY_GAIN;
+      const throwMag = Math.hypot(tvx, tvy);
+
+      if (throwMag > THROW_MAX_SPEED) {
+        const scale = THROW_MAX_SPEED / throwMag;
+
+        tvx *= scale;
+        tvy *= scale;
+      }
+
+      vx = tvx;
+      vy = tvy;
+      dragSamples.length = 0;
+      lastTs = 0;
+    }
+
+    ball.addEventListener("pointerdown", (e) => {
+      if (paused) {
+        return;
+      }
+
+      if (e.pointerType === "mouse" && e.button !== 0) {
+        return;
+      }
+
+      e.preventDefault();
+      dragging = true;
+      activePointerId = e.pointerId;
+      ball.classList.add("dragging");
+      dragSamples.length = 0;
+
+      const p = stagePointFromEvent(e);
+      const { maxX, maxY } = bounds();
+
+      grabOffX = p.x - px;
+      grabOffY = p.y - py;
+      pushDragSample(e);
+
+      try {
+        ball.setPointerCapture(e.pointerId);
+      } catch (_) {
+        /* ignore */
+      }
+    });
+
+    ball.addEventListener("pointermove", (e) => {
+      if (!dragging || e.pointerId !== activePointerId) {
+        return;
+      }
+
+      e.preventDefault();
+      const p = stagePointFromEvent(e);
+      const { maxX, maxY } = bounds();
+
+      px = clamp(p.x - grabOffX, 0, maxX);
+      py = clamp(p.y - grabOffY, 0, maxY);
+      pushDragSample(e);
+      applyTransform();
+    });
+
+    ball.addEventListener("pointerup", endDrag);
+    ball.addEventListener("pointercancel", endDrag);
+    ball.addEventListener("lostpointercapture", (e) => {
+      if (dragging && e.pointerId === activePointerId) {
+        endDrag(e);
+      }
+    });
+
+    function applyTransform() {
+      ball.style.transform = `translate3d(${px}px, ${py}px, 0)`;
+    }
+
+    function flashHit() {
+      hitUntil = performance.now() + 140;
+      ball.classList.add("hit");
+    }
+
+    function maybeEndHitFlash(now) {
+      if (now > hitUntil) {
+        ball.classList.remove("hit");
+      }
+    }
+
+    function softFactor(pos, maxPos, vel) {
+      if (mode !== "buffer") return 1;
+
+      if (vel > 0) {
+        return Math.min(1, (maxPos - pos) / SOFT_ZONE);
+      }
+
+      if (vel < 0) {
+        return Math.min(1, pos / SOFT_ZONE);
+      }
+
+      return 1;
+    }
+
+    /**
+     * 理想弹性碰壁：法向速度反向，切向不变 → 入射角 = 反射角（与竖直/水平墙）。
+     * 竖墙：只改 vx；横墙：只改 vy。不再随机扰动切向，否则破坏反射定律。
+     */
+    function resolveWallX(nextX, maxX) {
+      if (nextX < 0) {
+        vx = -vx;
+        flashHit();
+        return 0;
+      }
+
+      if (nextX > maxX) {
+        vx = -vx;
+        flashHit();
+        return maxX;
+      }
+
+      return nextX;
+    }
+
+    function resolveWallY(nextY, maxY) {
+      if (nextY < 0) {
+        vy = -vy;
+        flashHit();
+        return 0;
+      }
+
+      if (nextY > maxY) {
+        vy = -vy;
+        flashHit();
+        return maxY;
+      }
+
+      return nextY;
+    }
+
+    function tick(now) {
+      if (paused) {
+        return;
+      }
+
+      if (dragging) {
+        maybeEndHitFlash(now);
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      if (!lastTs) {
+        lastTs = now;
+      }
+
+      const dt = Math.min((now - lastTs) / 1000, 0.064);
+      lastTs = now;
+
+      if (realisticDamping) {
+        const damp = Math.exp(-dt / DAMP_TIME_CONSTANT_SEC);
+
+        vx *= damp;
+        vy *= damp;
+
+        if (Math.hypot(vx, vy) < DAMP_STOP_EPS) {
+          vx = 0;
+          vy = 0;
+        }
+      }
+
+      const { maxX, maxY } = bounds();
+
+      const fx = softFactor(px, maxX, vx);
+      const fy = softFactor(py, maxY, vy);
+
+      let nextX = px + vx * dt * fx;
+      let nextY = py + vy * dt * fy;
+
+      nextX = resolveWallX(nextX, maxX);
+      nextY = resolveWallY(nextY, maxY);
+      px = nextX;
+      py = nextY;
+
+      applyTransform();
+      maybeEndHitFlash(now);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function startLoop() {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+
+      lastTs = 0;
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function resetBall() {
+      const { maxX, maxY } = bounds();
+
+      px = Math.min(maxX, 48) * 0.35;
+      py = Math.min(maxY, 48) * 0.35;
+
+      const s = clamp(
+        Math.round(Number(speedPxInput.value)),
+        MIN_SPEED_PX,
+        MAX_SPEED_PX,
+      );
+
+      speedPxInput.value = String(s);
+      speedRange.value = String(s);
+      globalSpeedPxS = s;
+      vx = s * (Math.random() > 0.5 ? 1 : -1);
+      vy = s * (Math.random() > 0.5 ? 1 : -1) * 0.85;
+      applyTransform();
+    }
+
+    function applyBallColorFromPicker() {
+      ball.style.background = ballColorInput.value;
+    }
+
+    /**
+     * 从输入读取全局速度（px/s），写回控件；若运动中数值变化则按比例缩放当前 vx、vy。
+     */
+    function syncGlobalSpeedFromInputs() {
+      const next = clamp(
+        Math.round(Number(speedPxInput.value)),
+        MIN_SPEED_PX,
+        MAX_SPEED_PX,
+      );
+
+      speedPxInput.value = String(next);
+      speedRange.value = String(next);
+
+      if (globalSpeedPxS > 0 && next !== globalSpeedPxS) {
+        const ratio = next / globalSpeedPxS;
+
+        vx *= ratio;
+        vy *= ratio;
+      }
+
+      globalSpeedPxS = next;
+    }
+
+    speedRange.addEventListener("input", () => {
+      speedPxInput.value = speedRange.value;
+      syncGlobalSpeedFromInputs();
+    });
+
+    speedPxInput.addEventListener("input", () => {
+      syncGlobalSpeedFromInputs();
+    });
+
+    speedPxInput.addEventListener("change", () => {
+      syncGlobalSpeedFromInputs();
+    });
+
+    syncGlobalSpeedFromInputs();
+
+    ballColorInput.addEventListener("input", applyBallColorFromPicker);
+
+    document.querySelectorAll("input[name=\"mode\"]").forEach((input) => {
+      input.addEventListener("change", () => {
+        mode = input.value;
       });
-    </script>
-  </body>
+    });
+
+    chkRealisticDamp.addEventListener("change", () => {
+      realisticDamping = chkRealisticDamp.checked;
+    });
+
+    document.getElementById("btn-pause").addEventListener("click", (e) => {
+      paused = !paused;
+      e.target.textContent = paused ? "继续" : "暂停";
+
+      if (paused) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+        lastTs = 0;
+      } else {
+        lastTs = 0;
+        rafId = requestAnimationFrame(tick);
+      }
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", () => {
+      resetBall();
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        paused = true;
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+        lastTs = 0;
+        document.getElementById("btn-pause").textContent = "继续";
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      const { maxX, maxY } = bounds();
+
+      px = Math.min(px, maxX);
+      py = Math.min(py, maxY);
+      applyTransform();
+    });
+
+    applyBallColorFromPicker();
+    resetBall();
+    startLoop();
+  </script>
+</body>
+
 </html>

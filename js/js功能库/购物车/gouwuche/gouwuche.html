@@ -1,41 +1,64 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="X-UA-Compatible" content="ie=edge">
-<title>我的购物车</title>
-<link rel="stylesheet" href="css/common.css">
-<link rel="stylesheet" href="css/gouwuche.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>我的购物车</title>
+  <link rel="stylesheet" href="css/common.css" />
+  <link rel="stylesheet" href="css/gouwuche.css" />
 </head>
-<body>
 
-<div class="wrap">
+<body class="cart_body">
+  <div class="cart_shell">
+    <header class="cart_top">
+      <a href="goodsList.html" class="cart_back" aria-label="返回商品列表">← 继续购物</a>
+      <div class="cart_top_title">
+        <h1>购物车</h1>
+        <p class="cart_sub">已选商品可调整数量，数据保存在本机浏览器</p>
+      </div>
+      <span class="cart_badge" id="cart-badge" aria-live="polite">0 件</span>
+    </header>
 
-    <h3>我的购物车</h3>
-    <div class="title">
-        <span class="goods">商品</span>
-        <span class="price">价格</span>
-        <span class="todo">操作</span>
-    </div>
-    <ul class="list">
-        <li>
-            <img src="img/goods1.png" alt="">
-            <h3>我看见了时间到了看电视了副科级</h3>
-            <p>￥178</p>
-            <span>删除</span>
-        </li>
-        <li>
-            <img src="img/goods2.png" alt="">
-            <h3>我看见了时来看据了解离开家</h3>
-            <p>￥188</p>
-            <span>删除</span>
-        </li> -->
-         <li class="tips">您的购物车空空如也！</li>
-    </ul>
+    <main class="cart_main">
+      <section id="cart-empty" class="cart_empty" hidden>
+        <div class="cart_empty_icon" aria-hidden="true">🛒</div>
+        <h2>购物车还是空的</h2>
+        <p>去挑几件心仪的商品吧</p>
+        <a href="goodsList.html" class="btn_primary">去逛逛</a>
+      </section>
 
-</div>
-<script src="https://cdn.bootcdn.net/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-<script src="js/gouwuche.js"></script>
+      <div id="cart-panel" class="cart_panel" hidden>
+        <div class="cart_table_head" aria-hidden="true">
+          <span class="col_goods">商品</span>
+          <span class="col_price">单价</span>
+          <span class="col_qty">数量</span>
+          <span class="col_sub">小计</span>
+          <span class="col_act">操作</span>
+        </div>
+        <ul id="cart-list" class="cart_list" aria-label="购物车商品列表"></ul>
+
+        <footer class="cart_footer">
+          <div class="cart_footer_left">
+            <button type="button" class="btn_ghost" id="btn-clear">清空购物车</button>
+          </div>
+          <div class="cart_footer_right">
+            <div class="cart_summary">
+              <span class="cart_summary_label">共 <strong id="summary-count">0</strong> 件商品</span>
+              <span class="cart_summary_total">合计 <em id="grand-total">￥0</em></span>
+            </div>
+            <button type="button" class="btn_primary btn_checkout" id="btn-checkout">结算（演示）</button>
+          </div>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/cartStorage.js"></script>
+  <script src="js/gouwuche.js"></script>
 </body>
+
 </html>
