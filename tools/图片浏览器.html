@@ -603,6 +603,90 @@
       outline: 2px solid var(--primary-color);
       outline-offset: 2px;
     }
+
+    .image-info .stats {
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* 全屏拖放：整页可接收，松手后在确认框确认后导入 */
+    .global_drop_overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 20000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: max(24px, env(safe-area-inset-top, 0px))
+        max(24px, env(safe-area-inset-right, 0px))
+        max(24px, env(safe-area-inset-bottom, 0px))
+        max(24px, env(safe-area-inset-left, 0px));
+      background: rgba(15, 23, 42, 0.42);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.22s ease, visibility 0.22s ease;
+    }
+
+    .global_drop_overlay.is_active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    body.global_drop_active {
+      overflow: hidden;
+    }
+
+    .global_drop_overlay_inner {
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      padding: 28px 24px;
+      border-radius: calc(var(--border-radius) + 4px);
+      background: var(--card-bg);
+      color: var(--text-color);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+      border: 2px dashed var(--upload-area-border);
+      transform: scale(0.96);
+      transition: transform 0.22s ease;
+    }
+
+    .global_drop_overlay.is_active .global_drop_overlay_inner {
+      transform: scale(1);
+    }
+
+    .global_drop_overlay_icon {
+      font-size: 40px;
+      line-height: 1;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.12));
+    }
+
+    .global_drop_overlay_title {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .global_drop_overlay_hint {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.5;
+      opacity: 0.82;
+    }
+
+    [data-theme="dark"] .global_drop_overlay {
+      background: rgba(0, 0, 0, 0.55);
+    }
+
+    [data-theme="dark"] .global_drop_overlay_inner {
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+    }
   </style>
 </head>
 
@@ -614,9 +698,8 @@
     <div class="right">
       <div class="upload-container">
         <!-- File Upload Area -->
-        <div class="upload-area" id="upload-area" onclick="triggerFileInput()" ondrop="handleDrop(event)"
-          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" tabindex="0" role="button"
-          aria-label="拖拽图片或选择文件夹">
+        <div class="upload-area" id="upload-area" onclick="triggerFileInput()" tabindex="0" role="button"
+          aria-label="选择文件夹（也可将文件夹拖到页面任意位置）">
           📁 选择文件夹
         </div>
         <input type="file" id="file-input" multiple webkitdirectory mozdirectory style="display: none"
@@ -653,10 +736,19 @@
     <div class="image-info">
       <div id="image-name">请选择图片文件夹</div>
       <div id="image-path">支持拖拽文件夹或点击选择</div>
-      <div id="image-stats" style="margin-top: 8px; font-size: 12px; opacity: 0.7;"></div>
+      <div id="image-stats" class="stats"></div>
     </div>
     <div class="button-container">
       <button id="download-button" disabled aria-label="下载当前图片">📥 下载当前图片</button>
+    </div>
+  </div>
+
+  <div id="global-drop-overlay" class="global_drop_overlay" aria-hidden="true" role="region"
+    aria-label="拖放图片区域">
+    <div class="global_drop_overlay_inner">
+      <div class="global_drop_overlay_icon" aria-hidden="true">📂</div>
+      <p class="global_drop_overlay_title">松开即可导入</p>
+      <p class="global_drop_overlay_hint">支持文件夹与子目录中的图片；松手后将弹出确认框，取消则不导入。</p>
     </div>
   </div>
 
@@ -665,6 +757,13 @@
   <script>
     let imagePaths = [];
     let currentImageIndex = 0;
+    const blobUrlDisplayNames = new Map();
+
+    function registerBlobUrl(url, file) {
+      if (file && file.name) {
+        blobUrlDisplayNames.set(url, file.name);
+      }
+    }
 
     // 初始化 Swiper
     const swiper = new Swiper(".swiper-container", {
@@ -685,10 +784,6 @@
         forceToAxis: true,
       },
       slideToClickedSlide: true,
-      lazy: {
-        loadPrevNext: true,
-        loadPrevNextAmount: 2,
-      },
       breakpoints: {
         480: {
           slidesPerView: 1.2,
@@ -714,6 +809,49 @@
 
     const swiperWrapper = document.querySelector(".swiper-wrapper");
     const loadingOverlay = document.getElementById("loading-overlay");
+    const globalDropOverlay = document.getElementById("global-drop-overlay");
+
+    let globalDragLeaveTimer = null;
+
+    function isFileDragEvent(event) {
+      const types = event.dataTransfer && event.dataTransfer.types;
+      if (!types) return false;
+
+      for (let i = 0; i < types.length; i++) {
+        if (types[i] === "Files") return true;
+      }
+
+      return false;
+    }
+
+    function showGlobalDropOverlay() {
+      globalDropOverlay.classList.add("is_active");
+      globalDropOverlay.setAttribute("aria-hidden", "false");
+      document.body.classList.add("global_drop_active");
+    }
+
+    function hideGlobalDropOverlay() {
+      globalDropOverlay.classList.remove("is_active");
+      globalDropOverlay.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("global_drop_active");
+    }
+
+    function sortImageObjectUrls(urls) {
+      urls.sort((a, b) => {
+        const nameA = (
+          blobUrlDisplayNames.get(a) ||
+          a.split("/").pop() ||
+          ""
+        ).toLowerCase();
+        const nameB = (
+          blobUrlDisplayNames.get(b) ||
+          b.split("/").pop() ||
+          ""
+        ).toLowerCase();
+
+        return nameA.localeCompare(nameB, undefined, { numeric: true });
+      });
+    }
 
     // 显示加载状态
     function showLoading() {
@@ -730,6 +868,7 @@
       if (paths.length === 0) {
         swiperWrapper.innerHTML = "";
         imagePaths = [];
+        blobUrlDisplayNames.clear();
         updateImageInfo();
         updateDownloadButton();
         hideLoading();
@@ -776,47 +915,32 @@
           slide.classList.add("swiper-slide");
 
           const img = document.createElement("img");
-          img.src = imagePath;
           img.alt = `图片 ${startIndex + index + 1}`;
-          img.loading = "lazy";
+          img.decoding = "async";
 
-          img.onload = () => {
+          const settle = () => {
+            if (img.dataset.loadSettled === "1") return;
+
+            img.dataset.loadSettled = "1";
             loadedCount++;
+
             if (loadedCount === paths.length) {
               resolve();
             }
           };
 
-          img.onerror = () => {
-            loadedCount++;
-            if (loadedCount === paths.length) {
-              resolve();
-            }
-          };
+          img.onload = settle;
+          img.onerror = settle;
+          img.src = imagePath;
+
+          if (img.complete) {
+            settle();
+          }
 
           slide.appendChild(img);
           swiperWrapper.appendChild(slide);
         });
       });
-    }
-
-    // 处理拖放事件
-    function handleDragOver(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      const uploadArea = document.querySelector(".upload-area");
-      uploadArea.style.backgroundColor = "var(--secondary-color)";
-      uploadArea.style.borderColor = "var(--primary-color)";
-      uploadArea.style.transform = "scale(1.05)";
-    }
-
-    function handleDragLeave(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      const uploadArea = document.querySelector(".upload-area");
-      uploadArea.style.backgroundColor = "var(--card-bg)";
-      uploadArea.style.borderColor = "var(--upload-area-border)";
-      uploadArea.style.transform = "scale(1)";
     }
 
     // 将文件处理转换为 Promise
@@ -826,7 +950,10 @@
           if (item.isFile) {
             item.file((file) => {
               if (file.type.startsWith("image/")) {
-                resolve(URL.createObjectURL(file));
+                const url = URL.createObjectURL(file);
+
+                registerBlobUrl(url, file);
+                resolve(url);
               } else {
                 resolve(null);
               }
@@ -869,36 +996,48 @@
       }
     }
 
-    // 处理拖拽的事件
-    async function handleDrop(event) {
-      event.preventDefault();
-      event.stopPropagation();
+    async function collectImageUrlsFromDataTransfer(dataTransfer) {
+      const urls = [];
+      const items = dataTransfer.items;
 
-      const uploadArea = document.querySelector(".upload-area");
-      uploadArea.style.backgroundColor = "var(--card-bg)";
-      uploadArea.style.borderColor = "var(--upload-area-border)";
-      uploadArea.style.transform = "scale(1)";
-
-      const items = event.dataTransfer.items;
-      const files = [];
-
-      if (items) {
+      if (items && items.length > 0) {
         for (let i = 0; i < items.length; i++) {
-          const item = items[i].webkitGetAsEntry();
-          if (item) {
-            await traverseFileTree(item, files);
+          const dtItem = items[i];
+          const entry =
+            dtItem.webkitGetAsEntry && dtItem.webkitGetAsEntry();
+
+          if (entry) {
+            await traverseFileTree(entry, urls);
+          } else {
+            const file = dtItem.getAsFile();
+
+            if (file && file.type.startsWith("image/")) {
+              const url = URL.createObjectURL(file);
+
+              registerBlobUrl(url, file);
+              urls.push(url);
+            }
           }
         }
+      } else if (dataTransfer.files && dataTransfer.files.length > 0) {
+        Array.from(dataTransfer.files).forEach((file) => {
+          if (file.type.startsWith("image/")) {
+            const url = URL.createObjectURL(file);
+
+            registerBlobUrl(url, file);
+            urls.push(url);
+          }
+        });
       }
 
-      // 排序文件名
-      files.sort((a, b) => {
-        const nameA = a.split('/').pop().toLowerCase();
-        const nameB = b.split('/').pop().toLowerCase();
-        return nameA.localeCompare(nameB);
-      });
+      return urls;
+    }
 
-      loadImages(files);
+    async function importFromDataTransfer(dataTransfer) {
+      const urls = await collectImageUrlsFromDataTransfer(dataTransfer);
+
+      sortImageObjectUrls(urls);
+      loadImages(urls);
     }
 
     // 更新当前图片信息
@@ -913,7 +1052,10 @@
       const imageSrc = imagePaths[currentImageIndex];
       if (!imageSrc) return;
 
-      const fileName = imageSrc.split("/").pop() || '未知文件';
+      const fileName =
+        blobUrlDisplayNames.get(imageSrc) ||
+        imageSrc.split("/").pop() ||
+        "未知文件";
       const currentNum = currentImageIndex + 1;
       const totalNum = imagePaths.length;
 
@@ -957,20 +1099,19 @@
       document.querySelector(".swiper-container").style.height = `${Math.max(availableHeight, 300)}px`;
     }
 
-    // 处理文件夹拖拽上传
+    // 处理文件夹选择（无确认框，保持原行为）
     function handleFileSelect(event) {
-      const files = Array.from(event.target.files)
+      const urls = Array.from(event.target.files)
         .filter((file) => file.type.startsWith("image/"))
-        .map((file) => URL.createObjectURL(file));
+        .map((file) => {
+          const url = URL.createObjectURL(file);
 
-      // 排序文件名
-      files.sort((a, b) => {
-        const nameA = a.split('/').pop().toLowerCase();
-        const nameB = b.split('/').pop().toLowerCase();
-        return nameA.localeCompare(nameB);
-      });
+          registerBlobUrl(url, file);
+          return url;
+        });
 
-      loadImages(files);
+      sortImageObjectUrls(urls);
+      loadImages(urls);
     }
 
     // 触发文件选择器
@@ -983,7 +1124,10 @@
       if (imagePaths.length === 0) return;
 
       const currentImageSrc = imagePaths[currentImageIndex];
-      const fileName = currentImageSrc.split("/").pop() || `image_${currentImageIndex + 1}`;
+      const fileName =
+        blobUrlDisplayNames.get(currentImageSrc) ||
+        currentImageSrc.split("/").pop() ||
+        `image_${currentImageIndex + 1}`;
 
       const link = document.createElement("a");
       link.href = currentImageSrc;
@@ -1027,12 +1171,73 @@
     // 事件监听器
     window.addEventListener("resize", updateSwiperHeight);
 
+    window.addEventListener("dragenter", (event) => {
+      if (!isFileDragEvent(event)) return;
+
+      event.preventDefault();
+      clearTimeout(globalDragLeaveTimer);
+      showGlobalDropOverlay();
+    });
+
+    window.addEventListener("dragover", (event) => {
+      if (isFileDragEvent(event)) {
+        event.preventDefault();
+      }
+    });
+
+    globalDropOverlay.addEventListener("dragenter", (event) => {
+      if (!isFileDragEvent(event)) return;
+
+      event.preventDefault();
+      clearTimeout(globalDragLeaveTimer);
+    });
+
+    globalDropOverlay.addEventListener("dragleave", (event) => {
+      if (!isFileDragEvent(event)) return;
+
+      const related = event.relatedTarget;
+      const stillInside = related && globalDropOverlay.contains(related);
+
+      if (stillInside) return;
+
+      globalDragLeaveTimer = setTimeout(() => {
+        hideGlobalDropOverlay();
+      }, 70);
+    });
+
+    globalDropOverlay.addEventListener("dragover", (event) => {
+      if (isFileDragEvent(event)) {
+        event.preventDefault();
+      }
+    });
+
+    globalDropOverlay.addEventListener("drop", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      clearTimeout(globalDragLeaveTimer);
+      hideGlobalDropOverlay();
+
+      if (!isFileDragEvent(event)) return;
+
+      const ok = window.confirm("确认导入拖拽的图片或文件夹吗？");
+
+      if (!ok) return;
+
+      importFromDataTransfer(event.dataTransfer);
+    });
+
+    document.addEventListener("dragend", () => {
+      clearTimeout(globalDragLeaveTimer);
+      hideGlobalDropOverlay();
+    });
+
     document.getElementById("clear-cache-btn").addEventListener("click", () => {
-      imagePaths.forEach(path => {
-        if (path.startsWith('blob:')) {
+      imagePaths.forEach((path) => {
+        if (path.startsWith("blob:")) {
           URL.revokeObjectURL(path);
         }
       });
+      blobUrlDisplayNames.clear();
       imagePaths = [];
       loadImages([]);
       if ('vibrate' in navigator) {
