@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原生浏览器视频压缩（MediaRecorder）</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f172a;
+            --muted: #64748b;
+            --surface: rgba(255, 255, 255, 0.92);
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: "Plus Jakarta Sans", "Noto Sans SC", system-ui, sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(1100px 700px at 8% 0%, rgba(99, 102, 241, 0.32), transparent 55%),
+                radial-gradient(800px 520px at 92% 18%, rgba(14, 165, 233, 0.26), transparent 50%),
+                linear-gradient(155deg, #0b1220 0%, #111827 48%, #1f2937 100%);
+        }
+
+        .page-wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 22px 16px 56px;
+        }
+
+        .glass-panel {
+            border-radius: 16px;
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow: 0 18px 48px rgba(2, 6, 23, 0.32);
+            backdrop-filter: blur(12px);
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            box-shadow: 0 14px 36px rgba(2, 6, 23, 0.22);
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: linear-gradient(90deg, rgba(13, 110, 253, 0.95), rgba(99, 102, 241, 0.9));
+            color: #fff;
+            border-radius: 16px 16px 0 0 !important;
+            padding: 14px 18px;
+            font-weight: 700;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(15, 23, 42, 0.2);
+            border-radius: 14px;
+            padding: 36px 16px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(248, 250, 252, 0.78);
+            transition: border-color 0.2s, background 0.2s, transform 0.15s;
+        }
+
+        .drop-zone:hover {
+            border-color: rgba(37, 99, 235, 0.55);
+            background: rgba(239, 246, 255, 0.88);
+        }
+
+        .drop-zone.dragover {
+            border-color: rgba(22, 163, 74, 0.65);
+            background: rgba(220, 252, 231, 0.75);
+            transform: scale(1.01);
+        }
+
+        .drop-zone.has-file {
+            border: 2px solid rgba(37, 99, 235, 0.5);
+            background: linear-gradient(145deg, rgba(239, 246, 255, 0.98), rgba(224, 231, 255, 0.9));
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 12px;
+        }
+
+        .section-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 700;
+            margin: 10px 0 6px;
+        }
+
+        .mono-sm {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 999px;
+        }
+
+        .progress-bar {
+            border-radius: 999px;
+            background: linear-gradient(90deg, #2563eb, #22d3ee);
+        }
+
+        .badge-soft {
+            background: rgba(15, 23, 42, 0.06);
+            color: #334155;
+            font-weight: 600;
+        }
+
+        #previewVideo,
+        #hiddenWorkVideo {
+            max-width: 100%;
+            border-radius: 12px;
+            background: #000;
+        }
+
+        .hint-box {
+            font-size: 0.88rem;
+            color: #475569;
+            border-left: 3px solid rgba(37, 99, 235, 0.45);
+            padding: 10px 12px;
+            background: rgba(241, 245, 249, 0.9);
+            border-radius: 0 10px 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+        <div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-3">
+            <div>
+                <h1 class="h3 text-white mb-1 hero-title"><i class="fa-solid fa-film me-2"></i>原生浏览器视频压缩</h1>
+                <p class="text-white-50 mb-0 small">基于 Canvas + captureStream + MediaRecorder，纯前端、无需 ffmpeg.wasm。</p>
+            </div>
+            <span class="badge bg-light text-dark px-3 py-2">CDN：Bootstrap · Font Awesome · Google Fonts</span>
+        </div>
+
+        <div class="glass-panel p-3 p-md-4 mb-3">
+            <div class="hint-box mb-3">
+                <strong>能力边界（与专业桌面编码器对比）：</strong>浏览器不提供 x264/x265 精细 GOP、B 帧、两遍编码等控制；码率为
+                <code>videoBitsPerSecond</code> 的<strong>建议值</strong>，实际由实现决定。适合快速缩小体积、统一 WebM、降分辨率/帧率。若需工业级参数，请使用同目录「生成-压缩视频」ffmpeg 方案。
+            </div>
+
+            <div id="dropZone" class="drop-zone mb-3" tabindex="0" role="button" aria-label="拖拽或点击上传视频">
+                <input type="file" id="fileInput" class="d-none" accept="video/*">
+                <div id="dropEmpty">
+                    <i class="fa-solid fa-cloud-arrow-up fa-2x text-primary mb-2"></i>
+                    <div class="fw-semibold">拖拽视频到此处，或点击选择文件</div>
+                    <div class="small text-muted mt-1">支持常见容器；编码能力取决于当前浏览器对 MediaRecorder 的支持。</div>
+                </div>
+                <div id="dropSelected" class="d-none">
+                    <div class="fw-bold text-truncate px-2" id="selectedName">—</div>
+                    <div class="small text-muted mono-sm" id="selectedMeta">—</div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-7">
+                    <div class="card">
+                        <div class="card-header"><i class="fa-solid fa-circle-info me-2"></i>源文件信息（自动探测，可对照修改右侧输出参数）</div>
+                        <div class="card-body">
+                            <div class="row g-2 small">
+                                <div class="col-md-6"><span class="text-muted">文件名</span><div class="fw-semibold text-break" id="srcName">—</div></div>
+                                <div class="col-md-6"><span class="text-muted">MIME / 扩展名</span><div class="fw-semibold"><span id="srcMime">—</span> / <span id="srcExt">—</span></div></div>
+                                <div class="col-md-6"><span class="text-muted">容器体积</span><div class="fw-semibold" id="srcSize">—</div></div>
+                                <div class="col-md-6"><span class="text-muted">时长</span><div class="fw-semibold" id="srcDuration">—</div></div>
+                                <div class="col-md-6"><span class="text-muted">像素（显示尺寸）</span><div class="fw-semibold"><span id="srcPx">—</span> <span class="badge badge-soft" id="srcAspect">—</span></div></div>
+                                <div class="col-md-6"><span class="text-muted">估算平均码率</span><div class="fw-semibold" id="srcBitrate">—</div></div>
+                                <div class="col-12"><span class="text-muted">备注</span><div class="fw-semibold" id="srcNote">选择文件并加载元数据后显示。</div></div>
+                            </div>
+                            <video id="hiddenWorkVideo" class="w-100 mt-2 d-none" playsinline muted></video>
+                            <video id="previewVideo" class="w-100 mt-2" controls playsinline></video>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card mb-3">
+                        <div class="card-header"><i class="fa-solid fa-sliders me-2"></i>输出编码（专业向常用项）</div>
+                        <div class="card-body">
+                            <div class="section-label">封装与编码（MIME）</div>
+                            <select id="outMime" class="form-select form-select-sm"></select>
+
+                            <div class="section-label">画面尺寸策略</div>
+                            <select id="scaleMode" class="form-select form-select-sm mb-2">
+                                <option value="original">保持源像素（不缩放画布）</option>
+                                <option value="max1080">长边不超过 1920（1080p 档）</option>
+                                <option value="max720">长边不超过 1280（720p 档）</option>
+                                <option value="max540">长边不超过 960（540p 档）</option>
+                                <option value="custom">自定义输出宽高（偶数对齐）</option>
+                            </select>
+                            <div class="row g-2 d-none" id="customResRow">
+                                <div class="col-6">
+                                    <label class="form-label small mb-0">输出宽</label>
+                                    <input type="number" id="outW" class="form-control form-control-sm" min="16" step="2">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small mb-0">输出高</label>
+                                    <input type="number" id="outH" class="form-control form-control-sm" min="16" step="2">
+                                </div>
+                            </div>
+
+                            <div class="section-label">帧率（captureStream）</div>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text">FPS</span>
+                                <input type="number" id="outFps" class="form-control" min="1" max="120" step="1" value="30">
+                            </div>
+                            <div class="form-text">源视频帧率浏览器通常不暴露；默认 30。过高会增加 CPU 与编码负担。</div>
+
+                            <div class="section-label">码率控制（目标）</div>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text">视频</span>
+                                <input type="number" id="videoBpsMbps" class="form-control" min="0.05" max="80" step="0.05" value="2.5">
+                                <span class="input-group-text">Mbps</span>
+                            </div>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text">音频</span>
+                                <input type="number" id="audioBpsKbps" class="form-control" min="32" max="512" step="8" value="128">
+                                <span class="input-group-text">kbps</span>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="includeAudio" checked>
+                                <label class="form-check-label" for="includeAudio">保留音轨（从源 captureStream 混流）</label>
+                            </div>
+
+                            <div class="section-label">高级（Recorder 选项）</div>
+                            <div class="form-check mb-1">
+                                <input class="form-check-input" type="checkbox" id="useBitsPerSecond" checked>
+                                <label class="form-check-label" for="useBitsPerSecond">启用 bitsPerSecond（部分浏览器忽略子字段）</label>
+                            </div>
+                            <div class="input-group input-group-sm mb-2">
+                                <span class="input-group-text">audioBitrateMode</span>
+                                <select id="audioBitrateMode" class="form-select form-select-sm">
+                                    <option value="variable" selected>variable（默认）</option>
+                                    <option value="constant">constant（若不支持将自动回退）</option>
+                                </select>
+                            </div>
+
+                            <button type="button" id="btnStart" class="btn btn-primary w-100 mt-2" disabled>
+                                <i class="fa-solid fa-compress me-1"></i>开始压缩
+                            </button>
+                            <button type="button" id="btnCancel" class="btn btn-outline-secondary w-100 mt-2 d-none" disabled>取消</button>
+
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span id="progLabel">就绪</span>
+                                    <span id="progPercent">0%</span>
+                                </div>
+                                <div class="progress">
+                                    <div id="progBar" class="progress-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <div id="resultBox" class="alert alert-success mt-3 d-none small mb-0">
+                                <div class="fw-bold mb-1">完成</div>
+                                <div id="resultText" class="mono-sm"></div>
+                                <a id="downloadLink" class="btn btn-sm btn-success mt-2 d-none" download>下载输出文件</a>
+                            </div>
+                            <div id="errorBox" class="alert alert-danger mt-3 d-none small mb-0"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        "use strict";
+
+        const gcdInt = (a, b) => {
+            let x = Math.abs(a);
+            let y = Math.abs(b);
+
+            while (y) {
+                const t = y;
+                y = x % y;
+                x = t;
+            }
+
+            return x || 1;
+        };
+
+        const simplifyAspectRatioLabel = (w, h) => {
+            if (!w || !h) {
+                return "";
+            }
+
+            const g = gcdInt(w, h);
+
+            return `${Math.round(w / g)}∶${Math.round(h / g)}`;
+        };
+
+        const formatBytes = (n) => {
+            if (!Number.isFinite(n) || n <= 0) {
+                return "0 B";
+            }
+
+            const u = ["B", "KB", "MB", "GB"];
+            let v = n;
+            let i = 0;
+
+            while (v >= 1024 && i < u.length - 1) {
+                v /= 1024;
+                i += 1;
+            }
+
+            return `${v.toFixed(i ? 2 : 0)} ${u[i]}`;
+        };
+
+        const formatDuration = (sec) => {
+            if (!Number.isFinite(sec) || sec <= 0) {
+                return "—";
+            }
+
+            const s = Math.floor(sec % 60);
+            const m = Math.floor((sec / 60) % 60);
+            const h = Math.floor(sec / 3600);
+            const pad = (x) => String(x).padStart(2, "0");
+
+            return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+        };
+
+        const extOf = (name) => {
+            const i = name.lastIndexOf(".");
+
+            return i > 0 ? name.slice(i + 1).toLowerCase() : "";
+        };
+
+        const pickMimeCandidates = () => {
+            const list = [
+                "video/webm;codecs=vp9,opus",
+                "video/webm;codecs=vp9",
+                "video/webm;codecs=vp8,opus",
+                "video/webm;codecs=vp8",
+                "video/webm",
+                "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+                "video/mp4"
+            ];
+
+            return list.filter((m) => {
+                try {
+                    return MediaRecorder.isTypeSupported(m);
+                } catch {
+                    return false;
+                }
+            });
+        };
+
+        const guessExtFromMime = (mime) => {
+            const m = String(mime || "").toLowerCase();
+
+            if (m.includes("mp4")) {
+                return "mp4";
+            }
+
+            return "webm";
+        };
+
+        const state = {
+            objectUrl: "",
+            file: null,
+            busy: false,
+            cancelToken: false,
+            chunks: []
+        };
+
+        const el = {
+            dropZone: document.getElementById("dropZone"),
+            fileInput: document.getElementById("fileInput"),
+            dropEmpty: document.getElementById("dropEmpty"),
+            dropSelected: document.getElementById("dropSelected"),
+            selectedName: document.getElementById("selectedName"),
+            selectedMeta: document.getElementById("selectedMeta"),
+            previewVideo: document.getElementById("previewVideo"),
+            hiddenWorkVideo: document.getElementById("hiddenWorkVideo"),
+            srcName: document.getElementById("srcName"),
+            srcMime: document.getElementById("srcMime"),
+            srcExt: document.getElementById("srcExt"),
+            srcSize: document.getElementById("srcSize"),
+            srcDuration: document.getElementById("srcDuration"),
+            srcPx: document.getElementById("srcPx"),
+            srcAspect: document.getElementById("srcAspect"),
+            srcBitrate: document.getElementById("srcBitrate"),
+            srcNote: document.getElementById("srcNote"),
+            outMime: document.getElementById("outMime"),
+            scaleMode: document.getElementById("scaleMode"),
+            customResRow: document.getElementById("customResRow"),
+            outW: document.getElementById("outW"),
+            outH: document.getElementById("outH"),
+            outFps: document.getElementById("outFps"),
+            videoBpsMbps: document.getElementById("videoBpsMbps"),
+            audioBpsKbps: document.getElementById("audioBpsKbps"),
+            includeAudio: document.getElementById("includeAudio"),
+            useBitsPerSecond: document.getElementById("useBitsPerSecond"),
+            audioBitrateMode: document.getElementById("audioBitrateMode"),
+            btnStart: document.getElementById("btnStart"),
+            btnCancel: document.getElementById("btnCancel"),
+            progLabel: document.getElementById("progLabel"),
+            progPercent: document.getElementById("progPercent"),
+            progBar: document.getElementById("progBar"),
+            resultBox: document.getElementById("resultBox"),
+            resultText: document.getElementById("resultText"),
+            downloadLink: document.getElementById("downloadLink"),
+            errorBox: document.getElementById("errorBox")
+        };
+
+        const setProgress = (ratio, label) => {
+            const p = Math.max(0, Math.min(1, ratio));
+            el.progBar.style.width = `${Math.round(p * 100)}%`;
+            el.progPercent.textContent = `${Math.round(p * 100)}%`;
+            el.progLabel.textContent = label || "";
+        };
+
+        const showError = (msg) => {
+            el.errorBox.classList.remove("d-none");
+            el.errorBox.textContent = msg;
+            el.resultBox.classList.add("d-none");
+        };
+
+        const clearError = () => {
+            el.errorBox.classList.add("d-none");
+            el.errorBox.textContent = "";
+        };
+
+        const revokeIfNeeded = () => {
+            if (state.objectUrl) {
+                URL.revokeObjectURL(state.objectUrl);
+                state.objectUrl = "";
+            }
+        };
+
+        const fillMimeSelect = () => {
+            const opts = pickMimeCandidates();
+            el.outMime.innerHTML = "";
+
+            if (!opts.length) {
+                const o = document.createElement("option");
+                o.value = "";
+                o.textContent = "当前浏览器无可用的 MediaRecorder MIME";
+                el.outMime.appendChild(o);
+                el.btnStart.disabled = true;
+
+                return;
+            }
+
+            opts.forEach((m) => {
+                const o = document.createElement("option");
+                o.value = m;
+                o.textContent = m;
+                el.outMime.appendChild(o);
+            });
+        };
+
+        const computeTargetSize = (vw, vh, mode) => {
+            if (!vw || !vh) {
+                return { w: 0, h: 0 };
+            }
+
+            if (mode === "original") {
+                return { w: vw, h: vh };
+            }
+
+            const maxEdge = mode === "max1080" ? 1920 : mode === "max720" ? 1280 : mode === "max540" ? 960 : 0;
+            const long = Math.max(vw, vh);
+            const short = Math.min(vw, vh);
+            const longEdgeCap = maxEdge || long;
+
+            if (long <= longEdgeCap) {
+                return { w: vw, h: vh };
+            }
+
+            const scale = longEdgeCap / long;
+            let tw = Math.round(vw * scale);
+            let th = Math.round(vh * scale);
+            tw = Math.max(2, tw - (tw % 2));
+            th = Math.max(2, th - (th % 2));
+
+            return { w: tw, h: th };
+        };
+
+        const updateCustomResVisibility = () => {
+            const custom = el.scaleMode.value === "custom";
+            el.customResRow.classList.toggle("d-none", !custom);
+        };
+
+        const applySourceDefaults = (file, videoWidth, videoHeight, durationSec) => {
+            el.srcName.textContent = file.name;
+            el.srcMime.textContent = file.type || "（空）";
+            el.srcExt.textContent = extOf(file.name) || "—";
+            el.srcSize.textContent = formatBytes(file.size);
+            el.srcDuration.textContent = formatDuration(durationSec);
+            el.srcPx.textContent = videoWidth && videoHeight ? `${videoWidth} × ${videoHeight}` : "—";
+            el.srcAspect.textContent = simplifyAspectRatioLabel(videoWidth, videoHeight) || "—";
+
+            let estMbps = "";
+
+            if (durationSec > 0.2) {
+                const bps = (file.size * 8) / durationSec;
+                estMbps = `${(bps / 1e6).toFixed(2)} Mbps（由文件大小/时长估算，含容器与音频）`;
+                el.videoBpsMbps.value = Math.min(80, Math.max(0.1, Number((bps / 1e6).toFixed(2))));
+            } else {
+                estMbps = "时长过短，估算不可靠";
+                el.videoBpsMbps.value = 2.5;
+            }
+
+            el.srcBitrate.textContent = estMbps;
+
+            const t = computeTargetSize(videoWidth, videoHeight, el.scaleMode.value);
+            el.outW.value = t.w || videoWidth;
+            el.outH.value = t.h || videoHeight;
+            el.outFps.value = 30;
+
+            el.srcNote.textContent =
+                "像素宽高来自解码后的视频轨显示尺寸；编码格式无法在不解析文件的情况下 100% 确定。输出编码请以上方 MIME 列表为准。";
+        };
+
+        const bindVideoFile = (file) => {
+            clearError();
+            revokeIfNeeded();
+            state.file = file;
+            state.objectUrl = URL.createObjectURL(file);
+            el.previewVideo.src = state.objectUrl;
+            el.hiddenWorkVideo.src = state.objectUrl;
+            el.dropZone.classList.add("has-file");
+            el.dropEmpty.classList.add("d-none");
+            el.dropSelected.classList.remove("d-none");
+            el.selectedName.textContent = file.name;
+            el.selectedMeta.textContent = `${formatBytes(file.size)} · ${file.type || "video/*"}`;
+            el.btnStart.disabled = true;
+
+            const onMeta = () => {
+                const v = el.hiddenWorkVideo;
+                const dur = Number(v.duration) || 0;
+                applySourceDefaults(file, v.videoWidth, v.videoHeight, dur);
+                el.btnStart.disabled = !pickMimeCandidates().length || state.busy;
+                v.removeEventListener("loadedmetadata", onMeta);
+            };
+
+            el.hiddenWorkVideo.addEventListener("loadedmetadata", onMeta, { once: true });
+        };
+
+        const buildRecorderOptions = (mime, videoBps, audioBps, audioMode) => {
+            const opts = { mimeType: mime };
+            const useTotal = el.useBitsPerSecond.checked;
+
+            if (useTotal) {
+                opts.bitsPerSecond = videoBps + audioBps;
+            }
+
+            opts.videoBitsPerSecond = videoBps;
+            opts.audioBitsPerSecond = audioBps;
+
+            if (audioMode === "constant" || audioMode === "variable") {
+                opts.audioBitrateMode = audioMode;
+            }
+
+            return opts;
+        };
+
+        const safeCreateRecorder = (stream, mime, videoBps, audioBps) => {
+            const mode = el.audioBitrateMode.value;
+            const tryList = [
+                () => buildRecorderOptions(mime, videoBps, audioBps, mode),
+                () => buildRecorderOptions(mime, videoBps, audioBps, "variable"),
+                () => ({ mimeType: mime, videoBitsPerSecond: videoBps, audioBitsPerSecond: audioBps }),
+                () => ({ mimeType: mime })
+            ];
+
+            let lastErr = null;
+
+            for (const fn of tryList) {
+                try {
+                    const o = fn();
+                    const r = new MediaRecorder(stream, o);
+
+                    return { recorder: r, usedOptions: o };
+                } catch (e) {
+                    lastErr = e;
+                }
+            }
+
+            throw lastErr || new Error("无法创建 MediaRecorder");
+        };
+
+        const runCompress = async () => {
+            clearError();
+            el.resultBox.classList.add("d-none");
+            el.downloadLink.classList.add("d-none");
+
+            const mime = el.outMime.value;
+
+            if (!mime || !MediaRecorder.isTypeSupported(mime)) {
+                showError("请选择受支持的输出 MIME。");
+
+                return;
+            }
+
+            const file = state.file;
+
+            if (!file) {
+                showError("请先选择视频文件。");
+
+                return;
+            }
+
+            const vw = el.hiddenWorkVideo.videoWidth;
+            const vh = el.hiddenWorkVideo.videoHeight;
+
+            if (!vw || !vh) {
+                showError("视频元数据未就绪，请稍后重试。");
+
+                return;
+            }
+
+            let tw = vw;
+            let th = vh;
+            const mode = el.scaleMode.value;
+
+            if (mode === "custom") {
+                tw = Math.max(2, Number(el.outW.value) || vw);
+                th = Math.max(2, Number(el.outH.value) || vh);
+                tw -= tw % 2;
+                th -= th % 2;
+            } else {
+                const t = computeTargetSize(vw, vh, mode);
+                tw = t.w;
+                th = t.h;
+            }
+
+            const fps = Math.max(1, Math.min(120, Number(el.outFps.value) || 30));
+            const videoBps = Math.max(50_000, Math.round(Number(el.videoBpsMbps.value) * 1e6));
+            const audioBps = Math.max(8000, Math.round(Number(el.audioBpsKbps.value) * 1000));
+            const wantAudio = el.includeAudio.checked;
+
+            state.busy = true;
+            state.cancelToken = false;
+            state.chunks = [];
+            el.btnStart.disabled = true;
+            el.btnCancel.disabled = false;
+            el.btnCancel.classList.remove("d-none");
+            setProgress(0, "准备编码…");
+
+            const canvas = document.createElement("canvas");
+            canvas.width = tw;
+            canvas.height = th;
+            const ctx = canvas.getContext("2d", { alpha: false });
+
+            const work = el.hiddenWorkVideo;
+            work.muted = true;
+            work.currentTime = 0;
+
+            await new Promise((resolve, reject) => {
+                const onSeeked = () => {
+                    work.removeEventListener("seeked", onSeeked);
+                    resolve();
+                };
+
+                work.addEventListener("seeked", onSeeked);
+                work.addEventListener("error", () => reject(new Error("视频加载失败")), { once: true });
+                work.play().catch(reject);
+            });
+
+            let drawRaf = 0;
+
+            const draw = () => {
+                if (state.cancelToken) {
+                    return;
+                }
+
+                if (!work.paused && !work.ended) {
+                    ctx.drawImage(work, 0, 0, tw, th);
+                }
+
+                drawRaf = requestAnimationFrame(draw);
+            };
+
+            drawRaf = requestAnimationFrame(draw);
+            const canvasStream = canvas.captureStream(fps);
+            const combined = new MediaStream();
+            canvasStream.getVideoTracks().forEach((t) => combined.addTrack(t));
+
+            if (wantAudio) {
+                try {
+                    const srcStream = work.captureStream();
+                    const a = srcStream.getAudioTracks()[0];
+
+                    if (a) {
+                        combined.addTrack(a);
+                    }
+                } catch {
+                    /* 部分环境无音轨或不支持 */
+                }
+            }
+
+            let recorderWrap;
+
+            try {
+                recorderWrap = safeCreateRecorder(combined, mime, videoBps, audioBps);
+            } catch (e) {
+                cancelAnimationFrame(drawRaf);
+                work.pause();
+                state.busy = false;
+                el.btnStart.disabled = false;
+                el.btnCancel.classList.add("d-none");
+                showError(`创建 MediaRecorder 失败：${e && e.message ? e.message : e}`);
+
+                return;
+            }
+
+            const { recorder } = recorderWrap;
+
+            recorder.ondataavailable = (ev) => {
+                if (ev.data && ev.data.size > 0) {
+                    state.chunks.push(ev.data);
+                }
+            };
+
+            const stopAll = () => {
+                cancelAnimationFrame(drawRaf);
+                work.pause();
+
+                canvasStream.getTracks().forEach((t) => t.stop());
+                combined.getTracks().forEach((t) => t.stop());
+            };
+
+            await new Promise((resolve) => {
+                recorder.onstop = () => {
+                    stopAll();
+                    resolve();
+                };
+
+                recorder.start(250);
+
+                const tick = () => {
+                    if (state.cancelToken) {
+                        try {
+                            recorder.stop();
+                        } catch {
+                            /* ignore */
+                        }
+
+                        return;
+                    }
+
+                    const d = Number(work.duration) || 0;
+                    const t = Number(work.currentTime) || 0;
+                    const ratio = d > 0 ? Math.min(1, t / d) : 0;
+                    setProgress(ratio, "正在转码…");
+                    const ended = work.ended || (d > 0 && t >= d - 0.05);
+
+                    if (!ended) {
+                        requestAnimationFrame(tick);
+
+                        return;
+                    }
+
+                    try {
+                        recorder.stop();
+                    } catch {
+                        /* ignore */
+                    }
+                };
+
+                requestAnimationFrame(tick);
+            });
+
+            if (state.cancelToken) {
+                state.busy = false;
+                el.btnStart.disabled = false;
+                el.btnCancel.classList.add("d-none");
+                setProgress(0, "已取消");
+                showError("已取消本次压缩。");
+
+                return;
+            }
+
+            const blob = new Blob(state.chunks, { type: mime.split(";")[0] || "video/webm" });
+            const outExt = guessExtFromMime(mime);
+            const base = file.name.replace(/\.[^/.]+$/, "");
+            const outName = `${base}_native.${outExt}`;
+            const url = URL.createObjectURL(blob);
+
+            el.downloadLink.href = url;
+            el.downloadLink.download = outName;
+            el.downloadLink.classList.remove("d-none");
+            el.resultBox.classList.remove("d-none");
+            el.resultText.textContent =
+                `输出：${outName} · ${formatBytes(blob.size)} · MIME：${mime} · 画布：${tw}×${th} · ${fps}fps`;
+
+            try {
+                const autoA = document.createElement("a");
+                autoA.href = url;
+                autoA.download = outName;
+                autoA.rel = "noopener";
+                autoA.style.display = "none";
+                document.body.appendChild(autoA);
+                autoA.click();
+                autoA.remove();
+            } catch {
+                /* 个别环境可能拦截自动下载，仍保留下方手动下载按钮 */
+            }
+
+            state.busy = false;
+            el.btnStart.disabled = false;
+            el.btnCancel.disabled = true;
+            el.btnCancel.classList.add("d-none");
+            setProgress(1, "完成");
+        };
+
+        el.dropZone.addEventListener("click", () => el.fileInput.click());
+
+        el.dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            el.dropZone.classList.add("dragover");
+        });
+
+        el.dropZone.addEventListener("dragleave", () => {
+            el.dropZone.classList.remove("dragover");
+        });
+
+        el.dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            el.dropZone.classList.remove("dragover");
+            const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+
+            if (f) {
+                bindVideoFile(f);
+            }
+        });
+
+        el.fileInput.addEventListener("change", () => {
+            const f = el.fileInput.files && el.fileInput.files[0];
+
+            if (f) {
+                bindVideoFile(f);
+            }
+
+            el.fileInput.value = "";
+        });
+
+        el.scaleMode.addEventListener("change", () => {
+            updateCustomResVisibility();
+
+            if (!state.file) {
+                return;
+            }
+
+            const v = el.hiddenWorkVideo;
+
+            if (v.videoWidth && v.videoHeight) {
+                const t = computeTargetSize(v.videoWidth, v.videoHeight, el.scaleMode.value);
+                el.outW.value = t.w;
+                el.outH.value = t.h;
+            }
+        });
+
+        el.btnStart.addEventListener("click", () => {
+            runCompress().catch((e) => {
+                state.busy = false;
+                el.btnStart.disabled = false;
+                el.btnCancel.classList.add("d-none");
+                showError(e && e.message ? e.message : String(e));
+            });
+        });
+
+        el.btnCancel.addEventListener("click", () => {
+            state.cancelToken = true;
+        });
+
+        fillMimeSelect();
+        updateCustomResVisibility();
+
+        window.addEventListener("beforeunload", () => {
+            revokeIfNeeded();
+        });
+    </script>
+</body>
+</html>
