@@ -20,3 +20,6 @@ lib/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# ffmpeg wasm 体积大；本地可运行 tools/video/ffmpeg-vendor/fetch-ffmpeg-core.ps1 生成，默认不提交
+tools/video/ffmpeg-vendor/ffmpeg-core.wasm
