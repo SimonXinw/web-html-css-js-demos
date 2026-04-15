@@ -171,6 +171,24 @@
                 this.lastObjectUrls.push(url);
             }
 
+            setCompressHostIntro(html) {
+                const el = document.getElementById("compressHostIntro");
+
+                if (el) {
+                    el.textContent = html;
+                }
+            }
+
+            setFfmpegEnginePanelVisible(visible) {
+                const panel = document.getElementById("ffmpegEnginePanel");
+
+                if (!panel) {
+                    return;
+                }
+
+                panel.classList.toggle("d-none", !visible);
+            }
+
             setFfmpegUiLoading(message, pct) {
                 const bar = document.getElementById("ffmpegLoadProgressBar");
                 const detail = document.getElementById("ffmpegLoadDetail");
@@ -178,12 +196,15 @@
                 const text = document.getElementById("ffmpegStateText");
                 const retry = document.getElementById("retryFfmpegBtn");
 
+                this.setFfmpegEnginePanelVisible(true);
+
                 bar.style.width = `${Math.max(0, Math.min(100, pct))}%`;
                 detail.textContent = message || "";
                 badge.className = "badge rounded-pill bg-warning text-dark";
                 badge.innerHTML = `<i class="fas fa-download me-1"></i>FFmpeg：加载中`;
                 text.textContent = "正在初始化本机 ffmpeg-vendor 引擎…";
                 retry.style.display = "none";
+                this.setCompressHostIntro("文件不上传服务器；正在初始化 FFmpeg，请稍候再开始压缩。");
             }
 
             setFfmpegUiReady() {
@@ -194,12 +215,17 @@
                 const retry = document.getElementById("retryFfmpegBtn");
 
                 bar.style.width = "100%";
-                detail.textContent = "FFmpeg.wasm 已就绪，可以开始转码。";
+                detail.textContent =
+                    "FFmpeg.wasm 已就绪，可以开始转码。引擎为单线程 core，适合大多数浏览器。";
                 badge.className = "badge rounded-pill bg-success";
                 badge.innerHTML = `<i class="fas fa-check me-1"></i>FFmpeg：就绪`;
-                text.textContent = "引擎加载完成（单线程 core，适合大多数浏览器）。";
+                text.textContent = "本地转码已可用";
                 retry.style.display = "none";
                 document.getElementById("compressBtn").disabled = false;
+
+                this.setFfmpegEnginePanelVisible(false);
+
+                this.setCompressHostIntro("文件不上传服务器；FFmpeg 已就绪，请先在顶部选择源视频。");
             }
 
             setFfmpegUiFailed(err) {
@@ -208,6 +234,8 @@
                 const badge = document.getElementById("ffmpegStateBadge");
                 const text = document.getElementById("ffmpegStateText");
                 const retry = document.getElementById("retryFfmpegBtn");
+
+                this.setFfmpegEnginePanelVisible(true);
 
                 bar.style.width = "0%";
                 detail.textContent = window.FFmpegPageLoad
@@ -218,6 +246,9 @@
                 text.textContent = "压缩模块不可用：可运行 tools/video/ffmpeg-vendor/fetch-ffmpeg-core.ps1 下载成对 core；并关闭会改写请求的扩展（如 Ajax Modifier）后重试。";
                 retry.style.display = "inline-block";
                 document.getElementById("compressBtn").disabled = true;
+                this.setCompressHostIntro(
+                    "文件不上传服务器；FFmpeg 加载失败，请查看上方说明或点击「重试加载」。"
+                );
             }
 
             async initFfmpeg() {
@@ -572,50 +603,6 @@
                 });
             }
 
-            renderMetaGrid(meta) {
-                const grid = document.getElementById("fileMetaGrid");
-                const durationText = meta.duration > 0 ? `${meta.duration.toFixed(2)} s` : "未知";
-                const resText = meta.width > 0 && meta.height > 0 ? `${meta.width}×${meta.height}` : "未知";
-                const brText = meta.estimatedBitrateKbps > 0 ? `${meta.estimatedBitrateKbps} kbps（估算）` : "未知";
-                const suggEl = document.getElementById("sourceSuggestedLine");
-
-                if (suggEl) {
-                    suggEl.innerHTML = "更细的<strong>分辨率 / 码率 / 时长</strong>等与质量、体积相关的项见上方<strong>参数一览</strong>；点<strong>按源信息填入表单</strong>时，目标视频码率会填成与左栏「估算平均总码率（Mbps）」<strong>相同的实测值</strong>（仅作起点，压体积时常需改低）。";
-                    suggEl.style.display = "block";
-                }
-
-                grid.innerHTML = `
-                    <div class="meta-pill meta-pill--size">
-                        <div class="meta-pill__icon" aria-hidden="true"><i class="fas fa-database"></i></div>
-                        <div class="meta-pill__body">
-                            <div class="label">文件大小</div>
-                            <div class="value" id="metaSize">${formatFileSize(this.currentFile ? this.currentFile.size : 0)}</div>
-                        </div>
-                    </div>
-                    <div class="meta-pill meta-pill--duration">
-                        <div class="meta-pill__icon" aria-hidden="true"><i class="fas fa-clock"></i></div>
-                        <div class="meta-pill__body">
-                            <div class="label">时长</div>
-                            <div class="value">${durationText}</div>
-                        </div>
-                    </div>
-                    <div class="meta-pill meta-pill--resolution">
-                        <div class="meta-pill__icon" aria-hidden="true"><i class="fas fa-expand"></i></div>
-                        <div class="meta-pill__body">
-                            <div class="label">分辨率</div>
-                            <div class="value">${resText}</div>
-                        </div>
-                    </div>
-                    <div class="meta-pill meta-pill--bitrate">
-                        <div class="meta-pill__icon" aria-hidden="true"><i class="fas fa-gauge-high"></i></div>
-                        <div class="meta-pill__body">
-                            <div class="label">估算码率</div>
-                            <div class="value">${brText}</div>
-                        </div>
-                    </div>
-                `;
-            }
-
             async handleFile(file) {
                 if (!isProbablyVideoFile(file)) {
                     this.showError("请选择视频文件（或常见视频扩展名）");
@@ -632,12 +619,8 @@
                     selectedNameEl.textContent = file.name;
                 }
 
-                document.getElementById("fileDetails").textContent = file.name;
-                document.getElementById("fileInfo").style.display = "block";
-
                 const meta = await this.probeVideoMeta(file);
                 this.lastSourceMeta = meta;
-                this.renderMetaGrid(meta);
                 this.updateResolutionModeLabelsFromSource(meta);
                 this.fillVideoBitrateMbpsFromSourceEstimate(meta);
                 this.refreshCompressProSnapshot();
@@ -680,7 +663,7 @@
                 const rounded = Math.round(clamped * 1e6) / 1e6;
                 mbpsEl.value = String(rounded);
                 mbpsEl.title =
-                    "已由当前源文件按「字节×8÷时长」估算整文件平均总码率并换算为 Mbps（与左侧参数一览一致）";
+                    "已由当前源文件按「字节×8÷时长」估算整文件平均总码率并换算为 Mbps（与上方参数一览一致）";
 
                 if (vbrOpt) {
                     vbrOpt.textContent = `平均视频码率 Mbps（当前源估算总约 ${rounded} Mbps，已填入下方）`;
@@ -749,8 +732,14 @@
                 const meta = this.lastSourceMeta;
                 const file = this.currentFile;
 
+                const hintEl = document.getElementById("snapSourceHint");
+
                 if (!file || !meta) {
                     srcEl.innerHTML = this.snapRow("状态", "未选择文件");
+
+                    if (hintEl) {
+                        hintEl.classList.add("d-none");
+                    }
                 } else {
                     const w = meta.width;
                     const h = meta.height;
@@ -765,12 +754,17 @@
                         : "未知（时长无效则无法算）";
 
                     srcEl.innerHTML = [
+                        this.snapRow("文件名", file.name),
                         this.snapRow("像素分辨率", res),
                         this.snapRow("时长", dur),
                         this.snapRow("文件大小", sz),
                         this.snapRow("像素量（约）", mpix),
                         this.snapRow("估算平均总码率", brLine)
                     ].join("");
+
+                    if (hintEl) {
+                        hintEl.classList.remove("d-none");
+                    }
                 }
 
                 const outFmt = document.getElementById("outputFormat")?.value || "mp4";
@@ -860,7 +854,7 @@
                     setVal("videoBitrateMbps", String(totalMbps));
                     this.syncRateControlUi();
                     this.refreshCompressProSnapshot();
-                    this.showToast(`已填入：分辨率/帧率对齐源；目标平均视频码率 = ${totalMbps} Mbps（与「参数一览」左栏总码率 Mbps 同一实测值；压体积时常改低于此值）`, "success");
+                    this.showToast(`已填入：分辨率/帧率对齐源；目标平均视频码率 = ${totalMbps} Mbps（与「参数一览」源列总码率 Mbps 同一实测值；压体积时常改低于此值）`, "success");
                 } else {
                     this.syncRateControlUi();
                     this.refreshCompressProSnapshot();
