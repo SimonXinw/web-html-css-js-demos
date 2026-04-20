@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light" />
+    <title>辛氏取名方案</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.6.1/github-markdown-light.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        font-family:
+          "PingFang SC",
+          "Hiragino Sans GB",
+          "Microsoft YaHei",
+          "Noto Sans SC",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #f6f8fa;
+        color: #1f2328;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .md_page .state {
+        padding: 12px clamp(14px, 3.5vw, 22px);
+        font-size: 14px;
+        color: #656d76;
+        border-bottom: 1px solid #d0d7de;
+        background: #fff;
+      }
+
+      .md_page .state[hidden] {
+        display: none;
+      }
+
+      .md_page .state.is_error {
+        color: #cf222e;
+        background: #fff8f8;
+        border-color: #ff818266;
+      }
+
+      .markdown-body {
+        max-width: none;
+        width: 100%;
+        margin: 0;
+        padding: clamp(14px, 3.2vw, 28px) clamp(12px, 3.5vw, 32px)
+          clamp(28px, 5vw, 48px);
+        font-size: clamp(15px, 2.8vw, 17px);
+        line-height: 1.75;
+        background: #ffffff;
+        font-family:
+          "PingFang SC",
+          "Hiragino Sans GB",
+          "Microsoft YaHei",
+          "Noto Sans SC",
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+
+      .markdown-body h1,
+      .markdown-body h2 {
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+
+      .markdown-body table {
+        display: table;
+        width: 100%;
+        font-size: clamp(13px, 2.4vw, 15px);
+      }
+
+      .markdown-body .table_wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 1em 0;
+        border-radius: 8px;
+        border: 1px solid #d0d7de;
+        background: #fff;
+      }
+
+      .markdown-body .table_wrap table {
+        margin: 0;
+        min-width: 520px;
+      }
+
+      .markdown-body pre {
+        font-size: 0.9em;
+        border-radius: 8px;
+      }
+
+      .markdown-body code {
+        font-family:
+          ui-monospace,
+          "Cascadia Mono",
+          "Segoe UI Mono",
+          "SF Mono",
+          Menlo,
+          Monaco,
+          Consolas,
+          monospace;
+      }
+
+      @media (max-width: 480px) {
+        .markdown-body {
+          padding-inline: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="md_page">
+      <div id="state" class="state" role="status">正在加载「取名.md」…</div>
+      <article id="content" class="markdown-body" aria-live="polite"></article>
+    </div>
+    <script>
+      const stateEl = document.querySelector("#state");
+      const contentEl = document.querySelector("#content");
+
+      const wrapTables = (root) => {
+        const tables = root.querySelectorAll("table");
+        tables.forEach((table) => {
+          if (table.parentElement && table.parentElement.classList.contains("table_wrap")) {
+            return;
+          }
+          const wrap = document.createElement("div");
+          wrap.className = "table_wrap";
+          table.replaceWith(wrap);
+          wrap.appendChild(table);
+        });
+      };
+
+      const showError = (message) => {
+        stateEl.hidden = false;
+        stateEl.classList.add("is_error");
+        stateEl.textContent = message;
+      };
+
+      const hideState = () => {
+        stateEl.hidden = true;
+        stateEl.classList.remove("is_error");
+      };
+
+      marked.use({
+        gfm: true,
+        breaks: true,
+      });
+
+      const mdUrl = new URL("取名.md", window.location.href).toString();
+
+      fetch(mdUrl)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`无法读取文件（HTTP ${response.status}）`);
+          }
+          return response.text();
+        })
+        .then((markdown) => {
+          contentEl.innerHTML = marked.parse(markdown);
+          wrapTables(contentEl);
+          hideState();
+        })
+        .catch(() => {
+          showError(
+            "加载「取名.md」失败。请用本地静态服务器打开本页（例如在项目根目录执行 npx serve），不要直接用 file:// 双击打开，否则浏览器会拦截同目录文件的请求。"
+          );
+        });
+    </script>
+  </body>
+</html>
