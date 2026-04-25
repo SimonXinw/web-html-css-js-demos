@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AWOL · 字体粒子滚动消散与重聚</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #0a0b0f;
+      --bg-panel: #12141c;
+      --text: #e8eaef;
+      --muted: #8b919c;
+      --accent: #c4f542;
+      --disperse-scroll: 280vh;
+      --gather-scroll: 240vh;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "DM Sans", system-ui, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    .hero_section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 3rem 1.5rem;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(196, 245, 66, 0.12), transparent),
+        linear-gradient(180deg, #0f1118 0%, var(--bg-deep) 100%);
+    }
+
+    .hero_section .label {
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .hero_section .title {
+      font-family: "Archivo Black", sans-serif;
+      font-size: clamp(2.5rem, 8vw, 4.5rem);
+      letter-spacing: 0.02em;
+      margin: 0 0 1rem;
+      line-height: 1.05;
+    }
+
+    .hero_section .hint {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 28rem;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .hero_section .scroll_hint {
+      margin-top: 3rem;
+      font-size: 0.8rem;
+      color: var(--accent);
+      opacity: 0.85;
+      animation: pulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.45; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(6px); }
+    }
+
+    .sticky_track {
+      position: relative;
+      height: var(--track-height, 280vh);
+    }
+
+    .sticky_track .sticky_inner {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-deep);
+    }
+
+    .sticky_track.disperse_track {
+      --track-height: var(--disperse-scroll);
+    }
+
+    .sticky_track.disperse_track .sticky_inner {
+      background:
+        radial-gradient(ellipse 70% 45% at 100% 50%, rgba(196, 245, 66, 0.06), transparent),
+        var(--bg-deep);
+    }
+
+    .sticky_track.gather_track {
+      --track-height: var(--gather-scroll);
+    }
+
+    .sticky_track.gather_track .sticky_inner {
+      background:
+        radial-gradient(ellipse 70% 45% at 0% 50%, rgba(196, 245, 66, 0.06), transparent),
+        var(--bg-deep);
+    }
+
+    .stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .stage canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .track_caption {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .footer_section {
+      min-height: 100vh;
+      padding: 4rem 1.5rem 6rem;
+      background: var(--bg-panel);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .footer_section .inner {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .footer_section h2 {
+      font-family: "Archivo Black", sans-serif;
+      font-size: 1.75rem;
+      margin: 0 0 1rem;
+    }
+
+    .footer_section p {
+      color: var(--muted);
+      line-height: 1.75;
+      margin: 0 0 1rem;
+    }
+
+    .controls {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: rgba(10, 11, 15, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+    }
+
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .controls input[type="range"] {
+      width: 120px;
+    }
+  </style>
+</head>
+<body>
+  <section class="hero_section" aria-label="首页">
+    <span class="label">Scroll narrative</span>
+    <h1 class="title">初始首页</h1>
+    <p class="hint">向下滚动进入核心段落：LOGO 会吸顶，随滚动从左向右粒子消散；再往下则是反向粒子从左聚拢重组成标识。</p>
+    <p class="scroll_hint">↓ 继续滚动</p>
+  </section>
+
+  <section class="sticky_track disperse_track" id="disperseTrack" aria-label="粒子消散">
+    <div class="sticky_inner">
+      <div class="stage">
+        <canvas id="canvasDisperse" width="1100" height="560" aria-hidden="true"></canvas>
+        <span class="track_caption">吸顶 · 左 → 右消散</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="sticky_track gather_track" id="gatherTrack" aria-label="粒子重聚">
+    <div class="sticky_inner">
+      <div class="stage">
+        <canvas id="canvasGather" width="1100" height="560" aria-hidden="true"></canvas>
+        <span class="track_caption">吸顶 · 左 → 右重聚</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="footer_section">
+    <div class="inner">
+      <h2>内容区</h2>
+      <p>两段吸顶滚动结束后进入此处。可通过右下角滑块调节第一段「消散」轨道的滚动长度（对应 100vh～400vh 的吸顶行程），第二段重聚区会按比例略短，便于对比两段节奏。</p>
+      <p>实现要点：字形预渲染成色块层，用宽过渡带的水平渐变做 <code>destination-in</code> 柔化消失，避免「一刀切」竖线。粒子两阶段：先局部爆开，再按横向位置依次延迟，略向右上飘并淡出。重聚段仍为矢量收尾。</p>
+    </div>
+  </section>
+
+  <div class="controls" role="group" aria-label="调试">
+    <label>
+      消散轨道高度
+      <input type="range" id="disperseRange" min="100" max="400" value="280" />
+    </label>
+    <span id="disperseReadout">280vh</span>
+  </div>
+
+  <script>
+    const TEXT = "AWOL";
+    const FONT_FAMILY = '"Archivo Black", sans-serif';
+    const LOGICAL_FONT_PX = 200;
+
+    const easeOutCubic = (t) => 1 - (1 - t) ** 3;
+    const easeOutQuint = (t) => 1 - (1 - t) ** 5;
+    const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+
+    const clamp01 = (v) => Math.min(1, Math.max(0, v));
+
+    const smoothstep = (edge0, edge1, x) => {
+      if (x <= edge0) {
+        return 0;
+      }
+
+      if (x >= edge1) {
+        return 1;
+      }
+
+      const u = (x - edge0) / (edge1 - edge0);
+      return u * u * (3 - 2 * u);
+    };
+
+    /**
+     * @param {object} p
+     * @param {number} dpr
+     */
+    const enrichParticleVisual = (p, dpr) => {
+      const r = Math.random();
+      let shapeType = "rect";
+
+      if (r < 0.22) {
+        shapeType = "dot";
+      } else if (r < 0.38) {
+        shapeType = "sliver";
+      } else if (r < 0.52) {
+        shapeType = "square";
+      }
+
+      const base = 1.4 * dpr;
+      p.shapeType = shapeType;
+      p.rot = (Math.random() - 0.5) * 1.1;
+      p.jitter = Math.random() * Math.PI * 2;
+      p.amp = 0.35 + Math.random() * 0.65;
+      
+      // 往右上角随机散开 (发散角度适中，避免太广)
+      const baseAngle = -Math.PI * 0.35;
+      const spread = Math.PI * 0.65; // 缩小发散角度到约 117度
+      const angle = baseAngle + (Math.random() - 0.5) * spread;
+      
+      // 速度调慢，动作更舒缓
+      const speed = 0.08 + Math.random() * 0.12;
+      
+      p.dirX = Math.cos(angle) * speed;
+      p.dirY = Math.sin(angle) * speed;
+      
+      p.scatterAngle = Math.random() * Math.PI * 2;
+      p.scatterMag = 0.45 + Math.random() * 0.95;
+      p.spin = (Math.random() - 0.5) * 2.4;
+
+      if (shapeType === "dot") {
+        p.sw = base * (0.55 + Math.random() * 0.55);
+        p.sh = p.sw;
+      } else if (shapeType === "sliver") {
+        p.sw = base * (1.4 + Math.random() * 2.2);
+        p.sh = base * (0.35 + Math.random() * 0.45);
+      } else if (shapeType === "square") {
+        const s = base * (0.75 + Math.random() * 0.95);
+        p.sw = s;
+        p.sh = s;
+      } else {
+        p.sw = base * (0.65 + Math.random() * 1.25);
+        p.sh = base * (0.55 + Math.random() * 1.05);
+      }
+    };
+
+    const sampleParticlesFromCanvas = (sourceCanvas, step = 3, dpr = 1) => {
+      const w = sourceCanvas.width;
+      const h = sourceCanvas.height;
+      const ctx = sourceCanvas.getContext("2d", { willReadFrequently: true });
+      const { data } = ctx.getImageData(0, 0, w, h);
+      const particles = [];
+
+      const chunkSize = 12 * dpr;
+      const cols = Math.ceil(w / chunkSize);
+      const rows = Math.ceil(h / chunkSize);
+      const noiseGrid = new Float32Array(cols * rows);
+      for (let i = 0; i < noiseGrid.length; i++) {
+        noiseGrid[i] = Math.random();
+      }
+
+      for (let y = 0; y < h; y += step) {
+        for (let x = 0; x < w; x += step) {
+          const i = (y * w + x) * 4;
+          const a = data[i + 3];
+
+          if (a > 128) {
+            const p = { hx: x, hy: y };
+            enrichParticleVisual(p, dpr);
+
+            const c = Math.floor(x / chunkSize);
+            const r = Math.floor(y / chunkSize);
+            const blockNoise = noiseGrid[r * cols + c];
+
+            // 线性左到右进度 75% + 块状噪点 6% + 粒子噪点 4% (沙化感)
+            p.activationT = (x / w) * 0.75 + blockNoise * 0.06 + Math.random() * 0.04;
+            // 缩短寿命，使同时存活的粒子区域更窄（控制在约1个字母的宽度）
+            p.endT = p.activationT + 0.08 + Math.random() * 0.06;
+
+            particles.push(p);
+          }
+        }
+      }
+
+      return particles;
+    };
+
+    /**
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {object} p
+     * @param {number} x
+     * @param {number} y
+     * @param {number} alpha 0..1
+     * @param {number} spinExtra radians
+     */
+    const drawParticleChip = (ctx, p, x, y, alpha, spinExtra = 0) => {
+      if (alpha <= 0.02) {
+        return;
+      }
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(p.rot + spinExtra);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = "rgb(232, 234, 239)";
+
+      if (p.shapeType === "dot") {
+        const rr = p.sw * 0.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, rr, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.shapeType === "sliver") {
+        ctx.fillRect(-p.sw * 0.5, -p.sh * 0.5, p.sw, p.sh);
+      } else {
+        ctx.fillRect(-p.sw * 0.5, -p.sh * 0.5, p.sw, p.sh);
+      }
+
+      ctx.restore();
+    };
+
+    const computeLogoFontPx = (width, height) => {
+      const cap = Math.min(LOGICAL_FONT_PX, Math.floor(Math.min(width, height * 1.4) * 0.34));
+      return Math.max(72, cap);
+    };
+
+      const buildTextMaskCanvas = (width, height) => {
+      const c = document.createElement("canvas");
+      c.width = width;
+      c.height = height;
+      const ctx = c.getContext("2d");
+      const fontPx = computeLogoFontPx(width, height);
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `800 ${fontPx}px ${FONT_FAMILY}`;
+      ctx.fillText(TEXT, width / 2, height / 2);
+      return { canvas: c, fontPx };
+    };
+
+    const disperseRange = document.getElementById("disperseRange");
+    const disperseReadout = document.getElementById("disperseReadout");
+    const disperseTrack = document.getElementById("disperseTrack");
+
+    const applyDisperseTrackHeight = (vh) => {
+      disperseTrack.style.setProperty("--disperse-scroll", `${vh}vh`);
+      disperseReadout.textContent = `${vh}vh`;
+    };
+
+    disperseRange.addEventListener("input", () => {
+      applyDisperseTrackHeight(Number(disperseRange.value));
+    });
+
+    class ParticleStage {
+      /**
+       * @param {HTMLCanvasElement} canvas
+       * @param {"disperse" | "gather"} mode
+       */
+      constructor(canvas, mode) {
+        this.canvas = canvas;
+        this.mode = mode;
+        this.ctx = canvas.getContext("2d");
+        this.particles = [];
+        this.dpr = 1;
+        this.maskW = 1100;
+        this.maskH = 560;
+        this.logoFontPx = LOGICAL_FONT_PX;
+        /** @type {HTMLCanvasElement | null} */
+        this.logoColorLayer = null;
+      }
+
+      /**
+       * @param {HTMLCanvasElement} mask
+       * @param {number} w
+       * @param {number} h
+       */
+      buildLogoColorLayer(mask, w, h) {
+        const layer = document.createElement("canvas");
+        layer.width = w;
+        layer.height = h;
+        const lc = layer.getContext("2d");
+        lc.fillStyle = "rgb(232, 234, 239)";
+        lc.fillRect(0, 0, w, h);
+        lc.globalCompositeOperation = "destination-in";
+        lc.drawImage(mask, 0, 0);
+        lc.globalCompositeOperation = "source-over";
+        this.logoColorLayer = layer;
+      }
+
+      resize() {
+        const rect = this.canvas.getBoundingClientRect();
+        this.dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const w = Math.max(320, Math.floor(rect.width * this.dpr));
+        const h = Math.max(240, Math.floor(rect.height * this.dpr));
+        this.canvas.width = w;
+        this.canvas.height = h;
+        this.maskW = w;
+        this.maskH = h;
+        const { canvas: mask, fontPx } = buildTextMaskCanvas(w, h);
+        this.logoFontPx = fontPx;
+        this.particles = sampleParticlesFromCanvas(mask, 3, this.dpr);
+        this.prepareGatherStarts();
+
+        if (this.mode === "disperse") {
+          this.buildLogoColorLayer(mask, w, h);
+        } else {
+          this.logoColorLayer = null;
+        }
+      }
+
+      prepareGatherStarts() {
+        if (this.mode !== "gather") {
+          return;
+        }
+
+        const margin = this.maskW * 0.08;
+
+        for (const p of this.particles) {
+          const nx = (p.hx / this.maskW) * 2 - 1;
+          const band = (nx + 1) * 0.5;
+          p.startX = -margin - band * this.maskW * 0.55 - Math.random() * this.maskW * 0.15;
+          p.startY = p.hy + (Math.random() - 0.5) * this.maskH * 0.5;
+        }
+      }
+
+      /**
+       * @param {number} progress 0..1
+       */
+      renderDisperse(progress) {
+        const { ctx, canvas, particles, logoColorLayer } = this;
+        const w = canvas.width;
+        const h = canvas.height;
+        const t = clamp01(progress);
+
+        ctx.clearRect(0, 0, w, h);
+
+        if (logoColorLayer) {
+          ctx.save();
+          ctx.drawImage(logoColorLayer, 0, 0);
+          ctx.globalCompositeOperation = "destination-out";
+          ctx.fillStyle = "black";
+          
+          // 紧跟在沙化带后面的“绝对擦除区”，用 0.75 系数与 activationT 保持一致
+          const safeT = t - 0.12; 
+          if (safeT > 0) {
+            const safeX = (safeT / 0.75) * w;
+            ctx.fillRect(0, 0, safeX, h);
+          }
+
+          ctx.beginPath();
+          // 加大橡皮擦尺寸，彻底吃掉抗锯齿边缘，杜绝字形残影
+          const eraseSize = 8.5 * this.dpr;
+          for (const p of particles) {
+            if (t > p.activationT) {
+              ctx.rect(p.hx - eraseSize * 0.5, p.hy - eraseSize * 0.5, eraseSize, eraseSize);
+            }
+          }
+          ctx.fill();
+
+          // 进度接近尾声强制清空所有底图残留
+          if (t > 0.85) {
+            ctx.fillRect(0, 0, w, h);
+          }
+          
+          ctx.restore();
+        } else {
+          ctx.save();
+          ctx.fillStyle = "rgb(232, 234, 239)";
+          ctx.font = `800 ${this.logoFontPx}px ${FONT_FAMILY}`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(TEXT, w / 2, h / 2);
+          ctx.restore();
+        }
+
+        for (const p of particles) {
+          if (t <= p.activationT || t >= p.endT) {
+            continue;
+          }
+
+          const lt = (t - p.activationT) / (p.endT - p.activationT);
+          
+          // 使用 5 次方缓出，初始速度极快，之后急剧减速，造成爆发扩散然后悬停的视觉
+          const distEase = easeOutQuint(lt);
+
+          // 立刻散开飞行，缩小初始爆炸速度
+          const burstX = Math.cos(p.scatterAngle) * w * 0.012 * p.amp;
+          const burstY = Math.sin(p.scatterAngle) * h * 0.012 * p.amp;
+
+          const dx = distEase * (burstX + w * p.dirX);
+          const dy = distEase * (burstY + h * p.dirY);
+
+          const spin = distEase * p.spin * 4.5;
+          // 透明度随时间稳定下降，稍微让它在减速时多停留一会儿
+          const a = 1 - (lt ** 1.8);
+
+          drawParticleChip(ctx, p, p.hx + dx, p.hy + dy, a, spin);
+        }
+      }
+
+      /**
+       * @param {number} progress 0..1
+       */
+      renderGather(progress) {
+        const { ctx, canvas, particles } = this;
+        const w = canvas.width;
+        const h = canvas.height;
+        const tRaw = clamp01(progress);
+        ctx.clearRect(0, 0, w, h);
+
+        for (const p of particles) {
+          const nx = (p.hx / w) * 2 - 1;
+          const sweep = easeInOutCubic(clamp01((tRaw - (nx + 1) * 0.1) / 0.9));
+          const x = p.startX + (p.hx - p.startX) * sweep;
+          const y = p.startY + (p.hy - p.startY) * sweep;
+          const a = 0.12 + 0.82 * sweep;
+          const spin = (1 - sweep) * p.spin * 0.85;
+
+          drawParticleChip(ctx, p, x, y, a, spin);
+        }
+
+        if (tRaw > 0.985) {
+          ctx.fillStyle = "rgba(196, 245, 66, 0.92)";
+          ctx.font = `800 ${this.logoFontPx}px ${FONT_FAMILY}`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(TEXT, w / 2, h / 2);
+        }
+      }
+    }
+
+    const getTrackProgress = (trackEl) => {
+      const rect = trackEl.getBoundingClientRect();
+      const maxScroll = trackEl.offsetHeight - window.innerHeight;
+
+      if (maxScroll <= 0) {
+        return 1;
+      }
+
+      const scrolled = clamp01(-rect.top / maxScroll);
+      return scrolled;
+    };
+
+    const stageDisperse = new ParticleStage(document.getElementById("canvasDisperse"), "disperse");
+    const stageGather = new ParticleStage(document.getElementById("canvasGather"), "gather");
+    const gatherTrack = document.getElementById("gatherTrack");
+
+    const layout = () => {
+      stageDisperse.resize();
+      stageGather.resize();
+    };
+
+    let currentP1 = -1;
+    let targetP1 = 0;
+    let currentP2 = -1;
+    let targetP2 = 0;
+
+    const tick = () => {
+      targetP1 = getTrackProgress(disperseTrack);
+      targetP2 = getTrackProgress(gatherTrack);
+
+      // 首次运行，直接对齐目标值
+      if (currentP1 === -1) {
+        currentP1 = targetP1;
+        currentP2 = targetP2;
+      }
+
+      // 物理惯性插值 (Lerp)，值越小惯性越大，0.08 提供顺滑但不黏手的阻尼感
+      currentP1 += (targetP1 - currentP1) * 0.08;
+      currentP2 += (targetP2 - currentP2) * 0.08;
+
+      // 防止浮点数精度不到位导致永远在算
+      if (Math.abs(targetP1 - currentP1) < 0.0001) currentP1 = targetP1;
+      if (Math.abs(targetP2 - currentP2) < 0.0001) currentP2 = targetP2;
+
+      stageDisperse.renderDisperse(currentP1);
+      stageGather.renderGather(currentP2);
+      requestAnimationFrame(tick);
+    };
+
+    window.addEventListener("resize", () => {
+      layout();
+    });
+
+    layout();
+    applyDisperseTrackHeight(Number(disperseRange.value));
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>
