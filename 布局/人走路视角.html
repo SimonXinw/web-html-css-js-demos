@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第一人称滚动走路视角动画</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #030303;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* 隐藏水平滚动条 */
+            overflow-x: hidden;
+        }
+
+        /* 鼠标样式，提示可以上下滚动 */
+        body {
+            cursor: ns-resize;
+        }
+
+        /* 3D 渲染背景画布，固定在底层 */
+        #webgl-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 滚动容器，高度撑开以产生滚动条 */
+        .scroll-container {
+            position: relative;
+            z-index: 1;
+            height: 600vh; /* 页面总高度，决定了能滚多远 */
+            pointer-events: none;
+        }
+
+        /* 文字段落占据全屏高度，配合滚动 */
+        .step-text {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .step-text h1 {
+            color: #fff;
+            font-size: clamp(3rem, 6vw, 6rem);
+            text-transform: uppercase;
+            letter-spacing: 0.2rem;
+            text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #f0f;
+            opacity: 0; /* 默认隐藏，由 GSAP 控制显示 */
+            transform: translateY(50px);
+            margin: 0;
+            text-align: center;
+        }
+        
+        .step-text p {
+            color: #ccc;
+            font-size: clamp(1.2rem, 2vw, 2rem);
+            margin-top: 1rem;
+            opacity: 0;
+            transform: translateY(30px);
+            text-shadow: 0 0 5px #000;
+        }
+
+        /* 底部下拉提示动画 */
+        .scroll-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            z-index: 10;
+            animation: pulse 2s infinite;
+            pointer-events: none;
+            letter-spacing: 2px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; bottom: 30px; }
+            50% { opacity: 1; bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Three.js 渲染目标 -->
+    <div id="webgl-container"></div>
+
+    <div class="scroll-hint">向下滚动开始探索 👇</div>
+
+    <!-- 滚动内容区 -->
+    <div class="scroll-container">
+        <div class="step-text step-1">
+            <h1>进入虚空</h1>
+            <p>第一人称视角滚动体验</p>
+        </div>
+        <div class="step-text step-2">
+            <h1>迈开脚步</h1>
+            <p>感受基于真实步频的物理晃动</p>
+        </div>
+        <div class="step-text step-3">
+            <h1>无限延伸</h1>
+            <p>由 Three.js 渲染的赛博朋克空间</p>
+        </div>
+        <div class="step-text step-4">
+            <h1>平滑过渡</h1>
+            <p>GSAP ScrollTrigger 提供丝滑阻尼滚动</p>
+        </div>
+        <div class="step-text step-5">
+            <h1>抵达终点</h1>
+            <p>这段旅程就到这里，感谢体验。</p>
+        </div>
+        <!-- 最后一个屏幕留白缓冲 -->
+        <div class="step-text step-6"></div>
+    </div>
+
+    <!-- 引入外部库 CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <script>
+        // 注册 GSAP 插件
+        gsap.registerPlugin(ScrollTrigger);
+
+        // ==========================================
+        // 1. THREE.JS 场景初始化
+        // ==========================================
+        const container = document.getElementById('webgl-container');
+        const scene = new THREE.Scene();
+        // 添加指数雾效，让远处渐渐消失在黑暗中，增加纵深感
+        scene.fog = new THREE.FogExp2(0x050510, 0.012);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // 限制像素比优化性能
+        container.appendChild(renderer.domElement);
+
+        // ==========================================
+        // 2. 构建 3D 环境 (霓虹长廊)
+        // ==========================================
+        
+        // 创建地面发光网格
+        const gridHelper = new THREE.GridHelper(200, 100, 0x00ffff, 0x003344);
+        gridHelper.position.y = -2;
+        scene.add(gridHelper);
+
+        // 创建顶部发光网格
+        const topGridHelper = new THREE.GridHelper(200, 100, 0xff00ff, 0x440033);
+        topGridHelper.position.y = 12;
+        scene.add(topGridHelper);
+
+        // 随机生成两边的几何体柱子/障碍物
+        const boxGeometry = new THREE.BoxGeometry(1, 14, 1);
+        const materials = [
+            new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true }), // 荧光蓝线框
+            new THREE.MeshBasicMaterial({ color: 0xff00ff, wireframe: true }), // 荧光紫线框
+            new THREE.MeshPhongMaterial({ color: 0x111111, shininess: 100, specular: 0x00ffff }) // 黑色反光实体
+        ];
+
+        // 走廊的总长度
+        const corridorLength = 300;
+        
+        for (let i = 0; i < 200; i++) {
+            const material = materials[Math.floor(Math.random() * materials.length)];
+            const mesh = new THREE.Mesh(boxGeometry, material);
+            
+            // 随机分配在左右两侧
+            const side = Math.random() > 0.5 ? 1 : -1;
+            // X 轴偏移（保证中间留出一条可以"走"的通道）
+            const xOffset = side * (Math.random() * 15 + 3);
+            // Z 轴随机分布在走廊长度内
+            const zPos = -Math.random() * corridorLength + 20;
+
+            mesh.position.set(xOffset, 5, zPos);
+            
+            // 随机旋转错落感
+            mesh.rotation.y = Math.random() * Math.PI;
+            mesh.rotation.x = (Math.random() - 0.5) * 0.2;
+            mesh.rotation.z = (Math.random() - 0.5) * 0.2;
+
+            // 随机粗细和高低
+            mesh.scale.y = Math.random() * 1.5 + 0.5;
+            mesh.scale.x = Math.random() * 2 + 0.5;
+            mesh.scale.z = Math.random() * 2 + 0.5;
+
+            scene.add(mesh);
+        }
+
+        // 添加空间中漂浮的发光粒子 (星空/粉尘感)
+        const particleCount = 1500;
+        const particleGeometry = new THREE.BufferGeometry();
+        const particlePositions = new Float32Array(particleCount * 3);
+        
+        for(let i = 0; i < particleCount * 3; i += 3) {
+            particlePositions[i] = (Math.random() - 0.5) * 40; // x 范围
+            particlePositions[i+1] = Math.random() * 15 - 2;   // y 范围
+            particlePositions[i+2] = -Math.random() * corridorLength + 20; // z 范围铺满长廊
+        }
+        
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 0.1,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending // 叠加发光混合
+        });
+        const particles = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(particles);
+
+        // 添加光源
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+        
+        // 移动的点光源，跟着玩家照亮前方
+        const playerLight = new THREE.PointLight(0x00ffff, 1.5, 40);
+        scene.add(playerLight);
+
+        // ==========================================
+        // 3. 动画与滚动逻辑 (核心视角控制)
+        // ==========================================
+
+        const startZ = 20;
+        const endZ = -corridorLength + 40; // 留点余量，不要穿模到头
+        camera.position.set(0, 2, startZ);
+
+        // 保存滚动的状态数据，由 GSAP 更新，我们在 animate() 里读取
+        const scrollData = {
+            progress: 0,
+            velocity: 0,
+            lastProgress: 0
+        };
+
+        // 绑定整个页面的滚动进度 (0 到 1)
+        gsap.to(scrollData, {
+            progress: 1,
+            ease: "none",
+            scrollTrigger: {
+                trigger: document.body,
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5 // 阻尼参数：滑动停止后还有1.5秒的顺滑余停
+            }
+        });
+
+        // 隐藏初始的提示箭头
+        gsap.to('.scroll-hint', {
+            scrollTrigger: {
+                trigger: document.body,
+                start: "top -100px",
+                scrub: true
+            },
+            opacity: 0,
+            display: "none"
+        });
+
+        // 控制 HTML 文字块的出现/消失
+        const textBlocks = document.querySelectorAll('.step-text');
+        textBlocks.forEach((block) => {
+            const h1 = block.querySelector('h1');
+            const p = block.querySelector('p');
+            if(!h1 || !p) return;
+
+            const tl = gsap.timeline({
+                scrollTrigger: {
+                    trigger: block,
+                    start: "top 65%", // 块顶部到达视口65%时开始进场
+                    end: "bottom 35%", // 块底部离开视口35%时出场
+                    scrub: false,
+                    toggleActions: "play reverse play reverse" // 上下滚动都有过渡
+                }
+            });
+
+            tl.to(h1, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" })
+              .to(p, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, "-=0.6");
+        });
+
+        // ==========================================
+        // 4. 渲染循环与走路物理晃动模拟
+        // ==========================================
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = clock.getElapsedTime();
+
+            // 计算当前滚动的速度 (用作步伐的快慢和幅度)
+            const currentVelocity = Math.abs(scrollData.progress - scrollData.lastProgress);
+            // 给速度加个阻尼缓冲，让静止和移动过渡自然
+            scrollData.velocity += (currentVelocity - scrollData.velocity) * 0.1;
+            scrollData.lastProgress = scrollData.progress;
+
+            // 1. Z 轴前进插值
+            const targetZ = startZ + (endZ - startZ) * scrollData.progress;
+            
+            // 2. 第一人称走路模拟（镜头晃动 Head Bobbing）
+            // 走完整个长廊相当于跨出 140 步
+            const stepFrequency = 140; 
+            // 步伐相位：根据滚动进度决定的路程，而不是时间。滚动才迈步。
+            const walkPhase = scrollData.progress * stepFrequency * Math.PI;
+            
+            // 晃动幅度：速度越快，幅度越大；静止时只保留极小的呼吸感
+            const bobAmplitude = 0.5 * Math.min(scrollData.velocity * 400, 1) + 0.05;
+
+            // Y轴：人体行走的重心上下起伏
+            const bobY = Math.sin(walkPhase) * bobAmplitude;
+            // X轴：重心的左右转移
+            const bobX = Math.cos(walkPhase / 2) * (bobAmplitude * 0.7);
+            // Z轴：步伐迈出时的前后顿挫感
+            const bobZ = Math.sin(walkPhase * 2) * (bobAmplitude * 0.2);
+
+            // 应用计算后的坐标到摄像机
+            camera.position.z = targetZ + bobZ;
+            camera.position.x = bobX;
+            camera.position.y = 2 + bobY; // 基础身高设置为 2
+
+            // 加入细微的头部偏航/滚转（视角摇摆）
+            camera.rotation.z = Math.sin(walkPhase / 2) * (bobAmplitude * 0.03);
+            camera.rotation.y = Math.cos(walkPhase / 2) * (bobAmplitude * 0.02);
+
+            // 更新点光源位置，跟着玩家走
+            playerLight.position.set(camera.position.x, camera.position.y + 1, camera.position.z - 5);
+
+            // 让漂浮的星空粒子缓慢旋转，增加一点灵动
+            particles.rotation.y = time * 0.03;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // ==========================================
+        // 5. 窗口自适应
+        // ==========================================
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+    </script>
+</body>
+</html>
