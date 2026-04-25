@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>悬挂缩进与文字排版案例</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/modern-normalize@3.0.1/modern-normalize.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #141210;
+      --paper: #f4f0e8;
+      --paper-2: #e8e2d6;
+      --accent: #8b4514;
+      --accent-soft: rgba(139, 69, 20, 0.12);
+      --muted: #5c564c;
+      --rule: rgba(20, 18, 16, 0.12);
+      --code-bg: #1a1816;
+      --code-fg: #e8dcc8;
+      --radius: 12px;
+      --shadow: 0 18px 40px rgba(20, 18, 16, 0.08);
+      --font-serif-cn: "Noto Serif SC", "Newsreader", Georgia, serif;
+      --font-serif-en: "Newsreader", "Noto Serif SC", Georgia, serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+      --measure: 42rem;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-serif-cn);
+      font-size: 1.05rem;
+      line-height: 1.75;
+      color: var(--ink);
+      background: var(--paper);
+      background-image:
+        radial-gradient(ellipse 120% 80% at 50% -30%, rgba(139, 69, 20, 0.08), transparent),
+        linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+      min-height: 100vh;
+    }
+
+    .page_header {
+      padding: clamp(2rem, 6vw, 4rem) 1.5rem 2.5rem;
+      text-align: center;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .page_header .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 0.75rem;
+    }
+
+    .page_header h1 {
+      font-family: var(--font-serif-cn);
+      font-weight: 700;
+      font-size: clamp(1.75rem, 4vw, 2.35rem);
+      letter-spacing: 0.04em;
+      margin: 0 0 0.75rem;
+      text-wrap: balance;
+    }
+
+    .page_header .lede {
+      max-width: 36rem;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .toc {
+      max-width: calc(var(--measure) + 4rem);
+      margin: 0 auto;
+      padding: 1.75rem 1.5rem 0;
+    }
+
+    .toc_inner {
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    .toc h2 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin: 0 0 0.75rem;
+      letter-spacing: 0.06em;
+    }
+
+    .toc ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .toc a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.92rem;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .toc a:hover {
+      border-bottom-color: var(--accent-soft);
+      color: var(--ink);
+    }
+
+    main {
+      max-width: calc(var(--measure) + 4rem);
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .case {
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid var(--rule);
+      border-radius: var(--radius);
+      padding: clamp(1.25rem, 3vw, 1.75rem);
+      box-shadow: var(--shadow);
+    }
+
+    .case header {
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .case h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0 0 0.35rem;
+      letter-spacing: 0.02em;
+    }
+
+    .case .tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 0.2rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    .case .desc {
+      margin: 0.6rem 0 0;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .sample {
+      max-width: var(--measure);
+      margin: 0 auto;
+    }
+
+    .sample p {
+      margin: 0 0 1rem;
+    }
+
+    .sample p:last-child {
+      margin-bottom: 0;
+    }
+
+    .snippet {
+      margin-top: 1.25rem;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .snippet pre {
+      margin: 0;
+      padding: 1rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      line-height: 1.55;
+      background: var(--code-bg);
+      color: var(--code-fg);
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* —— 悬挂缩进：参考文献 / 编号段落 —— */
+    .hang_bibliography p {
+      padding-left: 2.25em;
+      text-indent: -2.25em;
+    }
+
+    /* —— 悬挂缩进：Word 语义（首行外凸，正文整体内缩）—— */
+    .hang_word_style p {
+      margin-left: 2.25em;
+      text-indent: -2.25em;
+    }
+
+    /* —— 带编号标签的悬挂（label 固定宽度）—— */
+    .hang_label_row {
+      display: grid;
+      grid-template-columns: 3.25em 1fr;
+      column-gap: 0.5em;
+      align-items: start;
+      margin-bottom: 1rem;
+    }
+
+    .hang_label_row .num {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      color: var(--accent);
+      font-weight: 500;
+      padding-top: 0.15em;
+    }
+
+    .hang_label_row .body {
+      margin: 0;
+    }
+
+    /* —— 中文段落首行缩进两格 —— */
+    .indent_em2 p {
+      text-indent: 2em;
+    }
+
+    /* —— 首字下沉 —— */
+    .drop_cap p::first-letter {
+      float: left;
+      font-family: var(--font-serif-en);
+      font-size: 3.25rem;
+      line-height: 0.85;
+      font-weight: 600;
+      padding-right: 0.18em;
+      color: var(--accent);
+    }
+
+    @supports (initial-letter: 3) {
+      .drop_cap p::first-letter {
+        float: none;
+        initial-letter: 3 2;
+        padding-right: 0.12em;
+      }
+    }
+
+    /* —— 两端对齐 —— */
+    .justify_block {
+      text-align: justify;
+      text-justify: inter-ideograph;
+      hyphens: auto;
+    }
+
+    .justify_block.en {
+      font-family: var(--font-serif-en);
+    }
+
+    /* —— 分栏 —— */
+    .columns_demo {
+      column-count: 2;
+      column-gap: 2rem;
+      column-rule: 1px solid var(--rule);
+    }
+
+    @media (max-width: 640px) {
+      .columns_demo {
+        column-count: 1;
+        column-rule: none;
+      }
+    }
+
+    /* —— 引用块 —— */
+    blockquote.pull {
+      margin: 0;
+      padding: 1rem 0 1rem 1.25rem;
+      border-left: 4px solid var(--accent);
+      font-family: var(--font-serif-en);
+      font-style: italic;
+      font-size: 1.08rem;
+      color: var(--muted);
+    }
+
+    blockquote.pull cite {
+      display: block;
+      margin-top: 0.75rem;
+      font-style: normal;
+      font-size: 0.85rem;
+      font-family: var(--font-mono);
+      color: var(--accent);
+    }
+
+    /* —— 定义列表 —— */
+    dl.def_list {
+      margin: 0;
+    }
+
+    dl.def_list dt {
+      font-weight: 700;
+      margin-top: 1rem;
+      color: var(--ink);
+    }
+
+    dl.def_list dt:first-child {
+      margin-top: 0;
+    }
+
+    dl.def_list dd {
+      margin: 0.35rem 0 0;
+      padding-left: 1.25em;
+      text-indent: -1.25em;
+      color: var(--muted);
+    }
+
+    /* —— 诗歌 / 行对齐 —— */
+    .verse {
+      font-family: var(--font-serif-cn);
+      white-space: pre-wrap;
+      line-height: 2;
+      padding: 0.5rem 0;
+      color: var(--ink);
+    }
+
+    /* —— 列表标记悬挂 —— */
+    ul.hang_list {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    ul.hang_list li {
+      position: relative;
+      padding-left: 1.35em;
+      margin-bottom: 0.5rem;
+    }
+
+    ul.hang_list li::before {
+      content: "—";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-family: var(--font-mono);
+    }
+
+    /* —— 表格排版 —— */
+    .type_table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    .type_table th,
+    .type_table td {
+      border: 1px solid var(--rule);
+      padding: 0.55rem 0.65rem;
+      vertical-align: top;
+    }
+
+    .type_table th {
+      background: var(--accent-soft);
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .type_table td.mono {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      width: 38%;
+    }
+
+    /* —— 小 caps + 字距 —— */
+    .small_caps_line {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .page_footer {
+      text-align: center;
+      padding: 2rem 1rem 3rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      border-top: 1px solid var(--rule);
+    }
+  </style>
+</head>
+<body>
+  <header class="page_header">
+    <p class="eyebrow">Layout · Typography</p>
+    <h1>悬挂缩进与文字排版案例</h1>
+    <p class="lede">集中演示中文与西文混排中常见的悬挂缩进写法，并附带首字下沉、分栏、两端对齐等版式片段，便于对照复制到项目里。</p>
+  </header>
+
+  <nav class="toc" aria-label="页面目录">
+    <div class="toc_inner">
+      <h2>本页目录</h2>
+      <ul>
+        <li><a href="#hang-bib">参考文献式悬挂缩进</a></li>
+        <li><a href="#hang-word">Word 式悬挂缩进</a></li>
+        <li><a href="#hang-grid">栅格编号 + 正文</a></li>
+        <li><a href="#indent-2em">中文首行缩进两格</a></li>
+        <li><a href="#drop-cap">首字下沉</a></li>
+        <li><a href="#justify">两端对齐</a></li>
+        <li><a href="#columns">分栏排版</a></li>
+        <li><a href="#pull">侧栏引用</a></li>
+        <li><a href="#def-list">定义列表 + 悬挂说明</a></li>
+        <li><a href="#verse">诗歌 / 预格式化行</a></li>
+        <li><a href="#hang-list">自定义列表标记</a></li>
+        <li><a href="#table">排版属性速查表</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <article class="case" id="hang-bib">
+      <header>
+        <span class="tag">Hanging indent</span>
+        <h2>参考文献式悬挂缩进</h2>
+        <p class="desc">第二行起与首行左缘对齐的「编号 / 作者」突出：用左内边距配合负的 text-indent。</p>
+      </header>
+      <div class="sample hang_bibliography">
+        <p>[1] 陈某某．悬挂缩进在数字出版中的应用研究[J]．出版科学，2023，31(4)：12–19．</p>
+        <p>[2] Bringhurst, R. The Elements of Typographic Style. 4th ed. Hartley &amp; Marks, 2013.</p>
+        <p>[3] W3C. CSS Text Module Level 3. 建议用于理解 text-indent 与排版边界的关系。</p>
+      </div>
+      <div class="snippet" aria-label="示例代码">
+        <pre>p {
+  padding-left: 2.25em;
+  text-indent: -2.25em;
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="hang-word">
+      <header>
+        <span class="tag">Hanging indent</span>
+        <h2>Word 式悬挂缩进</h2>
+        <p class="desc">首行向左「外凸」，其余行整体右移：左外边距 + 负首行缩进（与上一种视觉对调，注意使用场景）。</p>
+      </header>
+      <div class="sample hang_word_style">
+        <p>注：本段模拟合同或说明书中的条款编号样式。首行顶在更靠左的位置，后续行与正文左边界对齐，阅读时编号更醒目。</p>
+        <p>第二条　乙方应在约定交付日之前完成自检，并向甲方提交书面报告。若因不可抗力导致延期，须在事件发生之日起三日内通知甲方。</p>
+      </div>
+      <div class="snippet">
+        <pre>p {
+  margin-left: 2.25em;
+  text-indent: -2.25em;
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="hang-grid">
+      <header>
+        <span class="tag">Layout</span>
+        <h2>栅格：编号列 + 正文列</h2>
+        <p class="desc">需要严格对齐多位编号时，用 grid 比单段负缩进更稳。</p>
+      </header>
+      <div class="sample">
+        <div class="hang_label_row">
+          <span class="num">12.</span>
+          <p class="body">栅格左侧放序号，右侧放正文，天然悬挂且不会与长编号抢行。</p>
+        </div>
+        <div class="hang_label_row">
+          <span class="num">12.3</span>
+          <p class="body">子条款同样对齐；若换成 <code>display: table</code> 也可达到类似效果。</p>
+        </div>
+      </div>
+      <div class="snippet">
+        <pre>.row {
+  display: grid;
+  grid-template-columns: 3.25em 1fr;
+  column-gap: 0.5em;
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="indent-2em">
+      <header>
+        <span class="tag">Paragraph</span>
+        <h2>中文段落首行缩进两格</h2>
+        <p class="desc">正文段落常用 <code>text-indent: 2em</code>，与悬挂缩进不同，但常一起出现。</p>
+      </header>
+      <div class="sample indent_em2">
+        <p>传统中文排版中，段落首行空两格是惯例。现代网页可用 em 单位随字号缩放。</p>
+        <p>第二段继续缩进。注意标题、列表项通常不再做首行两格。</p>
+      </div>
+      <div class="snippet">
+        <pre>p { text-indent: 2em; }</pre>
+      </div>
+    </article>
+
+    <article class="case" id="drop-cap">
+      <header>
+        <span class="tag">Initial letter</span>
+        <h2>首字下沉</h2>
+        <p class="desc">浮动首字母 + 支持浏览器的 <code>initial-letter</code> 渐进增强。</p>
+      </header>
+      <div class="sample drop_cap">
+        <p>版式中的首字下沉能引导视线进入长文。实现时注意行高与字重，避免与下一行粘连。西文段落效果更明显，中文亦可作为章节开场。</p>
+      </div>
+      <div class="snippet">
+        <pre>p::first-letter {
+  float: left;
+  font-size: 3.25rem;
+  line-height: 0.85;
+  padding-right: 0.18em;
+}
+@supports (initial-letter: 3) {
+  p::first-letter {
+    float: none;
+    initial-letter: 3 2;
+  }
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="justify">
+      <header>
+        <span class="tag">Alignment</span>
+        <h2>两端对齐</h2>
+        <p class="desc">中文常用 <code>text-justify: inter-ideograph</code>；英文可开 <code>hyphens</code>（需 lang）。</p>
+      </header>
+      <div class="sample justify_block">
+        <p>在同一行宽下，两端对齐能让块面更整齐。中文排版中常配合适当行距与字号，避免字距被拉得过散。极窄容器下可改回左对齐以保可读性。</p>
+      </div>
+      <p class="small_caps_line" style="margin-top:1.25rem;">English sample</p>
+      <div class="sample justify_block en" lang="en">
+        <p>Justified text with hyphenation can improve the rag on the right edge when the measure is wide enough for the engine to break words cleanly.</p>
+      </div>
+      <div class="snippet">
+        <pre>.zh {
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+.en {
+  hyphens: auto;
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="columns">
+      <header>
+        <span class="tag">Columns</span>
+        <h2>分栏排版</h2>
+        <p class="desc">杂志式短栏；小屏自动降为单栏。</p>
+      </header>
+      <div class="sample columns_demo">
+        <p>CSS Multi-column 适合展示型短文、术语表或侧栏注释。栏间距与分隔线能减轻拥挤感。</p>
+        <p>长文正文仍建议单栏控制行宽（measure），分栏更适合辅助阅读区块。</p>
+      </div>
+      <div class="snippet">
+        <pre>.cols {
+  column-count: 2;
+  column-gap: 2rem;
+  column-rule: 1px solid #ddd;
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="pull">
+      <header>
+        <span class="tag">Quote</span>
+        <h2>侧栏引用</h2>
+        <p class="desc">强调引文层级，与正文形成节奏对比。</p>
+      </header>
+      <div class="sample">
+        <blockquote class="pull" cite="https://www.w3.org/TR/css-text-3/">
+          Good typography reveals the meaning of the text; great typography makes the meaning unforgettable.
+          <cite>— 演示文案，非原句出处</cite>
+        </blockquote>
+      </div>
+      <div class="snippet">
+        <pre>blockquote {
+  border-left: 4px solid var(--accent);
+  padding-left: 1.25rem;
+  font-style: italic;
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="def-list">
+      <header>
+        <span class="tag">Definition list</span>
+        <h2>定义列表 + 悬挂说明行</h2>
+        <p class="desc">术语下挂解释：dd 使用与参考文献相同的缩进配方。</p>
+      </header>
+      <div class="sample">
+        <dl class="def_list">
+          <dt>悬挂缩进（Hanging indent）</dt>
+          <dd>非首行相对首行增加左缩进，或首行相对正文「外凸」；具体实现依版式语义选择 padding / margin + text-indent。</dd>
+          <dt>Measure</dt>
+          <dd>单行字数与行长。中文常建议每行 25–35 字左右（视字号与载体而定），英文常以 45–75 字符为参考。</dd>
+        </dl>
+      </div>
+      <div class="snippet">
+        <pre>dd {
+  padding-left: 1.25em;
+  text-indent: -1.25em;
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="verse">
+      <header>
+        <span class="tag">Verse</span>
+        <h2>诗歌 / 行对齐</h2>
+        <p class="desc">使用 <code>white-space: pre-wrap</code> 保留换行与空格。</p>
+      </header>
+      <div class="sample">
+        <p class="verse">轻叩纸张的边，
+行距里藏着呼吸。
+悬挂的一行，
+托住整段沉默。</p>
+      </div>
+      <div class="snippet">
+        <pre>.verse {
+  white-space: pre-wrap;
+  line-height: 2;
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="hang-list">
+      <header>
+        <span class="tag">List</span>
+        <h2>自定义列表标记（悬挂）</h2>
+        <p class="desc">取消默认 list-style，用伪元素对齐自定义符号。</p>
+      </header>
+      <div class="sample">
+        <ul class="hang_list">
+          <li>检查父级是否设置了 <code>overflow: hidden</code>，可能裁切负缩进段落。</li>
+          <li>长编号优先用 grid 或 table 布局，而非硬编码 em 宽度。</li>
+          <li>屏幕阅读器场景下保持语义列表结构，勿仅用 div 模拟。</li>
+        </ul>
+      </div>
+      <div class="snippet">
+        <pre>li {
+  position: relative;
+  padding-left: 1.35em;
+}
+li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+}</pre>
+      </div>
+    </article>
+
+    <article class="case" id="table">
+      <header>
+        <span class="tag">Cheatsheet</span>
+        <h2>排版属性速查</h2>
+        <p class="desc">与悬挂、段落相关的常用属性一览。</p>
+      </header>
+      <div class="sample" style="overflow-x:auto;">
+        <table class="type_table">
+          <thead>
+            <tr>
+              <th>属性</th>
+              <th>作用</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">text-indent</td>
+              <td>首行缩进；取负值配合 padding / margin 做悬挂。</td>
+            </tr>
+            <tr>
+              <td class="mono">padding-left</td>
+              <td>整块左内边距；与负 text-indent 组合成「首行突出」。</td>
+            </tr>
+            <tr>
+              <td class="mono">margin-left</td>
+              <td>整块右移；与负 text-indent 组合成 Word 式悬挂。</td>
+            </tr>
+            <tr>
+              <td class="mono">text-align: justify</td>
+              <td>两端对齐；中文常配 <code>text-justify: inter-ideograph</code>。</td>
+            </tr>
+            <tr>
+              <td class="mono">hanging-punctuation</td>
+              <td>标点悬挂（支持度有限，可作渐进增强）。</td>
+            </tr>
+            <tr>
+              <td class="mono">initial-letter</td>
+              <td>首字下沉（需 @supports 检测）。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </main>
+
+  <footer class="page_footer">
+    字体：Noto Serif SC / Newsreader · Normalize：jsDelivr · 单文件演示，可直接复制各区块样式。
+  </footer>
+</body>
+</html>
