@@ -317,6 +317,21 @@
       const { data } = ctx.getImageData(0, 0, w, h);
       const particles = [];
 
+      let minX = w;
+      let maxX = 0;
+
+      for (let y = 0; y < h; y += step) {
+        for (let x = 0; x < w; x += step) {
+          const i = (y * w + x) * 4;
+          if (data[i + 3] > 128) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+          }
+        }
+      }
+
+      const contentW = Math.max(1, maxX - minX);
+
       const chunkSize = 12 * dpr;
       const cols = Math.ceil(w / chunkSize);
       const rows = Math.ceil(h / chunkSize);
@@ -338,8 +353,10 @@
             const r = Math.floor(y / chunkSize);
             const blockNoise = noiseGrid[r * cols + c];
 
+            const normalizedX = (x - minX) / contentW;
+
             // 线性左到右进度 75% + 块状噪点 6% + 粒子噪点 4% (沙化感)
-            p.activationT = (x / w) * 0.75 + blockNoise * 0.06 + Math.random() * 0.04;
+            p.activationT = normalizedX * 0.75 + blockNoise * 0.06 + Math.random() * 0.04;
             // 缩短寿命，使同时存活的粒子区域更窄（控制在约1个字母的宽度）
             p.endT = p.activationT + 0.08 + Math.random() * 0.06;
 
@@ -347,6 +364,9 @@
           }
         }
       }
+
+      particles.minX = minX;
+      particles.contentW = contentW;
 
       return particles;
     };
@@ -479,9 +499,11 @@
         }
 
         const margin = this.maskW * 0.08;
+        const { minX, contentW } = this.particles;
 
         for (const p of this.particles) {
-          const nx = (p.hx / this.maskW) * 2 - 1;
+          const normalizedX = contentW ? (p.hx - minX) / contentW : 0;
+          const nx = normalizedX * 2 - 1;
           const band = (nx + 1) * 0.5;
           p.startX = -margin - band * this.maskW * 0.55 - Math.random() * this.maskW * 0.15;
           p.startY = p.hy + (Math.random() - 0.5) * this.maskH * 0.5;
@@ -508,7 +530,7 @@
           // 紧跟在沙化带后面的“绝对擦除区”，用 0.75 系数与 activationT 保持一致
           const safeT = t - 0.12; 
           if (safeT > 0) {
-            const safeX = (safeT / 0.75) * w;
+            const safeX = particles.minX + (safeT / 0.75) * particles.contentW;
             ctx.fillRect(0, 0, safeX, h);
           }
 
@@ -573,8 +595,11 @@
         const tRaw = clamp01(progress);
         ctx.clearRect(0, 0, w, h);
 
+        const { minX, contentW } = particles;
+
         for (const p of particles) {
-          const nx = (p.hx / w) * 2 - 1;
+          const normalizedX = contentW ? (p.hx - minX) / contentW : 0;
+          const nx = normalizedX * 2 - 1;
           const sweep = easeInOutCubic(clamp01((tRaw - (nx + 1) * 0.1) / 0.9));
           const x = p.startX + (p.hx - p.startX) * sweep;
           const y = p.startY + (p.hy - p.startY) * sweep;
