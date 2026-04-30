@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>商品规格对比 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>商品规格对比</h1>
+      <p class="sub">
+        勾选 2–4 件商品 → 对比条从底部滑出 → 点击「开始对比」→ 抽屉上滑 · 逐行交错入场 · 胜出指标自动高亮 · 雷达图综合评分
+      </p>
+    </header>
+
+    <!-- Product cards -->
+    <ul class="product_grid" id="productGrid" role="list" aria-label="商品列表">
+      <!-- injected by JS -->
+    </ul>
+
+    <p class="fineprint" id="selectHint">
+      勾选 2 到 4 件商品开始对比
+    </p>
+  </div>
+
+  <!-- Sticky compare bar (slides up from bottom) -->
+  <div class="compare_bar" id="compareBar" aria-live="polite" hidden>
+    <div class="compare_bar_inner">
+      <div class="compare_bar_chips" id="compareBarChips"></div>
+      <button class="compare_start_btn" id="compareStartBtn">开始对比 →</button>
+    </div>
+  </div>
+
+  <!-- Comparison drawer -->
+  <div class="drawer_overlay" id="drawerOverlay"></div>
+  <div class="drawer" id="compDrawer" aria-modal="true" role="dialog" aria-label="商品对比" aria-hidden="true">
+    <div class="drawer_head">
+      <h2 class="drawer_title">规格对比</h2>
+      <button class="drawer_close" id="drawerClose" aria-label="关闭">✕</button>
+    </div>
+
+    <div class="drawer_body" id="drawerBody">
+      <!-- comparison table injected by JS -->
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>

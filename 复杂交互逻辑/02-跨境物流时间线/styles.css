@@ -1,0 +1,369 @@
+:root {
+  --bg: #f0f4f8;
+  --card: #fff;
+  --text: #1a1d21;
+  --muted: #5c6570;
+  --border: #d8dee6;
+  --line: #c5d0dc;
+  --done: #0d7a5f;
+  --current: #2563eb;
+  --pending: #b8c2cc;
+  --rail-w: 4px;
+  --dot-size: 26px;
+  --radius: 12px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 18px 48px;
+}
+
+.crumb {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+}
+
+.crumb a {
+  color: var(--current);
+  text-decoration: none;
+}
+
+.crumb a:hover {
+  text-decoration: underline;
+}
+
+.head h1 {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+}
+
+.sub {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+}
+
+.card_head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tracking_no {
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+
+.tracking_meta {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.card_actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--ghost {
+  background: var(--card);
+  color: var(--text);
+}
+
+.btn--primary {
+  background: var(--current);
+  border-color: var(--current);
+  color: #fff;
+}
+
+.btn--primary:hover {
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.progress_bar {
+  height: 10px;
+  background: #e8eef4;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress_fill {
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--done), var(--current));
+  transition: width 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 时间线：左轨 + 右文；线段在轨内与圆点同一纵轴居中 */
+.timeline {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 18px;
+  align-items: stretch;
+  padding-bottom: 8px;
+  opacity: 0.42;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.step:last-child {
+  padding-bottom: 0;
+}
+
+.step.is-done,
+.step.is-current {
+  opacity: 1;
+}
+
+.step.is-current {
+  transform: translateX(4px);
+}
+
+.step.is-current .step_body {
+  transform: scale(1.02);
+  transform-origin: left center;
+}
+
+.step_rail {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 52px;
+  flex-shrink: 0;
+}
+
+.dot {
+  position: relative;
+  z-index: 2;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border-radius: 50%;
+  background: var(--pending);
+  border: 3px solid var(--card);
+  box-shadow: 0 0 0 3px var(--pending);
+  flex-shrink: 0;
+  transition: background 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease;
+}
+
+.step.is-done .dot {
+  background: var(--done);
+  box-shadow: 0 0 0 3px var(--done);
+}
+
+.step.is-current .dot {
+  background: var(--current);
+  box-shadow: 0 0 0 3px var(--current);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 3px var(--current), 0 0 0 0 rgba(37, 99, 235, 0.45);
+  }
+  50% {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 3px var(--current), 0 0 0 16px rgba(37, 99, 235, 0);
+  }
+}
+
+/* 从圆点底边中心延伸到下一行圆点（略伸入行间空隙，避免视觉断线） */
+.rail_line:not(.rail_line--last) {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--dot-size) - 2px);
+  bottom: -20px;
+  width: var(--rail-w);
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: var(--line);
+  transition: background 0.55s ease, box-shadow 0.55s ease;
+}
+
+.rail_line--last {
+  display: none;
+}
+
+.step.is-done .rail_line:not(.rail_line--last) {
+  background: var(--done);
+  box-shadow: 0 0 12px rgba(13, 122, 95, 0.2);
+}
+
+.step.is-current .rail_line:not(.rail_line--last) {
+  background: linear-gradient(180deg, var(--current) 0%, var(--line) 100%);
+  box-shadow: 0 0 14px rgba(37, 99, 235, 0.35);
+}
+
+.step_body {
+  padding-bottom: 28px;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.step:last-child .step_body {
+  padding-bottom: 0;
+}
+
+.step_body strong {
+  display: block;
+  font-size: 1.05rem;
+}
+
+.step_body span {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.step_body time {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 8px;
+  font-style: normal;
+}
+
+.scroll_pad {
+  margin-top: 20px;
+  padding: 0;
+  min-height: 200px;
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  cursor: ns-resize;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.scroll_pad:focus {
+  border-color: var(--current);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.scroll_pad_inner {
+  padding: 28px 20px;
+  text-align: center;
+}
+
+.scroll_pad_icon {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: var(--current);
+  animation: floaty 2.2s ease-in-out infinite;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.scroll_pad_title {
+  margin: 0 0 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.scroll_pad_hint {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.scroll_pad_step {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.step_btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.step_btn {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.12s ease;
+}
+
+.step_btn:hover {
+  background: #f4f7fb;
+}
+
+.step_btn:active {
+  transform: scale(0.98);
+}
+
+.fineprint {
+  margin: 18px 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.45;
+}

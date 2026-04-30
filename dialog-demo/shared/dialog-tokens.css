@@ -1,0 +1,18 @@
+/**
+ * 弹窗演示公共设计变量（dialog-demo）
+ */
+:root {
+  --dlg-bg-page: #0f1218;
+  --dlg-bg-panel: #1a1f2a;
+  --dlg-border: rgba(255, 255, 255, 0.08);
+  --dlg-text: #e8eaef;
+  --dlg-text-muted: rgba(232, 234, 239, 0.55);
+  --dlg-accent: #5b8cff;
+  --dlg-accent-hover: #7aa3ff;
+  --dlg-overlay: rgba(6, 8, 12, 0.72);
+  --dlg-radius: 14px;
+  --dlg-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+  --dlg-font: "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  --dlg-duration: 320ms;
+  --dlg-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}

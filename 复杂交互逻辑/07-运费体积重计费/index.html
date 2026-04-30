@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>运费体积重计费 · 跨境电商交互</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <p class="crumb"><a href="../index.html">← 场景导航</a></p>
+
+    <header class="head">
+      <h1>运费体积重计费（抛重）</h1>
+      <p class="sub">
+        跨境物流不仅看<strong>实际重量</strong>，还看<strong>体积重（长×宽×高÷抛重系数）</strong>，最终运费取决于两者中较大的一个（即计费重）。下方通过加入不同密度商品体验抛重。
+      </p>
+    </header>
+
+    <section class="card" aria-label="体积重试算">
+      <div class="controls">
+        <button type="button" class="btn btn--dense" id="btnAddDumbbell">加一个铁哑铃（重但小）</button>
+        <button type="button" class="btn btn--fluffy" id="btnAddPillow">加一个羽绒枕（轻但大）</button>
+        <button type="button" class="btn btn--ghost" id="btnClear">清空</button>
+      </div>
+
+      <div class="comparison" id="comparison">
+        <div class="col">
+          <div class="col_title">实重 (Actual)</div>
+          <div class="bar_wrap">
+            <div class="bar bar--actual" id="barActual"></div>
+          </div>
+          <div class="val" id="valActual">0.00 kg</div>
+        </div>
+        <div class="col">
+          <div class="col_title">体积重 (Volumetric)</div>
+          <div class="bar_wrap">
+            <div class="bar bar--vol" id="barVol"></div>
+          </div>
+          <div class="val" id="valVol">0.00 kg</div>
+        </div>
+      </div>
+
+      <div class="result_box">
+        <div class="result_row">
+          <span>计费依据：<strong id="basisText">—</strong></span>
+          <span class="bill_weight" id="billWeight">0.00 kg</span>
+        </div>
+        <div class="result_row result_row--total">
+          <span>预估运费 ($15/kg)</span>
+          <span class="total_fee" id="totalFee">$0.00</span>
+        </div>
+      </div>
+
+      <div class="formula_box">
+        体积重 = <span id="volSum">0</span> cm³ ÷ 5000 = <span id="volRes">0.00</span> kg
+      </div>
+    </section>
+  </div>
+  <script src="main.js"></script>
+</body>
+</html>

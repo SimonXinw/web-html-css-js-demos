@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web3 全栈项目实战：从零构建去中心化众筹平台 (DApp)</title>
+    <style>
+        :root {
+            --primary-color: #6366f1; /* Indigo */
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+            --code-bg: #1e1e1e;
+            --code-color: #d4d4d4;
+            --accent-color: #8b5cf6;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 40px 50px;
+            background-color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+        }
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+            font-size: 2.2rem;
+        }
+        h2 {
+            color: #0f172a;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+            margin-top: 50px;
+            font-size: 1.8rem;
+        }
+        h3 {
+            color: #334155;
+            margin-top: 30px;
+            font-size: 1.4rem;
+        }
+        p {
+            font-size: 1.05rem;
+            margin-bottom: 1rem;
+        }
+        .tech-stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .tech-card {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-top: 4px solid var(--primary-color);
+        }
+        .tech-card h4 {
+            margin-top: 0;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .step-box {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .step-number {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-color);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: "Fira Code", Consolas, Monaco, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        }
+        code {
+            font-family: monospace;
+            color: #be123c;
+        }
+        pre code {
+            color: inherit;
+        }
+        .comment { color: #6a9955; }
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .function { color: #dcdcaa; }
+
+        .nav-links {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+        }
+        .nav-links a {
+            padding: 8px 16px;
+            background-color: #f1f5f9;
+            color: #334155;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            background-color: #e2e8f0;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="nav-links">
+        <a href="Web3区块链开发从0到1学习指南.html">⬅️ 返回理论学习指南</a>
+    </div>
+
+    <h1>🚀 Web3 全栈项目实战：去中心化众筹平台</h1>
+    
+    <p>纸上得来终觉浅，绝知此事要躬行。本篇文档将带你从零开始，落地一个完整的 Web3 商业级演示项目——<strong>“Web3 众筹平台 (类似去中心化的 Kickstarter)”</strong>。在这里，任何人都可以发起筹款目标，任何人都可以使用以太坊 (ETH) 进行捐赠，且资金完全由智能合约自动托管，没有中间商赚差价。</p>
+
+    <h2>一、 项目完整技术栈介绍</h2>
+    <p>现代 Web3 DApp（去中心化应用）的开发通常被分为“链端（智能合约）”和“客户端（前端）”两部分。我们将采用目前业界最主流的技术栈组合：</p>
+
+    <div class="tech-stack-grid">
+        <div class="tech-card">
+            <h4>⛓️ 智能合约开发</h4>
+            <p><strong>语言:</strong> Solidity (^0.8.20)<br>
+               <strong>框架:</strong> Hardhat (编译、测试、部署链上代码的利器)<br>
+               <strong>安全库:</strong> OpenZeppelin</p>
+        </div>
+        <div class="tech-card">
+            <h4>🖥️ 前端页面开发</h4>
+            <p><strong>框架:</strong> React.js / Next.js<br>
+               <strong>UI 库:</strong> TailwindCSS<br>
+               <strong>状态管理:</strong> React Hooks</p>
+        </div>
+        <div class="tech-card">
+            <h4>🌉 Web3 交互桥梁</h4>
+            <p><strong>核心库:</strong> Ethers.js (v6) 或 Wagmi<br>
+               <strong>钱包:</strong> MetaMask (小狐狸插件)<br>
+               <strong>RPC:</strong> Alchemy / Infura</p>
+        </div>
+    </div>
+
+    <h2>二、 核心业务逻辑设计</h2>
+    <p>在写代码前，我们要明确合约需要做什么：</p>
+    <ol>
+        <li><strong>创建项目：</strong> 用户调用合约，传入项目标题、描述、目标融资金额和截止时间。合约记录该项目并分配一个唯一 ID。</li>
+        <li><strong>捐款（支持项目）：</strong> 任何人都可以调用捐款函数，并附带原生的 ETH。合约将资金暂存，并记录谁捐了多少。</li>
+        <li><strong>提取资金：</strong> 如果达到了众筹时间，且项目发起人想要提款，合约会把池子里的 ETH 自动打入发起人的钱包。</li>
+    </ol>
+
+    <h2>三、 实战开发步骤与伪代码解析</h2>
+
+    <div class="step-box">
+        <h3><span class="step-number">1</span> 初始化开发环境 (Hardhat + React)</h3>
+        <p>在终端中执行以下命令，搭建前后端分离的目录结构：</p>
+<pre><code><span class="comment"># 1. 初始化合约后端项目</span>
+mkdir web3-crowdfunding && cd web3-crowdfunding
+npx hardhat init  <span class="comment"># 选择创建 JavaScript 基础项目</span>
+npm install @openzeppelin/contracts dotenv
+
+<span class="comment"># 2. 初始化前端项目 (在同级目录下)</span>
+npx create-react-app frontend
+cd frontend
+npm install ethers
+</code></pre>
+    </div>
+
+    <div class="step-box">
+        <h3><span class="step-number">2</span> 编写智能合约 (Crowdfunding.sol)</h3>
+        <p>在 <code>contracts/</code> 目录下新建 <code>Crowdfunding.sol</code>。这是整个去中心化应用的灵魂，资金的流转全靠它。</p>
+<pre><code><span class="keyword">pragma solidity</span> ^0.8.20;
+
+<span class="keyword">contract</span> <span class="function">Crowdfunding</span> {
+    <span class="comment">// 定义一个项目结构体</span>
+    <span class="keyword">struct</span> Campaign {
+        <span class="keyword">address</span> owner;        <span class="comment">// 发起人地址</span>
+        <span class="keyword">string</span> title;         <span class="comment">// 项目标题</span>
+        <span class="keyword">uint256</span> targetAmount; <span class="comment">// 目标金额</span>
+        <span class="keyword">uint256</span> amountCollected;<span class="comment">// 已筹集金额</span>
+        <span class="keyword">uint256</span> deadline;     <span class="comment">// 截止时间戳</span>
+        <span class="keyword">bool</span> isClaimed;       <span class="comment">// 是否已提取资金</span>
+    }
+
+    <span class="comment">// 存储所有的项目，用 ID 映射</span>
+    <span class="keyword">mapping</span>(<span class="keyword">uint256</span> => Campaign) <span class="keyword">public</span> campaigns;
+    <span class="keyword">uint256</span> <span class="keyword">public</span> numberOfCampaigns = 0; <span class="comment">// 项目计数器</span>
+
+    <span class="comment">// 事件：用于通知前端发生了什么事</span>
+    <span class="keyword">event</span> CampaignCreated(<span class="keyword">uint256</span> id, <span class="keyword">string</span> title, <span class="keyword">address</span> owner);
+    <span class="keyword">event</span> Donated(<span class="keyword">uint256</span> id, <span class="keyword">address</span> donator, <span class="keyword">uint256</span> amount);
+
+    <span class="comment">// 1. 创建项目</span>
+    <span class="keyword">function</span> <span class="function">createCampaign</span>(<span class="keyword">string</span> memory _title, <span class="keyword">uint256</span> _target, <span class="keyword">uint256</span> _deadline) <span class="keyword">public</span> <span class="keyword">returns</span> (<span class="keyword">uint256</span>) {
+        <span class="keyword">require</span>(_deadline > block.timestamp, "Deadline must be in the future");
+
+        Campaign storage campaign = campaigns[numberOfCampaigns];
+        campaign.owner = msg.sender; <span class="comment">// msg.sender 就是调用这个函数的钱包地址</span>
+        campaign.title = _title;
+        campaign.targetAmount = _target;
+        campaign.deadline = _deadline;
+        campaign.amountCollected = 0;
+        campaign.isClaimed = false;
+
+        <span class="keyword">emit</span> CampaignCreated(numberOfCampaigns, _title, msg.sender);
+        numberOfCampaigns++;
+        <span class="keyword">return</span> numberOfCampaigns - 1;
+    }
+
+    <span class="comment">// 2. 捐款支持 (payable 关键字表示这个函数可以接收 ETH)</span>
+    <span class="keyword">function</span> <span class="function">donateToCampaign</span>(<span class="keyword">uint256</span> _id) <span class="keyword">public</span> <span class="keyword">payable</span> {
+        <span class="keyword">uint256</span> amount = msg.value; <span class="comment">// msg.value 是用户随交易附带的 ETH 数量</span>
+        Campaign storage campaign = campaigns[_id];
+
+        <span class="keyword">require</span>(block.timestamp < campaign.deadline, "Campaign ended");
+        
+        campaign.amountCollected += amount; <span class="comment">// 资金自动留存在合约地址中</span>
+        <span class="keyword">emit</span> Donated(_id, msg.sender, amount);
+    }
+
+    <span class="comment">// 3. 发起人提取资金</span>
+    <span class="keyword">function</span> <span class="function">withdrawFunds</span>(<span class="keyword">uint256</span> _id) <span class="keyword">public</span> {
+        Campaign storage campaign = campaigns[_id];
+        <span class="keyword">require</span>(msg.sender == campaign.owner, "Not the owner");
+        <span class="keyword">require</span>(!campaign.isClaimed, "Already claimed");
+        <span class="keyword">require</span>(campaign.amountCollected >= campaign.targetAmount, "Target not reached");
+
+        campaign.isClaimed = true;
+        
+        <span class="comment">// 将合约里的 ETH 发送给 owner (防重入写法)</span>
+        (<span class="keyword">bool</span> sent, ) = payable(campaign.owner).call{value: campaign.amountCollected}("");
+        <span class="keyword">require</span>(sent, "Failed to send Ether");
+    }
+}
+</code></pre>
+    </div>
+
+    <div class="step-box">
+        <h3><span class="step-number">3</span> 本地部署与测试 (Hardhat)</h3>
+        <p>在推向以太坊主网之前，我们必须在本地虚拟链上进行测试。编写 <code>scripts/deploy.js</code>：</p>
+<pre><code><span class="keyword">const</span> hre = <span class="keyword">require</span>(<span class="string">"hardhat"</span>);
+
+<span class="keyword">async function</span> <span class="function">main</span>() {
+  <span class="comment">// 获取合约工厂</span>
+  <span class="keyword">const</span> Crowdfunding = <span class="keyword">await</span> hre.ethers.<span class="function">getContractFactory</span>(<span class="string">"Crowdfunding"</span>);
+  
+  <span class="comment">// 部署合约</span>
+  <span class="keyword">const</span> crowdfunding = <span class="keyword">await</span> Crowdfunding.<span class="function">deploy</span>();
+  <span class="keyword">await</span> crowdfunding.<span class="function">waitForDeployment</span>();
+
+  <span class="keyword">console</span>.log(<span class="string">"Crowdfunding 合约已部署至:"</span>, <span class="keyword">await</span> crowdfunding.<span class="function">getAddress</span>());
+}
+
+<span class="function">main</span>().<span class="function">catch</span>((error) => {
+  <span class="keyword">console</span>.error(error);
+  process.exitCode = 1;
+});
+</code></pre>
+        <p>运行 <code>npx hardhat node</code> 启动本地链，然后运行 <code>npx hardhat run scripts/deploy.js --network localhost</code> 进行部署。你将得到一个合约地址（例如：0x5FbDB...）。</p>
+    </div>
+
+    <div class="step-box">
+        <h3><span class="step-number">4</span> 前端 DApp 集成 (React + Ethers.js)</h3>
+        <p>来到 <code>frontend/src/App.js</code>，我们要让前端页面连接 MetaMask 钱包，并调用刚才部署的智能合约。</p>
+<pre><code><span class="keyword">import</span> React, { useState } <span class="keyword">from</span> <span class="string">'react'</span>;
+<span class="keyword">import</span> { ethers } <span class="keyword">from</span> <span class="string">'ethers'</span>;
+
+<span class="comment">// 替换为你刚部署的合约地址</span>
+<span class="keyword">const</span> CONTRACT_ADDRESS = <span class="string">"0x5FbDB2315678afecb367f032d93F642f64180aa3"</span>;
+<span class="comment">// 编译合约后生成的 ABI 文件内容摘要</span>
+<span class="keyword">const</span> ABI = [
+  <span class="string">"function createCampaign(string _title, uint256 _target, uint256 _deadline) public returns (uint256)"</span>,
+  <span class="string">"function donateToCampaign(uint256 _id) public payable"</span>,
+  <span class="string">"function campaigns(uint256) public view returns (address, string, uint256, uint256, uint256, bool)"</span>
+];
+
+<span class="keyword">export default function</span> <span class="function">App</span>() {
+  <span class="keyword">const</span> [account, setAccount] = <span class="function">useState</span>(<span class="string">""</span>);
+  <span class="keyword">const</span> [contract, setContract] = <span class="function">useState</span>(<span class="keyword">null</span>);
+
+  <span class="comment">// 1. 连接钱包</span>
+  <span class="keyword">const</span> <span class="function">connectWallet</span> = <span class="keyword">async</span> () => {
+    <span class="keyword">if</span> (window.ethereum) {
+      <span class="comment">// 请求 MetaMask 授权</span>
+      <span class="keyword">const</span> accounts = <span class="keyword">await</span> window.ethereum.<span class="function">request</span>({ method: <span class="string">'eth_requestAccounts'</span> });
+      <span class="function">setAccount</span>(accounts[0]);
+
+      <span class="comment">// 初始化 Provider 和 Signer</span>
+      <span class="keyword">const</span> provider = <span class="keyword">new</span> ethers.<span class="function">BrowserProvider</span>(window.ethereum);
+      <span class="keyword">const</span> signer = <span class="keyword">await</span> provider.<span class="function">getSigner</span>(); <span class="comment">// 获取签名者(用户自己)</span>
+      
+      <span class="comment">// 连接带有签名权限的合约实例</span>
+      <span class="keyword">const</span> crowdfundContract = <span class="keyword">new</span> ethers.<span class="function">Contract</span>(CONTRACT_ADDRESS, ABI, signer);
+      <span class="function">setContract</span>(crowdfundContract);
+    } <span class="keyword">else</span> {
+      <span class="function">alert</span>(<span class="string">"请安装 MetaMask 钱包插件！"</span>);
+    }
+  };
+
+  <span class="comment">// 2. 发起一个众筹项目 (写入链)</span>
+  <span class="keyword">const</span> <span class="function">handleCreateCampaign</span> = <span class="keyword">async</span> () => {
+    <span class="keyword">if</span> (!contract) <span class="keyword">return</span>;
+    <span class="keyword">try</span> {
+      <span class="comment">// 目标 1 个 ETH，时间设置为当前时间 + 7天</span>
+      <span class="keyword">const</span> target = ethers.<span class="function">parseEther</span>(<span class="string">"1.0"</span>); 
+      <span class="keyword">const</span> deadline = Math.<span class="function">floor</span>(Date.<span class="function">now</span>() / <span class="number">1000</span>) + 7 * 24 * 60 * 60;
+      
+      <span class="comment">// 唤起 MetaMask 请求用户签名这笔交易</span>
+      <span class="keyword">const</span> tx = <span class="keyword">await</span> contract.<span class="function">createCampaign</span>(<span class="string">"救救流浪猫项目"</span>, target, deadline);
+      <span class="keyword">await</span> tx.<span class="function">wait</span>(); <span class="comment">// 等待区块打包确认</span>
+      
+      <span class="function">alert</span>(<span class="string">"项目创建成功！"</span>);
+    } <span class="keyword">catch</span> (err) {
+      <span class="keyword">console</span>.error(err);
+    }
+  };
+
+  <span class="comment">// 3. 给 ID 为 0 的项目捐款 ETH</span>
+  <span class="keyword">const</span> <span class="function">handleDonate</span> = <span class="keyword">async</span> () => {
+    <span class="keyword">if</span> (!contract) <span class="keyword">return</span>;
+    <span class="keyword">try</span> {
+      <span class="comment">// 在调用合约函数时，通过 overrides 对象传入 { value: ... } 表示附带的 ETH 数量</span>
+      <span class="keyword">const</span> tx = <span class="keyword">await</span> contract.<span class="function">donateToCampaign</span>(0, { 
+        value: ethers.<span class="function">parseEther</span>(<span class="string">"0.1"</span>) <span class="comment">// 捐赠 0.1 ETH</span>
+      });
+      <span class="keyword">await</span> tx.<span class="function">wait</span>();
+      
+      <span class="function">alert</span>(<span class="string">"感谢您的捐赠！0.1 ETH 已转入合约锁仓。"</span>);
+    } <span class="keyword">catch</span> (err) {
+      <span class="keyword">console</span>.error(err);
+    }
+  };
+
+  <span class="keyword">return</span> (
+    &lt;div style={{ padding: "20px" }}&gt;
+      &lt;h1&gt;Web3 去中心化众筹&lt;/h1&gt;
+      {!account ? (
+        &lt;button onClick={connectWallet}&gt;🔌 连接钱包&lt;/button&gt;
+      ) : (
+        &lt;div&gt;
+          &lt;p&gt;✅ 钱包已连接: {account}&lt;/p&gt;
+          &lt;button onClick={handleCreateCampaign}&gt;🚀 发起众筹&lt;/button&gt;
+          &lt;button onClick={handleDonate} style={{ marginLeft: "10px" }}&gt;💰 捐赠 0.1 ETH&lt;/button&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+    </div>
+
+    <hr style="margin: 40px 0; border: 0; border-top: 1px dashed #cbd5e1;">
+
+    <h2>💡 总结与进阶思路</h2>
+    <p>在这个实战项目中，我们走通了 <strong>“编写合约 -> 部署合约 -> 前端连接钱包 -> 签名交互”</strong> 的全栈闭环。真正做到代码即信任：捐款的钱不经过任何人手，直接进入智能合约地址，达成条件自动解锁提款。</p>
+    <p><strong>未来的优化方向（作业）：</strong></p>
+    <ul>
+        <li>在合约中增加“退款”功能：如果到了截止日期还没凑够钱，允许捐款人调用 <code>refund()</code> 原路退回 ETH。</li>
+        <li>前端页面渲染 <code>campaigns</code> 的列表，使用户能直观看到每个项目的进度条。</li>
+        <li>使用 The Graph 或 Alchemy 替换本地网络，将项目真实部署到 Sepolia 测试网。</li>
+    </ul>
+
+</div>
+
+</body>
+</html>

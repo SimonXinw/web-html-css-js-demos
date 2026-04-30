@@ -1,41 +1,60 @@
-$(function (){
-    // 加载商品列表的数据
-    $.ajax({
-        url: 'data/goods.json',
-        type: 'get',
-        dataType: 'json',
-        cache: false,
-        success: function (json){
-            var results = '';
-            $.each(json,function (index,item){
-                results += '<div class="goods" code="'+item.code+'"><img src="'+item.imgurl+'" alt=""><p>'+item.price+'</p><h3>'+item.title+'</h3><div>加入购物车</div></div>';
-            });
-            $('.content').html(results);
-        }
-    });
+$(function () {
+  const $toast = $('<div id="goods-page-toast" class="goods_page_toast" role="status" aria-live="polite"></div>');
 
-    // 点击加入购物车
-    // localStorage -> goods : '{"code":['abc1','abc4','abc6']}'
-    $('.content').on('click','.goods div',function (){
-        // 获取点击商品的编号
-        var code = $(this).parent().attr('code');
+  $("body").append($toast);
 
-        // 获取本地存储数据（数组）
-        if (localStorage.getItem('goods')) {
-            var codeArr = JSON.parse( localStorage.getItem('goods') ).code;
-        } else {
-            var codeArr = [];
-        }
+  let toastTimer = 0;
 
-        codeArr.push(code);//添加数据
+  function showToast(msg) {
+    $toast.text(msg).addClass("is_visible");
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () {
+      $toast.removeClass("is_visible");
+    }, 2000);
+  }
 
-        var jsonStr = JSON.stringify( {"code": codeArr} );//对象转成 json 字符串
+  function escapeAttr(s) {
+    return String(s).replace(/"/g, "&quot;");
+  }
 
-        // 更新本地存储数据
-        localStorage.setItem('goods',jsonStr);
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
 
-        alert('成功加入购物车！');
-    })
+  $.ajax({
+    url: "data/goods.json",
+    type: "get",
+    dataType: "json",
+    cache: false,
+    success: function (json) {
+      let results = "";
 
+      $.each(json, function (index, item) {
+        results +=
+          `<div class="goods" data-code="${escapeAttr(item.code)}">` +
+          `<img src="${escapeAttr(item.imgurl)}" alt="${escapeHtml(item.title)}" loading="lazy" width="200" height="200" />` +
+          `<p>${escapeHtml(item.price)}</p>` +
+          `<h3>${escapeHtml(item.title)}</h3>` +
+          `<button type="button" class="add_cart_btn">加入购物车</button>` +
+          `</div>`;
+      });
 
-})
+      $(".content").html(results);
+    },
+  });
+
+  $(".content").on("click", ".add_cart_btn", function () {
+    const code = $(this).closest(".goods").attr("data-code");
+
+    if (!code) {
+      return;
+    }
+
+    CartStorage.addToCart(code);
+    showToast("已加入购物车");
+  });
+});

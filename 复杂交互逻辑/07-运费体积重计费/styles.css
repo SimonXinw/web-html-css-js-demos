@@ -1,0 +1,207 @@
+:root {
+  --bg: #f8f9fa;
+  --card: #fff;
+  --text: #202124;
+  --muted: #5f6368;
+  --border: #dadce0;
+  --actual: #1967d2;
+  --vol: #e37400;
+  --actual-bg: #e8f0fe;
+  --vol-bg: #fce8e6;
+  --win: #188038;
+  --radius: 12px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 18px 48px;
+}
+
+.crumb {
+  margin: 0 0 16px;
+  font-size: 0.9rem;
+}
+
+.crumb a {
+  color: var(--actual);
+  text-decoration: none;
+}
+
+.head h1 {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+}
+
+.sub {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.btn {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn--dense {
+  background: var(--actual-bg);
+  color: var(--actual);
+  border-color: #d2e3fc;
+}
+
+.btn--fluffy {
+  background: var(--vol-bg);
+  color: var(--vol);
+  border-color: #fad2cf;
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+.comparison {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.col_title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.bar_wrap {
+  width: 48px;
+  height: 200px;
+  background: #f1f3f4;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0%;
+  border-radius: 24px;
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.4s ease;
+}
+
+.bar--actual {
+  background: var(--actual);
+}
+
+.bar--vol {
+  background: var(--vol);
+}
+
+.bar.is-winner {
+  background: var(--win);
+  box-shadow: 0 0 12px rgba(24, 128, 56, 0.4);
+}
+
+.val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.val.is-winner {
+  color: var(--win);
+  transform: scale(1.15);
+}
+
+.result_box {
+  background: #f8f9fa;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.result_row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.result_row--total {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  color: var(--text);
+  font-weight: 700;
+}
+
+.bill_weight {
+  font-size: 1.05rem;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.total_fee {
+  font-size: 1.35rem;
+  color: var(--win);
+}
+
+.formula_box {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-align: center;
+  font-family: ui-monospace, Consolas, monospace;
+}
