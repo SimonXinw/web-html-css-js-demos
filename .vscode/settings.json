@@ -1,5 +1,10 @@
 {
   "cSpell.words": ["speedx", "xiaoming", "XMLHTTP", "xwnb"],
   "liveServer.settings.port": 5501,
-  "editor.cursorStyle": "line"
+  "editor.cursorStyle": "line",
+  "workbench.editorAssociations": {
+    "*.parquet": "duckdb.dataFileViewer",
+    "*.csv": "duckdb.dataFileViewer",
+    "*.tsv": "duckdb.dataFileViewer"
+  }
 }
