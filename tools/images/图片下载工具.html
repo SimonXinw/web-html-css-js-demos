@@ -33,13 +33,24 @@
         <!-- 顶部导航 -->
         <header class="bg-white shadow-sm sticky top-0 z-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <div class="p-2 bg-blue-100 rounded-lg text-blue-600">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                <div class="flex items-center gap-3">
+                    <a href="https://simonxinw.github.io/web-html-css-js-demos/" class="flex items-center gap-1.5 px-2 py-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="返回首页">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        <span class="text-sm font-medium hidden sm:block">首页</span>
+                    </a>
+                    <div class="w-px h-5 bg-gray-200 hidden sm:block"></div>
+                    <div class="flex items-center gap-2">
+                        <div class="p-1.5 sm:p-2 bg-blue-100 rounded-lg text-blue-600">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </div>
+                        <h1 class="text-base sm:text-xl font-bold text-gray-900">图片下载工具</h1>
                     </div>
-                    <h1 class="text-xl font-bold text-gray-900 hidden sm:block">图片下载工具</h1>
                 </div>
                 <div class="flex items-center gap-2 sm:gap-3">
+                    <button @click="showJsonModal = true" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-sm text-sm sm:text-base flex items-center gap-1.5 font-medium">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        提取 JSON 图片
+                    </button>
                     <button @click="showInputModal = true" class="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm text-sm sm:text-base flex items-center gap-1.5 font-medium">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                         输入 URL
@@ -130,6 +141,42 @@
                 </div>
             </div>
         </div>
+
+        <!-- 输入 JSON 弹窗 -->
+        <div v-if="showJsonModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+            <!-- 背景遮罩 -->
+            <div class="absolute inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity" @click="showJsonModal = false"></div>
+            
+            <!-- 弹窗内容 -->
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] relative z-10 transform transition-all">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        提取 JSON 图片
+                    </h2>
+                    <button @click="showJsonModal = false" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 flex-1 overflow-y-auto">
+                    <div class="mb-4 flex items-start gap-2 text-sm text-indigo-700 bg-indigo-50 p-3 rounded-lg">
+                        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p>请粘贴模板 JSON，将自动提取 shopify://shop_images/ 格式的图片并生成下载链接。</p>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">图片前缀 URL (可修改)</label>
+                        <input type="text" v-model="jsonPrefixUrl" class="w-full border border-gray-200 rounded-xl shadow-inner px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm transition-shadow">
+                    </div>
+                    <textarea v-model="jsonInput" rows="10" class="w-full border border-gray-200 rounded-xl shadow-inner p-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm font-mono resize-none transition-shadow" placeholder="在此粘贴 JSON 对象"></textarea>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                    <button @click="showJsonModal = false" class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition text-sm font-medium shadow-sm">取消</button>
+                    <button @click="processJson" class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-medium shadow-sm flex items-center gap-2">
+                        提取并复制
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -139,8 +186,75 @@
             setup() {
                 const showInputModal = ref(false);
                 const urlInput = ref('');
+                const showJsonModal = ref(false);
+                const jsonInput = ref('');
+                const jsonPrefixUrl = ref('https://awolvision.com/cdn/shop/files/');
                 const images = ref([]);
                 const isDownloadingBatch = ref(false);
+
+                // 提取并复制 JSON 中的图片 URL
+                const processJson = async () => {
+                    if (!jsonInput.value.trim()) {
+                        alert('请输入 JSON 内容');
+                        return;
+                    }
+                    try {
+                        const jsonObj = JSON.parse(jsonInput.value);
+                        const urls = [];
+                        
+                        // 确保前缀有斜杠结尾，以便拼接
+                        let prefix = jsonPrefixUrl.value.trim();
+                        if (prefix && !prefix.endsWith('/')) {
+                            prefix += '/';
+                        }
+                        
+                        // 递归查找 shopify://shop_images/ 的值
+                        const findUrls = (obj) => {
+                            if (typeof obj === 'string') {
+                                if (obj.startsWith('shopify://shop_images/')) {
+                                    const filename = obj.replace('shopify://shop_images/', '');
+                                    // 使用正则表达式匹配常见的图片格式（包含 svg）
+                                    if (/\.(webp|jpg|jpeg|png|gif|svg)(\?.*)?$/i.test(filename)) {
+                                        urls.push(`${prefix}${filename}`);
+                                    }
+                                }
+                            } else if (Array.isArray(obj)) {
+                                obj.forEach(item => findUrls(item));
+                            } else if (obj !== null && typeof obj === 'object') {
+                                Object.values(obj).forEach(value => findUrls(value));
+                            }
+                        };
+                        
+                        findUrls(jsonObj);
+                        
+                        if (urls.length === 0) {
+                            alert('未找到符合 shopify://shop_images/ 格式且为常见图片类型（webp/jpg/png/svg等）的链接！');
+                            return;
+                        }
+                        
+                        // 去重
+                        const uniqueUrls = [...new Set(urls)];
+                        const resultText = uniqueUrls.join('\n');
+                        
+                        // 尝试复制到剪切板
+                        try {
+                            await navigator.clipboard.writeText(resultText);
+                            alert(`成功提取并复制了 ${uniqueUrls.length} 个图片链接！\n\n可直接粘贴到主界面的“输入 URL”中使用。`);
+                        } catch (clipboardError) {
+                            // 如果 clipboard API 失败（比如不是 HTTPS 且不是 localhost），可以降级处理
+                            console.warn('Clipboard API failed', clipboardError);
+                            // 将结果放到输入框中，并提示用户手动复制
+                            jsonInput.value = resultText;
+                            alert(`提取成功了 ${uniqueUrls.length} 个链接，但自动复制失败。\n\n链接已填入文本框，请手动复制。`);
+                            return; // 不要关闭模态框
+                        }
+                        
+                        showJsonModal.value = false;
+                        jsonInput.value = '';
+                    } catch (error) {
+                        alert('JSON 解析失败，请检查输入格式是否正确！\n错误信息：' + error.message);
+                    }
+                };
 
                 // 解析URL并提取文件名
                 const extractFilename = (url) => {
@@ -341,9 +455,13 @@
                 return {
                     showInputModal,
                     urlInput,
+                    showJsonModal,
+                    jsonInput,
+                    jsonPrefixUrl,
                     images,
                     isDownloadingBatch,
                     processUrls,
+                    processJson,
                     handleImageError,
                     reloadImages,
                     downloadSingle,
