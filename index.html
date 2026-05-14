@@ -11,7 +11,7 @@
   <title>辛望的轮子空间</title>
   <!-- 引入动画库 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+  
   <style>
     * {
       box-sizing: border-box;
@@ -56,14 +56,16 @@
       border-radius: 12px;
       box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.25);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      /* 避免与 AOS 冲突，使用 margin 替代 transform */
+      transition: margin 0.3s ease, box-shadow 0.3s ease;
       display: flex;
       align-items: flex-start;
       gap: 24px;
     }
 
     section:hover {
-      transform: translateY(-3px);
+      margin-top: -3px;
+      margin-bottom: 3px;
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
     }
 
@@ -259,7 +261,21 @@
         font-size: 0.9rem;
       }
     }
-  </style>
+  
+    @keyframes customFadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px); /* 使用固定像素替代百分比，保证移动距离一致 */
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .custom-fade-in-up {
+      animation-name: customFadeInUp;
+    }
+</style>
 </head>
 
 <body>
@@ -270,7 +286,7 @@
     <!-- 重新分类的内容模块 -->
     <div class="section-container">
       <!-- 媒体处理 -->
-      <section class="category-tools" data-aos="fade-up" data-aos-delay="100">
+      <section class="category-tools animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 0ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🖼️ 媒体处理</h2>
         </div>
@@ -292,7 +308,7 @@
       </section>
 
       <!-- 动画特效 -->
-      <section class="category-animation" data-aos="fade-up" data-aos-delay="200">
+      <section class="category-animation animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 80ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>✨ 动画特效</h2>
         </div>
@@ -377,7 +393,7 @@
       </section>
 
       <!-- 交互组件 -->
-      <section class="category-interactive" data-aos="fade-up" data-aos-delay="300">
+      <section class="category-interactive animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 160ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🎛️ 交互组件</h2>
         </div>
@@ -401,7 +417,7 @@
       </section>
 
       <!-- 实用工具 -->
-      <section class="category-tools" data-aos="fade-up" data-aos-delay="400">
+      <section class="category-tools animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 240ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🔧 实用工具</h2>
         </div>
@@ -425,7 +441,7 @@
       </section>
 
       <!-- 用户体验 -->
-      <section data-aos="fade-up" data-aos-delay="500">
+      <section class="animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 320ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>👆 用户体验</h2>
         </div>
@@ -443,7 +459,7 @@
       </section>
 
       <!-- 表单验证 -->
-      <section class="category-interactive" data-aos="fade-up" data-aos-delay="600">
+      <section class="category-interactive animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 400ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>📝 表单验证</h2>
         </div>
@@ -458,7 +474,7 @@
       </section>
 
       <!-- 数据交互 -->
-      <section class="category-api" data-aos="fade-up" data-aos-delay="700">
+      <section class="category-api animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 480ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🌐 数据交互</h2>
         </div>
@@ -477,7 +493,7 @@
       </section>
 
       <!-- 算法逻辑 -->
-      <section data-aos="fade-up" data-aos-delay="800">
+      <section class="animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 560ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🧮 算法逻辑</h2>
         </div>
@@ -496,7 +512,7 @@
       </section>
 
       <!-- 电商功能 -->
-      <section class="category-interactive" data-aos="fade-up" data-aos-delay="900">
+      <section class="category-interactive animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 640ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🛒 电商功能</h2>
         </div>
@@ -511,7 +527,7 @@
       </section>
 
       <!-- 地图服务 -->
-      <section class="category-api" data-aos="fade-up" data-aos-delay="1000">
+      <section class="category-api animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 720ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🗺️ 地图服务</h2>
         </div>
@@ -527,7 +543,7 @@
       </section>
 
       <!-- 移动端功能 -->
-      <section data-aos="fade-up" data-aos-delay="1100">
+      <section class="animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 800ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>📱 移动端功能</h2>
         </div>
@@ -541,7 +557,7 @@
       </section>
 
       <!-- 移动端功能 -->
-      <section data-aos="fade-up" data-aos-delay="1100">
+      <section class="animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 880ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>💾 数据图表</h2>
         </div>
@@ -554,7 +570,7 @@
       </section>
 
       <!-- 游戏娱乐 -->
-      <section class="category-games" data-aos="fade-up" data-aos-delay="1200">
+      <section class="category-games animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 960ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🎮 游戏娱乐</h2>
         </div>
@@ -576,7 +592,7 @@
     <div class="section-container">
 
       <!-- 前端动画 · 面试题 -->
-      <section class="category-animation" data-aos="fade-up" data-aos-delay="100">
+      <section class="category-animation animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 1040ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🎬 前端动画 · 面试题</h2>
         </div>
@@ -589,7 +605,7 @@
       </section>
 
       <!-- 大数据 · 理论学习 -->
-      <section class="category-api" data-aos="fade-up" data-aos-delay="200">
+      <section class="category-api animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 1120ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>📚 大数据 · 理论学习</h2>
         </div>
@@ -604,7 +620,7 @@
       </section>
 
       <!-- 大数据 · 实践练习 -->
-      <section class="category-tools" data-aos="fade-up" data-aos-delay="300">
+      <section class="category-tools animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 1200ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>🛠️ 大数据 · 实践练习</h2>
         </div>
@@ -619,7 +635,7 @@
       </section>
 
       <!-- 数据分析 · 学习 -->
-      <section class="category-interactive" data-aos="fade-up" data-aos-delay="400">
+      <section class="category-interactive animate__animated custom-fade-in-up" style="animation-duration: 700ms; animation-delay: 1280ms; animation-fill-mode: both;">
         <div class="section-title">
           <h2>📊 数据分析 · 学习</h2>
         </div>
@@ -666,16 +682,6 @@
     </footer>
   </div>
 
-  <!-- 引入 AOS 脚本 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-  <script>
-    AOS.init({
-      duration: 600, // 缩短动画时间
-      easing: "ease-out-cubic",
-      once: true,
-      offset: 50, // 提前触发动画
-    });
-  </script>
 </body>
 
 </html>
