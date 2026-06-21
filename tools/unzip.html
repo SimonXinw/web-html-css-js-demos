@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>本地压缩与解压工具</title>
+    <style>
+      :root {
+        --ink: #18212f;
+        --muted: #657084;
+        --paper: rgba(255, 255, 255, 0.88);
+        --paper-strong: #ffffff;
+        --line: rgba(25, 33, 47, 0.12);
+        --blue: #2563eb;
+        --blue-dark: #1747b8;
+        --cyan: #00a9c7;
+        --green: #0f9f6e;
+        --amber: #b7791f;
+        --red: #dc2626;
+        --shadow: 0 24px 80px rgba(24, 33, 47, 0.18);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family: "Trebuchet MS", "Microsoft YaHei", "PingFang SC", sans-serif;
+        background:
+          radial-gradient(circle at 8% 12%, rgba(0, 169, 199, 0.28), transparent 28%),
+          radial-gradient(circle at 90% 10%, rgba(37, 99, 235, 0.3), transparent 34%),
+          linear-gradient(135deg, #f8fbff 0%, #dce8f7 48%, #edf9fb 100%);
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+      }
+
+      .compression_tool_page {
+        position: relative;
+        width: min(1180px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 40px 0;
+      }
+
+      .compression_tool_page::before {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        content: "";
+        opacity: 0.45;
+        background-image:
+          linear-gradient(rgba(24, 33, 47, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(24, 33, 47, 0.06) 1px, transparent 1px);
+        background-size: 38px 38px;
+        mask-image: linear-gradient(to bottom, #000, transparent 78%);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+        gap: 24px;
+        align-items: stretch;
+        margin-bottom: 24px;
+      }
+
+      .hero_card,
+      .panel {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.62);
+        border-radius: 30px;
+        background: var(--paper);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(18px);
+      }
+
+      .hero_card {
+        padding: 34px;
+      }
+
+      .hero_card::after {
+        position: absolute;
+        right: -90px;
+        bottom: -110px;
+        width: 280px;
+        height: 280px;
+        border-radius: 50%;
+        content: "";
+        background: radial-gradient(circle, rgba(0, 169, 199, 0.22), transparent 68%);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        padding: 8px 12px;
+        border: 1px solid rgba(37, 99, 235, 0.18);
+        border-radius: 999px;
+        color: var(--blue-dark);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: rgba(37, 99, 235, 0.08);
+      }
+
+      h1 {
+        max-width: 760px;
+        margin: 18px 0 14px;
+        font-size: clamp(34px, 6vw, 70px);
+        line-height: 0.96;
+        letter-spacing: -0.07em;
+      }
+
+      .lead {
+        max-width: 680px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.8;
+      }
+
+      .status_card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 26px;
+      }
+
+      .status_label {
+        margin: 0 0 10px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      .status_value {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+      }
+
+      .status_hint {
+        margin: 16px 0 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .support_list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 22px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 32px;
+        padding: 7px 11px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: #27364b;
+        font-size: 13px;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        gap: 24px;
+      }
+
+      .panel {
+        padding: 24px;
+      }
+
+      .drop_zone {
+        display: flex;
+        min-height: 340px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 28px;
+        border: 2px dashed rgba(37, 99, 235, 0.35);
+        border-radius: 24px;
+        text-align: center;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.38)),
+          radial-gradient(circle at 50% 18%, rgba(0, 169, 199, 0.13), transparent 42%);
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      }
+
+      .drop_zone.is_dragging {
+        transform: translateY(-3px) scale(1.01);
+        border-color: var(--blue);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(229, 246, 255, 0.7)),
+          radial-gradient(circle at 50% 18%, rgba(37, 99, 235, 0.18), transparent 45%);
+      }
+
+      .drop_icon {
+        display: grid;
+        width: 92px;
+        height: 92px;
+        place-items: center;
+        margin-bottom: 20px;
+        border-radius: 28px;
+        color: #ffffff;
+        font-size: 38px;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--blue), var(--cyan));
+        box-shadow: 0 18px 40px rgba(37, 99, 235, 0.3);
+      }
+
+      .drop_zone h2 {
+        margin: 0 0 10px;
+        font-size: 28px;
+        letter-spacing: -0.04em;
+      }
+
+      .drop_zone p {
+        max-width: 430px;
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      .picker_group {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .file_input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+
+      .button,
+      .picker_label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0 18px;
+        border-radius: 999px;
+        cursor: pointer;
+        font-weight: 800;
+        transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+      }
+
+      .button:hover,
+      .picker_label:hover {
+        transform: translateY(-2px);
+      }
+
+      .button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+        transform: none;
+      }
+
+      .button.primary {
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--blue), var(--cyan));
+        box-shadow: 0 16px 34px rgba(37, 99, 235, 0.28);
+      }
+
+      .button.secondary,
+      .picker_label {
+        border: 1px solid var(--line);
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.75);
+      }
+
+      .button.ghost {
+        color: var(--blue-dark);
+        background: rgba(37, 99, 235, 0.1);
+      }
+
+      .button.danger {
+        color: var(--red);
+        background: rgba(220, 38, 38, 0.08);
+      }
+
+      .section_title {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .section_title h2 {
+        margin: 0;
+        font-size: 24px;
+        letter-spacing: -0.04em;
+      }
+
+      .section_title p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .form_grid {
+        display: grid;
+        grid-template-columns: 1fr 160px;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .field label {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .field input,
+      .field select {
+        width: 100%;
+        min-height: 46px;
+        padding: 0 14px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        outline: none;
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.74);
+      }
+
+      .field input:focus,
+      .field select:focus {
+        border-color: rgba(37, 99, 235, 0.55);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+      }
+
+      .action_row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 18px 0;
+      }
+
+      .progress_box {
+        overflow: hidden;
+        margin: 16px 0;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.58);
+      }
+
+      .progress_header {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px 8px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .progress_track {
+        height: 10px;
+        background: rgba(37, 99, 235, 0.1);
+      }
+
+      .progress_bar {
+        width: 0%;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--blue), var(--cyan), var(--green));
+        transition: width 0.2s ease;
+      }
+
+      .message {
+        display: none;
+        margin: 12px 0 0;
+        padding: 12px 14px;
+        border-radius: 16px;
+        line-height: 1.6;
+      }
+
+      .message.show {
+        display: block;
+      }
+
+      .message.info {
+        color: #1d4ed8;
+        background: rgba(37, 99, 235, 0.1);
+      }
+
+      .message.warning {
+        color: var(--amber);
+        background: rgba(245, 158, 11, 0.13);
+      }
+
+      .message.error {
+        color: var(--red);
+        background: rgba(220, 38, 38, 0.1);
+      }
+
+      .file_list,
+      .result_list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .file_item,
+      .result_item {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: center;
+        padding: 13px 14px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .file_name {
+        overflow: hidden;
+        margin: 0;
+        font-weight: 800;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .file_meta {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .empty_state {
+        padding: 24px;
+        border: 1px dashed var(--line);
+        border-radius: 18px;
+        color: var(--muted);
+        text-align: center;
+        background: rgba(255, 255, 255, 0.45);
+      }
+
+      .footer_note {
+        margin: 24px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.7;
+        text-align: center;
+      }
+
+      @media (max-width: 900px) {
+        .hero,
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .form_grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .compression_tool_page {
+          width: min(100% - 20px, 1180px);
+          padding: 18px 0;
+        }
+
+        .hero_card,
+        .panel,
+        .status_card {
+          border-radius: 22px;
+          padding: 18px;
+        }
+
+        .drop_zone {
+          min-height: 280px;
+          padding: 20px;
+        }
+
+        .file_item,
+        .result_item {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="compression_tool_page">
+      <section class="hero" aria-label="页面介绍">
+        <div class="hero_card">
+          <span class="eyebrow">Local Only / 稳定优先</span>
+          <h1>拖进来，浏览器里完成压缩与解压。</h1>
+          <p class="lead">
+            文件不会上传到服务器。选择 ZIP、GZIP、TAR 或 TGZ 会自动进入解压模式；拖入文件夹或多个文件会自动进入压缩模式。
+          </p>
+          <div class="support_list" aria-label="支持格式">
+            <span class="chip">解压 ZIP</span>
+            <span class="chip">解压 RAR</span>
+            <span class="chip">解压 GZIP</span>
+            <span class="chip">解压 TAR / TGZ</span>
+            <span class="chip">压缩 ZIP</span>
+            <span class="chip">单文件 GZIP</span>
+          </div>
+        </div>
+
+        <aside class="status_card panel">
+          <div>
+            <p class="status_label">当前模式</p>
+            <p class="status_value" id="modeText">等待文件</p>
+            <p class="status_hint" id="modeHint">
+              拖拽压缩包、文件或文件夹到下方区域，也可以使用按钮选择。
+            </p>
+          </div>
+          <p class="footer_note">
+            加密压缩包、分卷压缩包和 7Z 等格式在纯浏览器环境中不做强行处理，会给出稳定提示。
+          </p>
+        </aside>
+      </section>
+
+      <section class="workspace" aria-label="压缩解压工作区">
+        <div class="panel">
+          <div class="drop_zone" id="dropZone">
+            <div class="drop_icon">⇣</div>
+            <h2>拖拽文件到这里</h2>
+            <p>支持拖入单个压缩包、多个文件，Chrome / Edge 可直接拖入文件夹并保留目录结构。</p>
+            <div class="picker_group">
+              <label class="picker_label" for="fileInput">选择文件</label>
+              <label class="picker_label" for="folderInput">选择文件夹</label>
+            </div>
+            <input class="file_input" id="fileInput" type="file" multiple />
+            <input class="file_input" id="folderInput" type="file" webkitdirectory directory multiple />
+          </div>
+
+          <div class="message" id="messageBox" role="status" aria-live="polite"></div>
+        </div>
+
+        <div class="panel">
+          <div class="section_title">
+            <div>
+              <h2>操作面板</h2>
+              <p>页面会根据内容自动切换主按钮。大文件会消耗浏览器内存，已加总量保护。</p>
+            </div>
+          </div>
+
+          <div class="form_grid">
+            <div class="field">
+              <label for="archiveNameInput">压缩包名称</label>
+              <input id="archiveNameInput" type="text" value="archive" maxlength="80" />
+            </div>
+            <div class="field">
+              <label for="compressionLevelSelect">压缩等级</label>
+              <select id="compressionLevelSelect">
+                <option value="3">快速</option>
+                <option value="6" selected>平衡</option>
+                <option value="9">更小</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="action_row">
+            <button class="button primary" id="mainActionButton" type="button" disabled>等待文件</button>
+            <button class="button ghost" id="gzipButton" type="button" hidden>压缩为 GZIP</button>
+            <button class="button secondary" id="saveAllButton" type="button" hidden>保存全部到文件夹</button>
+            <button class="button danger" id="clearButton" type="button" disabled>清空</button>
+          </div>
+
+          <div class="progress_box" aria-label="处理进度">
+            <div class="progress_header">
+              <span id="progressText">准备就绪</span>
+              <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress_track">
+              <div class="progress_bar" id="progressBar"></div>
+            </div>
+          </div>
+
+          <div class="section_title">
+            <div>
+              <h2>当前内容</h2>
+              <p id="summaryText">还没有选择文件。</p>
+            </div>
+          </div>
+          <ul class="file_list" id="fileList">
+            <li class="empty_state">等待拖拽或选择文件</li>
+          </ul>
+
+          <div class="section_title" style="margin-top: 22px;">
+            <div>
+              <h2>处理结果</h2>
+              <p>解压后的文件会显示下载按钮；支持的浏览器还可以一键保存到文件夹。</p>
+            </div>
+          </div>
+          <ul class="result_list" id="resultList">
+            <li class="empty_state">暂无结果</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+    <script>
+      const MAX_TOTAL_BYTES = 512 * 1024 * 1024;
+      const SUPPORTED_ARCHIVE_PATTERN = /\.(zip|rar|tar|tgz|tar\.gz|gz|gzip)$/i;
+      const UNSUPPORTED_ARCHIVE_PATTERN = /\.(7z|bz2|xz|zst|zipx)$/i;
+      const RAR_MODULE_URL = "https://esm.sh/node-unrar-js@2.0.2?bundle";
+      const RAR_WASM_URL = "https://cdn.jsdelivr.net/npm/node-unrar-js@2.0.2/esm/js/unrar.wasm";
+      let rarModulePromise = null;
+      let rarWasmPromise = null;
+
+      const state = {
+        mode: "empty",
+        entries: [],
+        archiveFile: null,
+        extractedFiles: [],
+        objectUrls: [],
+        isWorking: false
+      };
+
+      const elements = {
+        dropZone: document.querySelector("#dropZone"),
+        fileInput: document.querySelector("#fileInput"),
+        folderInput: document.querySelector("#folderInput"),
+        modeText: document.querySelector("#modeText"),
+        modeHint: document.querySelector("#modeHint"),
+        messageBox: document.querySelector("#messageBox"),
+        mainActionButton: document.querySelector("#mainActionButton"),
+        gzipButton: document.querySelector("#gzipButton"),
+        saveAllButton: document.querySelector("#saveAllButton"),
+        clearButton: document.querySelector("#clearButton"),
+        progressText: document.querySelector("#progressText"),
+        progressPercent: document.querySelector("#progressPercent"),
+        progressBar: document.querySelector("#progressBar"),
+        archiveNameInput: document.querySelector("#archiveNameInput"),
+        compressionLevelSelect: document.querySelector("#compressionLevelSelect"),
+        summaryText: document.querySelector("#summaryText"),
+        fileList: document.querySelector("#fileList"),
+        resultList: document.querySelector("#resultList")
+      };
+
+      const formatBytes = (bytes) => {
+        if (bytes === 0) {
+          return "0 B";
+        }
+
+        const units = ["B", "KB", "MB", "GB"];
+        const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+        const value = bytes / (1024 ** unitIndex);
+
+        return `${value.toFixed(value >= 10 || unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+      };
+
+      const normalizePath = (path) => {
+        return path.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\.\.\//g, "");
+      };
+
+      const safeFileName = (name, fallback = "archive") => {
+        const cleanedName = String(name || "")
+          .trim()
+          .replace(/[\\/:*?"<>|]+/g, "-")
+          .replace(/\s+/g, " ")
+          .slice(0, 80);
+
+        return cleanedName || fallback;
+      };
+
+      const getEntryPath = (file) => {
+        const path = file.webkitRelativePath || file.relativePath || file.name;
+
+        return normalizePath(path);
+      };
+
+      const getTotalBytes = (entries) => {
+        return entries.reduce((total, entry) => total + entry.file.size, 0);
+      };
+
+      const isSupportedArchive = (fileName) => {
+        return SUPPORTED_ARCHIVE_PATTERN.test(fileName);
+      };
+
+      const isUnsupportedArchive = (fileName) => {
+        return UNSUPPORTED_ARCHIVE_PATTERN.test(fileName);
+      };
+
+      const setProgress = (percent, text) => {
+        const safePercent = Math.max(0, Math.min(100, Math.round(percent)));
+        elements.progressBar.style.width = `${safePercent}%`;
+        elements.progressPercent.textContent = `${safePercent}%`;
+
+        if (text) {
+          elements.progressText.textContent = text;
+        }
+      };
+
+      const showMessage = (message, type = "info") => {
+        elements.messageBox.textContent = message;
+        elements.messageBox.className = `message show ${type}`;
+      };
+
+      const hideMessage = () => {
+        elements.messageBox.textContent = "";
+        elements.messageBox.className = "message";
+      };
+
+      const revokeResultUrls = () => {
+        state.objectUrls.forEach((url) => URL.revokeObjectURL(url));
+        state.objectUrls = [];
+      };
+
+      const downloadBlob = (blob, fileName) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = safeFileName(fileName, "download");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      };
+
+      const renderResults = () => {
+        elements.resultList.innerHTML = "";
+        elements.saveAllButton.hidden = state.extractedFiles.length === 0 || !window.showDirectoryPicker;
+
+        if (state.extractedFiles.length === 0) {
+          elements.resultList.innerHTML = "<li class=\"empty_state\">暂无结果</li>";
+          return;
+        }
+
+        state.extractedFiles.forEach((item) => {
+          const url = URL.createObjectURL(item.blob);
+          state.objectUrls.push(url);
+
+          const listItem = document.createElement("li");
+          listItem.className = "result_item";
+
+          const info = document.createElement("div");
+          const name = document.createElement("p");
+          const meta = document.createElement("p");
+          const action = document.createElement("a");
+
+          name.className = "file_name";
+          name.textContent = item.path;
+          meta.className = "file_meta";
+          meta.textContent = formatBytes(item.blob.size);
+          action.className = "button secondary";
+          action.href = url;
+          action.download = item.path.split("/").pop() || "file";
+          action.textContent = "下载";
+
+          info.append(name, meta);
+          listItem.append(info, action);
+          elements.resultList.appendChild(listItem);
+        });
+      };
+
+      const renderSelectedFiles = () => {
+        elements.fileList.innerHTML = "";
+
+        if (state.entries.length === 0 && !state.archiveFile) {
+          elements.fileList.innerHTML = "<li class=\"empty_state\">等待拖拽或选择文件</li>";
+          elements.summaryText.textContent = "还没有选择文件。";
+          return;
+        }
+
+        const displayEntries = state.archiveFile
+          ? [{ file: state.archiveFile, path: state.archiveFile.name }]
+          : state.entries.slice(0, 60);
+
+        displayEntries.forEach((entry) => {
+          const listItem = document.createElement("li");
+          listItem.className = "file_item";
+
+          const info = document.createElement("div");
+          const name = document.createElement("p");
+          const meta = document.createElement("p");
+          const badge = document.createElement("span");
+
+          name.className = "file_name";
+          name.title = entry.path;
+          name.textContent = entry.path;
+          meta.className = "file_meta";
+          meta.textContent = formatBytes(entry.file.size);
+          badge.className = "chip";
+          badge.textContent = state.mode === "archive" ? "待解压" : "待压缩";
+
+          info.append(name, meta);
+          listItem.append(info, badge);
+          elements.fileList.appendChild(listItem);
+        });
+
+        if (!state.archiveFile && state.entries.length > displayEntries.length) {
+          const moreItem = document.createElement("li");
+          moreItem.className = "empty_state";
+          moreItem.textContent = `还有 ${state.entries.length - displayEntries.length} 个文件未展示，但会参与压缩。`;
+          elements.fileList.appendChild(moreItem);
+        }
+
+        const totalBytes = state.archiveFile ? state.archiveFile.size : getTotalBytes(state.entries);
+        const countText = state.archiveFile ? "1 个压缩包" : `${state.entries.length} 个文件`;
+        elements.summaryText.textContent = `${countText}，总大小 ${formatBytes(totalBytes)}。`;
+      };
+
+      const updateModeUi = () => {
+        const hasSingleEntry = state.entries.length === 1;
+        const canGzip = state.mode === "compress" && hasSingleEntry && state.entries[0].file.size > 0;
+
+        elements.clearButton.disabled = state.mode === "empty" || state.isWorking;
+        elements.mainActionButton.disabled = state.mode === "empty" || state.isWorking;
+        elements.gzipButton.hidden = !canGzip;
+        elements.gzipButton.disabled = state.isWorking;
+        elements.archiveNameInput.disabled = state.mode !== "compress" || state.isWorking;
+        elements.compressionLevelSelect.disabled = state.isWorking;
+
+        if (state.mode === "archive") {
+          elements.modeText.textContent = "解压模式";
+          elements.modeHint.textContent = "已识别为压缩包，主按钮会解压并生成下载列表。";
+          elements.mainActionButton.textContent = "开始解压";
+        } else if (state.mode === "compress") {
+          elements.modeText.textContent = "压缩模式";
+          elements.modeHint.textContent = "已识别为文件或文件夹，主按钮会生成 ZIP 压缩包。";
+          elements.mainActionButton.textContent = "压缩为 ZIP";
+        } else {
+          elements.modeText.textContent = "等待文件";
+          elements.modeHint.textContent = "拖拽压缩包、文件或文件夹到下方区域，也可以使用按钮选择。";
+          elements.mainActionButton.textContent = "等待文件";
+        }
+
+        renderSelectedFiles();
+      };
+
+      const resetState = () => {
+        revokeResultUrls();
+        state.mode = "empty";
+        state.entries = [];
+        state.archiveFile = null;
+        state.extractedFiles = [];
+        state.isWorking = false;
+        elements.fileInput.value = "";
+        elements.folderInput.value = "";
+        setProgress(0, "准备就绪");
+        hideMessage();
+        renderResults();
+        updateModeUi();
+      };
+
+      const validateTotalSize = (entries) => {
+        const totalBytes = getTotalBytes(entries);
+
+        if (totalBytes > MAX_TOTAL_BYTES) {
+          throw new Error(`当前选择总大小为 ${formatBytes(totalBytes)}，超过 ${formatBytes(MAX_TOTAL_BYTES)} 的稳定处理上限。请拆分后再处理。`);
+        }
+      };
+
+      const setFilesForCompress = (files) => {
+        const entries = Array.from(files)
+          .filter((file) => file && file.size >= 0)
+          .map((file) => ({
+            file,
+            path: getEntryPath(file)
+          }));
+
+        if (entries.length === 0) {
+          resetState();
+          showMessage("没有读取到可处理的文件。", "warning");
+          return;
+        }
+
+        validateTotalSize(entries);
+        revokeResultUrls();
+        state.entries = entries;
+        state.archiveFile = null;
+        state.extractedFiles = [];
+        state.mode = "compress";
+        setProgress(0, "准备压缩");
+        hideMessage();
+        renderResults();
+        updateModeUi();
+      };
+
+      const setArchiveFile = (file) => {
+        if (file.size > MAX_TOTAL_BYTES) {
+          throw new Error(`压缩包大小为 ${formatBytes(file.size)}，超过 ${formatBytes(MAX_TOTAL_BYTES)} 的稳定处理上限。`);
+        }
+
+        revokeResultUrls();
+        state.archiveFile = file;
+        state.entries = [];
+        state.extractedFiles = [];
+        state.mode = "archive";
+        setProgress(0, "准备解压");
+        hideMessage();
+        renderResults();
+        updateModeUi();
+      };
+
+      const handleFiles = (files) => {
+        try {
+          const fileList = Array.from(files).filter(Boolean);
+
+          if (fileList.length === 0) {
+            resetState();
+            return;
+          }
+
+          if (fileList.length === 1 && isUnsupportedArchive(fileList[0].name)) {
+            resetState();
+            showMessage("已识别为 7Z 等格式。为了稳定性，当前纯浏览器版本不解这些格式，请先转为 ZIP、RAR、TAR 或 GZIP。", "warning");
+            return;
+          }
+
+          if (fileList.length === 1 && isSupportedArchive(fileList[0].name)) {
+            setArchiveFile(fileList[0]);
+            return;
+          }
+
+          setFilesForCompress(fileList);
+        } catch (error) {
+          resetState();
+          showMessage(error.message, "error");
+        }
+      };
+
+      const readAllDirectoryEntries = (directoryReader) => {
+        return new Promise((resolve, reject) => {
+          const entries = [];
+
+          const readBatch = () => {
+            directoryReader.readEntries((batch) => {
+              if (batch.length === 0) {
+                resolve(entries);
+                return;
+              }
+
+              entries.push(...batch);
+              readBatch();
+            }, reject);
+          };
+
+          readBatch();
+        });
+      };
+
+      const entryToFile = (entry) => {
+        return new Promise((resolve, reject) => {
+          entry.file(resolve, reject);
+        });
+      };
+
+      const traverseEntry = async (entry, parentPath = "") => {
+        if (entry.isFile) {
+          const file = await entryToFile(entry);
+          file.relativePath = normalizePath(`${parentPath}${file.name}`);
+
+          return [file];
+        }
+
+        if (entry.isDirectory) {
+          const reader = entry.createReader();
+          const childEntries = await readAllDirectoryEntries(reader);
+          const nestedFiles = await Promise.all(
+            childEntries.map((childEntry) => traverseEntry(childEntry, `${parentPath}${entry.name}/`))
+          );
+
+          return nestedFiles.flat();
+        }
+
+        return [];
+      };
+
+      const handleDrop = async (event) => {
+        event.preventDefault();
+        elements.dropZone.classList.remove("is_dragging");
+
+        try {
+          const items = Array.from(event.dataTransfer.items || []);
+          const entries = items
+            .map((item) => (item.webkitGetAsEntry ? item.webkitGetAsEntry() : null))
+            .filter(Boolean);
+
+          if (entries.length > 0) {
+            const nestedFiles = await Promise.all(entries.map((entry) => traverseEntry(entry)));
+            handleFiles(nestedFiles.flat());
+            return;
+          }
+
+          handleFiles(event.dataTransfer.files);
+        } catch (error) {
+          resetState();
+          showMessage(`拖拽读取失败：${error.message}`, "error");
+        }
+      };
+
+      const createZipFromEntries = async () => {
+        if (!window.JSZip) {
+          throw new Error("JSZip 加载失败，请检查网络后刷新页面。");
+        }
+
+        validateTotalSize(state.entries);
+        const zip = new JSZip();
+        const compressionLevel = Number(elements.compressionLevelSelect.value);
+
+        state.entries.forEach((entry) => {
+          zip.file(entry.path, entry.file);
+        });
+
+        const zipBlob = await zip.generateAsync({
+          type: "blob",
+          compression: "DEFLATE",
+          compressionOptions: {
+            level: compressionLevel
+          }
+        }, (metadata) => {
+          setProgress(metadata.percent, `正在压缩：${metadata.currentFile || "整理文件"}`);
+        });
+
+        const archiveName = `${safeFileName(elements.archiveNameInput.value, "archive")}.zip`;
+        downloadBlob(zipBlob, archiveName);
+        setProgress(100, "ZIP 压缩完成");
+        showMessage(`已生成 ${archiveName}，浏览器会自动下载。`, "info");
+      };
+
+      const createGzipFromSingleFile = async () => {
+        if (!window.pako) {
+          throw new Error("pako 加载失败，请检查网络后刷新页面。");
+        }
+
+        const entry = state.entries[0];
+        const arrayBuffer = await entry.file.arrayBuffer();
+        setProgress(35, "正在读取文件");
+        const gzipData = pako.gzip(new Uint8Array(arrayBuffer), {
+          level: Number(elements.compressionLevelSelect.value)
+        });
+        const gzipBlob = new Blob([gzipData], { type: "application/gzip" });
+        const gzipName = `${safeFileName(entry.path.split("/").pop(), "file")}.gz`;
+
+        downloadBlob(gzipBlob, gzipName);
+        setProgress(100, "GZIP 压缩完成");
+        showMessage(`已生成 ${gzipName}，浏览器会自动下载。`, "info");
+      };
+
+      const readStringFromBytes = (bytes) => {
+        const endIndex = bytes.indexOf(0);
+        const validBytes = endIndex >= 0 ? bytes.slice(0, endIndex) : bytes;
+
+        return new TextDecoder().decode(validBytes).trim();
+      };
+
+      const readOctal = (bytes) => {
+        const value = readStringFromBytes(bytes).replace(/\0/g, "").trim();
+
+        return value ? parseInt(value, 8) : 0;
+      };
+
+      const extractTar = (arrayBuffer) => {
+        const bytes = new Uint8Array(arrayBuffer);
+        const files = [];
+        let offset = 0;
+        let pendingLongName = "";
+
+        while (offset + 512 <= bytes.length) {
+          const header = bytes.slice(offset, offset + 512);
+          const hasContent = header.some((byte) => byte !== 0);
+
+          if (!hasContent) {
+            break;
+          }
+
+          const name = readStringFromBytes(header.slice(0, 100));
+          const size = readOctal(header.slice(124, 136));
+          const typeFlag = readStringFromBytes(header.slice(156, 157));
+          const prefix = readStringFromBytes(header.slice(345, 500));
+          const fullName = normalizePath(pendingLongName || (prefix ? `${prefix}/${name}` : name));
+          const dataStart = offset + 512;
+          const dataEnd = dataStart + size;
+
+          if (dataEnd > bytes.length) {
+            throw new Error("TAR 文件结构不完整，可能已损坏。");
+          }
+
+          if (typeFlag === "L") {
+            pendingLongName = normalizePath(readStringFromBytes(bytes.slice(dataStart, dataEnd)));
+          } else if (fullName && (typeFlag === "" || typeFlag === "0" || typeFlag === "7")) {
+            const fileBytes = bytes.slice(dataStart, dataEnd);
+            files.push({
+              path: fullName,
+              blob: new Blob([fileBytes])
+            });
+            pendingLongName = "";
+          } else if (typeFlag !== "x" && typeFlag !== "g" && typeFlag !== "5") {
+            pendingLongName = "";
+          }
+
+          offset = dataStart + Math.ceil(size / 512) * 512;
+        }
+
+        return files;
+      };
+
+      const extractZip = async (file) => {
+        if (!window.JSZip) {
+          throw new Error("JSZip 加载失败，请检查网络后刷新页面。");
+        }
+
+        const zip = await JSZip.loadAsync(file);
+        const zipEntries = Object.values(zip.files).filter((entry) => !entry.dir);
+        const extractedFiles = [];
+
+        if (zipEntries.length === 0) {
+          throw new Error("压缩包中没有可解压的文件。");
+        }
+
+        for (let index = 0; index < zipEntries.length; index += 1) {
+          const entry = zipEntries[index];
+          const blob = await entry.async("blob");
+          extractedFiles.push({
+            path: normalizePath(entry.name),
+            blob
+          });
+          setProgress(((index + 1) / zipEntries.length) * 100, `正在解压：${entry.name}`);
+        }
+
+        return extractedFiles;
+      };
+
+      const getGzipOutputName = (fileName) => {
+        return safeFileName(fileName.replace(/\.gzip$/i, "").replace(/\.gz$/i, ""), "decompressed-file");
+      };
+
+      const extractGzip = async (file) => {
+        if (!window.pako) {
+          throw new Error("pako 加载失败，请检查网络后刷新页面。");
+        }
+
+        const arrayBuffer = await file.arrayBuffer();
+        setProgress(35, "正在解压 GZIP 数据");
+        const inflated = pako.ungzip(new Uint8Array(arrayBuffer));
+        const lowerName = file.name.toLowerCase();
+
+        if (lowerName.endsWith(".tar.gz") || lowerName.endsWith(".tgz")) {
+          setProgress(65, "正在解析 TAR 目录");
+          return extractTar(inflated.buffer.slice(inflated.byteOffset, inflated.byteOffset + inflated.byteLength));
+        }
+
+        return [{
+          path: getGzipOutputName(file.name),
+          blob: new Blob([inflated])
+        }];
+      };
+
+      const loadRarTools = async () => {
+        if (!rarModulePromise) {
+          rarModulePromise = import(RAR_MODULE_URL);
+        }
+
+        if (!rarWasmPromise) {
+          rarWasmPromise = fetch(RAR_WASM_URL).then((response) => {
+            if (!response.ok) {
+              throw new Error("RAR WASM 加载失败，请检查网络后刷新页面。");
+            }
+
+            return response.arrayBuffer();
+          });
+        }
+
+        const [rarModule, wasmBinary] = await Promise.all([rarModulePromise, rarWasmPromise]);
+
+        if (!rarModule.createExtractorFromData) {
+          throw new Error("RAR 解压模块加载异常，请刷新页面后重试。");
+        }
+
+        return {
+          createExtractorFromData: rarModule.createExtractorFromData,
+          wasmBinary
+        };
+      };
+
+      const getRarErrorMessage = (error) => {
+        const reason = error.reason || "";
+
+        if (reason === "ERAR_MISSING_PASSWORD" || reason === "ERAR_BAD_PASSWORD") {
+          return "加密 RAR 暂不支持在线解压，请先在本地解密后再处理。";
+        }
+
+        if (reason === "ERAR_BAD_DATA" || reason === "ERAR_BAD_ARCHIVE" || reason === "ERAR_UNKNOWN_FORMAT") {
+          return "RAR 文件结构异常或已损坏，请确认文件完整后重试。";
+        }
+
+        if (reason === "ERAR_EREFERENCE") {
+          return "当前 RAR 可能依赖分卷或外部引用，浏览器版本暂不支持。";
+        }
+
+        if (reason === "ERAR_NO_MEMORY") {
+          return "浏览器内存不足，建议拆分压缩包或使用桌面解压工具处理。";
+        }
+
+        return error.message || "RAR 解压失败，请换一个文件重试。";
+      };
+
+      const extractRar = async (file) => {
+        try {
+          setProgress(8, "正在加载 RAR 解压器");
+          const { createExtractorFromData, wasmBinary } = await loadRarTools();
+          setProgress(22, "正在读取 RAR 文件");
+          const data = await file.arrayBuffer();
+          const extractor = await createExtractorFromData({
+            wasmBinary,
+            data
+          });
+          const list = extractor.getFileList();
+          const fileHeaders = [...list.fileHeaders];
+
+          if (list.arcHeader?.flags?.volume) {
+            throw new Error("分卷 RAR 暂不支持浏览器内解压，请合并完整分卷后使用桌面工具处理。");
+          }
+
+          if (list.arcHeader?.flags?.headerEncrypted || fileHeaders.some((header) => header.flags?.encrypted)) {
+            throw new Error("加密 RAR 暂不支持在线解压，请先在本地解密后再处理。");
+          }
+
+          const normalFileHeaders = fileHeaders.filter((header) => !header.flags?.directory);
+
+          if (normalFileHeaders.length === 0) {
+            throw new Error("RAR 压缩包中没有可解压的文件。");
+          }
+
+          setProgress(45, `正在解压 ${normalFileHeaders.length} 个 RAR 文件`);
+          const extracted = extractor.extract({
+            files: (fileHeader) => !fileHeader.flags?.directory
+          });
+          const arcFiles = [...extracted.files];
+          const extractedFiles = [];
+
+          arcFiles.forEach((arcFile, index) => {
+            if (arcFile.fileHeader.flags?.directory || !arcFile.extraction) {
+              return;
+            }
+
+            extractedFiles.push({
+              path: normalizePath(arcFile.fileHeader.name),
+              blob: new Blob([arcFile.extraction])
+            });
+            setProgress(45 + ((index + 1) / arcFiles.length) * 55, `正在整理：${arcFile.fileHeader.name}`);
+          });
+
+          return extractedFiles;
+        } catch (error) {
+          throw new Error(getRarErrorMessage(error));
+        }
+      };
+
+      const extractArchive = async () => {
+        const file = state.archiveFile;
+        const lowerName = file.name.toLowerCase();
+        let extractedFiles = [];
+
+        if (lowerName.endsWith(".zip")) {
+          extractedFiles = await extractZip(file);
+        } else if (lowerName.endsWith(".rar")) {
+          extractedFiles = await extractRar(file);
+          setProgress(100, "RAR 解压完成");
+        } else if (lowerName.endsWith(".tar")) {
+          const arrayBuffer = await file.arrayBuffer();
+          extractedFiles = extractTar(arrayBuffer);
+          setProgress(100, "TAR 解压完成");
+        } else if (lowerName.endsWith(".gz") || lowerName.endsWith(".gzip") || lowerName.endsWith(".tgz")) {
+          extractedFiles = await extractGzip(file);
+          setProgress(100, "GZIP 解压完成");
+        } else {
+          throw new Error("当前格式暂不支持。");
+        }
+
+        if (extractedFiles.length === 0) {
+          throw new Error("没有解压出可下载的文件。");
+        }
+
+        revokeResultUrls();
+        state.extractedFiles = extractedFiles;
+        renderResults();
+        setProgress(100, "解压完成");
+        showMessage(`已解压出 ${extractedFiles.length} 个文件，请在结果列表下载。`, "info");
+      };
+
+      const saveExtractedFilesToDirectory = async () => {
+        if (!window.showDirectoryPicker || state.extractedFiles.length === 0) {
+          return;
+        }
+
+        const directoryHandle = await window.showDirectoryPicker({
+          mode: "readwrite"
+        });
+
+        for (let index = 0; index < state.extractedFiles.length; index += 1) {
+          const item = state.extractedFiles[index];
+          const parts = normalizePath(item.path).split("/").filter(Boolean);
+          const fileName = parts.pop() || "file";
+          let currentDirectory = directoryHandle;
+
+          for (const part of parts) {
+            currentDirectory = await currentDirectory.getDirectoryHandle(part, {
+              create: true
+            });
+          }
+
+          const fileHandle = await currentDirectory.getFileHandle(fileName, {
+            create: true
+          });
+          const writable = await fileHandle.createWritable();
+          await writable.write(item.blob);
+          await writable.close();
+          setProgress(((index + 1) / state.extractedFiles.length) * 100, `正在保存：${item.path}`);
+        }
+
+        showMessage("已保存全部解压文件到选择的文件夹。", "info");
+      };
+
+      const runTask = async (task) => {
+        if (state.isWorking) {
+          return;
+        }
+
+        state.isWorking = true;
+        updateModeUi();
+        hideMessage();
+
+        try {
+          await task();
+        } catch (error) {
+          setProgress(0, "处理失败");
+          showMessage(error.message || "处理失败，请换一个文件重试。", "error");
+        } finally {
+          state.isWorking = false;
+          updateModeUi();
+        }
+      };
+
+      elements.dropZone.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        elements.dropZone.classList.add("is_dragging");
+      });
+
+      elements.dropZone.addEventListener("dragleave", () => {
+        elements.dropZone.classList.remove("is_dragging");
+      });
+
+      elements.dropZone.addEventListener("drop", handleDrop);
+
+      elements.fileInput.addEventListener("change", (event) => {
+        handleFiles(event.target.files);
+      });
+
+      elements.folderInput.addEventListener("change", (event) => {
+        handleFiles(event.target.files);
+      });
+
+      elements.mainActionButton.addEventListener("click", () => {
+        if (state.mode === "archive") {
+          runTask(extractArchive);
+          return;
+        }
+
+        if (state.mode === "compress") {
+          runTask(createZipFromEntries);
+        }
+      });
+
+      elements.gzipButton.addEventListener("click", () => {
+        runTask(createGzipFromSingleFile);
+      });
+
+      elements.saveAllButton.addEventListener("click", () => {
+        runTask(saveExtractedFilesToDirectory);
+      });
+
+      elements.clearButton.addEventListener("click", resetState);
+
+      if (!window.isSecureContext && window.showDirectoryPicker) {
+        elements.saveAllButton.hidden = true;
+      }
+
+      resetState();
+    </script>
+  </body>
+</html>
