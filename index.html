@@ -1,682 +1,1009 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="这里辛望学习前端开发工程师过程的学习经验总结。"
+    />
+    <meta
+      name="keywords"
+      content="辛望,xinwang,博客,网站,js,html,css,前端,前端工程师,web,web开发,h5,移动端,安卓,IOS,学习,学习经验,学习总结,学习代码,源码"
+    />
+    <meta name="renderer" content="webkit" />
+    <meta name="author" content="辛望" />
+    <title>辛望的轮子空间</title>
+    <!-- 引入动画库 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="这里辛望学习前端开发工程师过程的学习经验总结。" />
-  <meta name="keywords" content="辛望,xinwang,博客,网站,js,html,css,前端,前端工程师,web,web开发,h5,移动端,安卓,IOS,学习,学习经验,学习总结,学习代码,源码" />
-  <meta name="renderer" content="webkit" />
-  <meta name="author" content="辛望" />
-  <title>辛望的轮子空间</title>
-  <!-- 引入动画库 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+    <style>
+      * {
+        box-sizing: border-box;
+      }
 
-    body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #333;
-      line-height: 1.6;
-    }
+      html {
+        background-color: #667eea; /* 提供纯色垫底，防止渲染完成前的白屏闪烁 */
+        background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
 
-    .page {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 15px;
-    }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        line-height: 1.6;
+      }
 
-    h1 {
-      text-align: center;
-      margin: 15px 0 20px 0;
-      color: #fff;
-      font-size: 2.2rem;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-      font-weight: 700;
-    }
-
-    /* 新的水平布局容器 */
-    .section-container {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 15px;
-    }
-
-    section {
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(15px);
-      padding: 16px 20px;
-      border-radius: 12px;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      display: flex;
-      align-items: flex-start;
-      gap: 24px;
-    }
-
-    section:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
-    }
-
-    /* 标题区域 */
-    .section-title {
-      flex-shrink: 0;
-      width: 200px;
-      text-align: left;
-    }
-
-    section h2 {
-      margin: 0;
-      color: white;
-      font-size: 1.1rem;
-      font-weight: 600;
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #6c5ce7, #5f3dc4);
-      text-align: center;
-      box-shadow: 0 3px 12px rgba(108, 92, 231, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    /* 链接区域 */
-    .section-content {
-      flex: 1;
-    }
-
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: flex-start;
-    }
-
-    .links a {
-      display: inline-block;
-      padding: 6px 10px;
-      text-align: center;
-      text-decoration: none;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
-      color: #2c3e50;
-      border-radius: 6px;
-      transition: all 0.3s ease;
-      font-size: 0.85rem;
-      font-weight: 500;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      white-space: nowrap;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(5px);
-    }
-
-    .links a:hover {
-      background: linear-gradient(135deg, #74b9ff, #0984e3);
-      color: white;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(116, 185, 255, 0.35);
-      border: 1px solid rgba(116, 185, 255, 0.5);
-    }
-
-    /* 不同分类的标题颜色主题 */
-    .category-games h2 {
-      background: linear-gradient(135deg, #fd79a8, #e84393);
-      box-shadow: 0 3px 12px rgba(253, 121, 168, 0.3);
-    }
-
-    .category-tools h2 {
-      background: linear-gradient(135deg, #00b894, #00a085);
-      box-shadow: 0 3px 12px rgba(0, 184, 148, 0.3);
-    }
-
-    .category-animation h2 {
-      background: linear-gradient(135deg, #a29bfe, #6c5ce7);
-      box-shadow: 0 3px 12px rgba(162, 155, 254, 0.3);
-    }
-
-    .category-interactive h2 {
-      background: linear-gradient(135deg, #fdcb6e, #e17055);
-      box-shadow: 0 3px 12px rgba(253, 203, 110, 0.3);
-    }
-
-    .category-api h2 {
-      background: linear-gradient(135deg, #00cec9, #00b894);
-      box-shadow: 0 3px 12px rgba(0, 206, 201, 0.3);
-    }
-
-    footer {
-      text-align: center;
-      padding: 12px;
-      background: rgba(52, 73, 94, 0.9);
-      color: #ecf0f1;
-      border-radius: 10px;
-      margin-top: 15px;
-      backdrop-filter: blur(10px);
-    }
-
-    footer p {
-      margin: 0;
-      font-size: 0.85rem;
-    }
-
-    footer a {
-      color: #3498db;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-
-    footer a:hover {
-      color: #5dade2;
-      text-decoration: underline;
-    }
-
-    /* 移动端适配 */
-    @media (max-width: 768px) {
       .page {
+        max-width: 1440px;
+        margin: 0 auto;
         padding: 15px;
       }
 
       h1 {
-        font-size: 1.8rem;
-        margin: 15px 0 20px 0;
-      }
-
-      section {
-        flex-direction: column;
-        gap: 15px;
-        padding: 15px;
-      }
-
-      .section-title {
-        width: 100%;
-      }
-
-      section h2 {
-        font-size: 1.1rem;
         text-align: center;
+        margin: 15px 0 20px 0;
+        color: #fff;
+        font-size: 2.2rem;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        font-weight: 700;
       }
 
-      .links {
-        gap: 8px;
-      }
-
-      .links a {
-        padding: 6px 10px;
-        font-size: 0.85rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      h1 {
-        font-size: 1.5rem;
-      }
-
-      section h2 {
-        font-size: 1rem;
-      }
-
-      .links a {
-        padding: 5px 8px;
-        font-size: 0.8rem;
-      }
-    }
-
-    /* 中等屏幕适配 */
-    @media (min-width: 769px) and (max-width: 1024px) {
-      .section-title {
-        width: 180px;
-      }
-
-      .links a {
-        font-size: 0.85rem;
-        padding: 7px 10px;
-      }
-    }
-
-    /* 大屏幕适配 */
-    @media (min-width: 1440px) {
-      .section-title {
-        width: 220px;
+      /* 新的水平布局容器 */
+      .section-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 15px;
       }
 
       section {
-        gap: 28px;
-        padding: 18px 24px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(15px);
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        /* 避免与 AOS 冲突，使用 margin 替代 transform */
+        transition: margin 0.3s ease, box-shadow 0.3s ease;
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+      }
+
+      section:hover {
+        margin-top: -3px;
+        margin-bottom: 3px;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
+      }
+
+      /* 标题区域 */
+      .section-title {
+        flex-shrink: 0;
+        width: 200px;
+        text-align: left;
+      }
+
+      section h2 {
+        margin: 0;
+        color: white;
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #6c5ce7, #5f3dc4);
+        text-align: center;
+        box-shadow: 0 3px 12px rgba(108, 92, 231, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      /* 链接区域 */
+      .section-content {
+        flex: 1;
       }
 
       .links {
-        gap: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-start;
       }
 
       .links a {
-        padding: 7px 12px;
-        font-size: 0.9rem;
+        display: inline-block;
+        padding: 6px 10px;
+        text-align: center;
+        text-decoration: none;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.2),
+          rgba(255, 255, 255, 0.1)
+        );
+        color: #2c3e50;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        font-size: 0.85rem;
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        white-space: nowrap;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(5px);
       }
-    }
-  </style>
-</head>
 
-<body>
-  <div class="page">
-    <!-- 页面标题 -->
-    <h1 class="animate__animated animate__fadeInDown">🎯 辛望的轮子贮藏间</h1>
+      .links a:hover {
+        background: linear-gradient(135deg, #74b9ff, #0984e3);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(116, 185, 255, 0.35);
+        border: 1px solid rgba(116, 185, 255, 0.5);
+      }
 
-    <!-- 重新分类的内容模块 -->
-    <div class="section-container">
-      <!-- 媒体处理 -->
-      <section class="category-tools" data-aos="fade-up" data-aos-delay="100">
-        <div class="section-title">
-          <h2>🖼️ 媒体处理</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./tools/图片压缩转换工具.html">图片压缩转换</a>
-            <a href="./tools/图片浏览器.html">图片浏览器</a>
-            <a href="./tools/图片拖拽转换工具.html">图片base64转码</a>
-            <a href="./tools/files/pdf压缩.html">pdf压缩</a>
-            <a href="./tools/手写签名转图片.html">手写签名转图片</a>
-            <a href="./tools/video/生成-压缩视频.html">视频生成压缩</a>
-            <a href="./tools/video/原生压缩.html">原生压缩</a>
-            <a href="./js/视频播放器.html">视频播放器</a>
-            <a href="./js/横屏video.html">横屏视频</a>
-            <a href="./js/转换时间和视频.html">时间视频转换</a>
-            <a href="./tools/unzip.html">压缩解压工具</a>
+      /* 不同分类的标题颜色主题 */
+      .category-games h2 {
+        background: linear-gradient(135deg, #fd79a8, #e84393);
+        box-shadow: 0 3px 12px rgba(253, 121, 168, 0.3);
+      }
+
+      .category-tools h2 {
+        background: linear-gradient(135deg, #00b894, #00a085);
+        box-shadow: 0 3px 12px rgba(0, 184, 148, 0.3);
+      }
+
+      .category-animation h2 {
+        background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+        box-shadow: 0 3px 12px rgba(162, 155, 254, 0.3);
+      }
+
+      .category-interactive h2 {
+        background: linear-gradient(135deg, #fdcb6e, #e17055);
+        box-shadow: 0 3px 12px rgba(253, 203, 110, 0.3);
+      }
+
+      .category-api h2 {
+        background: linear-gradient(135deg, #00cec9, #00b894);
+        box-shadow: 0 3px 12px rgba(0, 206, 201, 0.3);
+      }
+
+      footer {
+        text-align: center;
+        padding: 12px;
+        background: rgba(52, 73, 94, 0.9);
+        color: #ecf0f1;
+        border-radius: 10px;
+        margin-top: 15px;
+        backdrop-filter: blur(10px);
+      }
+
+      footer p {
+        margin: 0;
+        font-size: 0.85rem;
+      }
+
+      footer a {
+        color: #3498db;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+
+      footer a:hover {
+        color: #5dade2;
+        text-decoration: underline;
+      }
+
+      /* 移动端适配 */
+      @media (max-width: 768px) {
+        .page {
+          padding: 15px;
+        }
+
+        h1 {
+          font-size: 1.8rem;
+          margin: 15px 0 20px 0;
+        }
+
+        section {
+          flex-direction: column;
+          gap: 15px;
+          padding: 15px;
+        }
+
+        .section-title {
+          width: 100%;
+        }
+
+        section h2 {
+          font-size: 1.1rem;
+          text-align: center;
+        }
+
+        .links {
+          gap: 8px;
+        }
+
+        .links a {
+          padding: 6px 10px;
+          font-size: 0.85rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 1.5rem;
+        }
+
+        section h2 {
+          font-size: 1rem;
+        }
+
+        .links a {
+          padding: 5px 8px;
+          font-size: 0.8rem;
+        }
+      }
+
+      /* 中等屏幕适配 */
+      @media (min-width: 769px) and (max-width: 1024px) {
+        .section-title {
+          width: 180px;
+        }
+
+        .links a {
+          font-size: 0.85rem;
+          padding: 7px 10px;
+        }
+      }
+
+      /* 大屏幕适配 */
+      @media (min-width: 1440px) {
+        .section-title {
+          width: 220px;
+        }
+
+        section {
+          gap: 28px;
+          padding: 18px 24px;
+        }
+
+        .links {
+          gap: 10px;
+        }
+
+        .links a {
+          padding: 7px 12px;
+          font-size: 0.9rem;
+        }
+      }
+
+      @keyframes customFadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(
+            30px
+          ); /* 使用固定像素替代百分比，保证移动距离一致 */
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .custom-fade-in-up {
+        animation-name: customFadeInUp;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <!-- 页面标题 -->
+      <h1 class="animate__animated animate__fadeInDown">🎯 辛望的轮子贮藏间</h1>
+
+      <!-- 重新分类的内容模块 -->
+      <div class="section-container">
+        <!-- 媒体处理 -->
+        <section
+          class="category-tools animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 0ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🖼️ 媒体处理</h2>
           </div>
-        </div>
-      </section>
-
-      <!-- 动画特效 -->
-      <section class="category-animation" data-aos="fade-up" data-aos-delay="200">
-        <div class="section-title">
-          <h2>✨ 动画特效</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./动画/对比图滚动从下到上清晰.html">对比图滚动从下到上清晰</a>
-            <a href="./动画/滚动文本滑块Swiper.html">滚动文本滑块</a>
-            <a href="./动画/懒加载骨架图.html">懒加载骨架图</a>
-            <a href="./js/缓冲运动.html">缓冲运动</a>
-            <a href="./js/缓冲运动碰壁.html">缓冲运动碰壁</a>
-            <a href="./js/倒计时.htm">倒计时</a>
-            <a href="./动画/svg路径变化/svg自动路径变化.html">SVG自动路径变化</a>
-            <a href="./动画/svg路径变化/svg滚动路径变化.html">SVG滚动路径变化</a>
-            <a href="./动画/导航栏条件显隐.html">导航栏条件显隐</a>
-            <a href="./动画/气泡弹窗.html">气泡弹窗</a>
-            <a href="./动画/原生居中轮播图.html">原生居中轮播图</a>
-            <a href="./动画/轮播图，进度条滚动.html">轮播图+进度条滚动</a>
-            <a href="./动画/轮播图拖拽双指缩放.html">轮播图拖拽双指缩放</a>
-            <a href="./动画/基础轮播图.html">基础轮播图</a>
-            <a href="./动画/点击记住a标签状态.html">点击记住a标签状态</a>
-
-            <!-- 面试动画 Demo -->
-
-            <!-- 初级动画 -->
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_1_无限无缝滚动.html">🎯 初级_1_无限无缝滚动</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_2_数字递增动画.html">🎯 初级_2_数字递增动画</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_3_加载动画.html">🎯 初级_3_加载动画</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_4_ClipPath转场.html">🎯 初级_4_ClipPath转场</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_5_文字渐变显现.html">🎯 初级_5_文字渐变显现</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_6_按钮波纹效果.html">🎯 初级_6_按钮波纹效果</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_7_卡片悬停效果.html">🎯 初级_7_卡片悬停效果</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_8_打字机效果.html">🎯 初级_8_打字机效果</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_9_淡入淡出.html">🎯 初级_9_淡入淡出</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_10_进度条动画.html">🎯 初级_10_进度条动画</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_11_百叶窗图片展开.html">🎯 初级_11_百叶窗图片展开</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_12_光泽扫过效果.html">🎯 初级_12_光泽扫过效果</a>
-            <a href="./动画/正反面翻转.html">翻转动画</a>
-            <a href="./动画/左右不一致-粘性定位.html">左右不一致-粘性定位</a>
-            <a href="./动画/展开收起.html">展开收起</a>
-
-            <!-- 中级动画 -->
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_1_星空动画按钮.html">🎯 中级_1_星空动画按钮</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_2_3d_card_button.html">🎯 中级_2_3D卡片倾斜</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_3_lerp-mouse-follow.html">🎯 中级_3_Lerp鼠标跟随</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_4_canvas-scroll-sequence.html">🎯 中级_4_Canvas序列帧滚动</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_5_倒计时.html">🎯 中级_5_翻牌倒计时</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_6_视差滚动.html">🎯 中级_6_视差滚动</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_7_文字打字机高级.html">🎯 中级_7_文字打字机高级</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_8_卡片翻转.html">🎯 中级_8_卡片翻转</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_9_波浪动画.html">🎯 中级_9_波浪动画</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_10_粒子背景.html">🎯 中级_10_粒子背景</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_11_影石首屏轮播带进度条.html">🎯 中级_11_影石首屏轮播带进度条</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_13_图片对比滑块_Insta360风格.html">🎯 中级_13_图片对比滑块_Insta360风格</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_14_故障艺术Glitch_Nothing风格.html">🎯 中级_14_故障艺术Glitch_Nothing风格</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_15_SVG描边动画_Dyson风格.html">🎯 中级_15_SVG描边动画_Dyson风格</a>
-            <a href="./动画/3D立方体.html">🎯 3D立方体</a>
-            <a href="./布局/左右横滑不消失动画.html">Tab不消失横滑</a>
-
-
-
-            <!-- 高级动画 -->
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_1_batch-stagger.html">🎯 高级_1_批量动画优化</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_2_FLIP拖拽排序.html">🎯 高级_2_FLIP拖拽排序</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_3_弹弹簧物理.html">🎯 高级_3_弹簧物理动画</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_4_粒子爆炸效果.html">🎯 高级_4_粒子爆炸效果</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_6_流体动画.html">🎯 高级_6_流体动画</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_8_手势拖拽.html">🎯 高级_8_手势拖拽</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_10_Canvas粒子系统.html">🎯 高级_10_Canvas粒子系统</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_11_滚动3D模型视差.html">🎯 高级_11_滚动3D模型视差</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_12_Typography缩放_Apple风格.html">🎯 高级_12_Typography缩放_Apple风格</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_13_滚动拆解动画_DJI风格.html">🎯 高级_13_滚动拆解动画_DJI风格</a>
-            <a href="./动画/苹果官网滚动缩小动画/index.html">苹果官网动画</a>
-            <a href="./3D动画/3D红色立方体.html">3D Rem</a>
-            <a href="./3D动画/3D_people_demo.html">3D人物模型</a>
-            <a href="./3D动画/women1/3D_girl.html">3D女孩动画</a>
-            <a href="./3D动画/palading/palading.html">3D圣骑士</a>
-            <a href="./3D动画/nami/nami.html">3D娜美</a>
-            <a href="./3D动画/sexygirl/sexygirl.html">3D女孩1</a>
-            <a href="./3D动画/female_samurai/3D_shinobi.html">3D武士</a>
+          <div class="section-content">
+            <div class="links">
+              <a href="./tools/图片压缩转换工具.html">图片压缩转换</a>
+              <a href="./tools/图片浏览器.html">图片浏览器</a>
+              <a href="./tools/图片拖拽转换工具.html">图片base64转码</a>
+              <a href="./tools/images/图片下载工具.html">图片下载工具</a>
+              <a href="./tools/files/pdf压缩.html">pdf压缩</a>
+              <a href="./tools/手写签名转图片.html">手写签名转图片</a>
+              <a href="./tools/video/生成-压缩视频.html">视频生成压缩</a>
+              <a href="./tools/video/原生压缩.html">原生压缩</a>
+              <a href="./js/视频播放器.html">视频播放器</a>
+              <a href="./js/横屏video.html">横屏视频</a>
+              <a href="./js/转换时间和视频.html">时间视频转换</a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- 交互组件 -->
-      <section class="category-interactive" data-aos="fade-up" data-aos-delay="300">
-        <div class="section-title">
-          <h2>🎛️ 交互组件</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./js/轮播图.html">轮播图</a>
-            <a href="./动画/原生居中轮播图.html">原生居中轮播</a>
-            <a href="./动画/轮播图，进度条滚动.html">进度条轮播</a>
-            <a href="./动画/轮播图拖拽双指缩放.html">拖拽缩放轮播</a>
-            <a href="./js/拖动元素四边距.html">拖动元素</a>
-            <a href="./js/Magnifier/放大镜.html">放大镜</a>
-            <a href="./动画/气泡弹窗.html">气泡弹窗</a>
-            <a href="./dialog-demo/基本弹窗.html">基本弹窗</a>
-            <a href="./dialog-demo/message提醒框.html">message提醒框</a>
-            <a href="./布局/左右横滑不消失动画.html">Tab不消失横滑</a>
-            <a href="./布局/tab被点击的时候在容器内左右横滑.html">Tab横滑</a>
-            <a href="./js/弹幕.html">弹幕</a>
-            <a href="./复杂交互逻辑/电商选项交互.html">电商选项交互</a>
+        <!-- 动画特效 -->
+        <section
+          class="category-animation animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 120ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>✨ 动画特效</h2>
           </div>
-        </div>
-      </section>
+          <div class="section-content">
+            <div class="links">
+              <a href="./动画/对比图滚动从下到上清晰.html"
+                >对比图滚动从下到上清晰</a
+              >
+              <a href="./动画/滚动文本滑块Swiper.html">滚动文本滑块</a>
+              <a href="./动画/懒加载骨架图.html">懒加载骨架图</a>
+              <a href="./js/缓冲运动.html">缓冲运动</a>
+              <a href="./js/缓冲运动碰壁.html">缓冲运动碰壁</a>
+              <a href="./js/倒计时.htm">倒计时</a>
+              <a href="./动画/svg路径变化/svg自动路径变化.html"
+                >SVG自动路径变化</a
+              >
+              <a href="./动画/svg路径变化/svg滚动路径变化.html"
+                >SVG滚动路径变化</a
+              >
+              <a href="./动画/导航栏条件显隐.html">导航栏条件显隐</a>
+              <a href="./动画/气泡弹窗.html">气泡弹窗</a>
+              <a href="./动画/原生居中轮播图.html">原生居中轮播图</a>
+              <a href="./动画/轮播图，进度条滚动.html">轮播图+进度条滚动</a>
+              <a href="./动画/轮播图拖拽双指缩放.html">轮播图拖拽双指缩放</a>
+              <a href="./动画/基础轮播图.html">基础轮播图</a>
+              <a href="./动画/点击记住a标签状态.html">点击记住a标签状态</a>
 
-      <!-- 实用工具 -->
-      <section class="category-tools" data-aos="fade-up" data-aos-delay="400">
-        <div class="section-title">
-          <h2>🔧 实用工具</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./tools/国债复利年化率计算.html">国债复利计算</a>
-            <a href="./tools/多段股息分红利率计算.html">股息分红计算</a>
-            <a href="./tools/分期还款利率计算.html">分期还款计算</a>
-            <a href="./tools/指定汇率及黄金计算.html">汇率黄金计算</a>
-            <a href="./tools/银行外汇牌价性价比.html">外汇性价比</a>
-            <a href="./tools/抽纸性价比计算器.html">抽纸性价比</a>
-            <a href="./tools/面试打分工具.html">面试打分</a>
-            <a href="./js/复利计算.html">复利计算</a>
-            <a href="./tools/财富自由表格计算.html">财富自由计算</a>
-            <a href="./tools/随机姓名抽奖.html">随机姓名抽奖</a>
-            <a href="./tools/金融/红利投资策略.html">红利投资策略</a>
-            <a href="./tools/计时提醒.html">腰椎康复运动组间计时提醒</a>
-            <a href="./tools/取名.html">取名</a>
-          </div>
-        </div>
-      </section>
+              <!-- 面试动画 Demo -->
 
-      <!-- 用户体验 -->
-      <section data-aos="fade-up" data-aos-delay="500">
-        <div class="section-title">
-          <h2>👆 用户体验</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./js/回到首页，触底.html">回到顶部触底</a>
-            <a href="./js/懒加载瀑布流/瀑布流.html">瀑布流</a>
-            <a href="./js/懒加载瀑布流/图片懒加载.html">图片懒加载</a>
-            <a href="./js/滚动.html">滚动效果</a>
-            <a href="./js/js功能库/评分效果.html">评分效果</a>
-            <a href="./js/js功能库/选项卡跳转.html">选项卡跳转</a>
-            <a href="./动画/点击记住a标签状态.html">状态记忆</a>
-          </div>
-        </div>
-      </section>
+              <!-- 初级动画 -->
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_1_无限无缝滚动.html"
+                >🎯 初级_1_无限无缝滚动</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_2_数字递增动画.html"
+                >🎯 初级_2_数字递增动画</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_3_加载动画.html"
+                >🎯 初级_3_加载动画</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_4_ClipPath转场.html"
+                >🎯 初级_4_ClipPath转场</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_5_文字渐变显现.html"
+                >🎯 初级_5_文字渐变显现</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_6_按钮波纹效果.html"
+                >🎯 初级_6_按钮波纹效果</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_7_卡片悬停效果.html"
+                >🎯 初级_7_卡片悬停效果</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_8_打字机效果.html"
+                >🎯 初级_8_打字机效果</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_9_淡入淡出.html"
+                >🎯 初级_9_淡入淡出</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_10_进度条动画.html"
+                >🎯 初级_10_进度条动画</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_11_百叶窗图片展开.html"
+                >🎯 初级_11_百叶窗图片展开</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/初级_12_光泽扫过效果.html"
+                >🎯 初级_12_光泽扫过效果</a
+              >
+              <a href="./动画/正反面翻转.html">翻转动画</a>
+              <a href="./动画/左右不一致-粘性定位.html">左右不一致-粘性定位</a>
+              <a href="./动画/展开收起.html">展开收起</a>
 
-      <!-- 表单验证 -->
-      <section class="category-interactive" data-aos="fade-up" data-aos-delay="600">
-        <div class="section-title">
-          <h2>📝 表单验证</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./js/js功能库/正则验证表单.html">正则验证表单</a>
-            <a href="./js/js功能库/表单验证.html">表单验证</a>
-            <a href="./js/js功能库/登录主题选择/login.html">登录页面</a>
-            <a href="./js/正则.html">正则表达式</a>
-          </div>
-        </div>
-      </section>
+              <!-- 中级动画 -->
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_1_星空动画按钮.html"
+                >🎯 中级_1_星空动画按钮</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_2_3d_card_button.html"
+                >🎯 中级_2_3D卡片倾斜</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_3_lerp-mouse-follow.html"
+                >🎯 中级_3_Lerp鼠标跟随</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_4_canvas-scroll-sequence.html"
+                >🎯 中级_4_Canvas序列帧滚动</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_5_倒计时.html"
+                >🎯 中级_5_翻牌倒计时</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_6_视差滚动.html"
+                >🎯 中级_6_视差滚动</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_7_文字打字机高级.html"
+                >🎯 中级_7_文字打字机高级</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_8_卡片翻转.html"
+                >🎯 中级_8_卡片翻转</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_9_波浪动画.html"
+                >🎯 中级_9_波浪动画</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_10_粒子背景.html"
+                >🎯 中级_10_粒子背景</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_11_影石首屏轮播带进度条.html"
+                >🎯 中级_11_影石首屏轮播带进度条</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_13_图片对比滑块_Insta360风格.html"
+                >🎯 中级_13_图片对比滑块_Insta360风格</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_14_故障艺术Glitch_Nothing风格.html"
+                >🎯 中级_14_故障艺术Glitch_Nothing风格</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/中级_15_SVG描边动画_Dyson风格.html"
+                >🎯 中级_15_SVG描边动画_Dyson风格</a
+              >
+              <a href="./动画/3D立方体.html">🎯 3D立方体</a>
+              <a href="./布局/左右横滑不消失动画.html">Tab不消失横滑</a>
 
-      <!-- 数据交互 -->
-      <section class="category-api" data-aos="fade-up" data-aos-delay="700">
-        <div class="section-title">
-          <h2>🌐 数据交互</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./js/ajax.html">Ajax 演示</a>
-            <a href="./js/jsonp.html">JSONP 跨域</a>
-            <a href="./js/promise.html">Promise 异步</a>
-            <a href="./js/cookies.html">Cookies 主题</a>
-            <a href="./api/上海期货.html">上海期货API</a>
-            <a href="./api/伦敦黄金价格.html">伦敦黄金API</a>
-            <a href="./api/期货纽约金价格.html">纽约金价API</a>
-            <a href="./tools/CDN测速.html">CDN测速</a>
+              <!-- 高级动画 -->
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_1_batch-stagger.html"
+                >🎯 高级_1_批量动画优化</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_2_FLIP拖拽排序.html"
+                >🎯 高级_2_FLIP拖拽排序</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_3_弹弹簧物理.html"
+                >🎯 高级_3_弹簧物理动画</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_4_粒子爆炸效果.html"
+                >🎯 高级_4_粒子爆炸效果</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_6_流体动画.html"
+                >🎯 高级_6_流体动画</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_8_手势拖拽.html"
+                >🎯 高级_8_手势拖拽</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_10_Canvas粒子系统.html"
+                >🎯 高级_10_Canvas粒子系统</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_11_滚动3D模型视差.html"
+                >🎯 高级_11_滚动3D模型视差</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_12_Typography缩放_Apple风格.html"
+                >🎯 高级_12_Typography缩放_Apple风格</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/codeDemo/高级_13_滚动拆解动画_DJI风格.html"
+                >🎯 高级_13_滚动拆解动画_DJI风格</a
+              >
+              <a href="./动画/苹果官网滚动缩小动画/index.html">苹果官网动画</a>
+              <a href="./3D动画/3D红色立方体.html">3D Rem</a>
+              <a href="./3D动画/3D_people_demo.html">3D人物模型</a>
+              <a href="./3D动画/women1/3D_girl.html">3D女孩动画</a>
+              <a href="./3D动画/palading/palading.html">3D圣骑士</a>
+              <a href="./3D动画/nami/nami.html">3D娜美</a>
+              <a href="./3D动画/sexygirl/sexygirl.html">3D女孩1</a>
+              <a href="./3D动画/female_samurai/3D_shinobi.html">3D武士</a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- 算法逻辑 -->
-      <section data-aos="fade-up" data-aos-delay="800">
-        <div class="section-title">
-          <h2>🧮 算法逻辑</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./js/排序算法.html">排序算法</a>
-            <a href="./js/数组扩展.html">数组扩展</a>
-            <a href="./js/面向对象.html">面向对象</a>
-            <a href="./js/双飞翼布局.html">双飞翼布局</a>
-            <a href="./布局/js实现 sticky 效果.html">Sticky效果</a>
-            <a href="./布局/固定子元素在父元素的任意位置.html">元素定位</a>
-            <a href="./布局/字体粒子消失效果.html">字体粒子消失效果</a>
-            <a href="./布局/悬挂缩进.html">悬挂缩进与文字排版案例</a>
+        <!-- 交互组件 -->
+        <section
+          class="category-interactive animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 240ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🎛️ 交互组件</h2>
           </div>
-        </div>
-      </section>
+          <div class="section-content">
+            <div class="links">
+              <a href="./js/轮播图.html">轮播图</a>
+              <a href="./动画/原生居中轮播图.html">原生居中轮播</a>
+              <a href="./动画/轮播图，进度条滚动.html">进度条轮播</a>
+              <a href="./动画/轮播图拖拽双指缩放.html">拖拽缩放轮播</a>
+              <a href="./js/拖动元素四边距.html">拖动元素</a>
+              <a href="./js/Magnifier/放大镜.html">放大镜</a>
+              <a href="./动画/气泡弹窗.html">气泡弹窗</a>
+              <a href="./dialog-demo/基本弹窗.html">基本弹窗</a>
+              <a href="./dialog-demo/message提醒框.html">message提醒框</a>
+              <a href="./布局/左右横滑不消失动画.html">Tab不消失横滑</a>
+              <a href="./布局/tab被点击的时候在容器内左右横滑.html">Tab横滑</a>
+              <a href="./js/弹幕.html">弹幕</a>
+              <a href="./复杂交互逻辑/电商选项交互.html">电商选项交互</a>
+            </div>
+          </div>
+        </section>
 
-      <!-- 电商功能 -->
-      <section class="category-interactive" data-aos="fade-up" data-aos-delay="900">
-        <div class="section-title">
-          <h2>🛒 电商功能</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./js/js功能库/购物车/gouwuche/gouwuche.html">购物车</a>
-            <a href="./js/js功能库/购物车/gouwuche/goodsList.html">商品列表</a>
-            <a href="./js/js功能库/todolist/todolist.html">待办清单</a>
-            <a href="./js/js功能库/10.6_Js_day18_京东/京东.html">京东首页</a>
+        <!-- 实用工具 -->
+        <section
+          class="category-tools animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 360ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🔧 实用工具</h2>
           </div>
-        </div>
-      </section>
+          <div class="section-content">
+            <div class="links">
+              <a href="./tools/国债复利年化率计算.html">国债复利计算</a>
+              <a href="./tools/多段股息分红利率计算.html">股息分红计算</a>
+              <a href="./tools/分期还款利率计算.html">分期还款计算</a>
+              <a href="./tools/指定汇率及黄金计算.html">汇率黄金计算</a>
+              <a href="./tools/银行外汇牌价性价比.html">外汇性价比</a>
+              <a href="./tools/抽纸性价比计算器.html">抽纸性价比</a>
+              <a href="./tools/面试打分工具.html">面试打分</a>
+              <a href="./js/复利计算.html">复利计算</a>
+              <a href="./tools/财富自由表格计算.html">财富自由计算</a>
+              <a href="./tools/随机姓名抽奖.html">随机姓名抽奖</a>
+              <a href="./tools/金融/红利投资策略.html">红利投资策略</a>
+              <a href="./tools/计时提醒.html">腰椎康复运动组间计时提醒</a>
+              <a href="./tools/取名.html">取名</a>
+            </div>
+          </div>
+        </section>
 
-      <!-- 地图服务 -->
-      <section class="category-api" data-aos="fade-up" data-aos-delay="1000">
-        <div class="section-title">
-          <h2>🗺️ 地图服务</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./tools/高德地图.html">高德地图</a>
-            <a href="./tools/google-map/谷歌默认定位地图.html">谷歌定位</a>
-            <a href="./tools/google-map/谷歌可搜索地图.html">谷歌搜索</a>
-            <a href="./tools/google-map/计算两点距离地图.html">距离计算</a>
-            <a href="./tools/google-map/谷歌搜索自动填充地图.html">自动填充</a>
+        <!-- 用户体验 -->
+        <section
+          class="animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 480ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>👆 用户体验</h2>
           </div>
-        </div>
-      </section>
+          <div class="section-content">
+            <div class="links">
+              <a href="./js/回到首页，触底.html">回到顶部触底</a>
+              <a href="./js/懒加载瀑布流/瀑布流.html">瀑布流</a>
+              <a href="./js/懒加载瀑布流/图片懒加载.html">图片懒加载</a>
+              <a href="./js/滚动.html">滚动效果</a>
+              <a href="./js/js功能库/评分效果.html">评分效果</a>
+              <a href="./js/js功能库/选项卡跳转.html">选项卡跳转</a>
+              <a href="./动画/点击记住a标签状态.html">状态记忆</a>
+            </div>
+          </div>
+        </section>
 
-      <!-- 移动端功能 -->
-      <section data-aos="fade-up" data-aos-delay="1100">
-        <div class="section-title">
-          <h2>📱 移动端功能</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./js/mobileApi.html">移动端API</a>
-            <a href="./tools/手机添加日历提醒.html">日历提醒</a>
-            <a href="./js/Rem计算.html">Rem计算</a>
+        <!-- 表单验证 -->
+        <section
+          class="category-interactive animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 600ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>📝 表单验证</h2>
           </div>
-        </div>
-      </section>
+          <div class="section-content">
+            <div class="links">
+              <a href="./js/js功能库/正则验证表单.html">正则验证表单</a>
+              <a href="./js/js功能库/表单验证.html">表单验证</a>
+              <a href="./js/js功能库/登录主题选择/login.html">登录页面</a>
+              <a href="./js/正则.html">正则表达式</a>
+            </div>
+          </div>
+        </section>
 
-      <!-- 移动端功能 -->
-      <section data-aos="fade-up" data-aos-delay="1100">
-        <div class="section-title">
-          <h2>💾 数据图表</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./数据图表/金价折线图.html">金价折线图</a>
-            <a href="./数据图表/红利计算/红利策略.html">红利etf年线策略计算</a>
-            <a href="https://a-share-dividends.onrender.com">股息计算</a>
+        <!-- 数据交互 -->
+        <section
+          class="category-api animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 720ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🌐 数据交互</h2>
           </div>
-        </div>
-      </section>
+          <div class="section-content">
+            <div class="links">
+              <a href="./js/ajax.html">Ajax 演示</a>
+              <a href="./js/jsonp.html">JSONP 跨域</a>
+              <a href="./js/promise.html">Promise 异步</a>
+              <a href="./js/cookies.html">Cookies 主题</a>
+              <a href="./api/上海期货.html">上海期货API</a>
+              <a href="./api/伦敦黄金价格.html">伦敦黄金API</a>
+              <a href="./api/期货纽约金价格.html">纽约金价API</a>
+              <a href="./tools/CDN测速.html">CDN测速</a>
+            </div>
+          </div>
+        </section>
 
-      <!-- 游戏娱乐 -->
-      <section class="category-games" data-aos="fade-up" data-aos-delay="1200">
-        <div class="section-title">
-          <h2>🎮 游戏娱乐</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./游戏/雷霆战机-codebuddy/index.html">雷霆战机-codebuddy</a>
-            <a href="./游戏/雷霆战机-cursor/index.html">雷霆战机-cursor</a>
-            <a href="./游戏/雷霆战机-腾讯-cursor优化版本/index.html">雷霆战机-腾讯优化版</a>
-            <a href="./游戏/成语连连看-codebuddy/index.html">成语连连看</a>
-            <a href="./游戏/捕鱼游戏-cursor/index.html">捕鱼游戏</a>
-            <a href="./游戏/贪吃蛇-cursor/index.html">贪吃蛇</a>
-            <a href="./游戏/赌博游戏-cursor/斗地主.html">斗地主</a>
-            <a href="./游戏/赌博游戏-cursor/打麻将.html">打麻将</a>
+        <!-- 算法逻辑 -->
+        <section
+          class="animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 840ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🧮 算法逻辑</h2>
           </div>
-        </div>
-      </section>
+          <div class="section-content">
+            <div class="links">
+              <a href="./js/排序算法.html">排序算法</a>
+              <a href="./js/数组扩展.html">数组扩展</a>
+              <a href="./js/面向对象.html">面向对象</a>
+              <a href="./js/双飞翼布局.html">双飞翼布局</a>
+              <a href="./布局/js实现 sticky 效果.html">Sticky效果</a>
+              <a href="./布局/固定子元素在父元素的任意位置.html">元素定位</a>
+              <a href="./布局/字体粒子消失效果.html">字体粒子消失效果</a>
+              <a href="./布局/悬挂缩进.html">悬挂缩进与文字排版案例</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- 电商功能 -->
+        <section
+          class="category-interactive animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 960ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🛒 电商功能</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a href="./js/js功能库/购物车/gouwuche/gouwuche.html">购物车</a>
+              <a href="./js/js功能库/购物车/gouwuche/goodsList.html"
+                >商品列表</a
+              >
+              <a href="./js/js功能库/todolist/todolist.html">待办清单</a>
+              <a href="./js/js功能库/10.6_Js_day18_京东/京东.html">京东首页</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- 地图服务 -->
+        <section
+          class="category-api animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 1080ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🗺️ 地图服务</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a href="./tools/高德地图.html">高德地图</a>
+              <a href="./tools/google-map/谷歌默认定位地图.html">谷歌定位</a>
+              <a href="./tools/google-map/谷歌可搜索地图.html">谷歌搜索</a>
+              <a href="./tools/google-map/计算两点距离地图.html">距离计算</a>
+              <a href="./tools/google-map/谷歌搜索自动填充地图.html"
+                >自动填充</a
+              >
+            </div>
+          </div>
+        </section>
+
+        <!-- 移动端功能 -->
+        <section
+          class="animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 1200ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>📱 移动端功能</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a href="./js/mobileApi.html">移动端API</a>
+              <a href="./tools/手机添加日历提醒.html">日历提醒</a>
+              <a href="./js/Rem计算.html">Rem计算</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- 移动端功能 -->
+        <section
+          class="animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 1320ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>💾 数据图表</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a href="./数据图表/金价折线图.html">金价折线图</a>
+              <a href="./数据图表/红利计算/红利策略.html"
+                >红利etf年线策略计算</a
+              >
+              <a href="https://a-share-dividends.onrender.com">A股股息排名</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- 游戏娱乐 -->
+        <section
+          class="category-games animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 1440ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🎮 游戏娱乐</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a href="./游戏/雷霆战机-codebuddy/index.html"
+                >雷霆战机-codebuddy</a
+              >
+              <a href="./游戏/雷霆战机-cursor/index.html">雷霆战机-cursor</a>
+              <a href="./游戏/雷霆战机-腾讯-cursor优化版本/index.html"
+                >雷霆战机-腾讯优化版</a
+              >
+              <a href="./游戏/成语连连看-codebuddy/index.html">成语连连看</a>
+              <a href="./游戏/捕鱼游戏-cursor/index.html">捕鱼游戏</a>
+              <a href="./游戏/贪吃蛇-cursor/index.html">贪吃蛇</a>
+              <a href="./游戏/赌博游戏-cursor/斗地主.html">斗地主</a>
+              <a href="./游戏/赌博游戏-cursor/打麻将.html">打麻将</a>
+            </div>
+          </div>
+        </section>
+      </div>
+      <!-- 学习 -->
+      <div class="section-container">
+        <!-- 前端动画 · 面试题 -->
+        <section
+          class="category-animation animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 1560ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🎬 前端动画 · 面试题</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/面试题/动画相关的专业问题.html"
+                >动画相关专业问题</a
+              >
+              <a
+                href="./招聘JD/高级&资深前端动画开发工程师/面试题/react高级-资深前端开发交互状态.html"
+                >React高级交互状态</a
+              >
+            </div>
+          </div>
+        </section>
+
+        <!-- 大数据 · 理论学习 -->
+        <section
+          class="category-api animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 1680ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>📚 大数据 · 理论学习</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a
+                href="./招聘JD/高级数据开发工程师/大数据学习/1-大数据开发基础理论.html"
+                >1. 大数据开发基础理论</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/大数据学习/2-Linux-Shell大数据开发必备.html"
+                >2. Linux-Shell开发必备</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/大数据学习/3-SQL进阶与实战练习.html"
+                >3. SQL进阶与实战练习</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/大数据学习/4-数据开发工具链与规范.html"
+                >4. 数据开发工具链与规范</a
+              >
+            </div>
+          </div>
+        </section>
+
+        <!-- 大数据 · 实践练习 -->
+        <section
+          class="category-tools animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 1800ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>🛠️ 大数据 · 实践练习</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a
+                href="./招聘JD/高级数据开发工程师/大数据开发实践/1-Windows大数据实践环境搭建.html"
+                >1. Windows环境搭建</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/大数据开发实践/2-PySpark本地实战练习.html"
+                >2. PySpark本地实战</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/大数据开发实践/3-Docker搭建数据组件实战.html"
+                >3. Docker数据组件实战</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/大数据开发实践/4-DuckDB-SQL实战练习.html"
+                >4. DuckDB-SQL实战</a
+              >
+            </div>
+          </div>
+        </section>
+
+        <!-- 数据分析 · 学习 -->
+        <section
+          class="category-interactive animate__animated custom-fade-in-up"
+          style="
+            animation-duration: 900ms;
+            animation-delay: 1920ms;
+            animation-fill-mode: both;
+          "
+        >
+          <div class="section-title">
+            <h2>📊 数据分析 · 学习</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a
+                href="./招聘JD/高级数据开发工程师/数据分析学习/1-跨境电商数据分析指标体系.html"
+                >1. 跨境电商指标体系</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/数据分析学习/2-数据分析方法论与思维框架.html"
+                >2. 分析方法论与思维框架</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/数据分析学习/3-Excel与数据可视化基础.html"
+                >3. Excel与数据可视化</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/数据分析学习/4-用户行为分析与用户画像.html"
+                >4. 用户行为分析与画像</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/数据分析学习/5-商品分析与选品策略.html"
+                >5. 商品分析与选品策略</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/数据分析学习/6-流量与广告效果分析.html"
+                >6. 流量与广告效果分析</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/数据分析学习/7-跨境电商运营数据分析实战.html"
+                >7. 跨境电商运营实战</a
+              >
+              <a
+                href="./招聘JD/高级数据开发工程师/数据分析学习/8-Python数据分析入门.html"
+                >8. Python数据分析入门</a
+              >
+            </div>
+          </div>
+          <div class="section-title">
+            <h2>💾 区块链学习</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a
+                href="./招聘JD/web3区块链开发工程师/Web3区块链开发从0到1学习指南.html"
+                >Web3区块链开发从0到1学习指南</a
+              >
+              <a
+                href="./招聘JD/web3区块链开发工程师/Web3全栈项目实战：去中心化众筹平台.html"
+                >Web3全栈项目实战：去中心化众筹平台</a
+              >
+              <a href="https://coin.xinwanglab.top">web3 区块链演示项目平台</a>
+            </div>
+          </div>
+          <div class="section-title">
+            <h2>🔮 命理学习</h2>
+          </div>
+          <div class="section-content">
+            <div class="links">
+              <a href="https://www.xinwanglab.top">web3 区块链演示项目平台</a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 页脚 -->
+      <footer>
+        <p>
+          ⚡ 辛望的前端技术演示空间 |
+          <a
+            href="http://beian.miit.gov.cn"
+            target="_blank"
+            rel="noopener noreferrer"
+            >备案信息</a
+          >
+        </p>
+      </footer>
     </div>
-    <!-- 学习 -->
-    <div class="section-container">
-
-      <!-- 前端动画 · 面试题 -->
-      <section class="category-animation" data-aos="fade-up" data-aos-delay="100">
-        <div class="section-title">
-          <h2>🎬 前端动画 · 面试题</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./招聘JD/高级&资深前端动画开发工程师/面试题/动画相关的专业问题.html">动画相关专业问题</a>
-            <a href="./招聘JD/高级&资深前端动画开发工程师/面试题/react高级-资深前端开发交互状态.html">React高级交互状态</a>
-          </div>
-        </div>
-      </section>
-
-      <!-- 大数据 · 理论学习 -->
-      <section class="category-api" data-aos="fade-up" data-aos-delay="200">
-        <div class="section-title">
-          <h2>📚 大数据 · 理论学习</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./招聘JD/高级数据开发工程师/大数据学习/1-大数据开发基础理论.html">1. 大数据开发基础理论</a>
-            <a href="./招聘JD/高级数据开发工程师/大数据学习/2-Linux-Shell大数据开发必备.html">2. Linux-Shell开发必备</a>
-            <a href="./招聘JD/高级数据开发工程师/大数据学习/3-SQL进阶与实战练习.html">3. SQL进阶与实战练习</a>
-            <a href="./招聘JD/高级数据开发工程师/大数据学习/4-数据开发工具链与规范.html">4. 数据开发工具链与规范</a>
-          </div>
-        </div>
-      </section>
-
-      <!-- 大数据 · 实践练习 -->
-      <section class="category-tools" data-aos="fade-up" data-aos-delay="300">
-        <div class="section-title">
-          <h2>🛠️ 大数据 · 实践练习</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./招聘JD/高级数据开发工程师/大数据开发实践/1-Windows大数据实践环境搭建.html">1. Windows环境搭建</a>
-            <a href="./招聘JD/高级数据开发工程师/大数据开发实践/2-PySpark本地实战练习.html">2. PySpark本地实战</a>
-            <a href="./招聘JD/高级数据开发工程师/大数据开发实践/3-Docker搭建数据组件实战.html">3. Docker数据组件实战</a>
-            <a href="./招聘JD/高级数据开发工程师/大数据开发实践/4-DuckDB-SQL实战练习.html">4. DuckDB-SQL实战</a>
-          </div>
-        </div>
-      </section>
-
-      <!-- 数据分析 · 学习 -->
-      <section class="category-interactive" data-aos="fade-up" data-aos-delay="400">
-        <div class="section-title">
-          <h2>📊 数据分析 · 学习</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./招聘JD/高级数据开发工程师/数据分析学习/1-跨境电商数据分析指标体系.html">1. 跨境电商指标体系</a>
-            <a href="./招聘JD/高级数据开发工程师/数据分析学习/2-数据分析方法论与思维框架.html">2. 分析方法论与思维框架</a>
-            <a href="./招聘JD/高级数据开发工程师/数据分析学习/3-Excel与数据可视化基础.html">3. Excel与数据可视化</a>
-            <a href="./招聘JD/高级数据开发工程师/数据分析学习/4-用户行为分析与用户画像.html">4. 用户行为分析与画像</a>
-            <a href="./招聘JD/高级数据开发工程师/数据分析学习/5-商品分析与选品策略.html">5. 商品分析与选品策略</a>
-            <a href="./招聘JD/高级数据开发工程师/数据分析学习/6-流量与广告效果分析.html">6. 流量与广告效果分析</a>
-            <a href="./招聘JD/高级数据开发工程师/数据分析学习/7-跨境电商运营数据分析实战.html">7. 跨境电商运营实战</a>
-            <a href="./招聘JD/高级数据开发工程师/数据分析学习/8-Python数据分析入门.html">8. Python数据分析入门</a>
-          </div>
-        </div>
-        <div class="section-title">
-          <h2>💾 区块链学习</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="./招聘JD/web3区块链开发工程师/Web3区块链开发从0到1学习指南.html">Web3区块链开发从0到1学习指南</a>
-            <a href="./招聘JD/web3区块链开发工程师/Web3全栈项目实战：去中心化众筹平台.html">Web3全栈项目实战：去中心化众筹平台</a>
-            <a href="https://coin.xinwanglab.top">web3 区块链演示项目平台</a>
-          </div>
-        </div>
-        <div class="section-title">
-          <h2>🔮 命理学习</h2>
-        </div>
-        <div class="section-content">
-          <div class="links">
-            <a href="https://www.xinwanglab.top">web3 区块链演示项目平台</a>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <!-- 页脚 -->
-    <footer>
-      <p>
-        ⚡ 辛望的前端技术演示空间 |
-        <a href="http://beian.miit.gov.cn" target="_blank" rel="noopener noreferrer">备案信息</a>
-      </p>
-    </footer>
-  </div>
-
-  <!-- 引入 AOS 脚本 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-  <script>
-    AOS.init({
-      duration: 600, // 缩短动画时间
-      easing: "ease-out-cubic",
-      once: true,
-      offset: 50, // 提前触发动画
-    });
-  </script>
-</body>
-
+  </body>
 </html>
