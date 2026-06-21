@@ -212,6 +212,29 @@
           radial-gradient(circle at 50% 18%, rgba(37, 99, 235, 0.18), transparent 45%);
       }
 
+      .drop_zone.is_ready {
+        border-style: solid;
+        border-color: rgba(15, 159, 110, 0.55);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(236, 253, 245, 0.7)),
+          radial-gradient(circle at 50% 18%, rgba(15, 159, 110, 0.16), transparent 45%);
+        box-shadow: inset 0 0 0 1px rgba(15, 159, 110, 0.12), 0 18px 44px rgba(15, 159, 110, 0.14);
+      }
+
+      .drop_zone.is_archive {
+        border-color: rgba(37, 99, 235, 0.62);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(239, 246, 255, 0.74)),
+          radial-gradient(circle at 50% 18%, rgba(37, 99, 235, 0.18), transparent 45%);
+      }
+
+      .drop_zone.is_compress {
+        border-color: rgba(0, 169, 199, 0.62);
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(236, 254, 255, 0.72)),
+          radial-gradient(circle at 50% 18%, rgba(0, 169, 199, 0.18), transparent 45%);
+      }
+
       .drop_icon {
         display: grid;
         width: 92px;
@@ -224,6 +247,11 @@
         font-weight: 900;
         background: linear-gradient(135deg, var(--blue), var(--cyan));
         box-shadow: 0 18px 40px rgba(37, 99, 235, 0.3);
+      }
+
+      .drop_zone.is_ready .drop_icon {
+        background: linear-gradient(135deg, var(--green), var(--cyan));
+        box-shadow: 0 18px 40px rgba(15, 159, 110, 0.28);
       }
 
       .drop_zone h2 {
@@ -334,6 +362,11 @@
         display: flex;
         flex-direction: column;
         gap: 7px;
+      }
+
+      .form_grid[hidden],
+      .button[hidden] {
+        display: none;
       }
 
       .field label {
@@ -520,7 +553,7 @@
           <span class="eyebrow">Local Only / 稳定优先</span>
           <h1>拖进来，浏览器里完成压缩与解压。</h1>
           <p class="lead">
-            文件不会上传到服务器。选择 ZIP、GZIP、TAR 或 TGZ 会自动进入解压模式；拖入文件夹或多个文件会自动进入压缩模式。
+            文件不会上传到服务器。选择 ZIP、RAR、GZIP、TAR 或 TGZ 会自动进入解压模式；拖入文件夹或多个文件会自动进入压缩模式。
           </p>
           <div class="support_list" aria-label="支持格式">
             <span class="chip">解压 ZIP</span>
@@ -541,7 +574,7 @@
             </p>
           </div>
           <p class="footer_note">
-            加密压缩包、分卷压缩包和 7Z 等格式在纯浏览器环境中不做强行处理，会给出稳定提示。
+            ZIP/RAR 加密包可输入密码解压；分卷压缩包和 7Z 等格式在纯浏览器环境中不做强行处理。
           </p>
         </aside>
       </section>
@@ -550,8 +583,8 @@
         <div class="panel">
           <div class="drop_zone" id="dropZone">
             <div class="drop_icon">⇣</div>
-            <h2>拖拽文件到这里</h2>
-            <p>支持拖入单个压缩包、多个文件，Chrome / Edge 可直接拖入文件夹并保留目录结构。</p>
+            <h2 id="dropTitle">拖拽文件到这里</h2>
+            <p id="dropDescription">支持拖入单个压缩包、多个文件，Chrome / Edge 可直接拖入文件夹并保留目录结构。</p>
             <div class="picker_group">
               <label class="picker_label" for="fileInput">选择文件</label>
               <label class="picker_label" for="folderInput">选择文件夹</label>
@@ -567,11 +600,11 @@
           <div class="section_title">
             <div>
               <h2>操作面板</h2>
-              <p>页面会根据内容自动切换主按钮。大文件会消耗浏览器内存，已加总量保护。</p>
+              <p>页面会根据内容自动切换主按钮。大文件会消耗浏览器内存，当前不做大小限制。</p>
             </div>
           </div>
 
-          <div class="form_grid">
+          <div class="form_grid" id="compressOptions" hidden>
             <div class="field">
               <label for="archiveNameInput">压缩包名称</label>
               <input id="archiveNameInput" type="text" value="archive" maxlength="80" />
@@ -586,11 +619,16 @@
             </div>
           </div>
 
+          <div class="field" id="archivePasswordField" hidden>
+            <label for="archivePasswordInput">解压密码</label>
+            <input id="archivePasswordInput" type="password" placeholder="如果压缩包未加密，可以留空" autocomplete="current-password" />
+          </div>
+
           <div class="action_row">
-            <button class="button primary" id="mainActionButton" type="button" disabled>等待文件</button>
+            <button class="button primary" id="mainActionButton" type="button" hidden disabled>等待文件</button>
             <button class="button ghost" id="gzipButton" type="button" hidden>压缩为 GZIP</button>
             <button class="button secondary" id="saveAllButton" type="button" hidden>保存全部到文件夹</button>
-            <button class="button danger" id="clearButton" type="button" disabled>清空</button>
+            <button class="button danger" id="clearButton" type="button" hidden disabled>清空</button>
           </div>
 
           <div class="progress_box" aria-label="处理进度">
@@ -626,10 +664,9 @@
       </section>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.57/dist/zip-full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
     <script>
-      const MAX_TOTAL_BYTES = 512 * 1024 * 1024;
       const SUPPORTED_ARCHIVE_PATTERN = /\.(zip|rar|tar|tgz|tar\.gz|gz|gzip)$/i;
       const UNSUPPORTED_ARCHIVE_PATTERN = /\.(7z|bz2|xz|zst|zipx)$/i;
       const RAR_MODULE_URL = "https://esm.sh/node-unrar-js@2.0.2?bundle";
@@ -653,6 +690,8 @@
         modeText: document.querySelector("#modeText"),
         modeHint: document.querySelector("#modeHint"),
         messageBox: document.querySelector("#messageBox"),
+        dropTitle: document.querySelector("#dropTitle"),
+        dropDescription: document.querySelector("#dropDescription"),
         mainActionButton: document.querySelector("#mainActionButton"),
         gzipButton: document.querySelector("#gzipButton"),
         saveAllButton: document.querySelector("#saveAllButton"),
@@ -660,6 +699,9 @@
         progressText: document.querySelector("#progressText"),
         progressPercent: document.querySelector("#progressPercent"),
         progressBar: document.querySelector("#progressBar"),
+        compressOptions: document.querySelector("#compressOptions"),
+        archivePasswordField: document.querySelector("#archivePasswordField"),
+        archivePasswordInput: document.querySelector("#archivePasswordInput"),
         archiveNameInput: document.querySelector("#archiveNameInput"),
         compressionLevelSelect: document.querySelector("#compressionLevelSelect"),
         summaryText: document.querySelector("#summaryText"),
@@ -711,6 +753,14 @@
         return UNSUPPORTED_ARCHIVE_PATTERN.test(fileName);
       };
 
+      const isPasswordSupportedArchive = (fileName) => {
+        return /\.(zip|rar)$/i.test(fileName);
+      };
+
+      const getArchivePassword = () => {
+        return elements.archivePasswordInput.value;
+      };
+
       const setProgress = (percent, text) => {
         const safePercent = Math.max(0, Math.min(100, Math.round(percent)));
         elements.progressBar.style.width = `${safePercent}%`;
@@ -746,6 +796,52 @@
         link.remove();
 
         setTimeout(() => URL.revokeObjectURL(url), 1000);
+      };
+
+      const getFileReadErrorMessage = (fileName, error) => {
+        const rawMessage = error?.message || "";
+
+        if (/permission|read|requested file could not be read/i.test(rawMessage)) {
+          return `无法读取“${fileName}”。可能是文件权限、文件被移动/删除、网盘占位文件未下载到本地，或浏览器失去了该文件引用。请重新选择本地文件后再处理。`;
+        }
+
+        return `读取“${fileName}”失败：${rawMessage || "未知错误"}`;
+      };
+
+      const getZipErrorMessage = (error, password = "") => {
+        const rawMessage = error?.message || "";
+
+        if (/invalid.password|wrong.password|bad.password|ERR_INVALID_PASSWORD/i.test(rawMessage)) {
+          return password
+            ? "ZIP 解压密码不正确，请重新输入后再试。"
+            : "这是加密 ZIP，请在“解压密码”里输入密码后再解压。";
+        }
+
+        if (/encrypted|password/i.test(rawMessage)) {
+          return "这是加密 ZIP，请在“解压密码”里输入密码后再解压。";
+        }
+
+        if (/corrupt|invalid|signature|central directory|end of central/i.test(rawMessage)) {
+          return "ZIP 文件结构异常或已损坏，请确认文件完整后重试。";
+        }
+
+        if (/permission|read|requested file could not be read/i.test(rawMessage)) {
+          return "浏览器无法读取这个 ZIP 文件。请确认文件没有被移动/删除、不是网盘占位文件，并重新选择本地文件后再试。";
+        }
+
+        if (/memory|allocation|quota|out of/i.test(rawMessage)) {
+          return "浏览器内存不足，建议关闭其他页面后重试，或使用桌面解压工具处理这个超大 ZIP。";
+        }
+
+        return rawMessage || "ZIP 解压失败，请换一个文件重试。";
+      };
+
+      const readFileAsArrayBuffer = async (file, displayName) => {
+        try {
+          return await file.arrayBuffer();
+        } catch (error) {
+          throw new Error(getFileReadErrorMessage(displayName || file.name, error));
+        }
       };
 
       const renderResults = () => {
@@ -834,25 +930,45 @@
       const updateModeUi = () => {
         const hasSingleEntry = state.entries.length === 1;
         const canGzip = state.mode === "compress" && hasSingleEntry && state.entries[0].file.size > 0;
+        const hasContent = state.mode !== "empty";
+        const canUsePassword = state.mode === "archive" && state.archiveFile && isPasswordSupportedArchive(state.archiveFile.name);
 
-        elements.clearButton.disabled = state.mode === "empty" || state.isWorking;
+        elements.dropZone.classList.toggle("is_ready", hasContent);
+        elements.dropZone.classList.toggle("is_archive", state.mode === "archive");
+        elements.dropZone.classList.toggle("is_compress", state.mode === "compress");
+        elements.clearButton.hidden = !hasContent;
+        elements.clearButton.disabled = !hasContent || state.isWorking;
+        elements.mainActionButton.hidden = !hasContent;
         elements.mainActionButton.disabled = state.mode === "empty" || state.isWorking;
         elements.gzipButton.hidden = !canGzip;
         elements.gzipButton.disabled = state.isWorking;
+        elements.compressOptions.hidden = state.mode !== "compress";
+        elements.archivePasswordField.hidden = !canUsePassword;
+        elements.archivePasswordInput.disabled = !canUsePassword || state.isWorking;
         elements.archiveNameInput.disabled = state.mode !== "compress" || state.isWorking;
         elements.compressionLevelSelect.disabled = state.isWorking;
 
         if (state.mode === "archive") {
           elements.modeText.textContent = "解压模式";
-          elements.modeHint.textContent = "已识别为压缩包，主按钮会解压并生成下载列表。";
+          elements.modeHint.textContent = canUsePassword
+            ? "已识别为压缩包，如有密码可先填写，再点击解压。"
+            : "已识别为压缩包，主按钮会解压并生成下载列表。";
+          elements.dropTitle.textContent = "已选择压缩包";
+          elements.dropDescription.textContent = canUsePassword
+            ? `${state.archiveFile.name}，支持填写 ZIP/RAR 解压密码。`
+            : `${state.archiveFile.name}，点击“开始解压”后会在右侧生成下载列表。`;
           elements.mainActionButton.textContent = "开始解压";
         } else if (state.mode === "compress") {
           elements.modeText.textContent = "压缩模式";
           elements.modeHint.textContent = "已识别为文件或文件夹，主按钮会生成 ZIP 压缩包。";
+          elements.dropTitle.textContent = "文件已就绪";
+          elements.dropDescription.textContent = `已选择 ${state.entries.length} 个文件，总大小 ${formatBytes(getTotalBytes(state.entries))}。可直接压缩为 ZIP。`;
           elements.mainActionButton.textContent = "压缩为 ZIP";
         } else {
           elements.modeText.textContent = "等待文件";
           elements.modeHint.textContent = "拖拽压缩包、文件或文件夹到下方区域，也可以使用按钮选择。";
+          elements.dropTitle.textContent = "拖拽文件到这里";
+          elements.dropDescription.textContent = "支持拖入单个压缩包、多个文件，Chrome / Edge 可直接拖入文件夹并保留目录结构。";
           elements.mainActionButton.textContent = "等待文件";
         }
 
@@ -868,19 +984,14 @@
         state.isWorking = false;
         elements.fileInput.value = "";
         elements.folderInput.value = "";
+        elements.archivePasswordInput.value = "";
         setProgress(0, "准备就绪");
         hideMessage();
         renderResults();
         updateModeUi();
       };
 
-      const validateTotalSize = (entries) => {
-        const totalBytes = getTotalBytes(entries);
-
-        if (totalBytes > MAX_TOTAL_BYTES) {
-          throw new Error(`当前选择总大小为 ${formatBytes(totalBytes)}，超过 ${formatBytes(MAX_TOTAL_BYTES)} 的稳定处理上限。请拆分后再处理。`);
-        }
-      };
+      const validateTotalSize = () => {};
 
       const setFilesForCompress = (files) => {
         const entries = Array.from(files)
@@ -902,6 +1013,7 @@
         state.archiveFile = null;
         state.extractedFiles = [];
         state.mode = "compress";
+        elements.archivePasswordInput.value = "";
         setProgress(0, "准备压缩");
         hideMessage();
         renderResults();
@@ -909,15 +1021,12 @@
       };
 
       const setArchiveFile = (file) => {
-        if (file.size > MAX_TOTAL_BYTES) {
-          throw new Error(`压缩包大小为 ${formatBytes(file.size)}，超过 ${formatBytes(MAX_TOTAL_BYTES)} 的稳定处理上限。`);
-        }
-
         revokeResultUrls();
         state.archiveFile = file;
         state.entries = [];
         state.extractedFiles = [];
         state.mode = "archive";
+        elements.archivePasswordInput.value = "";
         setProgress(0, "准备解压");
         hideMessage();
         renderResults();
@@ -1022,27 +1131,41 @@
       };
 
       const createZipFromEntries = async () => {
-        if (!window.JSZip) {
-          throw new Error("JSZip 加载失败，请检查网络后刷新页面。");
+        if (!window.zip) {
+          throw new Error("ZIP 流式处理模块加载失败，请检查网络后刷新页面。");
         }
 
         validateTotalSize(state.entries);
-        const zip = new JSZip();
         const compressionLevel = Number(elements.compressionLevelSelect.value);
-
-        state.entries.forEach((entry) => {
-          zip.file(entry.path, entry.file);
+        const zipWriter = new zip.ZipWriter(new zip.BlobWriter("application/zip"), {
+          bufferedWrite: true,
+          useWebWorkers: true
         });
+        let currentEntryPath = "当前 ZIP 压缩任务";
 
-        const zipBlob = await zip.generateAsync({
-          type: "blob",
-          compression: "DEFLATE",
-          compressionOptions: {
-            level: compressionLevel
+        try {
+          for (let index = 0; index < state.entries.length; index += 1) {
+            const entry = state.entries[index];
+            currentEntryPath = entry.path;
+            const basePercent = (index / state.entries.length) * 100;
+            const fileWeight = 100 / state.entries.length;
+
+            setProgress(basePercent, `正在压缩：${entry.path}`);
+            await zipWriter.add(entry.path, new zip.BlobReader(entry.file), {
+              level: compressionLevel,
+              lastModDate: new Date(entry.file.lastModified || Date.now()),
+              onprogress: (progress, total) => {
+                const fileProgress = total > 0 ? progress / total : 0;
+                setProgress(basePercent + fileProgress * fileWeight, `正在压缩：${entry.path}`);
+              }
+            });
           }
-        }, (metadata) => {
-          setProgress(metadata.percent, `正在压缩：${metadata.currentFile || "整理文件"}`);
-        });
+        } catch (error) {
+          await zipWriter.close().catch(() => {});
+          throw new Error(getFileReadErrorMessage(currentEntryPath, error));
+        }
+
+        const zipBlob = await zipWriter.close();
 
         const archiveName = `${safeFileName(elements.archiveNameInput.value, "archive")}.zip`;
         downloadBlob(zipBlob, archiveName);
@@ -1056,7 +1179,7 @@
         }
 
         const entry = state.entries[0];
-        const arrayBuffer = await entry.file.arrayBuffer();
+        const arrayBuffer = await readFileAsArrayBuffer(entry.file, entry.path);
         setProgress(35, "正在读取文件");
         const gzipData = pako.gzip(new Uint8Array(arrayBuffer), {
           level: Number(elements.compressionLevelSelect.value)
@@ -1128,26 +1251,50 @@
       };
 
       const extractZip = async (file) => {
-        if (!window.JSZip) {
-          throw new Error("JSZip 加载失败，请检查网络后刷新页面。");
+        if (!window.zip) {
+          throw new Error("ZIP 流式处理模块加载失败，请检查网络后刷新页面。");
         }
 
-        const zip = await JSZip.loadAsync(file);
-        const zipEntries = Object.values(zip.files).filter((entry) => !entry.dir);
+        const password = getArchivePassword();
+        const zipReader = new zip.ZipReader(new zip.BlobReader(file), {
+          password,
+          useWebWorkers: true
+        });
         const extractedFiles = [];
 
-        if (zipEntries.length === 0) {
-          throw new Error("压缩包中没有可解压的文件。");
-        }
+        try {
+          const zipEntries = (await zipReader.getEntries()).filter((entry) => !entry.directory);
 
-        for (let index = 0; index < zipEntries.length; index += 1) {
-          const entry = zipEntries[index];
-          const blob = await entry.async("blob");
-          extractedFiles.push({
-            path: normalizePath(entry.name),
-            blob
-          });
-          setProgress(((index + 1) / zipEntries.length) * 100, `正在解压：${entry.name}`);
+          if (zipEntries.length === 0) {
+            throw new Error("压缩包中没有可解压的文件。");
+          }
+
+          if (!password && zipEntries.some((entry) => entry.encrypted)) {
+            throw new Error("这是加密 ZIP，请在“解压密码”里输入密码后再解压。");
+          }
+
+          for (let index = 0; index < zipEntries.length; index += 1) {
+            const entry = zipEntries[index];
+            const basePercent = (index / zipEntries.length) * 100;
+            const fileWeight = 100 / zipEntries.length;
+            const blob = await entry.getData(new zip.BlobWriter(), {
+              password,
+              onprogress: (progress, total) => {
+                const fileProgress = total > 0 ? progress / total : 0;
+                setProgress(basePercent + fileProgress * fileWeight, `正在解压：${entry.filename}`);
+              }
+            });
+
+            extractedFiles.push({
+              path: normalizePath(entry.filename),
+              blob
+            });
+            setProgress(((index + 1) / zipEntries.length) * 100, `正在解压：${entry.filename}`);
+          }
+        } catch (error) {
+          throw new Error(getZipErrorMessage(error, password));
+        } finally {
+          await zipReader.close().catch(() => {});
         }
 
         return extractedFiles;
@@ -1162,7 +1309,7 @@
           throw new Error("pako 加载失败，请检查网络后刷新页面。");
         }
 
-        const arrayBuffer = await file.arrayBuffer();
+        const arrayBuffer = await readFileAsArrayBuffer(file, file.name);
         setProgress(35, "正在解压 GZIP 数据");
         const inflated = pako.ungzip(new Uint8Array(arrayBuffer));
         const lowerName = file.name.toLowerCase();
@@ -1209,7 +1356,9 @@
         const reason = error.reason || "";
 
         if (reason === "ERAR_MISSING_PASSWORD" || reason === "ERAR_BAD_PASSWORD") {
-          return "加密 RAR 暂不支持在线解压，请先在本地解密后再处理。";
+          return reason === "ERAR_BAD_PASSWORD"
+            ? "RAR 解压密码不正确，请重新输入后再试。"
+            : "这是加密 RAR，请在“解压密码”里输入密码后再解压。";
         }
 
         if (reason === "ERAR_BAD_DATA" || reason === "ERAR_BAD_ARCHIVE" || reason === "ERAR_UNKNOWN_FORMAT") {
@@ -1232,10 +1381,12 @@
           setProgress(8, "正在加载 RAR 解压器");
           const { createExtractorFromData, wasmBinary } = await loadRarTools();
           setProgress(22, "正在读取 RAR 文件");
-          const data = await file.arrayBuffer();
+          const data = await readFileAsArrayBuffer(file, file.name);
+          const password = getArchivePassword();
           const extractor = await createExtractorFromData({
             wasmBinary,
-            data
+            data,
+            password
           });
           const list = extractor.getFileList();
           const fileHeaders = [...list.fileHeaders];
@@ -1244,8 +1395,8 @@
             throw new Error("分卷 RAR 暂不支持浏览器内解压，请合并完整分卷后使用桌面工具处理。");
           }
 
-          if (list.arcHeader?.flags?.headerEncrypted || fileHeaders.some((header) => header.flags?.encrypted)) {
-            throw new Error("加密 RAR 暂不支持在线解压，请先在本地解密后再处理。");
+          if (!password && (list.arcHeader?.flags?.headerEncrypted || fileHeaders.some((header) => header.flags?.encrypted))) {
+            throw new Error("这是加密 RAR，请在“解压密码”里输入密码后再解压。");
           }
 
           const normalFileHeaders = fileHeaders.filter((header) => !header.flags?.directory);
@@ -1290,7 +1441,7 @@
           extractedFiles = await extractRar(file);
           setProgress(100, "RAR 解压完成");
         } else if (lowerName.endsWith(".tar")) {
-          const arrayBuffer = await file.arrayBuffer();
+          const arrayBuffer = await readFileAsArrayBuffer(file, file.name);
           extractedFiles = extractTar(arrayBuffer);
           setProgress(100, "TAR 解压完成");
         } else if (lowerName.endsWith(".gz") || lowerName.endsWith(".gzip") || lowerName.endsWith(".tgz")) {
