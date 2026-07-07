@@ -38,6 +38,92 @@
         -webkit-overflow-scrolling: touch;
       }
 
+      /* Tab 导航栏样式 */
+      .tabs_nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: #ffffff;
+        border-bottom: 1px solid #d0d7de;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      }
+
+      .tabs_container {
+        display: flex;
+        gap: clamp(12px, 3vw, 24px);
+        max-width: 1012px;
+        margin: 0 auto;
+        padding: 0 clamp(16px, 4vw, 32px);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+      }
+
+      .tabs_container::-webkit-scrollbar {
+        display: none; /* Safari and Chrome */
+      }
+
+      .tab_btn {
+        position: relative;
+        padding: 14px 4px;
+        font-size: clamp(14px, 2.8vw, 16px);
+        font-weight: 500;
+        color: #57606a;
+        background: none;
+        border: none;
+        cursor: pointer;
+        transition: color 0.2s ease, font-weight 0.2s ease;
+        white-space: nowrap;
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .tab_btn:hover {
+        color: #1f2328;
+      }
+
+      .tab_btn::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background-color: #0969da;
+        border-radius: 3px 3px 0 0;
+        transform: scaleX(0);
+        transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .tab_btn.is_active {
+        color: #1f2328;
+        font-weight: 600;
+      }
+
+      .tab_btn.is_active::after {
+        transform: scaleX(1);
+      }
+
+      @media (min-width: 769px) {
+        .md_page {
+          max-width: 1012px;
+          margin: 24px auto 48px;
+          background: #ffffff;
+          border: 1px solid #d0d7de;
+          border-radius: 8px;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+          overflow: hidden;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .md_page {
+          margin-top: 0;
+          border: none;
+          box-shadow: none;
+        }
+      }
+
       .md_page .state {
         padding: 12px clamp(14px, 3.5vw, 22px);
         font-size: 14px;
@@ -127,30 +213,76 @@
     </style>
   </head>
   <body>
+    <header class="tabs_nav">
+      <div class="tabs_container" role="tablist">
+        <button
+          class="tab_btn"
+          role="tab"
+          aria-selected="false"
+          aria-controls="content"
+          data-tab="all"
+          data-file="取名.md"
+        >
+          综合方案
+        </button>
+        <button
+          class="tab_btn"
+          role="tab"
+          aria-selected="false"
+          aria-controls="content"
+          data-tab="boy"
+          data-file="辛取名_男.md"
+        >
+          男孩方案
+        </button>
+        <button
+          class="tab_btn"
+          role="tab"
+          aria-selected="false"
+          aria-controls="content"
+          data-tab="girl"
+          data-file="辛取名_女.md"
+        >
+          女孩方案
+        </button>
+      </div>
+    </header>
+
     <div class="md_page">
-      <div id="state" class="state" role="status">正在加载「取名.md」…</div>
+      <div id="state" class="state" role="status">正在准备加载页面…</div>
       <article id="content" class="markdown-body" aria-live="polite"></article>
     </div>
+
     <script>
       const stateEl = document.querySelector("#state");
       const contentEl = document.querySelector("#content");
+      const tabButtons = document.querySelectorAll(".tab_btn");
 
       const wrapTables = (root) => {
         const tables = root.querySelectorAll("table");
+        
         tables.forEach((table) => {
           if (table.parentElement && table.parentElement.classList.contains("table_wrap")) {
             return;
           }
+          
           const wrap = document.createElement("div");
           wrap.className = "table_wrap";
+          
           table.replaceWith(wrap);
           wrap.appendChild(table);
         });
       };
 
-      const showError = (message) => {
+      const showState = (message, isError = false) => {
         stateEl.hidden = false;
-        stateEl.classList.add("is_error");
+        
+        if (isError) {
+          stateEl.classList.add("is_error");
+        } else {
+          stateEl.classList.remove("is_error");
+        }
+        
         stateEl.textContent = message;
       };
 
@@ -164,25 +296,87 @@
         breaks: true,
       });
 
-      const mdUrl = new URL("取名.md", window.location.href).toString();
+      const contentCache = {};
 
-      fetch(mdUrl)
-        .then((response) => {
+      const loadMarkdown = async (fileName) => {
+        showState(`正在加载「${fileName}」…`);
+        
+        window.scrollTo({ top: 0, behavior: "instant" });
+
+        if (contentCache[fileName]) {
+          contentEl.innerHTML = contentCache[fileName];
+          wrapTables(contentEl);
+          hideState();
+          return;
+        }
+
+        const mdUrl = new URL(fileName, window.location.href).toString();
+
+        try {
+          const response = await fetch(mdUrl);
+          
           if (!response.ok) {
             throw new Error(`无法读取文件（HTTP ${response.status}）`);
           }
-          return response.text();
-        })
-        .then((markdown) => {
-          contentEl.innerHTML = marked.parse(markdown);
+          
+          const markdown = await response.text();
+          const htmlContent = marked.parse(markdown);
+          
+          contentCache[fileName] = htmlContent;
+          contentEl.innerHTML = htmlContent;
           wrapTables(contentEl);
           hideState();
-        })
-        .catch(() => {
-          showError(
-            "加载「取名.md」失败。请用本地静态服务器打开本页（例如在项目根目录执行 npx serve），不要直接用 file:// 双击打开，否则浏览器会拦截同目录文件的请求。"
+        } catch (error) {
+          showState(
+            `加载「${fileName}」失败。请用本地静态服务器打开本页（例如在项目根目录执行 npx serve），不要直接用 file:// 双击打开，否则浏览器会拦截同目录文件的请求。错误详情：${error.message}`,
+            true
           );
+        }
+      };
+
+      const switchTab = (button, updateUrl = true) => {
+        tabButtons.forEach((btn) => {
+          btn.classList.remove("is_active");
+          btn.setAttribute("aria-selected", "false");
         });
+        
+        button.classList.add("is_active");
+        button.setAttribute("aria-selected", "true");
+
+        const fileName = button.getAttribute("data-file");
+        const tabId = button.getAttribute("data-tab");
+
+        loadMarkdown(fileName);
+
+        if (updateUrl) {
+          const url = new URL(window.location.href);
+          url.searchParams.set("tab", tabId);
+          window.history.replaceState(null, "", url.toString());
+        }
+      };
+
+      const initTabs = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTabId = urlParams.get("tab") || "all";
+
+        let defaultBtn = document.querySelector(`.tab_btn[data-tab="${activeTabId}"]`);
+        
+        if (!defaultBtn) {
+          defaultBtn = tabButtons[0];
+        }
+
+        switchTab(defaultBtn, false);
+
+        tabButtons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (!btn.classList.contains("is_active")) {
+              switchTab(btn, true);
+            }
+          });
+        });
+      };
+
+      initTabs();
     </script>
   </body>
 </html>
