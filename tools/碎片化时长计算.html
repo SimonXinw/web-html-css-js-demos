@@ -356,14 +356,20 @@
     }
 
     .daily_item {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .daily_item .daily_head {
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 8px 12px;
       align-items: center;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px 14px;
     }
 
     .daily_item .date {
@@ -393,6 +399,41 @@
       margin-top: 2px;
       font-size: 0.75rem;
       color: var(--muted);
+    }
+
+    .session_list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .session_row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 10px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(18, 24, 15, 0.55);
+    }
+
+    .session_row .range {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.78rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+      letter-spacing: 0.01em;
+    }
+
+    .session_row .len {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      white-space: nowrap;
     }
 
     .daily_empty {
@@ -808,16 +849,23 @@
         if (current) {
           current.sessionCount += 1;
           current.totalMs += record.durationMs;
+          current.sessions.push(record);
         } else {
           map.set(key, {
             dateKey: key,
             sessionCount: 1,
-            totalMs: record.durationMs
+            totalMs: record.durationMs,
+            sessions: [record]
           });
         }
       }
 
-      return Array.from(map.values()).sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
+      return Array.from(map.values())
+        .map((group) => {
+          group.sessions.sort((a, b) => b.start - a.start);
+          return group;
+        })
+        .sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
     };
 
     const formatDuration = (ms) => {
@@ -827,6 +875,12 @@
       const seconds = totalSec % 60;
 
       return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    };
+
+    const formatClockTime = (timestamp) => {
+      const date = new Date(timestamp);
+
+      return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
     };
 
     const formatDateLabel = (dateKey) => {
@@ -981,17 +1035,26 @@
         const sub = label.sub
           ? `<div class="date_sub">${label.sub}</div>`
           : "";
+        const sessionsHtml = group.sessions.map((session) => `
+          <li class="session_row">
+            <span class="range">${formatClockTime(session.start)} — ${formatClockTime(session.end)}</span>
+            <span class="len">${formatDuration(session.durationMs)}</span>
+          </li>
+        `).join("");
 
         return `
           <li class="daily_item">
-            <div>
-              <div class="date">${label.title}</div>
-              ${sub}
+            <div class="daily_head">
+              <div>
+                <div class="date">${label.title}</div>
+                ${sub}
+              </div>
+              <div class="stats">
+                <div class="duration">${formatDuration(group.totalMs)}</div>
+                <div class="count">${group.sessionCount} 次</div>
+              </div>
             </div>
-            <div class="stats">
-              <div class="duration">${formatDuration(group.totalMs)}</div>
-              <div class="count">${group.sessionCount} 次</div>
-            </div>
+            <ul class="session_list">${sessionsHtml}</ul>
           </li>
         `;
       }).join("");
