@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#12180f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>碎片化时长计算</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #12180f;
+      --surface: #1a2316;
+      --surface-2: #232e1d;
+      --text: #e8f0df;
+      --muted: #8a9a7c;
+      --accent: #7cb342;
+      --accent-dim: rgba(124, 179, 66, 0.18);
+      --warn: #e8a54b;
+      --danger: #e07070;
+      --line: rgba(138, 154, 124, 0.18);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-x: env(safe-area-inset-left, 0px);
+      --tap: 48px;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      height: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: "Noto Sans SC", sans-serif;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 90% 50% at 50% -10%, rgba(124, 179, 66, 0.12) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 100%, rgba(232, 165, 75, 0.06) 0%, transparent 50%);
+      color: var(--text);
+      min-height: 100%;
+      min-height: 100dvh;
+      line-height: 1.45;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-height: 100dvh;
+      max-width: 520px;
+      margin: 0 auto;
+      padding:
+        calc(20px + var(--safe-top))
+        calc(18px + var(--safe-x))
+        calc(24px + var(--safe-bottom));
+    }
+
+    header {
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: clamp(1.25rem, 4.5vw, 1.5rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    header p {
+      margin-top: 6px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .status_bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 36px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .status_dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .status_bar.is_running {
+      color: var(--accent);
+    }
+
+    .status_bar.is_running .status_dot {
+      background: var(--accent);
+      box-shadow: 0 0 0 0 rgba(124, 179, 66, 0.55);
+      animation: pulse_dot 1.4s ease-out infinite;
+    }
+
+    @keyframes pulse_dot {
+      0% { box-shadow: 0 0 0 0 rgba(124, 179, 66, 0.55); }
+      70% { box-shadow: 0 0 0 10px rgba(124, 179, 66, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(124, 179, 66, 0); }
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      min-height: var(--tap);
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.12s, background 0.15s;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      opacity: 0.38;
+      cursor: not-allowed;
+    }
+
+    .btn_start {
+      background: var(--accent);
+      color: #0f160c;
+    }
+
+    .btn_end {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .btn_end:not(:disabled) {
+      border-color: rgba(224, 112, 112, 0.45);
+      color: #f0b4b4;
+    }
+
+    .btn_reset {
+      background: transparent;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      font-weight: 500;
+      font-size: 0.85rem;
+      min-height: 42px;
+    }
+
+    .btn_reset:not(:disabled):hover {
+      color: var(--warn);
+      border-color: rgba(232, 165, 75, 0.4);
+    }
+
+    .btn_add {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid rgba(124, 179, 66, 0.35);
+      font-weight: 500;
+      font-size: 0.85rem;
+      min-height: 42px;
+    }
+
+    .btn_add:hover {
+      border-color: rgba(124, 179, 66, 0.6);
+      color: var(--accent);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .summary_item {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+
+    .summary_item .label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .summary_item .value {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: clamp(1.05rem, 4.5vw, 1.25rem);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+
+    .stage {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stat_card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px 18px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat_card .label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .stat_card .time {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: clamp(1.7rem, 7.5vw, 2.25rem);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+    }
+
+    .stat_card.actual {
+      background: linear-gradient(160deg, var(--surface) 0%, #1e2a18 100%);
+    }
+
+    .stat_card.actual.is_live {
+      border-color: rgba(124, 179, 66, 0.35);
+      box-shadow: 0 0 0 1px var(--accent-dim);
+    }
+
+    .stat_card.actual.is_live .time {
+      color: var(--accent);
+      animation: tick_flash 1s ease-in-out infinite;
+    }
+
+    .stat_card.actual.is_live::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(124, 179, 66, 0.1), transparent 55%);
+      pointer-events: none;
+      animation: glow_breathe 2.4s ease-in-out infinite;
+    }
+
+    @keyframes tick_flash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.72; }
+    }
+
+    @keyframes glow_breathe {
+      0%, 100% { opacity: 0.45; }
+      50% { opacity: 1; }
+    }
+
+    .session_live {
+      display: none;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .stat_card.actual.is_live .session_live {
+      display: block;
+    }
+
+    .session_live strong {
+      font-family: "IBM Plex Mono", monospace;
+      color: var(--warn);
+      font-weight: 500;
+    }
+
+    .daily_section {
+      margin-top: 4px;
+    }
+
+    .daily_section .section_title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 0 2px;
+    }
+
+    .daily_section .section_title h2 {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .daily_section .section_title span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .daily_list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .daily_item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 12px;
+      align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 14px;
+    }
+
+    .daily_item .date {
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .daily_item .date_sub {
+      margin-top: 2px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .daily_item .stats {
+      text-align: right;
+    }
+
+    .daily_item .duration {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--accent);
+    }
+
+    .daily_item .count {
+      margin-top: 2px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .daily_empty {
+      text-align: center;
+      padding: 28px 16px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      background: var(--surface);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(28px + var(--safe-bottom));
+      transform: translateX(-50%) translateY(12px);
+      background: #2a1a1a;
+      color: #f5c6c6;
+      border: 1px solid rgba(224, 112, 112, 0.35);
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 20;
+      max-width: calc(100% - 40px);
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.ok {
+      background: #1a2a16;
+      color: #c8e6a8;
+      border-color: rgba(124, 179, 66, 0.4);
+    }
+
+    .modal_mask {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 16px;
+      padding-bottom: calc(16px + var(--safe-bottom));
+      background: rgba(8, 12, 6, 0.72);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal_mask.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(100%, 400px);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px 18px 16px;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+    }
+
+    .modal h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .modal .hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .modal .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .modal .field label {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .modal .field input {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #12180f;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 16px;
+    }
+
+    .modal .field input:focus {
+      outline: none;
+      border-color: rgba(124, 179, 66, 0.55);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .modal .time_row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .modal .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .modal .btn_cancel {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      font-weight: 500;
+    }
+
+    .modal .btn_confirm {
+      background: var(--accent);
+      color: #0f160c;
+    }
+
+    @media (min-width: 560px) {
+      .app {
+        padding-top: calc(36px + var(--safe-top));
+        gap: 20px;
+      }
+
+      .controls {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .modal_mask {
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>碎片化时长</h1>
+      <p>记录零散工作片段，累计真实投入时间</p>
+    </header>
+
+    <div class="status_bar" id="statusBar">
+      <span class="status_dot"></span>
+      <span id="statusText">空闲 · 可以开始计时</span>
+    </div>
+
+    <div class="controls">
+      <button type="button" class="btn_start" id="btnStart">开始计时</button>
+      <button type="button" class="btn_end" id="btnEnd" disabled>结束计时</button>
+      <button type="button" class="btn_reset" id="btnReset" disabled>重置标记</button>
+      <button type="button" class="btn_add" id="btnAdd">补充时长</button>
+    </div>
+
+    <div class="summary">
+      <div class="summary_item">
+        <div class="label">工作总次数</div>
+        <div class="value" id="totalCount">0</div>
+      </div>
+      <div class="summary_item">
+        <div class="label">工作总时长</div>
+        <div class="value" id="totalDuration">00:00:00</div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <div class="stat_card">
+        <div class="label">历史工作时长</div>
+        <div class="time" id="historyTime">00:00:00</div>
+      </div>
+
+      <div class="stat_card actual" id="actualCard">
+        <div class="label">当前实际工作时长</div>
+        <div class="time" id="actualTime">00:00:00</div>
+        <div class="session_live">
+          本次已进行 <strong id="currentElapsed">00:00:00</strong>
+        </div>
+      </div>
+    </div>
+
+    <section class="daily_section">
+      <div class="section_title">
+        <h2>每日明细</h2>
+        <span id="dailyHint">按结束日期汇总</span>
+      </div>
+      <ul class="daily_list" id="dailyList"></ul>
+    </section>
+  </div>
+
+  <div class="modal_mask" id="addModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-labelledby="addModalTitle">
+      <h3 id="addModalTitle">补充时长</h3>
+      <p class="hint">补录漏记的工作片段，会计入总次数与每日明细</p>
+      <div class="field">
+        <label for="addDate">日期</label>
+        <input type="date" id="addDate" required />
+      </div>
+      <div class="time_row">
+        <div class="field">
+          <label for="addStartTime">开始时间</label>
+          <input type="time" id="addStartTime" required />
+        </div>
+        <div class="field">
+          <label for="addEndTime">结束时间</label>
+          <input type="time" id="addEndTime" required />
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn_cancel" id="btnAddCancel">取消</button>
+        <button type="button" class="btn_confirm" id="btnAddConfirm">确认补充</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const STORAGE_KEY = "fragmented_time_v2";
+    const LEGACY_KEY = "fragmented_time_v1";
+
+    const defaultState = () => ({
+      records: [],
+      activeStart: null
+    });
+
+    let state = defaultState();
+    let tickTimer = null;
+    let toastTimer = null;
+
+    const els = {
+      statusBar: document.getElementById("statusBar"),
+      statusText: document.getElementById("statusText"),
+      btnStart: document.getElementById("btnStart"),
+      btnEnd: document.getElementById("btnEnd"),
+      btnReset: document.getElementById("btnReset"),
+      totalCount: document.getElementById("totalCount"),
+      totalDuration: document.getElementById("totalDuration"),
+      historyTime: document.getElementById("historyTime"),
+      actualTime: document.getElementById("actualTime"),
+      actualCard: document.getElementById("actualCard"),
+      currentElapsed: document.getElementById("currentElapsed"),
+      dailyList: document.getElementById("dailyList"),
+      dailyHint: document.getElementById("dailyHint"),
+      toast: document.getElementById("toast"),
+      btnAdd: document.getElementById("btnAdd"),
+      addModal: document.getElementById("addModal"),
+      addDate: document.getElementById("addDate"),
+      addStartTime: document.getElementById("addStartTime"),
+      addEndTime: document.getElementById("addEndTime"),
+      btnAddCancel: document.getElementById("btnAddCancel"),
+      btnAddConfirm: document.getElementById("btnAddConfirm")
+    };
+
+    const pad = (n) => String(n).padStart(2, "0");
+
+    const toDateKey = (timestamp) => {
+      const date = new Date(timestamp);
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    };
+
+    const createId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    const normalizeRecord = (item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const start = Number(item.start);
+      const end = Number(item.end);
+      const durationMs = Number(item.durationMs);
+
+      if (!Number.isFinite(start) || !Number.isFinite(end) || !Number.isFinite(durationMs)) {
+        return null;
+      }
+
+      if (durationMs < 0 || end < start) {
+        return null;
+      }
+
+      return {
+        id: typeof item.id === "string" ? item.id : createId(),
+        start: Math.floor(start),
+        end: Math.floor(end),
+        durationMs: Math.floor(durationMs),
+        dateKey: typeof item.dateKey === "string" ? item.dateKey : toDateKey(end)
+      };
+    };
+
+    const migrateLegacy = (legacy) => {
+      const next = defaultState();
+
+      if (typeof legacy.activeStart === "number" && legacy.activeStart > 0) {
+        next.activeStart = legacy.activeStart;
+      }
+
+      const totalMs = Math.max(0, Math.floor(Number(legacy.totalMs) || 0));
+      const sessionCount = Math.max(0, Math.floor(Number(legacy.sessionCount) || 0));
+
+      if (totalMs <= 0 || sessionCount <= 0) {
+        return next;
+      }
+
+      const now = Date.now();
+      const dateKey = toDateKey(now);
+      const base = Math.floor(totalMs / sessionCount);
+      let remain = totalMs - base * sessionCount;
+
+      for (let i = 0; i < sessionCount; i += 1) {
+        const durationMs = base + (i === sessionCount - 1 ? remain : 0);
+        const end = now - (sessionCount - 1 - i) * 1000;
+        const start = end - durationMs;
+
+        next.records.push({
+          id: `migrated-${i}-${createId()}`,
+          start,
+          end,
+          durationMs,
+          dateKey
+        });
+      }
+
+      return next;
+    };
+
+    const parseStoredState = (parsed) => {
+      const next = defaultState();
+
+      if (Array.isArray(parsed.records)) {
+        next.records = parsed.records.map(normalizeRecord).filter(Boolean);
+      }
+
+      if (typeof parsed.activeStart === "number" && parsed.activeStart > 0) {
+        next.activeStart = parsed.activeStart;
+      }
+
+      return next;
+    };
+
+    const loadState = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+
+        if (raw) {
+          return parseStoredState(JSON.parse(raw));
+        }
+
+        const legacyRaw = localStorage.getItem(LEGACY_KEY);
+
+        if (legacyRaw) {
+          const migrated = migrateLegacy(JSON.parse(legacyRaw));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+          return migrated;
+        }
+
+        return defaultState();
+      } catch (error) {
+        console.error("读取 localStorage 失败", error);
+        return defaultState();
+      }
+    };
+
+    const saveState = () => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (error) {
+        console.error("写入 localStorage 失败", error);
+        showToast("存储失败，请检查浏览器存储权限");
+      }
+    };
+
+    const getTotals = () => {
+      let totalMs = 0;
+
+      for (const record of state.records) {
+        totalMs += record.durationMs;
+      }
+
+      return {
+        totalMs,
+        sessionCount: state.records.length
+      };
+    };
+
+    const getDailyGroups = () => {
+      const map = new Map();
+
+      for (const record of state.records) {
+        const key = record.dateKey;
+        const current = map.get(key);
+
+        if (current) {
+          current.sessionCount += 1;
+          current.totalMs += record.durationMs;
+        } else {
+          map.set(key, {
+            dateKey: key,
+            sessionCount: 1,
+            totalMs: record.durationMs
+          });
+        }
+      }
+
+      return Array.from(map.values()).sort((a, b) => (a.dateKey < b.dateKey ? 1 : -1));
+    };
+
+    const formatDuration = (ms) => {
+      const totalSec = Math.max(0, Math.floor(ms / 1000));
+      const hours = Math.floor(totalSec / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      const seconds = totalSec % 60;
+
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    };
+
+    const formatDateLabel = (dateKey) => {
+      const parts = dateKey.split("-").map(Number);
+      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+      const todayKey = toDateKey(Date.now());
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayKey = toDateKey(yesterday.getTime());
+
+      const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+      const base = `${parts[0]}年${pad(parts[1])}月${pad(parts[2])}日 · 周${weekdays[date.getDay()]}`;
+
+      if (dateKey === todayKey) {
+        return { title: "今天", sub: base };
+      }
+
+      if (dateKey === yesterdayKey) {
+        return { title: "昨天", sub: base };
+      }
+
+      return { title: base, sub: "" };
+    };
+
+    const isRunning = () => state.activeStart !== null;
+
+    const getLiveMs = () => {
+      if (!isRunning()) {
+        return 0;
+      }
+
+      return Math.max(0, Date.now() - state.activeStart);
+    };
+
+    const showToast = (message, type = "error") => {
+      els.toast.textContent = message;
+      els.toast.classList.toggle("ok", type === "ok");
+      els.toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        els.toast.classList.remove("show");
+      }, 2200);
+    };
+
+    const parseLocalDateTime = (dateKey, timeValue) => {
+      const dateParts = dateKey.split("-").map(Number);
+      const timeParts = timeValue.split(":").map(Number);
+
+      if (dateParts.length !== 3 || timeParts.length < 2) {
+        return NaN;
+      }
+
+      const [year, month, day] = dateParts;
+      const hours = timeParts[0];
+      const minutes = timeParts[1];
+      const seconds = timeParts[2] || 0;
+
+      if ([year, month, day, hours, minutes, seconds].some((n) => !Number.isFinite(n))) {
+        return NaN;
+      }
+
+      return new Date(year, month - 1, day, hours, minutes, seconds, 0).getTime();
+    };
+
+    const openAddModal = () => {
+      const now = new Date();
+      const dateKey = toDateKey(now.getTime());
+      const currentTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+      els.addDate.value = dateKey;
+      els.addStartTime.value = currentTime;
+      els.addEndTime.value = currentTime;
+      els.addModal.classList.add("open");
+      els.addModal.setAttribute("aria-hidden", "false");
+    };
+
+    const closeAddModal = () => {
+      els.addModal.classList.remove("open");
+      els.addModal.setAttribute("aria-hidden", "true");
+    };
+
+    const submitAddRecord = () => {
+      const dateKey = els.addDate.value;
+      const startTime = els.addStartTime.value;
+      const endTime = els.addEndTime.value;
+
+      if (!dateKey || !startTime || !endTime) {
+        showToast("请填写日期、开始时间和结束时间");
+        return;
+      }
+
+      const start = parseLocalDateTime(dateKey, startTime);
+      const end = parseLocalDateTime(dateKey, endTime);
+
+      if (!Number.isFinite(start) || !Number.isFinite(end)) {
+        showToast("时间格式不正确");
+        return;
+      }
+
+      if (end <= start) {
+        showToast("结束时间必须晚于开始时间");
+        return;
+      }
+
+      const durationMs = end - start;
+
+      state.records.push({
+        id: createId(),
+        start,
+        end,
+        durationMs,
+        dateKey
+      });
+      saveState();
+      closeAddModal();
+      render();
+      showToast("已补充一条时长记录", "ok");
+    };
+
+    const syncButtons = () => {
+      const running = isRunning();
+
+      els.btnStart.disabled = running;
+      els.btnEnd.disabled = !running;
+      els.btnReset.disabled = !running;
+    };
+
+    const syncStatus = () => {
+      const running = isRunning();
+
+      els.statusBar.classList.toggle("is_running", running);
+      els.actualCard.classList.toggle("is_live", running);
+      els.statusText.textContent = running
+        ? "计时中 · 结束后会计入历史与每日明细"
+        : "空闲 · 可以开始计时";
+    };
+
+    const renderDailyList = () => {
+      const groups = getDailyGroups();
+
+      els.dailyHint.textContent = groups.length
+        ? `共 ${groups.length} 天`
+        : "按结束日期汇总";
+
+      if (!groups.length) {
+        els.dailyList.innerHTML = `<li class="daily_empty">暂无完成记录，结束一次计时后会出现在这里</li>`;
+        return;
+      }
+
+      els.dailyList.innerHTML = groups.map((group) => {
+        const label = formatDateLabel(group.dateKey);
+        const sub = label.sub
+          ? `<div class="date_sub">${label.sub}</div>`
+          : "";
+
+        return `
+          <li class="daily_item">
+            <div>
+              <div class="date">${label.title}</div>
+              ${sub}
+            </div>
+            <div class="stats">
+              <div class="duration">${formatDuration(group.totalMs)}</div>
+              <div class="count">${group.sessionCount} 次</div>
+            </div>
+          </li>
+        `;
+      }).join("");
+    };
+
+    const renderTimes = () => {
+      const liveMs = getLiveMs();
+      const { totalMs, sessionCount } = getTotals();
+
+      els.totalCount.textContent = String(sessionCount);
+      els.totalDuration.textContent = formatDuration(totalMs);
+      els.historyTime.textContent = formatDuration(totalMs);
+      els.actualTime.textContent = formatDuration(totalMs + liveMs);
+      els.currentElapsed.textContent = formatDuration(liveMs);
+    };
+
+    const render = () => {
+      syncButtons();
+      syncStatus();
+      renderTimes();
+      renderDailyList();
+    };
+
+    const stopTick = () => {
+      if (tickTimer !== null) {
+        clearInterval(tickTimer);
+        tickTimer = null;
+      }
+    };
+
+    const startTick = () => {
+      stopTick();
+
+      if (!isRunning()) {
+        return;
+      }
+
+      tickTimer = setInterval(renderTimes, 250);
+    };
+
+    const startTiming = () => {
+      if (isRunning()) {
+        return;
+      }
+
+      state.activeStart = Date.now();
+      saveState();
+      render();
+      startTick();
+    };
+
+    const endTiming = () => {
+      if (!isRunning()) {
+        showToast("尚未开始计时，无法结束");
+        return;
+      }
+
+      const start = state.activeStart;
+      const end = Date.now();
+      const durationMs = Math.max(0, end - start);
+
+      state.records.push({
+        id: createId(),
+        start,
+        end,
+        durationMs,
+        dateKey: toDateKey(end)
+      });
+      state.activeStart = null;
+      saveState();
+      stopTick();
+      render();
+    };
+
+    const resetMarker = () => {
+      if (!isRunning()) {
+        return;
+      }
+
+      state.activeStart = null;
+      saveState();
+      stopTick();
+      render();
+    };
+
+    const init = () => {
+      state = loadState();
+      render();
+
+      if (isRunning()) {
+        startTick();
+      }
+    };
+
+    els.btnStart.addEventListener("click", startTiming);
+    els.btnEnd.addEventListener("click", endTiming);
+    els.btnReset.addEventListener("click", resetMarker);
+    els.btnAdd.addEventListener("click", openAddModal);
+    els.btnAddCancel.addEventListener("click", closeAddModal);
+    els.btnAddConfirm.addEventListener("click", submitAddRecord);
+
+    els.addModal.addEventListener("click", (event) => {
+      if (event.target === els.addModal) {
+        closeAddModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && els.addModal.classList.contains("open")) {
+        closeAddModal();
+      }
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && isRunning()) {
+        renderTimes();
+      }
+    });
+
+    window.addEventListener("storage", (event) => {
+      if (event.key !== STORAGE_KEY) {
+        return;
+      }
+
+      state = loadState();
+      stopTick();
+      render();
+
+      if (isRunning()) {
+        startTick();
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
