@@ -187,6 +187,30 @@
       color: var(--accent);
     }
 
+    .io_bar {
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .io_bar.ready {
+      display: grid;
+    }
+
+    .io_bar button {
+      min-height: 40px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+
+    .io_bar button:hover {
+      color: var(--text);
+      border-color: rgba(138, 154, 124, 0.4);
+    }
+
     .summary {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -537,6 +561,12 @@
       <button type="button" class="btn_end" id="btnEnd" disabled>结束计时</button>
       <button type="button" class="btn_reset" id="btnReset" disabled>重置标记</button>
       <button type="button" class="btn_add" id="btnAdd">补充时长</button>
+    </div>
+
+    <div class="io_bar" id="ioBar" aria-hidden="true">
+      <button type="button" id="btnExport" disabled>导出 JSON</button>
+      <button type="button" id="btnImport" disabled>导入 JSON</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden />
     </div>
 
     <div class="summary">
@@ -1096,6 +1126,167 @@
     });
 
     init();
+
+    // 供导入导出延迟模块使用；该模块失败不影响主功能
+    window.FragmentedTimeApp = {
+      STORAGE_KEY,
+      notify: showToast,
+      parseStoredState,
+      reloadFromStorage: () => {
+        state = loadState();
+        stopTick();
+        render();
+
+        if (isRunning()) {
+          startTick();
+        }
+      }
+    };
+  </script>
+
+  <script>
+    // 页面 load 完成后再挂载导入导出；失败则按钮保持隐藏
+    window.addEventListener("load", () => {
+      try {
+        const app = window.FragmentedTimeApp;
+        const ioBar = document.getElementById("ioBar");
+        const btnExport = document.getElementById("btnExport");
+        const btnImport = document.getElementById("btnImport");
+        const importFile = document.getElementById("importFile");
+
+        if (!app || !ioBar || !btnExport || !btnImport || !importFile) {
+          return;
+        }
+
+        if (typeof Blob === "undefined" || typeof FileReader === "undefined") {
+          return;
+        }
+
+        const buildExportPayload = () => {
+          let stored = null;
+
+          try {
+            const raw = localStorage.getItem(app.STORAGE_KEY);
+            stored = raw ? JSON.parse(raw) : { records: [], activeStart: null };
+          } catch (error) {
+            stored = { records: [], activeStart: null };
+          }
+
+          return {
+            app: "fragmented_time",
+            version: 2,
+            exportedAt: new Date().toISOString(),
+            data: stored
+          };
+        };
+
+        const extractImportData = (parsed) => {
+          if (!parsed || typeof parsed !== "object") {
+            return null;
+          }
+
+          if (parsed.data && typeof parsed.data === "object") {
+            return parsed.data;
+          }
+
+          if (Array.isArray(parsed.records)) {
+            return parsed;
+          }
+
+          return null;
+        };
+
+        const downloadJson = (payload) => {
+          const text = JSON.stringify(payload, null, 2);
+          const blob = new Blob([text], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const stamp = new Date().toISOString().slice(0, 10);
+          const link = document.createElement("a");
+
+          link.href = url;
+          link.download = `碎片化时长-备份-${stamp}.json`;
+          link.style.display = "none";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+
+          setTimeout(() => {
+            URL.revokeObjectURL(url);
+          }, 1000);
+        };
+
+        const exportData = () => {
+          try {
+            downloadJson(buildExportPayload());
+            app.notify("已导出 JSON 文件", "ok");
+          } catch (error) {
+            console.error(error);
+            app.notify("导出失败");
+          }
+        };
+
+        const importData = (file) => {
+          if (!file) {
+            return;
+          }
+
+          const reader = new FileReader();
+
+          reader.onerror = () => {
+            app.notify("读取文件失败");
+          };
+
+          reader.onload = () => {
+            try {
+              const parsed = JSON.parse(String(reader.result || ""));
+              const rawData = extractImportData(parsed);
+
+              if (!rawData) {
+                app.notify("JSON 格式不正确");
+                return;
+              }
+
+              const nextState = app.parseStoredState(rawData);
+              const hasLocal = !!localStorage.getItem(app.STORAGE_KEY);
+
+              if (hasLocal) {
+                const ok = window.confirm("导入将替换当前本机全部计时数据，是否继续？");
+
+                if (!ok) {
+                  return;
+                }
+              }
+
+              localStorage.setItem(app.STORAGE_KEY, JSON.stringify(nextState));
+              app.reloadFromStorage();
+              app.notify(`导入成功，共 ${nextState.records.length} 条记录`, "ok");
+            } catch (error) {
+              console.error(error);
+              app.notify("导入失败，请检查 JSON 文件");
+            }
+          };
+
+          reader.readAsText(file, "utf-8");
+        };
+
+        btnExport.disabled = false;
+        btnImport.disabled = false;
+        ioBar.classList.add("ready");
+        ioBar.setAttribute("aria-hidden", "false");
+
+        btnExport.addEventListener("click", exportData);
+        btnImport.addEventListener("click", () => {
+          importFile.value = "";
+          importFile.click();
+        });
+        importFile.addEventListener("change", () => {
+          const file = importFile.files && importFile.files[0];
+          importData(file);
+        });
+      } catch (error) {
+        console.warn("导入导出功能不可用，主功能不受影响", error);
+      }
+    });
   </script>
 </body>
 </html>
