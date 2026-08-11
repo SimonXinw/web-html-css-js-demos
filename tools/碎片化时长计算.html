@@ -639,7 +639,7 @@
 
     .project_list .project_item {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr);
       gap: 10px;
       align-items: center;
       padding: 11px 12px;
@@ -669,10 +669,13 @@
 
     .project_list .project_actions {
       display: flex;
+      flex-wrap: wrap;
       gap: 6px;
     }
 
     .project_list .project_actions button {
+      flex: 1 1 auto;
+      min-width: 56px;
       min-height: 34px;
       padding: 0 9px;
       border: 1px solid var(--line);
@@ -683,8 +686,14 @@
       font-weight: 500;
     }
 
+    .project_list .project_actions .warn {
+      color: var(--warn);
+      border-color: rgba(232, 165, 75, 0.35);
+    }
+
     .project_list .project_actions .danger {
       color: var(--danger);
+      border-color: rgba(224, 112, 112, 0.35);
     }
 
     .modal .project_close {
@@ -834,7 +843,7 @@
   <div class="modal_mask" id="projectModal" inert>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
       <h3 id="projectModalTitle">项目管理</h3>
-      <p class="hint">每条计时记录只属于一个项目，切换后统计与明细会同步更新</p>
+      <p class="hint">「清空」只清该项目记录并保留项目；「删除」会移除整个项目及其记录</p>
       <div class="field_inline">
         <div class="field">
           <label for="newProjectName">新项目名称</label>
@@ -1277,6 +1286,7 @@
         const meta = document.createElement("div");
         const actions = document.createElement("div");
         const renameButton = document.createElement("button");
+        const clearButton = document.createElement("button");
         const deleteButton = document.createElement("button");
         const { totalMs, sessionCount } = getTotals(project.id);
 
@@ -1294,15 +1304,24 @@
         renameButton.dataset.projectId = project.id;
         renameButton.disabled = running;
 
+        clearButton.type = "button";
+        clearButton.className = "warn";
+        clearButton.textContent = "清空";
+        clearButton.title = "清除该项目全部计时记录，保留项目";
+        clearButton.dataset.action = "clear";
+        clearButton.dataset.projectId = project.id;
+        clearButton.disabled = running || sessionCount === 0;
+
         deleteButton.type = "button";
         deleteButton.className = "danger";
         deleteButton.textContent = "删除";
+        deleteButton.title = "删除整个项目及其全部记录";
         deleteButton.dataset.action = "delete";
         deleteButton.dataset.projectId = project.id;
         deleteButton.disabled = running || state.projects.length === 1;
 
         info.append(name, meta);
-        actions.append(renameButton, deleteButton);
+        actions.append(renameButton, clearButton, deleteButton);
         item.append(info, actions);
         fragment.appendChild(item);
       }
@@ -1393,6 +1412,40 @@
       showToast("项目名称已更新", "ok");
     };
 
+    const clearProjectData = (projectId) => {
+      if (isRunning()) {
+        showToast("计时中不能清空项目数据");
+        return;
+      }
+
+      const project = state.projects.find((item) => item.id === projectId);
+
+      if (!project) {
+        return;
+      }
+
+      const recordCount = getProjectRecords(projectId).length;
+
+      if (recordCount === 0) {
+        showToast("该项目暂无记录可清空");
+        return;
+      }
+
+      const ok = window.confirm(
+        `清空「${project.name}」的 ${recordCount} 条计时记录？项目会保留，此操作无法恢复。`
+      );
+
+      if (!ok) {
+        return;
+      }
+
+      state.records = state.records.filter((record) => record.projectId !== projectId);
+      saveState();
+      render();
+      renderProjectList();
+      showToast(`已清空「${project.name}」的记录`, "ok");
+    };
+
     const deleteProject = (projectId) => {
       if (isRunning()) {
         showToast("计时中不能删除项目");
@@ -1412,7 +1465,7 @@
 
       const recordCount = getProjectRecords(projectId).length;
       const message = recordCount
-        ? `删除「${project.name}」会同时删除其中 ${recordCount} 条记录，且无法恢复。是否继续？`
+        ? `删除项目「${project.name}」会同时删除其中 ${recordCount} 条记录，且无法恢复。是否继续？`
         : `确定删除项目「${project.name}」吗？`;
 
       if (!window.confirm(message)) {
@@ -1673,6 +1726,10 @@
 
       if (button.dataset.action === "rename") {
         renameProject(button.dataset.projectId);
+      }
+
+      if (button.dataset.action === "clear") {
+        clearProjectData(button.dataset.projectId);
       }
 
       if (button.dataset.action === "delete") {
