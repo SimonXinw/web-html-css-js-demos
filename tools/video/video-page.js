@@ -129,6 +129,8 @@
 
         const RESOLUTION_MODE_DEFAULT_LABELS = {
             original: "保持原始像素（与源同宽高）（页面初始默认）",
+            cap2160: "限制在 2160p / 4K 以内",
+            cap1440: "限制在 1440p / 2K 以内",
             cap1080: "限制在 1080p 以内（常用）",
             cap720: "限制在 720p 以内（常用）",
             cap480: "限制在 480p 以内（常用）"
@@ -690,6 +692,8 @@
 
                 if (!w || !h) {
                     applyText("original", RESOLUTION_MODE_DEFAULT_LABELS.original);
+                    applyText("cap2160", RESOLUTION_MODE_DEFAULT_LABELS.cap2160);
+                    applyText("cap1440", RESOLUTION_MODE_DEFAULT_LABELS.cap1440);
                     applyText("cap1080", RESOLUTION_MODE_DEFAULT_LABELS.cap1080);
                     applyText("cap720", RESOLUTION_MODE_DEFAULT_LABELS.cap720);
                     applyText("cap480", RESOLUTION_MODE_DEFAULT_LABELS.cap480);
@@ -702,6 +706,8 @@
                 const ratioSeg = ratio ? `，宽高比约 ${ratio}` : "";
 
                 applyText("original", `保持原始像素（源 ${px}${ratioSeg}）`);
+                applyText("cap2160", `限制在 2160p / 4K 以内（等比缩小；源 ${px}${ratioSeg}）`);
+                applyText("cap1440", `限制在 1440p / 2K 以内（等比缩小；源 ${px}${ratioSeg}）`);
                 applyText("cap1080", `限制在 1080p 以内（等比缩小；源 ${px}${ratioSeg}）`);
                 applyText("cap720", `限制在 720p 以内（等比缩小；源 ${px}${ratioSeg}）`);
                 applyText("cap480", `限制在 480p 以内（等比缩小；源 ${px}${ratioSeg}）`);
@@ -992,7 +998,11 @@
             buildVideoFilter(resolutionMode, fpsMode) {
                 const parts = [];
 
-                    if (resolutionMode === "cap1080") {
+                if (resolutionMode === "cap2160") {
+                    parts.push("scale=w='min(iw\\,3840)':h='min(ih\\,2160)':force_original_aspect_ratio=decrease");
+                } else if (resolutionMode === "cap1440") {
+                    parts.push("scale=w='min(iw\\,2560)':h='min(ih\\,1440)':force_original_aspect_ratio=decrease");
+                } else if (resolutionMode === "cap1080") {
                     parts.push("scale=w='min(iw\\,1920)':h='min(ih\\,1080)':force_original_aspect_ratio=decrease");
                 } else if (resolutionMode === "cap720") {
                     parts.push("scale=w='min(iw\\,1280)':h='min(ih\\,720)':force_original_aspect_ratio=decrease");
