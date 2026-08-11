@@ -837,9 +837,9 @@
                                     </select>
                                 </div>
 
-                                <div class="col-md-6">
+                                <div class="col-md-6" id="audioBitrateFieldWrap">
                                     <label for="audioBitrateK" class="form-label">
-                                        <i class="fas fa-wave-square me-2"></i>音频码率（AAC，kbps）
+                                        <i class="fas fa-wave-square me-2"></i>音频码率（重新编码时，kbps）
                                     </label>
                                     <select class="form-select" id="audioBitrateK">
                                         <option value="96">96 kbps</option>
@@ -847,6 +847,7 @@
                                         <option value="160">160 kbps</option>
                                         <option value="192">192 kbps（更饱满）</option>
                                     </select>
+                                    <div class="form-text">仅在上方音频选「重新编码」时生效；选「复制音轨」或「删除音频」时本项会隐藏且不参与转码。</div>
                                 </div>
 
                                 <div class="col-12">

@@ -153,6 +153,7 @@
                 this.bindGeneratePreviewModal();
                 this.bindCompressTemplateButtons();
                 this.bindRateControlHandlers();
+                this.bindAudioModeHandlers();
                 this.initFfmpeg();
                 this.refreshCompressProSnapshot();
             }
@@ -434,11 +435,35 @@
                 this.syncRateControlUi();
             }
 
+            bindAudioModeHandlers() {
+                const audioModeEl = document.getElementById("audioMode");
+
+                if (!audioModeEl) {
+                    return;
+                }
+
+                audioModeEl.addEventListener("change", () => this.syncAudioModeUi());
+                this.syncAudioModeUi();
+            }
+
             syncRateControlUi() {
                 const mode = document.getElementById("rateControl").value;
                 const showCrf = mode === "crf";
                 document.getElementById("crfFieldWrap").style.display = showCrf ? "" : "none";
                 document.getElementById("bitrateFieldWrap").style.display = showCrf ? "none" : "";
+                this.refreshCompressProSnapshot();
+            }
+
+            syncAudioModeUi() {
+                const audioModeEl = document.getElementById("audioMode");
+                const wrap = document.getElementById("audioBitrateFieldWrap");
+
+                if (!audioModeEl || !wrap) {
+                    return;
+                }
+
+                const needsBitrate = audioModeEl.value === "aac";
+                wrap.style.display = needsBitrate ? "" : "none";
                 this.refreshCompressProSnapshot();
             }
 
@@ -779,12 +804,23 @@
                 const vMbps = document.getElementById("videoBitrateMbps")?.value ?? "—";
                 const extra = (document.getElementById("extraFfmpegArgs")?.value || "").trim();
 
+                const audioModeVal = document.getElementById("audioMode")?.value || "aac";
+                let audioBitrateSnap = "—";
+
+                if (audioModeVal === "aac") {
+                    audioBitrateSnap = `${document.getElementById("audioBitrateK")?.value || "—"} kbps（${this.getSelectedOptionText("audioBitrateK")}）`;
+                } else if (audioModeVal === "copy") {
+                    audioBitrateSnap = "不适用（复制原音轨，不改码率）";
+                } else if (audioModeVal === "none") {
+                    audioBitrateSnap = "不适用（已删除音轨，不参与编码）";
+                }
+
                 let formHtml = [
                     this.snapRow("输出容器 / 编码", this.getSelectedOptionText("outputFormat")),
                     this.snapRow("分辨率策略", this.getSelectedOptionText("resolutionMode")),
                     this.snapRow("输出帧率", this.getSelectedOptionText("fpsMode")),
                     this.snapRow("音频", this.getSelectedOptionText("audioMode")),
-                    this.snapRow("音频码率（表单值）", `${document.getElementById("audioBitrateK")?.value || "—"} kbps（${this.getSelectedOptionText("audioBitrateK")}）`),
+                    this.snapRow("音频码率", audioBitrateSnap),
                     this.snapRow("码率控制", this.getSelectedOptionText("rateControl"))
                 ];
 
