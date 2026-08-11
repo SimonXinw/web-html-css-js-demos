@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#12180f" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#12180f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <title>碎片化时长计算</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #12180f;
@@ -79,6 +79,71 @@
       margin-top: 6px;
       font-size: 0.82rem;
       color: var(--muted);
+    }
+
+    .project_switcher {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+      padding: 14px;
+      background:
+        linear-gradient(135deg, rgba(124, 179, 66, 0.1), transparent 58%),
+        var(--surface);
+      border: 1px solid rgba(124, 179, 66, 0.24);
+      border-radius: var(--radius);
+    }
+
+    .project_switcher .select_wrap {
+      min-width: 0;
+    }
+
+    .project_switcher label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .project_switcher select {
+      width: 100%;
+      min-height: 46px;
+      padding: 8px 36px 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #12180f;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .project_switcher select:focus {
+      outline: none;
+      border-color: rgba(124, 179, 66, 0.58);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .project_switcher select:disabled {
+      opacity: 0.62;
+      cursor: not-allowed;
+    }
+
+    .project_switcher .meta {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .project_switcher .btn_manage {
+      min-width: 92px;
+      min-height: 46px;
+      padding: 0 14px;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      font-size: 0.82rem;
     }
 
     .status_bar {
@@ -544,6 +609,93 @@
       box-shadow: 0 0 0 3px var(--accent-dim);
     }
 
+    .modal .field_inline {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .modal .field_inline .field {
+      margin-bottom: 0;
+    }
+
+    .modal .field_inline button {
+      min-height: 46px;
+      padding: 0 16px;
+      background: var(--accent);
+      color: #0f160c;
+    }
+
+    .project_list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: min(42vh, 320px);
+      margin-top: 16px;
+      overflow-y: auto;
+      list-style: none;
+    }
+
+    .project_list .project_item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(18, 24, 15, 0.55);
+    }
+
+    .project_list .project_item.is_current {
+      border-color: rgba(124, 179, 66, 0.4);
+      background: var(--accent-dim);
+    }
+
+    .project_list .project_name {
+      overflow: hidden;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .project_list .project_meta {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .project_list .project_actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .project_list .project_actions button {
+      min-height: 34px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+
+    .project_list .project_actions .danger {
+      color: var(--danger);
+    }
+
+    .modal .project_close {
+      width: 100%;
+      margin-top: 14px;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+      font-weight: 500;
+    }
+
     .modal .time_row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -592,6 +744,15 @@
       <p>记录零散工作片段，累计真实投入时间</p>
     </header>
 
+    <section class="project_switcher" aria-label="当前计时项目">
+      <div class="select_wrap">
+        <label for="projectSelect">当前项目</label>
+        <select id="projectSelect" aria-describedby="projectMeta"></select>
+        <div class="meta" id="projectMeta">0 次记录 · 00:00:00</div>
+      </div>
+      <button type="button" class="btn_manage" id="btnManageProjects">管理项目</button>
+    </section>
+
     <div class="status_bar" id="statusBar">
       <span class="status_dot"></span>
       <span id="statusText">空闲 · 可以开始计时</span>
@@ -607,7 +768,7 @@
     <div class="io_bar" id="ioBar" aria-hidden="true">
       <button type="button" id="btnExport" disabled>导出 JSON</button>
       <button type="button" id="btnImport" disabled>导入 JSON</button>
-      <input type="file" id="importFile" accept="application/json,.json" hidden />
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
     </div>
 
     <div class="summary">
@@ -645,22 +806,22 @@
     </section>
   </div>
 
-  <div class="modal_mask" id="addModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-labelledby="addModalTitle">
+  <div class="modal_mask" id="addModal" inert>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="addModalTitle">
       <h3 id="addModalTitle">补充时长</h3>
       <p class="hint">补录漏记的工作片段，会计入总次数与每日明细</p>
       <div class="field">
         <label for="addDate">日期</label>
-        <input type="date" id="addDate" required />
+        <input type="date" id="addDate" required>
       </div>
       <div class="time_row">
         <div class="field">
           <label for="addStartTime">开始时间</label>
-          <input type="time" id="addStartTime" required />
+          <input type="time" id="addStartTime" required>
         </div>
         <div class="field">
           <label for="addEndTime">结束时间</label>
-          <input type="time" id="addEndTime" required />
+          <input type="time" id="addEndTime" required>
         </div>
       </div>
       <div class="actions">
@@ -670,16 +831,50 @@
     </div>
   </div>
 
+  <div class="modal_mask" id="projectModal" inert>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+      <h3 id="projectModalTitle">项目管理</h3>
+      <p class="hint">每条计时记录只属于一个项目，切换后统计与明细会同步更新</p>
+      <div class="field_inline">
+        <div class="field">
+          <label for="newProjectName">新项目名称</label>
+          <input type="text" id="newProjectName" maxlength="30" placeholder="例如：官网改版">
+        </div>
+        <button type="button" id="btnCreateProject">新增</button>
+      </div>
+      <ul class="project_list" id="projectList"></ul>
+      <button type="button" class="project_close" id="btnProjectClose">完成</button>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status"></div>
 
   <script>
-    const STORAGE_KEY = "fragmented_time_v2";
+    const STORAGE_KEY = "fragmented_time_v3";
+    const PREVIOUS_KEY = "fragmented_time_v2";
     const LEGACY_KEY = "fragmented_time_v1";
+    const DEFAULT_PROJECT_NAME = "默认项目";
+    const MIGRATED_PROJECT_NAME = "原有记录";
 
-    const defaultState = () => ({
-      records: [],
-      activeStart: null
+    const createId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    const createProject = (name) => ({
+      id: `project-${createId()}`,
+      name,
+      createdAt: Date.now()
     });
+
+    const defaultState = (projectName = DEFAULT_PROJECT_NAME) => {
+      const project = createProject(projectName);
+
+      return {
+        version: 3,
+        projects: [project],
+        selectedProjectId: project.id,
+        records: [],
+        activeTimer: null
+      };
+    };
 
     let state = defaultState();
     let tickTimer = null;
@@ -688,6 +883,9 @@
     const els = {
       statusBar: document.getElementById("statusBar"),
       statusText: document.getElementById("statusText"),
+      projectSelect: document.getElementById("projectSelect"),
+      projectMeta: document.getElementById("projectMeta"),
+      btnManageProjects: document.getElementById("btnManageProjects"),
       btnStart: document.getElementById("btnStart"),
       btnEnd: document.getElementById("btnEnd"),
       btnReset: document.getElementById("btnReset"),
@@ -706,7 +904,12 @@
       addStartTime: document.getElementById("addStartTime"),
       addEndTime: document.getElementById("addEndTime"),
       btnAddCancel: document.getElementById("btnAddCancel"),
-      btnAddConfirm: document.getElementById("btnAddConfirm")
+      btnAddConfirm: document.getElementById("btnAddConfirm"),
+      projectModal: document.getElementById("projectModal"),
+      newProjectName: document.getElementById("newProjectName"),
+      btnCreateProject: document.getElementById("btnCreateProject"),
+      projectList: document.getElementById("projectList"),
+      btnProjectClose: document.getElementById("btnProjectClose")
     };
 
     const pad = (n) => String(n).padStart(2, "0");
@@ -716,9 +919,27 @@
       return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
     };
 
-    const createId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const normalizeProject = (item) => {
+      if (!item || typeof item !== "object") {
+        return null;
+      }
 
-    const normalizeRecord = (item) => {
+      const name = typeof item.name === "string" ? item.name.trim().slice(0, 30) : "";
+
+      if (!name) {
+        return null;
+      }
+
+      return {
+        id: typeof item.id === "string" && item.id ? item.id : `project-${createId()}`,
+        name,
+        createdAt: Number.isFinite(Number(item.createdAt))
+          ? Math.floor(Number(item.createdAt))
+          : Date.now()
+      };
+    };
+
+    const normalizeRecord = (item, fallbackProjectId) => {
       if (!item || typeof item !== "object") {
         return null;
       }
@@ -740,35 +961,41 @@
         start: Math.floor(start),
         end: Math.floor(end),
         durationMs: Math.floor(durationMs),
-        dateKey: typeof item.dateKey === "string" ? item.dateKey : toDateKey(end)
+        dateKey: typeof item.dateKey === "string" ? item.dateKey : toDateKey(end),
+        projectId: typeof item.projectId === "string" && item.projectId
+          ? item.projectId
+          : fallbackProjectId
       };
     };
 
     const migrateLegacy = (legacy) => {
-      const next = defaultState();
+      const previous = {
+        records: [],
+        activeStart: null
+      };
 
       if (typeof legacy.activeStart === "number" && legacy.activeStart > 0) {
-        next.activeStart = legacy.activeStart;
+        previous.activeStart = legacy.activeStart;
       }
 
       const totalMs = Math.max(0, Math.floor(Number(legacy.totalMs) || 0));
       const sessionCount = Math.max(0, Math.floor(Number(legacy.sessionCount) || 0));
 
       if (totalMs <= 0 || sessionCount <= 0) {
-        return next;
+        return parseStoredState(previous, MIGRATED_PROJECT_NAME);
       }
 
       const now = Date.now();
       const dateKey = toDateKey(now);
       const base = Math.floor(totalMs / sessionCount);
-      let remain = totalMs - base * sessionCount;
+      const remain = totalMs - base * sessionCount;
 
       for (let i = 0; i < sessionCount; i += 1) {
         const durationMs = base + (i === sessionCount - 1 ? remain : 0);
         const end = now - (sessionCount - 1 - i) * 1000;
         const start = end - durationMs;
 
-        next.records.push({
+        previous.records.push({
           id: `migrated-${i}-${createId()}`,
           start,
           end,
@@ -777,18 +1004,64 @@
         });
       }
 
-      return next;
+      return parseStoredState(previous, MIGRATED_PROJECT_NAME);
     };
 
-    const parseStoredState = (parsed) => {
-      const next = defaultState();
+    const parseStoredState = (parsed, fallbackProjectName = MIGRATED_PROJECT_NAME) => {
+      const hasProjects = Array.isArray(parsed.projects) && parsed.projects.length > 0;
+      const normalizedProjects = hasProjects
+        ? parsed.projects.map(normalizeProject).filter(Boolean)
+        : [];
+      const next = normalizedProjects.length
+        ? {
+            version: 3,
+            projects: normalizedProjects,
+            selectedProjectId: "",
+            records: [],
+            activeTimer: null
+          }
+        : defaultState(fallbackProjectName);
+      const projectIds = new Set(next.projects.map((project) => project.id));
+      const requestedProjectId = typeof parsed.selectedProjectId === "string"
+        ? parsed.selectedProjectId
+        : "";
+
+      next.selectedProjectId = projectIds.has(requestedProjectId)
+        ? requestedProjectId
+        : next.projects[0].id;
 
       if (Array.isArray(parsed.records)) {
-        next.records = parsed.records.map(normalizeRecord).filter(Boolean);
+        next.records = parsed.records
+          .map((item) => normalizeRecord(item, next.projects[0].id))
+          .filter(Boolean)
+          .map((record) => ({
+            ...record,
+            projectId: projectIds.has(record.projectId)
+              ? record.projectId
+              : next.projects[0].id
+          }));
       }
 
-      if (typeof parsed.activeStart === "number" && parsed.activeStart > 0) {
-        next.activeStart = parsed.activeStart;
+      if (
+        parsed.activeTimer
+        && typeof parsed.activeTimer === "object"
+        && Number.isFinite(Number(parsed.activeTimer.start))
+        && Number(parsed.activeTimer.start) > 0
+      ) {
+        const activeProjectId = projectIds.has(parsed.activeTimer.projectId)
+          ? parsed.activeTimer.projectId
+          : next.selectedProjectId;
+
+        next.activeTimer = {
+          projectId: activeProjectId,
+          start: Math.floor(Number(parsed.activeTimer.start))
+        };
+        next.selectedProjectId = activeProjectId;
+      } else if (typeof parsed.activeStart === "number" && parsed.activeStart > 0) {
+        next.activeTimer = {
+          projectId: next.selectedProjectId,
+          start: Math.floor(parsed.activeStart)
+        };
       }
 
       return next;
@@ -800,6 +1073,14 @@
 
         if (raw) {
           return parseStoredState(JSON.parse(raw));
+        }
+
+        const previousRaw = localStorage.getItem(PREVIOUS_KEY);
+
+        if (previousRaw) {
+          const migrated = parseStoredState(JSON.parse(previousRaw), MIGRATED_PROJECT_NAME);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+          return migrated;
         }
 
         const legacyRaw = localStorage.getItem(LEGACY_KEY);
@@ -826,23 +1107,28 @@
       }
     };
 
-    const getTotals = () => {
-      let totalMs = 0;
+    const getProjectRecords = (projectId = state.selectedProjectId) => (
+      state.records.filter((record) => record.projectId === projectId)
+    );
 
-      for (const record of state.records) {
+    const getTotals = (projectId = state.selectedProjectId) => {
+      let totalMs = 0;
+      const records = getProjectRecords(projectId);
+
+      for (const record of records) {
         totalMs += record.durationMs;
       }
 
       return {
         totalMs,
-        sessionCount: state.records.length
+        sessionCount: records.length
       };
     };
 
     const getDailyGroups = () => {
       const map = new Map();
 
-      for (const record of state.records) {
+      for (const record of getProjectRecords()) {
         const key = record.dateKey;
         const current = map.get(key);
 
@@ -905,14 +1191,14 @@
       return { title: base, sub: "" };
     };
 
-    const isRunning = () => state.activeStart !== null;
+    const isRunning = () => state.activeTimer !== null;
 
     const getLiveMs = () => {
       if (!isRunning()) {
         return 0;
       }
 
-      return Math.max(0, Date.now() - state.activeStart);
+      return Math.max(0, Date.now() - state.activeTimer.start);
     };
 
     const showToast = (message, type = "error") => {
@@ -954,12 +1240,214 @@
       els.addStartTime.value = currentTime;
       els.addEndTime.value = currentTime;
       els.addModal.classList.add("open");
-      els.addModal.setAttribute("aria-hidden", "false");
+      els.addModal.inert = false;
     };
 
     const closeAddModal = () => {
       els.addModal.classList.remove("open");
-      els.addModal.setAttribute("aria-hidden", "true");
+      els.addModal.inert = true;
+    };
+
+    const renderProjectOptions = () => {
+      const fragment = document.createDocumentFragment();
+
+      for (const project of state.projects) {
+        const option = document.createElement("option");
+        option.value = project.id;
+        option.textContent = project.name;
+        fragment.appendChild(option);
+      }
+
+      els.projectSelect.replaceChildren(fragment);
+      els.projectSelect.value = state.selectedProjectId;
+      els.projectSelect.disabled = isRunning();
+
+      const { totalMs, sessionCount } = getTotals();
+      els.projectMeta.textContent = `${sessionCount} 次记录 · ${formatDuration(totalMs)}`;
+    };
+
+    const renderProjectList = () => {
+      const fragment = document.createDocumentFragment();
+      const running = isRunning();
+
+      for (const project of state.projects) {
+        const item = document.createElement("li");
+        const info = document.createElement("div");
+        const name = document.createElement("div");
+        const meta = document.createElement("div");
+        const actions = document.createElement("div");
+        const renameButton = document.createElement("button");
+        const deleteButton = document.createElement("button");
+        const { totalMs, sessionCount } = getTotals(project.id);
+
+        item.className = "project_item";
+        item.classList.toggle("is_current", project.id === state.selectedProjectId);
+        name.className = "project_name";
+        name.textContent = project.name;
+        meta.className = "project_meta";
+        meta.textContent = `${sessionCount} 次 · ${formatDuration(totalMs)}`;
+        actions.className = "project_actions";
+
+        renameButton.type = "button";
+        renameButton.textContent = "改名";
+        renameButton.dataset.action = "rename";
+        renameButton.dataset.projectId = project.id;
+        renameButton.disabled = running;
+
+        deleteButton.type = "button";
+        deleteButton.className = "danger";
+        deleteButton.textContent = "删除";
+        deleteButton.dataset.action = "delete";
+        deleteButton.dataset.projectId = project.id;
+        deleteButton.disabled = running || state.projects.length === 1;
+
+        info.append(name, meta);
+        actions.append(renameButton, deleteButton);
+        item.append(info, actions);
+        fragment.appendChild(item);
+      }
+
+      els.projectList.replaceChildren(fragment);
+      els.newProjectName.disabled = running;
+      els.btnCreateProject.disabled = running;
+    };
+
+    const openProjectModal = () => {
+      renderProjectList();
+      els.newProjectName.value = "";
+      els.projectModal.classList.add("open");
+      els.projectModal.inert = false;
+
+      if (!isRunning()) {
+        setTimeout(() => els.newProjectName.focus(), 0);
+      }
+    };
+
+    const closeProjectModal = () => {
+      els.projectModal.classList.remove("open");
+      els.projectModal.inert = true;
+    };
+
+    const createNewProject = () => {
+      if (isRunning()) {
+        showToast("请先结束当前计时，再新增项目");
+        return;
+      }
+
+      const name = els.newProjectName.value.trim().slice(0, 30);
+
+      if (!name) {
+        showToast("请输入项目名称");
+        return;
+      }
+
+      if (state.projects.some((project) => project.name === name)) {
+        showToast("已存在同名项目");
+        return;
+      }
+
+      const project = createProject(name);
+      state.projects.push(project);
+      state.selectedProjectId = project.id;
+      saveState();
+      els.newProjectName.value = "";
+      render();
+      renderProjectList();
+      showToast(`已创建项目「${name}」`, "ok");
+    };
+
+    const renameProject = (projectId) => {
+      if (isRunning()) {
+        showToast("计时中不能修改项目");
+        return;
+      }
+
+      const project = state.projects.find((item) => item.id === projectId);
+
+      if (!project) {
+        return;
+      }
+
+      const input = window.prompt("请输入新的项目名称", project.name);
+
+      if (input === null) {
+        return;
+      }
+
+      const name = input.trim().slice(0, 30);
+
+      if (!name) {
+        showToast("项目名称不能为空");
+        return;
+      }
+
+      if (state.projects.some((item) => item.id !== projectId && item.name === name)) {
+        showToast("已存在同名项目");
+        return;
+      }
+
+      project.name = name;
+      saveState();
+      render();
+      renderProjectList();
+      showToast("项目名称已更新", "ok");
+    };
+
+    const deleteProject = (projectId) => {
+      if (isRunning()) {
+        showToast("计时中不能删除项目");
+        return;
+      }
+
+      if (state.projects.length === 1) {
+        showToast("至少需要保留一个项目");
+        return;
+      }
+
+      const project = state.projects.find((item) => item.id === projectId);
+
+      if (!project) {
+        return;
+      }
+
+      const recordCount = getProjectRecords(projectId).length;
+      const message = recordCount
+        ? `删除「${project.name}」会同时删除其中 ${recordCount} 条记录，且无法恢复。是否继续？`
+        : `确定删除项目「${project.name}」吗？`;
+
+      if (!window.confirm(message)) {
+        return;
+      }
+
+      state.projects = state.projects.filter((item) => item.id !== projectId);
+      state.records = state.records.filter((record) => record.projectId !== projectId);
+
+      if (state.selectedProjectId === projectId) {
+        state.selectedProjectId = state.projects[0].id;
+      }
+
+      saveState();
+      render();
+      renderProjectList();
+      showToast("项目已删除", "ok");
+    };
+
+    const switchProject = () => {
+      if (isRunning()) {
+        els.projectSelect.value = state.selectedProjectId;
+        showToast("计时中不能切换项目");
+        return;
+      }
+
+      const projectId = els.projectSelect.value;
+
+      if (!state.projects.some((project) => project.id === projectId)) {
+        return;
+      }
+
+      state.selectedProjectId = projectId;
+      saveState();
+      render();
     };
 
     const submitAddRecord = () => {
@@ -992,7 +1480,8 @@
         start,
         end,
         durationMs,
-        dateKey
+        dateKey,
+        projectId: state.selectedProjectId
       });
       saveState();
       closeAddModal();
@@ -1010,11 +1499,14 @@
 
     const syncStatus = () => {
       const running = isRunning();
+      const activeProject = running
+        ? state.projects.find((project) => project.id === state.activeTimer.projectId)
+        : null;
 
       els.statusBar.classList.toggle("is_running", running);
       els.actualCard.classList.toggle("is_live", running);
       els.statusText.textContent = running
-        ? "计时中 · 结束后会计入历史与每日明细"
+        ? `「${activeProject ? activeProject.name : "当前项目"}」计时中 · 结束后自动归档`
         : "空闲 · 可以开始计时";
     };
 
@@ -1074,6 +1566,7 @@
     const render = () => {
       syncButtons();
       syncStatus();
+      renderProjectOptions();
       renderTimes();
       renderDailyList();
     };
@@ -1100,7 +1593,10 @@
         return;
       }
 
-      state.activeStart = Date.now();
+      state.activeTimer = {
+        projectId: state.selectedProjectId,
+        start: Date.now()
+      };
       saveState();
       render();
       startTick();
@@ -1112,7 +1608,8 @@
         return;
       }
 
-      const start = state.activeStart;
+      const activeTimer = state.activeTimer;
+      const start = activeTimer.start;
       const end = Date.now();
       const durationMs = Math.max(0, end - start);
 
@@ -1121,9 +1618,10 @@
         start,
         end,
         durationMs,
-        dateKey: toDateKey(end)
+        dateKey: toDateKey(end),
+        projectId: activeTimer.projectId
       });
-      state.activeStart = null;
+      state.activeTimer = null;
       saveState();
       stopTick();
       render();
@@ -1134,7 +1632,7 @@
         return;
       }
 
-      state.activeStart = null;
+      state.activeTimer = null;
       saveState();
       stopTick();
       render();
@@ -1155,6 +1653,32 @@
     els.btnAdd.addEventListener("click", openAddModal);
     els.btnAddCancel.addEventListener("click", closeAddModal);
     els.btnAddConfirm.addEventListener("click", submitAddRecord);
+    els.projectSelect.addEventListener("change", switchProject);
+    els.btnManageProjects.addEventListener("click", openProjectModal);
+    els.btnProjectClose.addEventListener("click", closeProjectModal);
+    els.btnCreateProject.addEventListener("click", createNewProject);
+
+    els.newProjectName.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        createNewProject();
+      }
+    });
+
+    els.projectList.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action]");
+
+      if (!button) {
+        return;
+      }
+
+      if (button.dataset.action === "rename") {
+        renameProject(button.dataset.projectId);
+      }
+
+      if (button.dataset.action === "delete") {
+        deleteProject(button.dataset.projectId);
+      }
+    });
 
     els.addModal.addEventListener("click", (event) => {
       if (event.target === els.addModal) {
@@ -1162,9 +1686,23 @@
       }
     });
 
+    els.projectModal.addEventListener("click", (event) => {
+      if (event.target === els.projectModal) {
+        closeProjectModal();
+      }
+    });
+
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && els.addModal.classList.contains("open")) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      if (els.addModal.classList.contains("open")) {
         closeAddModal();
+      }
+
+      if (els.projectModal.classList.contains("open")) {
+        closeProjectModal();
       }
     });
 
@@ -1195,6 +1733,14 @@
       STORAGE_KEY,
       notify: showToast,
       parseStoredState,
+      getState: () => state,
+      parseImportedState: (parsed) => {
+        const isLegacy = !Array.isArray(parsed.records)
+          && !Array.isArray(parsed.projects)
+          && ("totalMs" in parsed || "sessionCount" in parsed);
+
+        return isLegacy ? migrateLegacy(parsed) : parseStoredState(parsed);
+      },
       reloadFromStorage: () => {
         state = loadState();
         stopTick();
@@ -1226,20 +1772,11 @@
         }
 
         const buildExportPayload = () => {
-          let stored = null;
-
-          try {
-            const raw = localStorage.getItem(app.STORAGE_KEY);
-            stored = raw ? JSON.parse(raw) : { records: [], activeStart: null };
-          } catch (error) {
-            stored = { records: [], activeStart: null };
-          }
-
           return {
             app: "fragmented_time",
-            version: 2,
+            version: 3,
             exportedAt: new Date().toISOString(),
-            data: stored
+            data: app.getState()
           };
         };
 
@@ -1252,7 +1789,12 @@
             return parsed.data;
           }
 
-          if (Array.isArray(parsed.records)) {
+          if (
+            Array.isArray(parsed.records)
+            || Array.isArray(parsed.projects)
+            || "totalMs" in parsed
+            || "sessionCount" in parsed
+          ) {
             return parsed;
           }
 
@@ -1309,7 +1851,7 @@
                 return;
               }
 
-              const nextState = app.parseStoredState(rawData);
+              const nextState = app.parseImportedState(rawData);
               const hasLocal = !!localStorage.getItem(app.STORAGE_KEY);
 
               if (hasLocal) {
@@ -1322,7 +1864,10 @@
 
               localStorage.setItem(app.STORAGE_KEY, JSON.stringify(nextState));
               app.reloadFromStorage();
-              app.notify(`导入成功，共 ${nextState.records.length} 条记录`, "ok");
+              app.notify(
+                `导入成功，共 ${nextState.projects.length} 个项目、${nextState.records.length} 条记录`,
+                "ok"
+              );
             } catch (error) {
               console.error(error);
               app.notify("导入失败，请检查 JSON 文件");
