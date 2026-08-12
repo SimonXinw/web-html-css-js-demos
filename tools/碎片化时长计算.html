@@ -84,8 +84,10 @@
     .project_switcher {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: end;
+      grid-template-rows: auto auto auto;
+      column-gap: 10px;
+      row-gap: 6px;
+      align-items: center;
       padding: 14px;
       background:
         linear-gradient(135deg, rgba(124, 179, 66, 0.1), transparent 58%),
@@ -94,13 +96,8 @@
       border-radius: var(--radius);
     }
 
-    .project_switcher .select_wrap {
-      min-width: 0;
-    }
-
     .project_switcher label {
-      display: block;
-      margin-bottom: 6px;
+      grid-column: 1 / -1;
       font-size: 0.7rem;
       letter-spacing: 0.1em;
       color: var(--muted);
@@ -108,6 +105,7 @@
 
     .project_switcher select {
       width: 100%;
+      min-width: 0;
       min-height: 46px;
       padding: 8px 36px 8px 12px;
       border: 1px solid var(--line);
@@ -131,7 +129,7 @@
     }
 
     .project_switcher .meta {
-      margin-top: 6px;
+      grid-column: 1 / -1;
       color: var(--muted);
       font-size: 0.72rem;
     }
@@ -754,12 +752,10 @@
     </header>
 
     <section class="project_switcher" aria-label="当前计时项目">
-      <div class="select_wrap">
-        <label for="projectSelect">当前项目</label>
-        <select id="projectSelect" aria-describedby="projectMeta"></select>
-        <div class="meta" id="projectMeta">0 次记录 · 00:00:00</div>
-      </div>
+      <label for="projectSelect">当前项目</label>
+      <select id="projectSelect" aria-describedby="projectMeta"></select>
       <button type="button" class="btn_manage" id="btnManageProjects">管理项目</button>
+      <div class="meta" id="projectMeta">0 次记录 · 00:00:00</div>
     </section>
 
     <div class="status_bar" id="statusBar">
