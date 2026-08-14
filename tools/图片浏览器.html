@@ -195,6 +195,7 @@
 
     .swiper-slide-active img {
       transform: scale(1.05);
+      cursor: zoom-in;
     }
 
     .swiper-slide-prev img,
@@ -687,6 +688,266 @@
     [data-theme="dark"] .global_drop_overlay_inner {
       box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
     }
+
+    /* ========== 全屏看图 Lightbox ========== */
+    .image_lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 15000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1c1c1e;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.22s ease, visibility 0.22s ease;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .image_lightbox.is_open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    body.lightbox_open {
+      overflow: hidden;
+    }
+
+    .image_lightbox .stage {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: zoom-out;
+    }
+
+    .image_lightbox .stage.is_zoomed {
+      cursor: grab;
+    }
+
+    .image_lightbox .stage.is_zoomed.is_dragging {
+      cursor: grabbing;
+    }
+
+    .image_lightbox .stage img {
+      max-width: min(96vw, 100%);
+      max-height: min(92vh, 100%);
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      transform-origin: center center;
+      will-change: transform;
+      transition: transform 0.08s ease-out;
+      pointer-events: none;
+      border-radius: 2px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
+    }
+
+    .image_lightbox .close_btn {
+      position: absolute;
+      top: max(16px, env(safe-area-inset-top, 0px));
+      right: max(16px, env(safe-area-inset-right, 0px));
+      z-index: 5;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: none;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .image_lightbox .close_btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: scale(1.06);
+      box-shadow: none;
+    }
+
+    .image_lightbox .close_btn:active {
+      transform: scale(0.96);
+    }
+
+    .image_lightbox .nav_zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 33.333%;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .image_lightbox .nav_zone.left {
+      left: 0;
+      justify-content: flex-start;
+      padding-left: max(20px, env(safe-area-inset-left, 0px));
+    }
+
+    .image_lightbox .nav_zone.right {
+      right: 0;
+      justify-content: flex-end;
+      padding-right: max(20px, env(safe-area-inset-right, 0px));
+    }
+
+    .image_lightbox .nav_btn {
+      position: relative;
+      pointer-events: auto;
+      width: 56px;
+      height: 56px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      cursor: pointer;
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    }
+
+    .image_lightbox .nav_btn::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #fff;
+      border-radius: 2px;
+    }
+
+    .image_lightbox .nav_btn.prev::before {
+      transform: translate(-25%, -50%) rotate(45deg);
+      border-right: none;
+      border-top: none;
+    }
+
+    .image_lightbox .nav_btn.next::before {
+      transform: translate(-75%, -50%) rotate(45deg);
+      border-left: none;
+      border-bottom: none;
+    }
+
+    .image_lightbox .nav_btn:hover {
+      background: rgba(255, 255, 255, 0.24);
+      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
+      transform: scale(1.08);
+    }
+
+    .image_lightbox .nav_btn:active {
+      transform: scale(0.96);
+    }
+
+    /* PC：鼠标进入左右 1/3 才显示按钮 */
+    .image_lightbox .nav_zone.is_hot .nav_btn {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .image_lightbox .meta {
+      position: absolute;
+      left: 50%;
+      bottom: max(20px, env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      pointer-events: none;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.88);
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .image_lightbox .meta .counter {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .image_lightbox .meta .hint {
+      font-size: 12px;
+      opacity: 0.65;
+    }
+
+    .image_lightbox .zoom_badge {
+      position: absolute;
+      top: max(20px, env(safe-area-inset-top, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 4;
+      min-width: 56px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.45);
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .image_lightbox .zoom_badge.is_visible {
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .image_lightbox .nav_btn {
+        width: 44px;
+        height: 44px;
+        opacity: 0.55;
+        transform: scale(1);
+      }
+
+      .image_lightbox .nav_zone.is_hot .nav_btn,
+      .image_lightbox .nav_btn:active {
+        opacity: 1;
+      }
+
+      .image_lightbox .meta .hint {
+        display: none;
+      }
+
+      .image_lightbox .stage img {
+        max-width: 100vw;
+        max-height: 86vh;
+      }
+    }
+
+    @media (hover: none) {
+      .image_lightbox .nav_btn {
+        opacity: 0.5;
+        transform: scale(1);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .image_lightbox,
+      .image_lightbox .stage img,
+      .image_lightbox .nav_btn {
+        transition: none;
+      }
+    }
   </style>
 </head>
 
@@ -752,11 +1013,31 @@
     </div>
   </div>
 
+  <div id="image-lightbox" class="image_lightbox" aria-hidden="true" role="dialog"
+    aria-modal="true" aria-label="图片放大预览">
+    <button type="button" class="close_btn" id="lightbox-close" aria-label="关闭预览">&times;</button>
+    <div class="zoom_badge" id="lightbox-zoom-badge">100%</div>
+    <div class="stage" id="lightbox-stage">
+      <img id="lightbox-image" alt="放大预览" draggable="false" />
+    </div>
+    <div class="nav_zone left" id="lightbox-zone-left">
+      <button type="button" class="nav_btn prev" id="lightbox-prev" aria-label="上一张"></button>
+    </div>
+    <div class="nav_zone right" id="lightbox-zone-right">
+      <button type="button" class="nav_btn next" id="lightbox-next" aria-label="下一张"></button>
+    </div>
+    <div class="meta">
+      <div class="counter" id="lightbox-counter"></div>
+      <div class="hint">Alt + 滚轮缩放 · 拖拽平移 · Esc / 点击空白关闭</div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 
   <script>
     let imagePaths = [];
     let currentImageIndex = 0;
+    let isLightboxOpen = false;
     const blobUrlDisplayNames = new Map();
 
     function registerBlobUrl(url, file) {
@@ -865,6 +1146,8 @@
 
     // 动态加载图片
     async function loadImages(paths) {
+      closeImageLightbox();
+
       if (paths.length === 0) {
         swiperWrapper.innerHTML = "";
         imagePaths = [];
@@ -1139,6 +1422,39 @@
 
     // 键盘快捷键支持
     document.addEventListener("keydown", (event) => {
+      if (isLightboxOpen) {
+        switch (event.key) {
+          case "Escape":
+            event.preventDefault();
+            closeImageLightbox();
+            break;
+          case "ArrowLeft":
+            event.preventDefault();
+            lightboxGoPrev();
+            break;
+          case "ArrowRight":
+            event.preventDefault();
+            lightboxGoNext();
+            break;
+          case "Home":
+            event.preventDefault();
+            lightboxGoTo(0);
+            break;
+          case "End":
+            event.preventDefault();
+            lightboxGoTo(imagePaths.length - 1);
+            break;
+          case "0":
+            event.preventDefault();
+            resetLightboxZoom();
+            break;
+          default:
+            break;
+        }
+
+        return;
+      }
+
       if (imagePaths.length === 0) return;
 
       switch (event.key) {
@@ -1158,6 +1474,10 @@
           event.preventDefault();
           swiper.slideTo(imagePaths.length - 1);
           break;
+        case "Enter":
+          event.preventDefault();
+          openImageLightbox(currentImageIndex);
+          break;
         case "s":
         case "S":
           if (event.ctrlKey || event.metaKey) {
@@ -1166,6 +1486,357 @@
           }
           break;
       }
+    });
+
+    // ========== 全屏看图 Lightbox ==========
+    const lightboxEl = document.getElementById("image-lightbox");
+    const lightboxStage = document.getElementById("lightbox-stage");
+    const lightboxImage = document.getElementById("lightbox-image");
+    const lightboxCounter = document.getElementById("lightbox-counter");
+    const lightboxZoomBadge = document.getElementById("lightbox-zoom-badge");
+    const lightboxZoneLeft = document.getElementById("lightbox-zone-left");
+    const lightboxZoneRight = document.getElementById("lightbox-zone-right");
+    const lightboxCloseBtn = document.getElementById("lightbox-close");
+    const lightboxPrevBtn = document.getElementById("lightbox-prev");
+    const lightboxNextBtn = document.getElementById("lightbox-next");
+
+    const LIGHTBOX_MIN_SCALE = 1;
+    const LIGHTBOX_MAX_SCALE = 5;
+    const LIGHTBOX_ZOOM_STEP = 0.12;
+
+    let lightboxIndex = 0;
+    let lightboxScale = 1;
+    let lightboxTranslateX = 0;
+    let lightboxTranslateY = 0;
+    let lightboxIsDragging = false;
+    let lightboxDragStartX = 0;
+    let lightboxDragStartY = 0;
+    let lightboxOriginX = 0;
+    let lightboxOriginY = 0;
+    let lightboxZoomBadgeTimer = null;
+    let lightboxMovedDuringPointer = false;
+
+    function clampLightboxScale(scale) {
+      return Math.min(LIGHTBOX_MAX_SCALE, Math.max(LIGHTBOX_MIN_SCALE, scale));
+    }
+
+    function applyLightboxTransform() {
+      lightboxImage.style.transform = `translate(${lightboxTranslateX}px, ${lightboxTranslateY}px) scale(${lightboxScale})`;
+      lightboxStage.classList.toggle("is_zoomed", lightboxScale > 1.01);
+      updateLightboxZoomBadge();
+    }
+
+    function updateLightboxZoomBadge() {
+      const percent = Math.round(lightboxScale * 100);
+      lightboxZoomBadge.textContent = `${percent}%`;
+      lightboxZoomBadge.classList.toggle("is_visible", lightboxScale > 1.01);
+
+      clearTimeout(lightboxZoomBadgeTimer);
+
+      if (lightboxScale > 1.01) {
+        lightboxZoomBadgeTimer = setTimeout(() => {
+          lightboxZoomBadge.classList.remove("is_visible");
+        }, 900);
+      }
+    }
+
+    function resetLightboxZoom() {
+      lightboxScale = 1;
+      lightboxTranslateX = 0;
+      lightboxTranslateY = 0;
+      lightboxIsDragging = false;
+      lightboxStage.classList.remove("is_dragging");
+      applyLightboxTransform();
+    }
+
+    function updateLightboxMeta() {
+      if (imagePaths.length === 0) {
+        lightboxCounter.textContent = "";
+        return;
+      }
+
+      const imageSrc = imagePaths[lightboxIndex];
+      const fileName =
+        blobUrlDisplayNames.get(imageSrc) ||
+        (imageSrc && imageSrc.split("/").pop()) ||
+        "未知文件";
+
+      lightboxCounter.textContent = `${fileName}  ·  ${lightboxIndex + 1} / ${imagePaths.length}`;
+    }
+
+    function renderLightboxImage() {
+      if (imagePaths.length === 0) return;
+
+      const imageSrc = imagePaths[lightboxIndex];
+
+      if (!imageSrc) return;
+
+      lightboxImage.src = imageSrc;
+      lightboxImage.alt = blobUrlDisplayNames.get(imageSrc) || `图片 ${lightboxIndex + 1}`;
+      resetLightboxZoom();
+      updateLightboxMeta();
+    }
+
+    function syncSwiperToLightbox() {
+      if (swiper && typeof swiper.slideTo === "function") {
+        swiper.slideTo(lightboxIndex);
+      }
+
+      currentImageIndex = lightboxIndex;
+      updateImageInfo();
+      updateDownloadButton();
+    }
+
+    function openImageLightbox(index) {
+      if (imagePaths.length === 0) return;
+
+      const safeIndex = Math.max(0, Math.min(index, imagePaths.length - 1));
+
+      lightboxIndex = safeIndex;
+      isLightboxOpen = true;
+      lightboxEl.classList.add("is_open");
+      lightboxEl.setAttribute("aria-hidden", "false");
+      document.body.classList.add("lightbox_open");
+
+      if (swiper && swiper.mousewheel && typeof swiper.mousewheel.disable === "function") {
+        swiper.mousewheel.disable();
+      }
+
+      if (swiper && swiper.keyboard && typeof swiper.keyboard.disable === "function") {
+        swiper.keyboard.disable();
+      }
+
+      renderLightboxImage();
+    }
+
+    function closeImageLightbox() {
+      if (!isLightboxOpen) return;
+
+      isLightboxOpen = false;
+      lightboxEl.classList.remove("is_open");
+      lightboxEl.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("lightbox_open");
+      lightboxZoneLeft.classList.remove("is_hot");
+      lightboxZoneRight.classList.remove("is_hot");
+      resetLightboxZoom();
+
+      if (swiper && swiper.mousewheel && typeof swiper.mousewheel.enable === "function") {
+        swiper.mousewheel.enable();
+      }
+
+      if (swiper && swiper.keyboard && typeof swiper.keyboard.enable === "function") {
+        swiper.keyboard.enable();
+      }
+    }
+
+    function lightboxGoTo(index) {
+      if (!isLightboxOpen || imagePaths.length === 0) return;
+
+      const safeIndex = Math.max(0, Math.min(index, imagePaths.length - 1));
+
+      if (safeIndex === lightboxIndex) return;
+
+      lightboxIndex = safeIndex;
+      renderLightboxImage();
+      syncSwiperToLightbox();
+    }
+
+    function lightboxGoPrev() {
+      if (lightboxIndex <= 0) {
+        lightboxGoTo(imagePaths.length - 1);
+        return;
+      }
+
+      lightboxGoTo(lightboxIndex - 1);
+    }
+
+    function lightboxGoNext() {
+      if (lightboxIndex >= imagePaths.length - 1) {
+        lightboxGoTo(0);
+        return;
+      }
+
+      lightboxGoTo(lightboxIndex + 1);
+    }
+
+    function updateLightboxHotZones(clientX) {
+      if (!isLightboxOpen) return;
+
+      const rect = lightboxEl.getBoundingClientRect();
+      const ratio = (clientX - rect.left) / rect.width;
+
+      lightboxZoneLeft.classList.toggle("is_hot", ratio <= 0.333);
+      lightboxZoneRight.classList.toggle("is_hot", ratio >= 0.667);
+    }
+
+    lightboxEl.addEventListener("mousemove", (event) => {
+      updateLightboxHotZones(event.clientX);
+    });
+
+    lightboxEl.addEventListener("mouseleave", () => {
+      lightboxZoneLeft.classList.remove("is_hot");
+      lightboxZoneRight.classList.remove("is_hot");
+    });
+
+    lightboxStage.addEventListener("wheel", (event) => {
+      if (!isLightboxOpen || !event.altKey) return;
+
+      event.preventDefault();
+
+      const direction = event.deltaY > 0 ? -1 : 1;
+      const nextScale = clampLightboxScale(lightboxScale + direction * LIGHTBOX_ZOOM_STEP);
+
+      if (nextScale === lightboxScale) return;
+
+      lightboxScale = nextScale;
+
+      if (lightboxScale <= 1.01) {
+        lightboxScale = 1;
+        lightboxTranslateX = 0;
+        lightboxTranslateY = 0;
+      }
+
+      applyLightboxTransform();
+    }, { passive: false });
+
+    lightboxStage.addEventListener("pointerdown", (event) => {
+      if (!isLightboxOpen || event.button !== 0) return;
+
+      lightboxMovedDuringPointer = false;
+
+      if (lightboxScale <= 1.01) return;
+
+      lightboxIsDragging = true;
+      lightboxDragStartX = event.clientX;
+      lightboxDragStartY = event.clientY;
+      lightboxOriginX = lightboxTranslateX;
+      lightboxOriginY = lightboxTranslateY;
+      lightboxStage.classList.add("is_dragging");
+      lightboxStage.setPointerCapture(event.pointerId);
+    });
+
+    lightboxStage.addEventListener("pointermove", (event) => {
+      if (!lightboxIsDragging) return;
+
+      const dx = event.clientX - lightboxDragStartX;
+      const dy = event.clientY - lightboxDragStartY;
+
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        lightboxMovedDuringPointer = true;
+      }
+
+      lightboxTranslateX = lightboxOriginX + dx;
+      lightboxTranslateY = lightboxOriginY + dy;
+      applyLightboxTransform();
+    });
+
+    const endLightboxPointer = (event) => {
+      if (lightboxIsDragging) {
+        lightboxIsDragging = false;
+        lightboxStage.classList.remove("is_dragging");
+
+        if (lightboxStage.hasPointerCapture(event.pointerId)) {
+          lightboxStage.releasePointerCapture(event.pointerId);
+        }
+      }
+    };
+
+    lightboxStage.addEventListener("pointerup", endLightboxPointer);
+    lightboxStage.addEventListener("pointercancel", endLightboxPointer);
+
+    lightboxStage.addEventListener("click", (event) => {
+      if (lightboxMovedDuringPointer) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      // 缩放中不关闭，避免拖拽松手误触
+      if (lightboxScale > 1.01) return;
+
+      const imgRect = lightboxImage.getBoundingClientRect();
+      const isInsideImage =
+        event.clientX >= imgRect.left &&
+        event.clientX <= imgRect.right &&
+        event.clientY >= imgRect.top &&
+        event.clientY <= imgRect.bottom;
+
+      // 点击图片本身不关闭，仅点击周围空白关闭
+      if (isInsideImage) return;
+
+      closeImageLightbox();
+    });
+
+    lightboxCloseBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      closeImageLightbox();
+    });
+
+    lightboxPrevBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      lightboxGoPrev();
+    });
+
+    lightboxNextBtn.addEventListener("click", (event) => {
+      event.stopPropagation();
+      lightboxGoNext();
+    });
+
+    // 点击 Swiper 中心（当前激活）图片打开放大层
+    swiperWrapper.addEventListener("click", (event) => {
+      if (isLightboxOpen || imagePaths.length === 0) return;
+
+      const img = event.target.closest("img");
+
+      if (!img) return;
+
+      const slide = img.closest(".swiper-slide");
+
+      if (!slide || !slide.classList.contains("swiper-slide-active")) return;
+
+      event.preventDefault();
+      openImageLightbox(currentImageIndex);
+    });
+
+    // 双指简单缩放（移动端轻量兼容）
+    let lightboxPinchStartDistance = 0;
+    let lightboxPinchStartScale = 1;
+
+    const getTouchDistance = (touches) => {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+
+      return Math.hypot(dx, dy);
+    };
+
+    lightboxStage.addEventListener("touchstart", (event) => {
+      if (!isLightboxOpen || event.touches.length !== 2) return;
+
+      lightboxPinchStartDistance = getTouchDistance(event.touches);
+      lightboxPinchStartScale = lightboxScale;
+    }, { passive: true });
+
+    lightboxStage.addEventListener("touchmove", (event) => {
+      if (!isLightboxOpen || event.touches.length !== 2 || !lightboxPinchStartDistance) return;
+
+      event.preventDefault();
+
+      const distance = getTouchDistance(event.touches);
+      const ratio = distance / lightboxPinchStartDistance;
+
+      lightboxScale = clampLightboxScale(lightboxPinchStartScale * ratio);
+
+      if (lightboxScale <= 1.01) {
+        lightboxScale = 1;
+        lightboxTranslateX = 0;
+        lightboxTranslateY = 0;
+      }
+
+      applyLightboxTransform();
+    }, { passive: false });
+
+    lightboxStage.addEventListener("touchend", () => {
+      lightboxPinchStartDistance = 0;
     });
 
     // 事件监听器
@@ -1232,6 +1903,7 @@
     });
 
     document.getElementById("clear-cache-btn").addEventListener("click", () => {
+      closeImageLightbox();
       imagePaths.forEach((path) => {
         if (path.startsWith("blob:")) {
           URL.revokeObjectURL(path);
