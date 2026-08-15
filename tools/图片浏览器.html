@@ -1251,11 +1251,26 @@
     }
 
     // 将目录读取转换为 Promise
+    // 注意：Chrome 的 readEntries 每次最多约 100 条，需循环读到空数组为止
     function readDirectoryAsPromise(item) {
       return new Promise((resolve, reject) => {
         try {
           const dirReader = item.createReader();
-          dirReader.readEntries((entries) => resolve(entries), reject);
+          const allEntries = [];
+
+          const readBatch = () => {
+            dirReader.readEntries((entries) => {
+              if (!entries.length) {
+                resolve(allEntries);
+                return;
+              }
+
+              allEntries.push(...entries);
+              readBatch();
+            }, reject);
+          };
+
+          readBatch();
         } catch (error) {
           reject(error);
         }
