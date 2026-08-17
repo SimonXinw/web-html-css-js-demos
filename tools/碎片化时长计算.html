@@ -475,8 +475,8 @@
 
     .session_row {
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px 10px;
+      grid-template-columns: 1fr auto auto;
+      gap: 8px 8px;
       align-items: center;
       padding: 8px 10px;
       border-radius: 8px;
@@ -497,6 +497,22 @@
       font-variant-numeric: tabular-nums;
       color: var(--muted);
       white-space: nowrap;
+    }
+
+    .session_row .session_delete {
+      min-height: 32px;
+      min-width: 52px;
+      padding: 0 10px;
+      border: 1px solid rgba(224, 112, 112, 0.35);
+      border-radius: 8px;
+      background: rgba(224, 112, 112, 0.1);
+      color: var(--danger);
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .session_row .session_delete:active:not(:disabled) {
+      background: rgba(224, 112, 112, 0.22);
     }
 
     .daily_empty {
@@ -1442,6 +1458,28 @@
       showToast(`已清空「${project.name}」的记录`, "ok");
     };
 
+    const deleteRecord = (recordId) => {
+      const record = state.records.find((item) => item.id === recordId);
+
+      if (!record) {
+        showToast("找不到这条记录");
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `删除这条记录？\n${formatClockTime(record.start)} — ${formatClockTime(record.end)}（${formatDuration(record.durationMs)}）\n此操作无法恢复。`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      state.records = state.records.filter((item) => item.id !== recordId);
+      saveState();
+      render();
+      showToast("已删除该条记录", "ok");
+    };
+
     const deleteProject = (projectId) => {
       if (isRunning()) {
         showToast("计时中不能删除项目");
@@ -1580,6 +1618,14 @@
           <li class="session_row">
             <span class="range">${formatClockTime(session.start)} — ${formatClockTime(session.end)}</span>
             <span class="len">${formatDuration(session.durationMs)}</span>
+            <button
+              type="button"
+              class="session_delete"
+              data-action="delete-record"
+              data-record-id="${session.id}"
+              aria-label="删除这条记录"
+              title="删除这条记录"
+            >删除</button>
           </li>
         `).join("");
 
@@ -1731,6 +1777,16 @@
       if (button.dataset.action === "delete") {
         deleteProject(button.dataset.projectId);
       }
+    });
+
+    els.dailyList.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-action='delete-record']");
+
+      if (!button) {
+        return;
+      }
+
+      deleteRecord(button.dataset.recordId);
     });
 
     els.addModal.addEventListener("click", (event) => {
