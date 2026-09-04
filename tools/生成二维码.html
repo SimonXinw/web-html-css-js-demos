@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>生成二维码</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+      :root {
+        --bg: #e8efe9; --ink: #1a2e24; --card: #f7faf7;
+        --line: #c5d4c8; --accent: #1f7a4d; --muted: #5a7264;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "IBM Plex Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background:
+          radial-gradient(ellipse at 20% 0%, #d4e8d8 0%, transparent 50%),
+          radial-gradient(ellipse at 90% 100%, #c8ddd0 0%, transparent 45%),
+          var(--bg);
+        color: var(--ink); min-height: 100vh; padding: 16px;
+      }
+      .wrap {
+        max-width: 420px; margin: 0 auto; background: var(--card);
+        border: 1px solid var(--line); border-radius: 16px; padding: 20px;
+        box-shadow: 0 12px 32px rgba(26, 46, 36, 0.08);
+      }
+      h1 { font-size: 1.35rem; font-weight: 700; margin-bottom: 4px; }
+      .sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 18px; }
+      label {
+        display: block; font-size: 0.8rem; font-weight: 600;
+        margin-bottom: 6px; color: var(--muted);
+      }
+      textarea, select, button, input[type="range"] { width: 100%; font: inherit; }
+      textarea {
+        min-height: 100px; padding: 12px; border: 1px solid var(--line);
+        border-radius: 10px; background: #fff; resize: vertical;
+        margin-bottom: 14px; color: var(--ink);
+      }
+      textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+      select {
+        padding: 10px 12px; border: 1px solid var(--line);
+        border-radius: 10px; background: #fff; color: var(--ink);
+      }
+      .size-meta {
+        display: flex; justify-content: space-between; font-size: 0.8rem;
+        color: var(--muted); margin-bottom: 6px;
+      }
+      .size-row { margin-bottom: 16px; }
+      input[type="range"] { accent-color: var(--accent); }
+      .actions { display: flex; gap: 10px; margin-bottom: 18px; }
+      button {
+        flex: 1; padding: 12px; border: none; border-radius: 10px;
+        font-weight: 600; cursor: pointer;
+      }
+      button:active { transform: scale(0.98); }
+      .btn-gen { background: var(--accent); color: #fff; }
+      .btn-dl { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+      .btn-dl:disabled { opacity: 0.4; cursor: not-allowed; }
+      .preview {
+        display: flex; flex-direction: column; align-items: center; gap: 10px;
+        padding: 20px 12px; background: #fff; border: 1px dashed var(--line);
+        border-radius: 12px; min-height: 200px; justify-content: center;
+      }
+      #qr { display: flex; align-items: center; justify-content: center; }
+      #qr img, #qr canvas { max-width: 100%; height: auto; }
+      .hint { font-size: 0.8rem; color: var(--muted); text-align: center; }
+      @media (min-width: 768px) {
+        body { padding: 40px 24px; display: flex; align-items: center; }
+        .wrap {
+          max-width: 760px; display: grid; grid-template-columns: 1.1fr 0.9fr;
+          gap: 28px; padding: 28px; align-items: start;
+        }
+        .preview { grid-column: 2; grid-row: 1; min-height: 100%; align-self: stretch; }
+        h1 { font-size: 1.6rem; }
+        textarea { min-height: 140px; }
+      }
+    </style>
+  </head>
+  <body>  
+    <div class="wrap">
+      <div class="form">
+        <h1>生成二维码</h1>
+        <p class="sub">输入链接或文本，即时生成 · 可下载 PNG</p>
+        <label for="text">内容</label>
+        <textarea id="text" placeholder="https://example.com 或任意文本">https://</textarea>
+        <div class="row">
+          <div>
+            <label for="level">容错级别</label>
+            <select id="level">
+              <option value="L">L · 低</option>
+              <option value="M" selected>M · 中</option>
+              <option value="Q">Q · 较高</option>
+              <option value="H">H · 最高</option>
+            </select>
+          </div>
+          <div>
+            <label for="color">前景色</label>
+            <select id="color">
+              <option value="#1a2e24" selected>墨绿</option>
+              <option value="#000000">黑色</option>
+              <option value="#1f7a4d">绿色</option>
+            </select>
+          </div>
+        </div>
+        <div class="size-row">
+          <div class="size-meta"><span>尺寸</span><span id="sizeLabel">256 px</span></div>
+          <input type="range" id="size" min="128" max="512" step="32" value="256" />
+        </div>
+        <div class="actions">
+          <button type="button" class="btn-gen" id="gen">生成</button>
+          <button type="button" class="btn-dl" id="dl" disabled>下载</button>
+        </div>
+      </div>
+      <div class="preview">
+        <div id="qr"></div>
+        <p class="hint" id="hint">修改内容后点击生成</p>
+      </div>
+    </div>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const text = $("text"), level = $("level"), color = $("color");
+      const size = $("size"), sizeLabel = $("sizeLabel");
+      const gen = $("gen"), dl = $("dl"), box = $("qr"), hint = $("hint");
+      let ready = false, qr = null;
+      size.oninput = () => { sizeLabel.textContent = size.value + " px"; };
+      function render() {
+        const v = text.value.trim();
+        if (!v) { hint.textContent = "请先输入内容"; dl.disabled = true; ready = false; return; }
+        if (typeof QRCode === "undefined") {
+          hint.textContent = "二维码库加载失败，请检查网络后刷新";
+          dl.disabled = true; ready = false; return;
+        }
+        try {
+          box.innerHTML = "";
+          qr = new QRCode(box, {
+            text: v,
+            width: +size.value,
+            height: +size.value,
+            colorDark: color.value,
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel[level.value],
+          });
+          ready = true; dl.disabled = false; hint.textContent = "扫一扫即可识别";
+        } catch (e) {
+          ready = false; dl.disabled = true;
+          hint.textContent = "生成失败：" + (e.message || "内容过长或格式异常");
+        }
+      }
+      gen.onclick = render;
+      [level, color, size].forEach((el) => { el.onchange = () => { if (text.value.trim()) render(); }; });
+      dl.onclick = () => {
+        if (!ready) return;
+        const canvas = box.querySelector("canvas");
+        const img = box.querySelector("img");
+        const a = document.createElement("a");
+        a.download = "qrcode.png";
+        a.href = canvas ? canvas.toDataURL("image/png") : (img && img.src);
+        if (a.href) a.click();
+      };
+      render();
+    </script>
+  </body>
+</html>
