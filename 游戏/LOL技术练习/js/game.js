@@ -1,0 +1,134 @@
+window.LOL = window.LOL || {};
+
+LOL.Game = {
+  init(canvas) {
+    this.canvas = canvas;
+    this.player = LOL.createPlayer();
+    this.dummies = LOL.Dummy.seedTraining();
+    this.projectiles = [];
+    this.effects = [];
+    this.last = performance.now();
+    LOL.Scene3D.init(canvas);
+    LOL.Input.bind(canvas);
+    LOL.UI.bind();
+    LOL.Cheat.bind(this.player);
+    LOL.Dps.bind();
+    window.addEventListener('resize', () => LOL.Scene3D.resize());
+    this.bindHud();
+    requestAnimationFrame((t) => this.frame(t));
+  },
+
+  bindHud() {
+    document.getElementById('btn-level').onclick = () => {
+      LOL.UI.toast(LOL.Shop.levelUp(this.player).msg);
+      this.refreshShop();
+    };
+    document.getElementById('btn-shop').onclick = () => {
+      LOL.Input.shopOpen = !LOL.Input.shopOpen;
+      this.refreshShop();
+    };
+    document.getElementById('btn-cam').onclick = () => {
+      const cam = LOL.Camera;
+      if (cam.pinned || !cam.free) {
+        cam.pinned = false;
+        cam.free = true;
+      } else {
+        cam.pinned = true;
+        cam.free = false;
+      }
+    };
+    document.getElementById('btn-reset-stats').onclick = () => {
+      this.player.hits = 0;
+      this.player.cancels = 0;
+      this.player.kiteOk = 0;
+    };
+    this.refreshShop();
+  },
+
+  refreshShop() {
+    LOL.Shop.renderList(LOL.UI.els.shopList, this.player, (id) => {
+      LOL.UI.toast(LOL.Shop.buy(this.player, id).msg);
+      this.refreshShop();
+    });
+  },
+
+  hoverDummy() {
+    const m = LOL.Input.mouse;
+    let best = null;
+    let bestD = 64;
+    for (const d of this.dummies) {
+      if (d.hp <= 0) continue;
+      const dist = LOL.Math.dist(m.worldX, m.worldY, d.x, d.y);
+      if (dist < bestD) {
+        bestD = dist;
+        best = d;
+      }
+    }
+    return best;
+  },
+
+  handleInput() {
+    const p = this.player;
+    const m = LOL.Input.mouse;
+    const hover = this.hoverDummy();
+    LOL.Input.unitHoverId = hover ? hover.id : null;
+    if (LOL.Input.shopOpen) {
+      LOL.Input.consumeClick('L');
+      LOL.Input.consumeClick('R');
+      return;
+    }
+    if (LOL.Input.consumeClick('R')) {
+      LOL.Input.aMode = false;
+      if (hover) LOL.Combat.issueAttackUnit(p, hover);
+      else LOL.Combat.issueMove(p, m.worldX, m.worldY);
+    }
+    if (LOL.Input.consumeClick('L') && (LOL.Input.aMode || LOL.Input.keys.a)) {
+      LOL.Input.aMode = false;
+      if (hover) LOL.Combat.issueAttackUnit(p, hover);
+      else LOL.Combat.issueAttackMove(p, m.worldX, m.worldY);
+    }
+    if (LOL.Input.keys.s) {
+      LOL.Combat.issueStop(p);
+      LOL.Input.keys.s = false;
+    }
+    for (const k of ['q', 'w', 'e', 'r']) {
+      if (!LOL.Input.keys[k]) continue;
+      LOL.Input.keys[k] = false;
+      const ok = LOL.Abilities.cast(
+        k.toUpperCase(), p, m.worldX, m.worldY,
+        this.dummies, this.projectiles, this.effects
+      );
+      if (!ok) LOL.UI.toast(`${k.toUpperCase()} 无法释放`);
+    }
+  },
+
+  frame(now) {
+    const dt = Math.min(0.05, (now - this.last) / 1000);
+    this.last = now;
+    this.handleInput();
+    LOL.Enemy.update(this.dummies, this.player, this.projectiles, dt);
+    for (const d of this.dummies) LOL.Dummy.update(d, dt, this.player);
+    LOL.Update.player(this.player, this.dummies, this.projectiles, dt);
+    LOL.Collision.resolve(this.player, this.dummies);
+    LOL.Projectiles.update(this.projectiles, this.dummies, this.player, dt);
+    for (let i = this.effects.length - 1; i >= 0; i--) {
+      this.effects[i].life -= dt;
+      if (this.effects[i].life <= 0) this.effects.splice(i, 1);
+    }
+    LOL.Camera.update(this.player, dt);
+    LOL.Scene3D.sync({
+      player: this.player,
+      dummies: this.dummies,
+      projectiles: this.projectiles,
+      effects: this.effects,
+      input: LOL.Input,
+    });
+    LOL.Dps.sync(this.dummies);
+    LOL.Scene3D.render();
+    const w = LOL.Scene3D.unproject(LOL.Input.mouse.x, LOL.Input.mouse.y);
+    LOL.Input.mouse.worldX = w.x;
+    LOL.Input.mouse.worldY = w.y;
+    LOL.UI.sync(this.player, LOL.Input);
+    requestAnimationFrame((t) => this.frame(t));
+  },
+};

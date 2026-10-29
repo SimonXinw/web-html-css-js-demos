@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>LOL 走A 训练场</title>
+  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="stylesheet" href="./css/shop.css" />
+  <link rel="stylesheet" href="./css/hud.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">LOL 走A 训练场</div>
+      <div class="actions">
+        <button class="btn" id="btn-shop" type="button">商店 (B)</button>
+        <button class="btn" id="btn-level" type="button">升级</button>
+        <button class="btn" id="btn-reset-stats" type="button">清零计数</button>
+      </div>
+    </header>
+
+    <div class="stage-wrap">
+      <canvas id="game"></canvas>
+      <aside id="cheat" class="open">
+        <button id="cheat-toggle" type="button">金手指</button>
+        <div class="cheat-body">
+          <div class="tune" data-key="as"><span>攻速</span><button type="button" data-dir="-1">−</button><b id="cheat-as">0</b><button type="button" data-dir="1">+</button></div>
+          <div class="tune" data-key="windup"><span>前摇</span><button type="button" data-dir="-1">−</button><b id="cheat-windup">0</b><button type="button" data-dir="1">+</button></div>
+          <div class="tune" data-key="ad"><span>攻击</span><button type="button" data-dir="-1">−</button><b id="cheat-ad">0</b><button type="button" data-dir="1">+</button></div>
+          <div class="tune" data-key="ms"><span>移速</span><button type="button" data-dir="-1">−</button><b id="cheat-ms">0</b><button type="button" data-dir="1">+</button></div>
+          <div class="tune" data-key="range"><span>射程</span><button type="button" data-dir="-1">−</button><b id="cheat-range">0</b><button type="button" data-dir="1">+</button></div>
+          <div class="tune" data-key="gold"><span>金币</span><button type="button" data-dir="-1">−</button><b id="cheat-gold">0</b><button type="button" data-dir="1">+</button></div>
+          <button class="cheat-flag" id="cheat-immortal" type="button">敌人不死 关</button>
+        </div>
+      </aside>
+      <aside id="sheet">
+        <div class="sheet-title">属性</div>
+        <div class="sheet-grid">
+          <div><span>等级</span><b id="stat-lv">1</b></div>
+          <div><span>金币</span><b id="stat-gold">0</b></div>
+          <div class="wide"><span>生命</span><b id="stat-hp">0</b></div>
+          <div><span>攻击</span><b id="stat-ad">0</b></div>
+          <div><span>攻速</span><b id="stat-as">0</b></div>
+          <div class="wide"><span>前摇</span><b id="stat-windup">0</b></div>
+          <div class="wide"><span>间隔</span><b id="stat-period">0</b></div>
+          <div><span>移速</span><b id="stat-ms">0</b></div>
+          <div><span>射程</span><b id="stat-range">0</b></div>
+          <div><span>命中</span><b id="stat-hits">0</b></div>
+          <div><span>取消</span><b id="stat-cancels">0</b></div>
+          <div><span>走A</span><b id="stat-kite">0</b></div>
+        </div>
+      </aside>
+      <button class="btn" id="btn-cam" type="button">镜头锁定</button>
+      <div id="a-hint">A 模式：左键走砍 / 点皮人攻击</div>
+      <div id="toast"></div>
+      <aside id="shop-panel">
+        <h3>装备商店</h3>
+        <div id="shop-list"></div>
+      </aside>
+    </div>
+
+    <footer class="hud">
+      <div class="skills">
+        <div class="skill ready" id="cd-Q"><span class="cd-num">Q</span><small>穿刺</small></div>
+        <div class="skill ready" id="cd-W"><span class="cd-num">W</span><small>锁定</small></div>
+        <div class="skill ready" id="cd-E"><span class="cd-num">E</span><small>闪步</small></div>
+        <div class="skill ready" id="cd-R"><span class="cd-num">R</span><small>裁决</small></div>
+      </div>
+      <div class="bag" id="bag"></div>
+      <p class="help">
+        长按空格锁定镜头，松开停在原地。鼠标贴边平移，按住中键拖动。右上角按钮给触屏用。<br />
+        左下角是属性。金手指可加减数值，敌人不死打开后方便看脚边的总伤和秒伤。
+      </p>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="./js/config.js"></script>
+  <script src="./js/math.js"></script>
+  <script src="./js/input.js"></script>
+  <script src="./js/player.js"></script>
+  <script src="./js/combat.js"></script>
+  <script src="./js/dummy.js"></script>
+  <script src="./js/enemy.js"></script>
+  <script src="./js/abilities.js"></script>
+  <script src="./js/projectiles.js"></script>
+  <script src="./js/shop.js"></script>
+  <script src="./js/update.js"></script>
+  <script src="./js/collision.js"></script>
+  <script src="./js/models.js"></script>
+  <script src="./js/anim.js"></script>
+  <script src="./js/scene3d.js"></script>
+  <script src="./js/scene3d-sync.js"></script>
+  <script src="./js/camera.js"></script>
+  <script src="./js/ui.js"></script>
+  <script src="./js/cheat.js"></script>
+  <script src="./js/dps.js"></script>
+  <script src="./js/game.js"></script>
+  <script src="./js/main.js"></script>
+</body>
+</html>
