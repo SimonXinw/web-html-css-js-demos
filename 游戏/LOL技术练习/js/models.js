@@ -45,20 +45,20 @@ LOL.Models = {
     if (weapon) rig.add(weapon);
 
     const outline = new THREE.Mesh(
-      new THREE.CapsuleGeometry(opts.r * 0.95, opts.h * 0.62, 5, 10),
+      new THREE.CapsuleGeometry(opts.r * 0.76, opts.h * 0.5, 5, 10),
       new THREE.MeshBasicMaterial({
-        color: 0xffe566, side: THREE.BackSide, transparent: true, opacity: 0.95,
+        color: 0xff3344, side: THREE.BackSide, transparent: true, opacity: 0.28, depthWrite: false, blending: THREE.AdditiveBlending,
       })
     );
-    outline.position.y = 16;
-    outline.scale.setScalar(1.16);
+    outline.position.y = 12;
+    outline.scale.setScalar(1.03);
     outline.visible = false;
     rig.add(outline);
 
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(opts.r * 1.05, opts.r * 1.45, 28),
+      new THREE.RingGeometry(opts.r * 1.12, opts.r * 1.2, 28),
       new THREE.MeshBasicMaterial({
-        color: 0xffe566, side: THREE.DoubleSide, transparent: true, opacity: 0.9,
+        color: 0xff3344, side: THREE.DoubleSide, transparent: true, opacity: 0.28, depthWrite: false,
       })
     );
     ring.rotation.x = -Math.PI / 2;
@@ -111,9 +111,9 @@ LOL.Models = {
     if (!outline || !ring) return;
     outline.visible = mode === 'target';
     ring.visible = mode !== 'off';
-    const color = mode === 'target' ? 0xffe566 : 0xe7f0ea;
+    const color = mode === 'target' ? 0xff3344 : 0xe7f0ea;
     ring.material.color.setHex(color);
-    ring.material.opacity = mode === 'target' ? 0.95 : 0.4;
+    ring.material.opacity = mode === 'target' ? 0.34 : 0.22;
   },
 
   hero() {
@@ -181,8 +181,8 @@ LOL.Models = {
   bullet() {
     const g = new THREE.Group();
     const bolt = new THREE.Group();
-    bolt.add(this.bolt(0x67e8ff, 7, 0.34));
-    bolt.add(this.bolt(0xf7feff, 2.4, 1));
+    bolt.add(this.bolt(0xffc44a, 2.2, 0.18));
+    bolt.add(this.bolt(0xffe29a, 0.85, 0.72));
     const foe = this.bolt(0xfb7185, 1.2, 0.22);
     foe.scale.setScalar(0.36);
     const shot = new THREE.Mesh(
