@@ -11,6 +11,7 @@ LOL.Game = {
     LOL.Scene3D.init(canvas);
     LOL.Input.bind(canvas);
     LOL.UI.bind();
+    LOL.Binds.bind();
     LOL.Cheat.bind(this.player);
     LOL.Dps.bind();
     window.addEventListener('resize', () => LOL.Scene3D.resize());
@@ -67,33 +68,48 @@ LOL.Game = {
     return best;
   },
 
+  orderPointer(kind) {
+    const p = this.player;
+    const m = LOL.Input.mouse;
+    const hover = this.hoverDummy();
+    if (hover) {
+      LOL.Combat.issueAttackUnit(p, hover);
+      return;
+    }
+    if (kind === 'move') LOL.Combat.issueMove(p, m.worldX, m.worldY);
+    else LOL.Combat.issueAttackMove(p, m.worldX, m.worldY);
+  },
+
   handleInput() {
     const p = this.player;
     const m = LOL.Input.mouse;
     const hover = this.hoverDummy();
     LOL.Input.unitHoverId = hover ? hover.id : null;
+    LOL.Input.aMode = LOL.Binds.down('attack');
+    if (LOL.Binds.take('shop')) {
+      LOL.Input.shopOpen = !LOL.Input.shopOpen;
+      this.refreshShop();
+    }
     if (LOL.Input.shopOpen) {
       LOL.Input.consumeClick('L');
       LOL.Input.consumeClick('R');
+      LOL.Binds.take('attack');
+      LOL.Binds.take('move');
+      LOL.Binds.take('stop');
       return;
     }
-    if (LOL.Input.consumeClick('R')) {
-      LOL.Input.aMode = false;
-      if (hover) LOL.Combat.issueAttackUnit(p, hover);
-      else LOL.Combat.issueMove(p, m.worldX, m.worldY);
-    }
-    if (LOL.Input.consumeClick('L') && (LOL.Input.aMode || LOL.Input.keys.a)) {
-      LOL.Input.aMode = false;
-      if (hover) LOL.Combat.issueAttackUnit(p, hover);
-      else LOL.Combat.issueAttackMove(p, m.worldX, m.worldY);
-    }
-    if (LOL.Input.keys.s) {
-      LOL.Combat.issueStop(p);
-      LOL.Input.keys.s = false;
-    }
-    for (const k of ['q', 'w', 'e', 'r']) {
+    const right = LOL.Input.consumeClick('R');
+    const move = LOL.Binds.take('move');
+    if (right || move) this.orderPointer('move');
+    const left = LOL.Input.consumeClick('L');
+    const attack = LOL.Binds.take('attack');
+    if ((left && LOL.Input.aMode) || attack) this.orderPointer('attack');
+    if (LOL.Binds.take('stop')) LOL.Combat.issueStop(p);
+    const skills = { q: 'KeyQ', w: 'KeyW', e: 'KeyE', r: 'KeyR' };
+    for (const k of Object.keys(skills)) {
       if (!LOL.Input.keys[k]) continue;
       LOL.Input.keys[k] = false;
+      if (LOL.Binds.owns(skills[k])) continue;
       const ok = LOL.Abilities.cast(
         k.toUpperCase(), p, m.worldX, m.worldY,
         this.dummies, this.projectiles, this.effects

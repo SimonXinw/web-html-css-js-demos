@@ -120,8 +120,13 @@ LOL.Combat = {
   },
 
   hurtPlayer(player, dmg) {
-    if (player.invuln > 0 || player.hp <= 0) return;
-    player.hp = Math.max(0, player.hp - dmg);
+    if (player.invuln > 0 || player.hp <= 0 || dmg <= 0) return;
+    const next = player.hp - dmg;
+    if (LOL.Dps.selfSafe) {
+      player.hp = next > 0 ? next : player.maxHp;
+      return;
+    }
+    player.hp = Math.max(0, next);
     if (player.hp > 0) return;
     player.hp = player.maxHp;
     player.x = player.spawnX;

@@ -7,12 +7,14 @@
   <link rel="stylesheet" href="./css/style.css" />
   <link rel="stylesheet" href="./css/shop.css" />
   <link rel="stylesheet" href="./css/hud.css" />
+  <link rel="stylesheet" href="./css/binds.css" />
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <div class="brand">LOL 走A 训练场</div>
       <div class="actions">
+        <button class="btn" id="btn-binds" type="button">按键</button>
         <button class="btn" id="btn-shop" type="button">商店 (B)</button>
         <button class="btn" id="btn-level" type="button">升级</button>
         <button class="btn" id="btn-reset-stats" type="button">清零计数</button>
@@ -30,6 +32,7 @@
           <div class="tune" data-key="ms"><span>移速</span><button type="button" data-dir="-1">−</button><b id="cheat-ms">0</b><button type="button" data-dir="1">+</button></div>
           <div class="tune" data-key="range"><span>射程</span><button type="button" data-dir="-1">−</button><b id="cheat-range">0</b><button type="button" data-dir="1">+</button></div>
           <div class="tune" data-key="gold"><span>金币</span><button type="button" data-dir="-1">−</button><b id="cheat-gold">0</b><button type="button" data-dir="1">+</button></div>
+          <button class="cheat-flag on" id="cheat-self" type="button">自己不死 开</button>
           <button class="cheat-flag" id="cheat-immortal" type="button">敌人不死 关</button>
         </div>
       </aside>
@@ -51,8 +54,17 @@
         </div>
       </aside>
       <button class="btn" id="btn-cam" type="button">镜头锁定</button>
-      <div id="a-hint">A 模式：左键走砍 / 点皮人攻击</div>
+      <div id="a-hint">走砍：打射程内最近的人，没人就往鼠标走</div>
       <div id="toast"></div>
+      <aside id="binds">
+        <h3>快捷键</h3>
+        <p>点右边的键再按新键，撞车会对调，Backspace 清空。走砍点空地：有人就打最近的，没人就走过去。移动和右键一样。</p>
+        <div class="bind-row"><span>走砍<small>射程内出手，没人就走</small></span><button type="button" data-bind="attack">A</button></div>
+        <div class="bind-row"><span>移动<small>等同右键</small></span><button type="button" data-bind="move">Z</button></div>
+        <div class="bind-row"><span>停止<small>取消指令</small></span><button type="button" data-bind="stop">S</button></div>
+        <div class="bind-row"><span>商店<small>打开商店</small></span><button type="button" data-bind="shop">B</button></div>
+        <button class="btn" id="binds-reset" type="button">恢复默认</button>
+      </aside>
       <aside id="shop-panel">
         <h3>装备商店</h3>
         <div id="shop-list"></div>
@@ -69,7 +81,7 @@
       <div class="bag" id="bag"></div>
       <p class="help">
         长按空格锁定镜头，松开停在原地。鼠标贴边平移，按住中键拖动。右上角按钮给触屏用。<br />
-        左下角是属性。金手指可加减数值，敌人不死打开后方便看脚边的总伤和秒伤。
+        鼠标放在要去的位置，默认 Z 移动、A 走砍，交替按就是走A。顶部「按键」里可以改。
       </p>
     </footer>
   </div>
@@ -77,6 +89,7 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script src="./js/config.js"></script>
   <script src="./js/math.js"></script>
+  <script src="./js/binds.js"></script>
   <script src="./js/input.js"></script>
   <script src="./js/player.js"></script>
   <script src="./js/combat.js"></script>

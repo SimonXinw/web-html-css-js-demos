@@ -3,6 +3,7 @@ window.LOL = window.LOL || {};
 LOL.Input = {
   mouse: { x: 0, y: 0, worldX: 0, worldY: 0, downL: false, downR: false, downM: false },
   keys: Object.create(null),
+  codes: Object.create(null),
   aMode: false,
   shopOpen: false,
   unitHoverId: null,
@@ -42,19 +43,18 @@ LOL.Input = {
     window.addEventListener('keydown', (e) => {
       const tag = e.target && e.target.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (LOL.Binds && LOL.Binds.capture(e)) return;
       if (e.code === 'Space') e.preventDefault();
+      if (e.repeat) return;
       const k = e.key.toLowerCase();
-      if (this.keys[k]) return;
       this.keys[k] = true;
-      if (k === 'a') this.aMode = true;
-      if (k === 'b' || k === 'p') this.shopOpen = !this.shopOpen;
-      if (k === 'escape') {
-        this.aMode = false;
-        this.shopOpen = false;
-      }
+      this.codes[e.code] = true;
+      if (LOL.Binds) LOL.Binds.press(e.code);
+      if (e.code === 'Escape') this.shopOpen = false;
     }, true);
     window.addEventListener('keyup', (e) => {
       this.keys[e.key.toLowerCase()] = false;
+      this.codes[e.code] = false;
     });
   },
 

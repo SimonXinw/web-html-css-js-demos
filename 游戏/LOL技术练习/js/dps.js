@@ -2,11 +2,18 @@ window.LOL = window.LOL || {};
 
 LOL.Dps = {
   immortal: false,
+  selfSafe: true,
   gap: 3,
   rows: new Map(),
   labels: new Map(),
 
   bind() {
+    const selfBtn = document.getElementById('cheat-self');
+    selfBtn.onclick = () => {
+      this.selfSafe = !this.selfSafe;
+      selfBtn.classList.toggle('on', this.selfSafe);
+      selfBtn.textContent = this.selfSafe ? '自己不死 开' : '自己不死 关';
+    };
     const btn = document.getElementById('cheat-immortal');
     btn.onclick = () => {
       this.immortal = !this.immortal;
@@ -63,7 +70,11 @@ LOL.Dps = {
       this.paint(label, stat);
     }
     for (const [id, mesh] of this.labels) {
-      if (!live.has(id)) mesh.visible = false;
+      if (live.has(id)) continue;
+      mesh.visible = false;
+      mesh.scale.set(96, 24, 1);
+      mesh.userData.dps = undefined;
+      mesh.userData.punch = 0;
     }
   },
 
@@ -93,9 +104,29 @@ LOL.Dps = {
   paint(mesh, stat) {
     const total = Math.round(stat.total);
     const dps = Math.round(stat.dps);
-    const key = `${total}/${dps}`;
-    if (mesh.userData.key === key) return;
-    mesh.userData.key = key;
+    const u = mesh.userData;
+    if (u.dps !== dps) {
+      const p0 = u.punch || 0;
+      const visual = u.dps == null
+        ? dps
+        : Math.round(u.from + (u.dps - u.from) * (1 - p0 * p0));
+      u.from = visual;
+      u.punch = u.dps == null ? 0.55 : 1;
+      u.dps = dps;
+    }
+    if (u.punch > 0) u.punch = Math.max(0, u.punch - LOL.Anim.dt / 0.3);
+    const p = u.punch || 0;
+    const shown = Math.round(u.from + (u.dps - u.from) * (1 - p * p));
+    const text = `${total}/${shown}`;
+    const s = 1 + p * 0.42;
+    mesh.scale.set(96 * s, 24 * s, 1);
+    mesh.position.y += p * 14;
+    if (u.key === text && p === 0) return;
+    u.key = text;
+    this.ink(mesh, text, p);
+  },
+
+  ink(mesh, text, p) {
     const ctx = mesh.userData.ctx;
     const w = ctx.canvas.width;
     const h = ctx.canvas.height;
@@ -104,9 +135,11 @@ LOL.Dps = {
     ctx.font = '700 36px sans-serif';
     ctx.lineWidth = 4;
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.65)';
-    ctx.strokeText(key, w / 2, 44);
-    ctx.fillStyle = '#ff4d4d';
-    ctx.fillText(key, w / 2, 44);
+    ctx.strokeText(text, w / 2, 44);
+    const g = Math.round(77 + 160 * p);
+    const b = Math.round(77 + 40 * p);
+    ctx.fillStyle = `rgb(255,${g},${b})`;
+    ctx.fillText(text, w / 2, 44);
     mesh.material.map.needsUpdate = true;
   },
 };
