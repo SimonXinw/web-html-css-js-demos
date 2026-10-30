@@ -4,6 +4,7 @@ LOL.Dps = {
   immortal: false,
   selfSafe: true,
   gap: 3,
+  window: 5,
   rows: new Map(),
   labels: new Map(),
 
@@ -30,12 +31,25 @@ LOL.Dps = {
     const now = performance.now() / 1000;
     let row = this.rows.get(id);
     if (!row || now - row.last >= this.gap) {
-      row = { total: 0, start: now, shown: 0, shownAt: 0, hits: 0, rate: 0 };
+      row = { total: 0, start: now, shown: 0, shownAt: 0, times: [], rate: 0 };
     }
-    row.hits += 1;
+    row.times.push(now);
     row.total += dmg;
     row.last = now;
     this.rows.set(id, row);
+  },
+
+  rateOf(row, now) {
+    const times = row.times;
+    const cut = now - this.window;
+    let i = 0;
+    while (i < times.length && times[i] < cut) i += 1;
+    if (i) times.splice(0, i);
+    const n = times.length;
+    if (n < 2) return 0;
+    const span = times[n - 1] - times[0];
+    if (span < 0.05) return 0;
+    return (n - 1) / span;
   },
 
   clear(id) {
@@ -53,7 +67,7 @@ LOL.Dps = {
     const span = Math.max(0.35, now - row.start);
     if (!row.shownAt || now - row.shownAt >= 1) {
       row.shown = row.total / span;
-      row.rate = row.hits / span;
+      row.rate = this.rateOf(row, now);
       row.shownAt = now;
     }
     return { total: row.total, dps: row.shown, rate: row.rate || 0 };
