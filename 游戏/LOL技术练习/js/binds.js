@@ -4,16 +4,17 @@ LOL.Binds = {
   store: 'lol-train-binds',
   listening: null,
   arm: Object.create(null),
-  map: { attack: 'KeyA', move: 'KeyZ', stop: 'KeyS', shop: 'KeyB' },
+  map: { range: 'KeyA', quick: 'KeyX', move: 'KeyC', stop: 'KeyS', shop: 'KeyB' },
   rows: [
-    ['attack', '走砍'],
+    ['range', '攻击范围'],
+    ['quick', '快捷走砍'],
     ['move', '移动'],
     ['stop', '停止'],
     ['shop', '商店'],
   ],
 
   defaults() {
-    return { attack: 'KeyA', move: 'KeyZ', stop: 'KeyS', shop: 'KeyB' };
+    return { range: 'KeyA', quick: 'KeyX', move: 'KeyC', stop: 'KeyS', shop: 'KeyB' };
   },
 
   ok(code) {
@@ -24,6 +25,11 @@ LOL.Binds = {
     let raw = null;
     try { raw = JSON.parse(localStorage.getItem(this.store) || 'null'); } catch (err) { raw = null; }
     if (!raw || typeof raw !== 'object') return;
+    if (raw.attack && !('quick' in raw) && !('range' in raw)) {
+      raw.quick = raw.attack === 'KeyA' ? 'KeyX' : raw.attack;
+      raw.range = 'KeyA';
+      if (!raw.move || raw.move === 'KeyZ') raw.move = 'KeyC';
+    }
     const seen = new Set();
     for (const [id] of this.rows) {
       if (!(id in raw)) {

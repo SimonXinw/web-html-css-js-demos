@@ -59,7 +59,7 @@ LOL.createPlayer = function createPlayer() {
     stats() {
       const p = this.parts();
       const t = this.tune;
-      const as = Math.min(2.5, Math.max(0.2, p.as + t.as));
+      const as = Math.min(LOL.CONFIG.AS_MAX, Math.max(LOL.CONFIG.AS_MIN, p.as + t.as));
       const windup = Math.min(0.55, Math.max(0.08, p.windup + t.windup));
       return {
         ad: Math.max(1, p.ad + t.ad),

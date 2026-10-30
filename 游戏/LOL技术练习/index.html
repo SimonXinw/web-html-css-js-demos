@@ -54,13 +54,14 @@
         </div>
       </aside>
       <button class="btn" id="btn-cam" type="button">镜头锁定</button>
-      <div id="a-hint">走砍：打射程内最近的人，没人就往鼠标走</div>
+      <div id="a-hint">攻击范围：左键攻击，右键取消</div>
       <div id="toast"></div>
       <aside id="binds">
         <h3>快捷键</h3>
-        <p>点右边的键再按新键，撞车会对调，Backspace 清空。走砍点空地：有人就打最近的，没人就走过去。移动和右键一样。</p>
-        <div class="bind-row"><span>走砍<small>射程内出手，没人就走</small></span><button type="button" data-bind="attack">A</button></div>
-        <div class="bind-row"><span>移动<small>等同右键</small></span><button type="button" data-bind="move">Z</button></div>
+        <p>点右边的键再按新键，撞车会对调，Backspace 清空。A 只显示范围，左键才打。X 直接走砍，C 移动。</p>
+        <div class="bind-row"><span>攻击范围<small>显示范围，左键才攻击</small></span><button type="button" data-bind="range">A</button></div>
+        <div class="bind-row"><span>快捷走砍<small>直接打射程内的人</small></span><button type="button" data-bind="quick">X</button></div>
+        <div class="bind-row"><span>移动<small>等同右键</small></span><button type="button" data-bind="move">C</button></div>
         <div class="bind-row"><span>停止<small>取消指令</small></span><button type="button" data-bind="stop">S</button></div>
         <div class="bind-row"><span>商店<small>打开商店</small></span><button type="button" data-bind="shop">B</button></div>
         <button class="btn" id="binds-reset" type="button">恢复默认</button>
@@ -81,7 +82,7 @@
       <div class="bag" id="bag"></div>
       <p class="help">
         长按空格锁定镜头，松开停在原地。鼠标贴边平移，按住中键拖动。右上角按钮给触屏用。<br />
-        鼠标放在要去的位置，默认 Z 移动、A 走砍，交替按就是走A。顶部「按键」里可以改。
+        A 显示攻击范围，左键才攻击。X 直接走砍，C 移动。顶部「按键」里可以改。
       </p>
     </footer>
   </div>

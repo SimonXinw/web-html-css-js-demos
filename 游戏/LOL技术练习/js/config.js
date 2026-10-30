@@ -12,6 +12,8 @@ LOL.CONFIG = {
     windup: 0.22,
   },
   PER_LEVEL: { ad: 4, as: 0.03, hp: 90, ms: 2 },
+  AS_MIN: 0.2,
+  AS_MAX: 100,
   GOLD_PER_HIT: 8,
   GOLD_KILL: 40,
   DUMMY_HP: 800,

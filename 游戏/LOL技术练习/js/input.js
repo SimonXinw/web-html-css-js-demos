@@ -50,7 +50,10 @@ LOL.Input = {
       this.keys[k] = true;
       this.codes[e.code] = true;
       if (LOL.Binds) LOL.Binds.press(e.code);
-      if (e.code === 'Escape') this.shopOpen = false;
+      if (e.code === 'Escape') {
+        this.shopOpen = false;
+        this.aMode = false;
+      }
     }, true);
     window.addEventListener('keyup', (e) => {
       this.keys[e.key.toLowerCase()] = false;

@@ -85,7 +85,6 @@ LOL.Game = {
     const m = LOL.Input.mouse;
     const hover = this.hoverDummy();
     LOL.Input.unitHoverId = hover ? hover.id : null;
-    LOL.Input.aMode = LOL.Binds.down('attack');
     if (LOL.Binds.take('shop')) {
       LOL.Input.shopOpen = !LOL.Input.shopOpen;
       this.refreshShop();
@@ -93,18 +92,32 @@ LOL.Game = {
     if (LOL.Input.shopOpen) {
       LOL.Input.consumeClick('L');
       LOL.Input.consumeClick('R');
-      LOL.Binds.take('attack');
+      LOL.Binds.take('range');
+      LOL.Binds.take('quick');
       LOL.Binds.take('move');
       LOL.Binds.take('stop');
       return;
     }
+    if (LOL.Binds.take('range') || LOL.Binds.down('range')) LOL.Input.aMode = true;
     const right = LOL.Input.consumeClick('R');
     const move = LOL.Binds.take('move');
-    if (right || move) this.orderPointer('move');
+    if (right || move) {
+      LOL.Input.aMode = false;
+      this.orderPointer('move');
+    }
     const left = LOL.Input.consumeClick('L');
-    const attack = LOL.Binds.take('attack');
-    if ((left && LOL.Input.aMode) || attack) this.orderPointer('attack');
-    if (LOL.Binds.take('stop')) LOL.Combat.issueStop(p);
+    const quick = LOL.Binds.take('quick');
+    if (left && LOL.Input.aMode) {
+      LOL.Input.aMode = false;
+      this.orderPointer('attack');
+    } else if (quick) {
+      LOL.Input.aMode = false;
+      this.orderPointer('attack');
+    }
+    if (LOL.Binds.take('stop')) {
+      LOL.Input.aMode = false;
+      LOL.Combat.issueStop(p);
+    }
     const skills = { q: 'KeyQ', w: 'KeyW', e: 'KeyE', r: 'KeyR' };
     for (const k of Object.keys(skills)) {
       if (!LOL.Input.keys[k]) continue;

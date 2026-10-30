@@ -2,7 +2,7 @@ window.LOL = window.LOL || {};
 
 LOL.Cheat = {
   steps: {
-    as: [0.1, 0.2, 2.5],
+    as: [1, LOL.CONFIG.AS_MIN, LOL.CONFIG.AS_MAX],
     windup: [0.02, 0.08, 0.55],
     ad: [5, 1, 500],
     ms: [20, 100, 900],
