@@ -117,7 +117,7 @@ Object.assign(LOL.Scene3D, {
       m.userData.bolt.visible = aa;
       m.userData.foe.visible = eaa;
       m.userData.shot.visible = !aa && !eaa;
-      if (aa) m.userData.bolt.children[1].userData.mat.opacity = 0.58 + Math.random() * 0.14;
+      if (aa) m.userData.bolt.children[0].userData.mat.opacity = 0.25 + Math.random() * 0.75;
       if (!aa && !eaa) m.userData.shot.material.color.set(p.color || '#5ec8ff');
       const part = aa ? m.userData.bolt : (eaa ? m.userData.foe : m.userData.shot);
       this.aimTail(part, m, p);

@@ -181,8 +181,8 @@ LOL.Models = {
   bullet() {
     const g = new THREE.Group();
     const bolt = new THREE.Group();
-    bolt.add(this.bolt(0xffc44a, 2.2, 0.18));
-    bolt.add(this.bolt(0xffe29a, 0.85, 0.72));
+    bolt.add(this.bolt(0xff6a00, 4.8, 0.55));
+    bolt.add(this.bolt(0xffe7a0, 2.4, 1));
     const foe = this.bolt(0xfb7185, 1.2, 0.22);
     foe.scale.setScalar(0.36);
     const shot = new THREE.Mesh(
