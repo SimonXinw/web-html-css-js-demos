@@ -123,21 +123,16 @@ LOL.Dps = {
     const sheet = LOL.Game.player.stats().as;
     const actual = stat.rate || 0;
     const rateText = `${sheet.toFixed(2)}/${actual.toFixed(2)}`;
-    const tone = this.tone(actual, sheet);
-    const key = `${text}|${rateText}|${tone}`;
+    const key = `${text}|${rateText}`;
     const s = 1 + p * 0.42;
     mesh.scale.set(96 * s, 36 * s, 1);
     mesh.position.y += p * 14;
     if (u.key === key && p === 0) return;
     u.key = key;
-    this.ink(mesh, text, rateText, tone, p);
+    this.ink(mesh, text, rateText, p);
   },
 
-  tone(rate, as) {
-    return rate >= as * 0.9 ? '#86efac' : '#f6c453';
-  },
-
-  ink(mesh, text, rateText, tone, p) {
+  ink(mesh, text, rateText, p) {
     const ctx = mesh.userData.ctx;
     const w = ctx.canvas.width;
     const h = ctx.canvas.height;
@@ -146,16 +141,14 @@ LOL.Dps = {
     ctx.lineWidth = 4;
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.65)';
     ctx.font = '700 34px sans-serif';
-    ctx.strokeText(text, w / 2, 36);
-    const g = Math.round(77 + 160 * p);
-    const b = Math.round(77 + 40 * p);
-    ctx.fillStyle = `rgb(255,${g},${b})`;
-    ctx.fillText(text, w / 2, 36);
-    ctx.font = '700 24px sans-serif';
-    ctx.lineWidth = 3;
-    ctx.strokeText(rateText, w / 2, 74);
-    ctx.fillStyle = tone;
-    ctx.fillText(rateText, w / 2, 74);
+    ctx.strokeText(text, w / 2, 32);
+    const r = Math.round(90 + 165 * p);
+    const g = Math.round(210 + 45 * p);
+    ctx.fillStyle = `rgb(${r},${g},255)`;
+    ctx.fillText(text, w / 2, 32);
+    ctx.strokeText(rateText, w / 2, 80);
+    ctx.fillStyle = '#ffd15a';
+    ctx.fillText(rateText, w / 2, 80);
     mesh.material.map.needsUpdate = true;
   },
 };

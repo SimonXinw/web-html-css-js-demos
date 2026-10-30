@@ -124,7 +124,7 @@ LOL.Models = {
 
   dummy() {
     return this.unit({
-      r: 18, h: 42, body: 0xdc2626, accent: 0xfecaca, dark: 0x7f1d1d, weapon: false,
+      r: 18, h: 42, body: 0xd08a84, accent: 0xf3d2ce, dark: 0x8f5a56, weapon: false,
     });
   },
 
