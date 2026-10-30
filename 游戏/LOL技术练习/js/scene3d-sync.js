@@ -44,7 +44,6 @@ Object.assign(LOL.Scene3D, {
       LOL.Models.setMark(mesh, mode);
     }
 
-    this.syncMarks(player, input);
     this.syncWindup(player);
     this.syncProjectiles(projectiles);
     this.syncFx(effects);
@@ -70,23 +69,6 @@ Object.assign(LOL.Scene3D, {
     mesh.position.set(x, 0, z);
     mesh.rotation.y = -facing + Math.PI;
     mesh.scale.setScalar(2.2);
-  },
-
-  syncMarks(player, input) {
-    if (player.moveTarget) {
-      this.moveMark.visible = true;
-      this.moveMark.position.set(player.moveTarget.x, 0.8, player.moveTarget.y);
-    } else this.moveMark.visible = false;
-
-    if (player.attackMoveTarget) {
-      this.aMark.visible = true;
-      this.aMark.position.set(player.attackMoveTarget.x, 0.9, player.attackMoveTarget.y);
-    } else this.aMark.visible = false;
-
-    if (input.aMode) {
-      this.aMark.visible = true;
-      this.aMark.position.set(input.mouse.worldX, 1.2, input.mouse.worldY);
-    }
   },
 
   syncWindup(player) {

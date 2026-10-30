@@ -21,8 +21,6 @@ LOL.Scene3D = {
     this.projMeshes = [];
     this.fxMeshes = [];
     this.rangeRing = null;
-    this.moveMark = null;
-    this.aMark = null;
     this.windup = null;
     this.buildWorld();
     this.resize();
@@ -91,8 +89,6 @@ LOL.Scene3D = {
     this.scene.add(this.rangeRing);
     this._range = 420;
 
-    this.moveMark = this.marker(0x7dd3fc);
-    this.aMark = this.marker(0xfca5a5);
     this.windup = new THREE.Mesh(
       new THREE.TorusGeometry(40, 3.2, 8, 32, Math.PI * 2),
       new THREE.MeshBasicMaterial({ color: 0xfbbf24 })
@@ -110,17 +106,6 @@ LOL.Scene3D = {
     m.scale.y = 0.45;
     m.castShadow = true;
     this.scene.add(m);
-  },
-
-  marker(color) {
-    const m = new THREE.Mesh(
-      new THREE.RingGeometry(14, 24, 24),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
-    );
-    m.rotation.x = -Math.PI / 2;
-    m.visible = false;
-    this.scene.add(m);
-    return m;
   },
 
   resize() {

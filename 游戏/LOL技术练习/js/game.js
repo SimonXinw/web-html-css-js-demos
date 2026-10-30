@@ -9,6 +9,7 @@ LOL.Game = {
     this.effects = [];
     this.last = performance.now();
     LOL.Scene3D.init(canvas);
+    LOL.ClickMark.init(LOL.Scene3D.scene);
     LOL.Input.bind(canvas);
     LOL.UI.bind();
     LOL.Binds.bind();
@@ -78,6 +79,7 @@ LOL.Game = {
     }
     if (kind === 'move') LOL.Combat.issueMove(p, m.worldX, m.worldY);
     else LOL.Combat.issueAttackMove(p, m.worldX, m.worldY);
+    LOL.ClickMark.play(m.worldX, m.worldY, kind === 'move' ? 'move' : 'attack');
   },
 
   handleInput() {
@@ -145,6 +147,7 @@ LOL.Game = {
       if (this.effects[i].life <= 0) this.effects.splice(i, 1);
     }
     LOL.Camera.update(this.player, dt);
+    LOL.ClickMark.update(dt);
     LOL.Scene3D.sync({
       player: this.player,
       dummies: this.dummies,
