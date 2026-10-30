@@ -112,11 +112,15 @@ Object.assign(LOL.Scene3D, {
       if (!p) { m.visible = false; m.userData.prev = null; continue; }
       m.visible = true;
       m.position.set(p.x, 64, p.y);
-      const tint = p.color || '#fde68a';
-      m.userData.core.material.color.set(tint);
-      m.userData.glow.material.color.set(tint);
-      m.userData.tail.material.color.set(tint);
-      this.aimTail(m, p);
+      const aa = p.kind === 'aa';
+      const eaa = p.kind === 'eaa';
+      m.userData.bolt.visible = aa;
+      m.userData.foe.visible = eaa;
+      m.userData.shot.visible = !aa && !eaa;
+      if (aa) m.userData.bolt.children[1].userData.mat.opacity = 0.7 + Math.random() * 0.3;
+      if (!aa && !eaa) m.userData.shot.material.color.set(p.color || '#5ec8ff');
+      const part = aa ? m.userData.bolt : (eaa ? m.userData.foe : m.userData.shot);
+      this.aimTail(part, m, p);
     }
   },
 
@@ -143,18 +147,15 @@ Object.assign(LOL.Scene3D, {
     }
   },
 
-  aimTail(mesh, p) {
-    const tail = mesh.userData.tail;
+  aimTail(part, mesh, p) {
     const prev = mesh.userData.prev || { x: p.x, z: p.y };
-    const dir = new THREE.Vector3(p.x - prev.x, 0, p.y - prev.z);
+    if (!this._aim) this._aim = new THREE.Vector3();
+    if (!this._up) this._up = new THREE.Vector3(0, 1, 0);
+    this._aim.set(p.x - prev.x, 0, p.y - prev.z);
     mesh.userData.prev = { x: p.x, z: p.y };
-    if (dir.lengthSq() < 0.04) {
-      tail.visible = false;
-      return;
-    }
-    tail.visible = true;
-    dir.normalize();
-    tail.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+    if (this._aim.lengthSq() < 0.04) return;
+    this._aim.normalize();
+    part.quaternion.setFromUnitVectors(this._up, this._aim);
   },
 
   follow() {

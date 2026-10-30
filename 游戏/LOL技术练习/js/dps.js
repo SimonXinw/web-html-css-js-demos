@@ -30,8 +30,9 @@ LOL.Dps = {
     const now = performance.now() / 1000;
     let row = this.rows.get(id);
     if (!row || now - row.last >= this.gap) {
-      row = { total: 0, start: now, shown: 0, shownAt: 0 };
+      row = { total: 0, start: now, shown: 0, shownAt: 0, hits: 0, rate: 0 };
     }
+    row.hits += 1;
     row.total += dmg;
     row.last = now;
     this.rows.set(id, row);
@@ -52,9 +53,10 @@ LOL.Dps = {
     const span = Math.max(0.35, now - row.start);
     if (!row.shownAt || now - row.shownAt >= 1) {
       row.shown = row.total / span;
+      row.rate = row.hits / span;
       row.shownAt = now;
     }
-    return { total: row.total, dps: row.shown };
+    return { total: row.total, dps: row.shown, rate: row.rate || 0 };
   },
 
   sync(dummies) {
@@ -66,13 +68,13 @@ LOL.Dps = {
       live.add(d.id);
       const label = this.ensure(scene, d.id);
       label.visible = true;
-      label.position.set(d.x, 22, d.y + 48);
+      label.position.set(d.x, 16, d.y + 48);
       this.paint(label, stat);
     }
     for (const [id, mesh] of this.labels) {
       if (live.has(id)) continue;
       mesh.visible = false;
-      mesh.scale.set(96, 24, 1);
+      mesh.scale.set(96, 36, 1);
       mesh.userData.dps = undefined;
       mesh.userData.punch = 0;
     }
@@ -83,7 +85,7 @@ LOL.Dps = {
     if (found) return found;
     const canvas = document.createElement('canvas');
     canvas.width = 256;
-    canvas.height = 64;
+    canvas.height = 96;
     const ctx = canvas.getContext('2d');
     const tex = new THREE.CanvasTexture(canvas);
     tex.premultiplyAlpha = false;
@@ -91,7 +93,7 @@ LOL.Dps = {
       map: tex, transparent: true, depthTest: false,
     });
     const mesh = new THREE.Sprite(mat);
-    mesh.scale.set(96, 24, 1);
+    mesh.scale.set(96, 36, 1);
     mesh.renderOrder = 20;
     mesh.visible = false;
     mesh.userData.ctx = ctx;
@@ -118,28 +120,42 @@ LOL.Dps = {
     const p = u.punch || 0;
     const shown = Math.round(u.from + (u.dps - u.from) * (1 - p * p));
     const text = `${total}/${shown}`;
+    const sheet = LOL.Game.player.stats().as;
+    const actual = stat.rate || 0;
+    const rateText = `${sheet.toFixed(2)}/${actual.toFixed(2)}`;
+    const tone = this.tone(actual, sheet);
+    const key = `${text}|${rateText}|${tone}`;
     const s = 1 + p * 0.42;
-    mesh.scale.set(96 * s, 24 * s, 1);
+    mesh.scale.set(96 * s, 36 * s, 1);
     mesh.position.y += p * 14;
-    if (u.key === text && p === 0) return;
-    u.key = text;
-    this.ink(mesh, text, p);
+    if (u.key === key && p === 0) return;
+    u.key = key;
+    this.ink(mesh, text, rateText, tone, p);
   },
 
-  ink(mesh, text, p) {
+  tone(rate, as) {
+    return rate >= as * 0.9 ? '#86efac' : '#f6c453';
+  },
+
+  ink(mesh, text, rateText, tone, p) {
     const ctx = mesh.userData.ctx;
     const w = ctx.canvas.width;
     const h = ctx.canvas.height;
     ctx.clearRect(0, 0, w, h);
     ctx.textAlign = 'center';
-    ctx.font = '700 36px sans-serif';
     ctx.lineWidth = 4;
     ctx.strokeStyle = 'rgba(0, 0, 0, 0.65)';
-    ctx.strokeText(text, w / 2, 44);
+    ctx.font = '700 34px sans-serif';
+    ctx.strokeText(text, w / 2, 36);
     const g = Math.round(77 + 160 * p);
     const b = Math.round(77 + 40 * p);
     ctx.fillStyle = `rgb(255,${g},${b})`;
-    ctx.fillText(text, w / 2, 44);
+    ctx.fillText(text, w / 2, 36);
+    ctx.font = '700 24px sans-serif';
+    ctx.lineWidth = 3;
+    ctx.strokeText(rateText, w / 2, 74);
+    ctx.fillStyle = tone;
+    ctx.fillText(rateText, w / 2, 74);
     mesh.material.map.needsUpdate = true;
   },
 };

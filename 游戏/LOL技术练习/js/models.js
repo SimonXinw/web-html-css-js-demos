@@ -118,18 +118,13 @@ LOL.Models = {
 
   hero() {
     return this.unit({
-      r: 16, h: 40, body: 0x2a8fd6, accent: 0x7dd3fc, dark: 0x1e3a5f, weapon: true,
+      r: 16, h: 40, body: 0x16a34a, accent: 0x86efac, dark: 0x14532d, weapon: true,
     });
   },
 
-  dummy(mode) {
-    const warm = mode === 'still';
+  dummy() {
     return this.unit({
-      r: 18, h: 42,
-      body: warm ? 0xc44b4b : 0xd97706,
-      accent: warm ? 0xfca5a5 : 0xfdba74,
-      dark: warm ? 0x7f1d1d : 0x9a3412,
-      weapon: false,
+      r: 18, h: 42, body: 0xdc2626, accent: 0xfecaca, dark: 0x7f1d1d, weapon: false,
     });
   },
 
@@ -161,28 +156,43 @@ LOL.Models = {
     fg.material.color.setHex(r > 0.35 ? 0x4ade80 : 0xf87171);
   },
 
-  bullet(color) {
+  bolt(color, thick, opacity) {
     const g = new THREE.Group();
-    const core = new THREE.Mesh(
-      new THREE.SphereGeometry(9, 12, 10),
-      new THREE.MeshBasicMaterial({ color })
+    const mat = new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity, depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    });
+    const pts = [0, 10, 7, 0, -6, -14, 5, -26, -2, -42];
+    for (let i = 0; i < 4; i++) {
+      const x0 = pts[i * 2];
+      const y0 = pts[i * 2 + 1];
+      const x1 = pts[i * 2 + 2];
+      const y1 = pts[i * 2 + 3];
+      const len = Math.hypot(x1 - x0, y1 - y0);
+      const seg = new THREE.Mesh(new THREE.BoxGeometry(thick, len, thick), mat);
+      seg.position.set((x0 + x1) / 2, (y0 + y1) / 2, 0);
+      seg.rotation.z = Math.atan2(x1 - x0, y1 - y0);
+      g.add(seg);
+    }
+    g.userData.mat = mat;
+    return g;
+  },
+
+  bullet() {
+    const g = new THREE.Group();
+    const bolt = new THREE.Group();
+    bolt.add(this.bolt(0x67e8ff, 7, 0.34));
+    bolt.add(this.bolt(0xf7feff, 2.4, 1));
+    const foe = this.bolt(0xfb7185, 1.2, 0.22);
+    foe.scale.setScalar(0.36);
+    const shot = new THREE.Mesh(
+      new THREE.SphereGeometry(8, 8, 8),
+      new THREE.MeshBasicMaterial({ color: 0x5ec8ff })
     );
-    const glow = new THREE.Mesh(
-      new THREE.SphereGeometry(18, 12, 10),
-      new THREE.MeshBasicMaterial({
-        color, transparent: true, opacity: 0.42, depthWrite: false,
-        blending: THREE.AdditiveBlending,
-      })
-    );
-    const tail = new THREE.Mesh(
-      new THREE.CylinderGeometry(5, 1.4, 46, 8),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, depthWrite: false })
-    );
-    tail.geometry.translate(0, -23, 0);
-    g.add(glow, core, tail);
-    g.userData.core = core;
-    g.userData.glow = glow;
-    g.userData.tail = tail;
+    g.add(bolt, foe, shot);
+    g.userData.bolt = bolt;
+    g.userData.foe = foe;
+    g.userData.shot = shot;
     return g;
   },
 };
