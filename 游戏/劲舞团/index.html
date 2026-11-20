@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>静舞团 · Rhythm Pulse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Noto+Sans+SC:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/stage.css" />
+  <link rel="stylesheet" href="css/dancer.css" />
+  <link rel="stylesheet" href="css/fx.css" />
+  <link rel="stylesheet" href="css/classic.css" />
+  <link rel="stylesheet" href="css/classic-rail.css" />
+</head>
+<body>
+  <div id="app" class="app">
+    <div class="bg-aurora" aria-hidden="true"></div>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-noise" aria-hidden="true"></div>
+
+    <!-- 标题 -->
+    <section id="screen-title" class="screen active">
+      <div class="title-hero">
+        <p class="eyebrow">AUDITION STYLE · WEB</p>
+        <h1 class="logo">静舞团</h1>
+        <p class="tagline">踩准节拍，跳出动感</p>
+        <div class="mode-switch" id="mode-switch">
+          <button type="button" class="mode-btn on" data-mode="fall">下落音符</button>
+          <button type="button" class="mode-btn" data-mode="classic">经典连打</button>
+        </div>
+        <p class="mode-desc" id="mode-desc">音符落到判定线时按下对应方向键</p>
+        <button type="button" id="btn-enter" class="btn-primary pulse">开始跳舞</button>
+        <p class="hint-keys" id="hint-keys">键盘 ←↓↑→ 或 A S W D · 手机点触屏键</p>
+      </div>
+    </section>
+
+    <!-- 选曲 -->
+    <section id="screen-select" class="screen">
+      <header class="screen-head">
+        <h2>选择曲目</h2>
+        <button type="button" id="btn-back-title" class="btn-ghost">返回</button>
+      </header>
+      <div class="mode-switch compact">
+        <button type="button" class="mode-btn on" data-mode="fall">下落音符</button>
+        <button type="button" class="mode-btn" data-mode="classic">经典连打</button>
+      </div>
+      <div id="song-list" class="song-list"></div>
+    </section>
+
+    <!-- 游玩 -->
+    <section id="screen-play" class="screen">
+      <header class="hud-top">
+        <div class="hud-score">
+          <span class="label">SCORE</span>
+          <span id="hud-score">0</span>
+        </div>
+        <div class="hud-song" id="hud-song">—</div>
+        <div class="hud-combo">
+          <span id="hud-combo">0</span>
+          <span class="label">COMBO</span>
+        </div>
+      </header>
+
+      <div class="stage-wrap" id="stage-wrap">
+        <canvas id="lane-canvas" width="420" height="640"></canvas>
+        <div class="dancer-stage" id="dancer-stage">
+          <div class="dancer" id="dancer">
+            <div class="d-hair"></div>
+            <div class="d-head"></div>
+            <div class="d-body">
+              <div class="d-arm left"></div>
+              <div class="d-arm right"></div>
+              <div class="d-torso"></div>
+              <div class="d-leg left"></div>
+              <div class="d-leg right"></div>
+            </div>
+            <div class="d-shadow"></div>
+          </div>
+          <div class="floor-ring"></div>
+        </div>
+        <div id="judge-pop" class="judge-pop"></div>
+        <div id="fx-layer" class="fx-layer"></div>
+      </div>
+
+      <div id="classic-dock" class="classic-dock">
+        <div class="rail-head">
+          <span>TIME</span>
+          <span id="classic-hint">准备</span>
+        </div>
+        <div class="rail" id="classic-rail">
+          <div class="rail-sweet"></div>
+          <div class="rail-anchor" id="classic-anchor"><b></b></div>
+          <div class="rail-pop" id="classic-pop"></div>
+        </div>
+        <div id="classic-arrows" class="classic-arrows"></div>
+      </div>
+      <button type="button" id="pad-space" class="pad-space">空格 · 跳舞</button>
+
+      <div class="hud-bar">
+        <div class="meter"><i id="meter-fill"></i></div>
+        <div class="stats">
+          <span>P <b id="st-p">0</b></span>
+          <span>G <b id="st-g">0</b></span>
+          <span>C <b id="st-c">0</b></span>
+          <span>M <b id="st-m">0</b></span>
+        </div>
+      </div>
+
+      <div class="pad" id="pad" aria-label="触摸操控">
+        <button type="button" data-lane="0" class="pad-key">←</button>
+        <button type="button" data-lane="1" class="pad-key">↓</button>
+        <button type="button" data-lane="2" class="pad-key">↑</button>
+        <button type="button" data-lane="3" class="pad-key">→</button>
+      </div>
+
+      <button type="button" id="btn-pause" class="btn-pause">暂停</button>
+    </section>
+
+    <!-- 结算 -->
+    <section id="screen-result" class="screen">
+      <div class="result-card">
+        <p class="result-grade" id="result-grade">A</p>
+        <h2 id="result-title">舞步完成</h2>
+        <ul class="result-stats">
+          <li>得分 <b id="r-score">0</b></li>
+          <li>最大连击 <b id="r-combo">0</b></li>
+          <li>Perfect <b id="r-p">0</b></li>
+          <li>Great <b id="r-g">0</b></li>
+          <li>Cool <b id="r-c">0</b></li>
+          <li>Miss <b id="r-m">0</b></li>
+        </ul>
+        <div class="result-actions">
+          <button type="button" id="btn-retry" class="btn-primary">再跳一次</button>
+          <button type="button" id="btn-to-select" class="btn-ghost">选曲</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 暂停遮罩 -->
+    <div id="pause-overlay" class="overlay hidden">
+      <div class="overlay-card">
+        <h3>已暂停</h3>
+        <button type="button" id="btn-resume" class="btn-primary">继续</button>
+        <button type="button" id="btn-quit" class="btn-ghost">退出选曲</button>
+      </div>
+    </div>
+
+    <div id="countdown" class="countdown hidden"></div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/judge.js"></script>
+  <script src="js/flow.js"></script>
+  <script src="js/fx.js"></script>
+  <script src="js/dancer.js"></script>
+  <script src="js/notes.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/seq.js"></script>
+  <script src="js/classic-view.js"></script>
+  <script src="js/classic.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+.fx-spark {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: sparkFly 0.45s ease-out forwards;
+}
+@keyframes sparkFly {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.2); }
+}
+
+.fx-ring {
+  position: absolute;
+  border: 2px solid var(--cyan);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: ringExpand 0.4s ease-out forwards;
+}
+@keyframes ringExpand {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(0.4); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+}
+
+.fx-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--fx) var(--fy), rgba(255, 255, 255, 0.35), transparent 45%);
+  pointer-events: none;
+  animation: flashFade 0.22s ease-out forwards;
+}
+@keyframes flashFade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.fx-lane-burst {
+  position: absolute;
+  width: 22%;
+  height: 18%;
+  bottom: 18%;
+  border-radius: 12px;
+  pointer-events: none;
+  background: radial-gradient(ellipse, rgba(45, 226, 230, 0.55), transparent 70%);
+  animation: laneBurst 0.28s ease-out forwards;
+}
+.fx-lane-burst.l0 { left: 6%; background: radial-gradient(ellipse, rgba(255, 77, 109, 0.55), transparent 70%); }
+.fx-lane-burst.l1 { left: 28%; }
+.fx-lane-burst.l2 { left: 50%; background: radial-gradient(ellipse, rgba(125, 255, 179, 0.5), transparent 70%); }
+.fx-lane-burst.l3 { left: 72%; background: radial-gradient(ellipse, rgba(255, 209, 102, 0.55), transparent 70%); }
+@keyframes laneBurst {
+  0% { opacity: 1; transform: scaleY(0.4); }
+  100% { opacity: 0; transform: scaleY(1.6); }
+}
+
+.combo-flare {
+  position: absolute;
+  left: 50%; top: 18%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 14px; letter-spacing: 0.2em;
+  color: var(--coral);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 6;
+}
+.combo-flare.show { animation: comboFlare 0.7s ease forwards; }
+@keyframes comboFlare {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.8); }
+  30% { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
+  100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+.stage-wrap.shake {
+  animation: stageShake 0.28s ease;
+}
+@keyframes stageShake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-4px, 2px); }
+  40% { transform: translate(4px, -2px); }
+  60% { transform: translate(-3px, -1px); }
+  80% { transform: translate(2px, 2px); }
+}
+
+.beat-pulse .floor-ring {
+  animation-duration: 0.55s;
+}

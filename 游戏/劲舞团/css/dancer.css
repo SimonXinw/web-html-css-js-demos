@@ -1,0 +1,147 @@
+.dancer {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 88%;
+}
+
+.d-hair, .d-head, .d-torso, .d-arm, .d-leg, .d-shadow {
+  position: absolute;
+}
+
+.d-shadow {
+  left: 50%; bottom: 10px;
+  width: 42px; height: 10px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.d-head {
+  left: 50%; top: 18px;
+  width: 28px; height: 28px;
+  margin-left: -14px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #ffd8c2, #e8a88a);
+  box-shadow: inset -4px -2px 0 rgba(0, 0, 0, 0.08);
+  z-index: 3;
+}
+.d-hair {
+  left: 50%; top: 10px;
+  width: 34px; height: 22px;
+  margin-left: -17px;
+  border-radius: 16px 16px 6px 6px;
+  background: linear-gradient(135deg, #1a2238, #2d3a5c);
+  z-index: 4;
+}
+
+.d-body { position: absolute; inset: 0; }
+
+.d-torso {
+  left: 50%; top: 48px;
+  width: 34px; height: 42px;
+  margin-left: -17px;
+  border-radius: 10px 10px 8px 8px;
+  background: linear-gradient(180deg, var(--cyan), #1a9ea3 55%, #145f73);
+  z-index: 2;
+}
+
+.d-arm {
+  top: 52px; width: 10px; height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffd8c2, #e8a88a);
+  transform-origin: 50% 8%;
+  z-index: 1;
+}
+.d-arm.left { left: 22px; }
+.d-arm.right { right: 22px; }
+
+.d-leg {
+  top: 88px; width: 12px; height: 44px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #1a2238, #0d1424);
+  transform-origin: 50% 0%;
+  z-index: 1;
+}
+.d-leg.left { left: 42px; }
+.d-leg.right { right: 42px; }
+.d-leg::after {
+  content: "";
+  position: absolute; left: -2px; bottom: -2px;
+  width: 16px; height: 8px;
+  border-radius: 4px;
+  background: var(--coral);
+}
+
+/* idle bounce */
+.dancer.idle { animation: idleBob 0.7s ease-in-out infinite; }
+.dancer.idle .d-arm.left { animation: armSwingL 0.7s ease-in-out infinite; }
+.dancer.idle .d-arm.right { animation: armSwingR 0.7s ease-in-out infinite; }
+.dancer.idle .d-leg.left { animation: legTapL 0.7s ease-in-out infinite; }
+.dancer.idle .d-leg.right { animation: legTapR 0.7s ease-in-out infinite; }
+
+@keyframes idleBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes armSwingL {
+  0%, 100% { transform: rotate(18deg); }
+  50% { transform: rotate(-22deg); }
+}
+@keyframes armSwingR {
+  0%, 100% { transform: rotate(-18deg); }
+  50% { transform: rotate(22deg); }
+}
+@keyframes legTapL {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(10deg); }
+}
+@keyframes legTapR {
+  0%, 100% { transform: rotate(6deg); }
+  50% { transform: rotate(-10deg); }
+}
+
+/* hit poses */
+.dancer.hit-left .d-arm.left { transform: rotate(-70deg); }
+.dancer.hit-left .d-arm.right { transform: rotate(30deg); }
+.dancer.hit-left .d-leg.left { transform: rotate(-28deg); }
+.dancer.hit-left { transform: translateX(-10px) rotate(-6deg); }
+
+.dancer.hit-down .d-arm.left,
+.dancer.hit-down .d-arm.right { transform: rotate(35deg); }
+.dancer.hit-down .d-torso { transform: scaleY(0.92) translateY(4px); }
+.dancer.hit-down { transform: translateY(8px); }
+
+.dancer.hit-up .d-arm.left { transform: rotate(-140deg); }
+.dancer.hit-up .d-arm.right { transform: rotate(140deg); }
+.dancer.hit-up { transform: translateY(-12px); }
+
+.dancer.hit-right .d-arm.right { transform: rotate(70deg); }
+.dancer.hit-right .d-arm.left { transform: rotate(-30deg); }
+.dancer.hit-right .d-leg.right { transform: rotate(28deg); }
+.dancer.hit-right { transform: translateX(10px) rotate(6deg); }
+
+.dancer.perfect {
+  filter: drop-shadow(0 0 12px rgba(255, 209, 102, 0.7));
+}
+.dancer.miss-pose {
+  filter: grayscale(0.5) brightness(0.85);
+  animation: missShake 0.35s ease;
+}
+@keyframes missShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.dancer.spin { animation: dancerSpin 0.55s ease; }
+@keyframes dancerSpin {
+  from { transform: rotate(0) scale(1); }
+  50% { transform: rotate(180deg) scale(1.08); }
+  to { transform: rotate(360deg) scale(1); }
+}
+
+.dancer .d-arm,
+.dancer .d-leg,
+.dancer .d-torso {
+  transition: transform 0.08s ease-out;
+}

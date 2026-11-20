@@ -1,0 +1,58 @@
+const CFG = {
+  LANES: 4,
+  LANE_KEYS: {
+    ArrowLeft: 0, KeyA: 0,
+    ArrowDown: 1, KeyS: 1,
+    ArrowUp: 2, KeyW: 2,
+    ArrowRight: 3, KeyD: 3,
+  },
+  LANE_LABELS: ["←", "↓", "↑", "→"],
+  LANE_COLORS: ["#ff4d6d", "#2de2e6", "#7dffb3", "#ffd166"],
+  APPROACH: 1.55,
+  HIT_Y_RATIO: 0.82,
+  WINDOWS: {
+    perfect: 0.045,
+    great: 0.090,
+    cool: 0.140,
+  },
+  SCORE: { perfect: 300, great: 200, cool: 100, miss: 0 },
+  HOLD_TICK: 40,
+  LEAD_IN: 2.2,
+  TAIL: 1.5,
+};
+
+const SONGS = [
+  {
+    id: "neon-pulse",
+    title: "Neon Pulse",
+    subtitle: "夜场开场曲 · Easy",
+    diff: "easy",
+    bpm: 118,
+    bars: 16,
+    density: 0.55,
+    holds: 0.12,
+    style: "pulse",
+  },
+  {
+    id: "coral-rush",
+    title: "Coral Rush",
+    subtitle: "珊瑚冲刺 · Normal",
+    diff: "normal",
+    bpm: 136,
+    bars: 20,
+    density: 0.78,
+    holds: 0.18,
+    style: "rush",
+  },
+  {
+    id: "gold-fever",
+    title: "Gold Fever",
+    subtitle: "黄金狂热 · Hard",
+    diff: "hard",
+    bpm: 152,
+    bars: 24,
+    density: 0.92,
+    holds: 0.22,
+    style: "fever",
+  },
+];
