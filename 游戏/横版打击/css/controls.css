@@ -1,0 +1,170 @@
+.panel {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(22, 24, 32, 0.96), rgba(12, 14, 20, 0.94));
+  backdrop-filter: blur(12px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+}
+
+.panel.open {
+  display: flex;
+}
+
+.panel h2 {
+  margin: 2px 0 4px;
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.panel h2.sub {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.toggle:hover { border-color: var(--line); }
+.toggle input {
+  accent-color: var(--cinnabar);
+  width: 15px;
+  height: 15px;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.68rem;
+  line-height: 1.6;
+}
+
+.hint p { margin: 0 0 6px; }
+.hint b { color: var(--amber); font-weight: 600; }
+
+/* 手机触控：左移动，右技能+战斗，层级清晰 */
+.pad {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 4px 2px 2px;
+}
+
+.pad-move {
+  display: grid;
+  grid-template-columns: repeat(2, 54px);
+  gap: 8px;
+}
+
+.pad-move .sec {
+  width: 54px;
+  height: 40px;
+  font-size: 0.82rem;
+  opacity: 0.88;
+}
+
+.pad-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.pad-skills {
+  display: flex;
+  gap: 6px;
+}
+
+.pad-combat {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.pad button {
+  width: 54px;
+  height: 54px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(22, 26, 34, 0.88);
+  color: var(--paper);
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.pad-skills button {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  background: rgba(18, 20, 28, 0.82);
+}
+
+.pad button:active,
+.pad button.active {
+  background: rgba(194, 59, 34, 0.38);
+  border-color: rgba(194, 59, 34, 0.55);
+  transform: translateY(1px);
+}
+
+.pad .atk {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, rgba(194, 59, 34, 0.5), rgba(28, 33, 43, 0.95));
+  border-color: rgba(212, 163, 92, 0.4);
+  font-size: 1.15rem;
+  box-shadow: 0 8px 18px rgba(194, 59, 34, 0.18);
+}
+
+.pad .ult {
+  border-color: rgba(212, 163, 92, 0.75);
+  color: #ffd7a0;
+}
+
+@media (max-width: 420px) {
+  .pad-move {
+    grid-template-columns: repeat(2, 48px);
+    gap: 6px;
+  }
+
+  .pad button {
+    width: 48px;
+    height: 48px;
+    font-size: 0.85rem;
+  }
+
+  .pad-move .sec {
+    width: 48px;
+    height: 36px;
+  }
+
+  .pad-skills button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .pad .atk {
+    width: 64px;
+    height: 64px;
+  }
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>墨影 · 横版打击感实验室</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/controls.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand-block">
+        <h1 class="brand">墨影</h1>
+        <p class="tag">打击感实验室</p>
+      </div>
+      <button type="button" id="btn-panel" class="ghost" aria-expanded="false">设置</button>
+    </header>
+
+    <aside id="panel" class="panel">
+      <h2>打击感</h2>
+      <label class="toggle"><input type="checkbox" data-feel="hitstop" checked /><span>顿帧</span></label>
+      <label class="toggle"><input type="checkbox" data-feel="shake" checked /><span>震屏</span></label>
+      <label class="toggle"><input type="checkbox" data-feel="flash" checked /><span>闪白</span></label>
+      <label class="toggle"><input type="checkbox" data-feel="knockback" checked /><span>击退</span></label>
+      <label class="toggle"><input type="checkbox" data-feel="particles" checked /><span>粒子</span></label>
+      <label class="toggle"><input type="checkbox" data-feel="sfx" checked /><span>音效</span></label>
+
+      <h2 class="sub">键位</h2>
+      <div class="hint">
+        <p><b>移动</b> A D　<b>跳</b> W / K / 空格　<b>攻</b> J　<b>冲</b> Shift</p>
+        <p><b>武器</b> 1 刀　2 弓　　<b>技能</b> Y U I O，P 也是大招</p>
+        <p><b>弓</b> 连按 J：一矢、双矢、三矢。Y 穿云会穿透，U 暴雨落在前后。</p>
+      </div>
+    </aside>
+
+    <main class="stage">
+      <canvas id="game" width="960" height="540"></canvas>
+    </main>
+
+    <div class="pad" id="pad" aria-label="触摸操控">
+      <div class="pad-move">
+        <button type="button" data-act="left" aria-label="左">←</button>
+        <button type="button" data-act="right" aria-label="右">→</button>
+        <button type="button" data-act="dash" class="sec" aria-label="冲刺">冲</button>
+        <button type="button" data-act="switch" class="sec" aria-label="换武器">换</button>
+      </div>
+      <div class="pad-action">
+        <div class="pad-skills">
+          <button type="button" data-act="y">Y</button>
+          <button type="button" data-act="u">U</button>
+          <button type="button" data-act="i">I</button>
+          <button type="button" data-act="o" class="ult">O</button>
+        </div>
+        <div class="pad-combat">
+          <button type="button" data-act="jump" aria-label="跳">跳</button>
+          <button type="button" data-act="attack" class="atk" aria-label="攻击">攻</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/feel.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/atmos.js"></script>
+  <script src="js/anim.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/draw-weapon.js"></script>
+  <script src="js/draw-player.js"></script>
+  <script src="js/draw-enemy.js"></script>
+  <script src="js/moves.js"></script>
+  <script src="js/skills.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
